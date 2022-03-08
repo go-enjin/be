@@ -1,0 +1,9 @@
+name = "Default"
+license = "Apache 2.0"
+licenselink = "https://go-enjin.github.io/LICENSE"
+description = "A simple light theme."
+homepage = "https://go-enjin.github.io/"
+
+[author]
+    name = "The Go-Enjin Team"
+    homepage = "https://go-enjin.github.io"
