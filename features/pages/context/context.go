@@ -29,7 +29,7 @@ import (
 
 var _ feature.Feature = (*Feature)(nil)
 
-const Tag feature.Tag = "NotifySlack"
+const Tag feature.Tag = "PagesContext"
 
 type Feature struct {
 	feature.CFeature
