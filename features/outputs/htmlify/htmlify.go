@@ -17,14 +17,21 @@
 package htmlify
 
 import (
+	"net/http"
+
 	"github.com/urfave/cli/v2"
 	"github.com/yosssi/gohtml"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/net"
+	bePath "github.com/go-enjin/be/pkg/path"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 var _htmlify *Feature
+
+var _ MakeFeature = (*Feature)(nil)
 
 var _ feature.Feature = (*Feature)(nil)
 
@@ -34,10 +41,14 @@ const Tag feature.Tag = "OutputHtmlify"
 
 type Feature struct {
 	feature.CFeature
+
+	ignored []string
 }
 
 type MakeFeature interface {
 	feature.MakeFeature
+
+	Ignore(paths ...string) MakeFeature
 }
 
 func New() MakeFeature {
@@ -46,6 +57,15 @@ func New() MakeFeature {
 		_htmlify.Init(_htmlify)
 	}
 	return _htmlify
+}
+func (f *Feature) Ignore(paths ...string) MakeFeature {
+	for _, path := range paths {
+		path = bePath.TrimSlash(net.TrimQueryParams(path))
+		if !beStrings.StringInStrings(path, f.ignored...) {
+			f.ignored = append(f.ignored, path)
+		}
+	}
+	return f
 }
 
 func (f *Feature) Tag() (tag feature.Tag) {
@@ -61,7 +81,14 @@ func (f *Feature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *Feature) CanTransform(mime string) (ok bool) {
+func (f *Feature) CanTransform(mime string, r *http.Request) (ok bool) {
+	urlPath := bePath.TrimSlash(net.TrimQueryParams(r.URL.Path))
+	for _, path := range f.ignored {
+		if urlPath == path {
+			log.DebugF("htmlify ignoring: %v", path)
+			return
+		}
+	}
 	switch beStrings.GetBasicMime(mime) {
 	case "text/html":
 		ok = true

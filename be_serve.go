@@ -59,7 +59,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	return
 }
 
-func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, _ *http.Request) {
+func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request) {
 	// only one translation allowed, non-feature translators take precedence
 	basicMime := beStrings.GetBasicMime(mime)
 	if fn, ok := e.be.translators[basicMime]; ok {
@@ -88,7 +88,7 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, _ *ht
 
 	for _, f := range e.be.features {
 		if tfr, ok := f.(feature.OutputTransformer); ok {
-			if tfr.CanTransform(mime) {
+			if tfr.CanTransform(mime, r) {
 				data = tfr.TransformOutput(mime, data)
 			}
 		}

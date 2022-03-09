@@ -14,6 +14,10 @@
 
 package feature
 
+import (
+	"net/http"
+)
+
 type TranslateOutputFn = func(input []byte) (output []byte, mime string)
 
 type OutputTranslator interface {
@@ -24,6 +28,6 @@ type OutputTranslator interface {
 type TransformOutputFn = func(input []byte) (output []byte)
 
 type OutputTransformer interface {
-	CanTransform(mime string) (ok bool)
+	CanTransform(mime string, r *http.Request) (ok bool)
 	TransformOutput(mime string, input []byte) (output []byte)
 }

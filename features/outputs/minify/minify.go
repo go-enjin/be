@@ -17,17 +17,23 @@
 package minify
 
 import (
+	"net/http"
+
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/net"
 	beMinify "github.com/go-enjin/be/pkg/net/minify"
+	bePath "github.com/go-enjin/be/pkg/path"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 var _minify *Feature
 
 var _minifyInstance = beMinify.NewInstance()
+
+var _ MakeFeature = (*Feature)(nil)
 
 var _ feature.Feature = (*Feature)(nil)
 
@@ -39,6 +45,7 @@ type Feature struct {
 	feature.CFeature
 
 	mimeTypes []string
+	ignored   []string
 }
 
 type MakeFeature interface {
@@ -46,6 +53,7 @@ type MakeFeature interface {
 
 	AddMimeType(mime string) MakeFeature
 	SetMimeTypes(mimeTypes ...string) MakeFeature
+	Ignore(paths ...string) MakeFeature
 }
 
 func New() MakeFeature {
@@ -68,6 +76,16 @@ func (f *Feature) SetMimeTypes(mimeTypes ...string) MakeFeature {
 	return f
 }
 
+func (f *Feature) Ignore(paths ...string) MakeFeature {
+	for _, path := range paths {
+		path = bePath.TrimSlash(net.TrimQueryParams(path))
+		if !beStrings.StringInStrings(path, f.ignored...) {
+			f.ignored = append(f.ignored, path)
+		}
+	}
+	return f
+}
+
 func (f *Feature) Tag() (tag feature.Tag) {
 	tag = Tag
 	return
@@ -87,7 +105,14 @@ func (f *Feature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *Feature) CanTransform(mime string) (ok bool) {
+func (f *Feature) CanTransform(mime string, r *http.Request) (ok bool) {
+	urlPath := bePath.TrimSlash(net.TrimQueryParams(r.URL.Path))
+	for _, path := range f.ignored {
+		if urlPath == path {
+			log.DebugF("minify ignoring: %v", path)
+			return
+		}
+	}
 	basicMime := beStrings.GetBasicMime(mime)
 	for _, supported := range f.mimeTypes {
 		switch supported {
