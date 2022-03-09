@@ -271,6 +271,7 @@ func FinalizeSlugfile(force bool) (slugsums string, removed []string, err error)
 
 	var unaccounted []string
 	for _, dir := range all {
+		dir = bePath.TrimDotSlash(dir)
 		dl := len(dir)
 		accounted := false
 		for file, _ := range slugMap {
