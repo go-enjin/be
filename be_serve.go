@@ -48,6 +48,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	ctx.Apply(p.Context.Copy())
 	for _, f := range e.be.features {
 		if s, ok := f.(feature.PageContextModifier); ok {
+			log.DebugF("filtering page context with: %v", f.Tag())
 			ctx = s.FilterPageContext(ctx, p.Context, r)
 		}
 	}
@@ -59,7 +60,6 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 }
 
 func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, _ *http.Request) {
-
 	// only one translation allowed, non-feature translators take precedence
 	basicMime := beStrings.GetBasicMime(mime)
 	if fn, ok := e.be.translators[basicMime]; ok {
@@ -68,7 +68,7 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, _ *ht
 	} else {
 		for _, f := range e.be.features {
 			if v, ok := f.(feature.OutputTranslator); ok {
-				log.DebugF("checking output filter: %v", f.Tag())
+				// log.DebugF("checking output filter: %v", f.Tag())
 				if v.CanTranslate(mime) {
 					if d, m, err := v.TranslateOutput(e, data, mime); err == nil {
 						data, mime = d, m

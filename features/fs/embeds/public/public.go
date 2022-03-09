@@ -125,7 +125,7 @@ func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
 					}
 				}
 			}
-			log.DebugF("not embed public: %v", path)
+			// log.DebugF("not embed public: %v", path)
 			next.ServeHTTP(w, r)
 		})
 	}

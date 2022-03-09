@@ -89,13 +89,13 @@ func (l *Layout) HasKey(key string) bool {
 }
 
 func (l *Layout) Lookup(names ...string) (tmpl *template.Template) {
-	log.DebugF("checking %v layout%v", l.Name, l.Tmpl.DefinedTemplates())
+	// log.DebugF("checking %v layout%v", l.Name, l.Tmpl.DefinedTemplates())
 	for _, name := range names {
 		if tmpl = l.Tmpl.Lookup(name); tmpl != nil {
 			log.DebugF("using %v layout template: %v", l.Name, name)
 			return
-		} else {
-			log.DebugF("%v layout template not found: %v", l.Name, name)
+			// } else {
+			// 	log.DebugF("%v layout template not found: %v", l.Name, name)
 		}
 	}
 	return

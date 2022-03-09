@@ -120,8 +120,6 @@ func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
 						log.DebugF("%v database content served: %v", mount, path)
 					}
 					return
-				} else {
-					log.ErrorF("error getting %v from table: %v", path, err)
 				}
 			}
 			next.ServeHTTP(w, r)

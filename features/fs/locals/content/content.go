@@ -116,7 +116,6 @@ func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
 			for _, m := range mounts {
 				if pages, err := fs.FindAllFilePages(f.mounted[m], m, ""); err == nil {
 					for _, p := range pages {
-						log.DebugF("checking page: %v (%v)", p.Url, path)
 						if p.Url == path {
 							if err = s.ServePage(p, w, r); err == nil {
 								log.DebugF("local content served: %v", path)
@@ -128,7 +127,7 @@ func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
 					}
 				}
 			}
-			log.DebugF("not local content: %v", path)
+			// log.DebugF("not local content: %v", path)
 			next.ServeHTTP(w, r)
 		})
 	}

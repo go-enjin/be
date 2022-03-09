@@ -124,7 +124,7 @@ func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
 					}
 				}
 			}
-			log.DebugF("not local public: %v", path)
+			// log.DebugF("not local public: %v", path)
 			next.ServeHTTP(w, r)
 		})
 	}

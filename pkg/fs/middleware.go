@@ -15,7 +15,6 @@
 package fs
 
 import (
-	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/page"
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -47,7 +46,7 @@ func CheckForFileData(fs FileSystem, url, mount string) (data []byte, mime, path
 	checkPaths := EnumerateCheckPaths(p)
 	var err error
 	for _, checkPath := range checkPaths {
-		log.DebugF("checking for %v file data in %v for %v (%v)", fs.Name(), mount, checkPath, p)
+		// log.DebugF("checking for %v file data in %v for %v (%v)", fs.Name(), mount, checkPath, p)
 		if data, err = fs.ReadFile(checkPath); err == nil {
 			mime, _ = fs.MimeType(checkPath)
 			path = checkPath
