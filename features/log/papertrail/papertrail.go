@@ -38,7 +38,7 @@ type MakeFeature interface {
 	feature.MakeFeature
 }
 
-func New() feature.Feature {
+func Make() feature.Feature {
 	if _papertrail == nil {
 		_papertrail = new(Feature)
 		_papertrail.Init(_papertrail)
