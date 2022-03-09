@@ -16,6 +16,7 @@ package globals
 
 import (
 	"fmt"
+	"os"
 )
 
 var (
@@ -41,21 +42,16 @@ var (
 	SlugIntegrity = ""
 	// SumsIntegrity is the expected hash of a Shasums file (set by enjenv)
 	SumsIntegrity = ""
+	// Hostname is set at runtime with the output of os.Hostname
+	Hostname, _ = os.Hostname()
 )
 
-func TagString() string {
+func BuildInfoString() string {
 	return fmt.Sprintf(
-		"%v [r=%v go=%v]",
+		"%v [r=%v go=%v] (%v)",
 		Version,
 		Release,
 		BinHash,
-	)
-}
-
-func BinString() string {
-	return fmt.Sprintf(
-		"%v %v",
-		BinName,
-		TagString(),
+		Hostname,
 	)
 }

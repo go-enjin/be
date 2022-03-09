@@ -29,7 +29,7 @@ var _notifyHooks = map[string]feature.NotifyHook{
 }
 
 func (e *Enjin) Notify(tag string) {
-	e.NotifyF(tag, globals.TagString())
+	e.NotifyF(tag, globals.BuildInfoString())
 }
 
 func (e *Enjin) NotifyF(tag, format string, argv ...interface{}) {
