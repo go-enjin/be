@@ -11,7 +11,6 @@ import (
 
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/hash/sha"
-	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -230,11 +229,13 @@ func FinalizeSlugfile(force bool) (slugsums string, removed []string, err error)
 	// read Slugfile, build slug map
 	var slugMap ShaMap
 	if slugMap, err = BuildSlugMap(); err != nil {
+		err = fmt.Errorf("error building slug map: %v", err)
 		return
 	}
 
 	var fileMap ShaMap
 	if fileMap, err = BuildFileMap(); err != nil {
+		err = fmt.Errorf("error building file map: %v", err)
 		return
 	}
 
@@ -243,8 +244,9 @@ func FinalizeSlugfile(force bool) (slugsums string, removed []string, err error)
 		if _, ok := slugMap[file]; !ok {
 			// removing those not present in the slug map
 			bePath.ChmodAll(file)
-			if e := os.Remove(file); e != nil {
-				log.ErrorF("error removing file: %v - %v", file, e)
+			if err = os.Remove(file); err != nil {
+				err = fmt.Errorf("error removing file: %v - %v", file, err)
+				return
 			}
 			removed = append(removed, file)
 		}
@@ -254,25 +256,43 @@ func FinalizeSlugfile(force bool) (slugsums string, removed []string, err error)
 		slugsums += fmt.Sprintf("%v %v\n", slugMap[file], file)
 	}
 	if err = os.WriteFile(SumsName, []byte(slugsums), 0660); err != nil {
+		err = fmt.Errorf("error writing %v: %v", SumsName, err)
 		return
 	}
 
 	var all []string
 	if all, err = bePath.FindAllDirs(".", true); err != nil {
+		err = fmt.Errorf("error finding all dirs: %v", err)
 		return
 	}
 	sort.Slice(all, func(i, j int) bool {
-		return len(all[i]) < len(all[j])
+		return len(all[i]) > len(all[j])
 	})
+
+	var unaccounted []string
 	for _, dir := range all {
-		var files []string
-		if files, err = bePath.FindAllFiles(dir, true); err != nil {
-			return
+		dl := len(dir)
+		accounted := false
+		for file, _ := range slugMap {
+			fl := len(file)
+			if dl < fl {
+				if file[:dl] == dir {
+					accounted = true
+					break
+				}
+			}
 		}
-		if len(files) == 0 {
+		if !accounted {
+			unaccounted = append(unaccounted, dir)
+		}
+	}
+
+	for _, dir := range unaccounted {
+		if bePath.IsDir(dir) {
 			bePath.ChmodAll(dir)
-			if e := os.RemoveAll(dir); e != nil {
-				log.ErrorF("error removing path: %v - %v", dir, e)
+			if err = os.Remove(dir); err != nil {
+				err = fmt.Errorf("error removing dir: %v - %v", dir, err)
+				return
 			}
 			removed = append(removed, dir+"/")
 		}
