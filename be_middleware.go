@@ -87,7 +87,7 @@ func (e *Enjin) pagesMiddleware(next http.Handler) http.Handler {
 				log.ErrorF("serve page err: %v", err)
 			}
 		}
-		log.DebugF("not a page: %v, %v", path, e.be.pages)
+		// log.DebugF("not a page: %v, %v", path, e.be.pages)
 		next.ServeHTTP(w, request)
 	})
 }
@@ -111,7 +111,7 @@ func (e *Enjin) themeMiddleware(next http.Handler) http.Handler {
 				return
 			}
 		}
-		log.DebugF("not a theme static: %v", path)
+		// log.DebugF("not a theme static: %v", path)
 		next.ServeHTTP(w, request)
 	})
 }
