@@ -118,6 +118,14 @@ func TrimPrefix(path, prefix string) (modified string) {
 	return
 }
 
+func TrimDotSlash(path string) (out string) {
+	out = path
+	if len(out) > 2 && out[0:2] == "./" {
+		out = out[2:]
+	}
+	return
+}
+
 func GetSectionSlug(url string) (path, section, slug string) {
 	if url == "" {
 		return
