@@ -178,7 +178,7 @@ func BuildSlugMapIgnoring(files ...string) (slugMap ShaMap, err error) {
 			}
 			continue
 		}
-		err = fmt.Errorf("not a file or directory: %v", path)
+		err = fmt.Errorf("missing path from Slugfile: %v", path)
 		return
 	}
 	return
