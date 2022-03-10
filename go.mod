@@ -19,6 +19,7 @@ require (
 	github.com/tdewolff/minify/v2 v2.10.0
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
+	github.com/yookoala/realpath v1.0.0
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b

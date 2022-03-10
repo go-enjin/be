@@ -25,6 +25,7 @@ import (
 
 	"github.com/fvbommel/sortorder"
 	"github.com/gabriel-vasile/mimetype"
+	"github.com/yookoala/realpath"
 )
 
 var (
@@ -343,5 +344,33 @@ func Mkdir(path string) (err error) {
 			return
 		}
 	}
+	return
+}
+
+func Which(name string) (path string) {
+	if len(name) > 3 {
+		if name[0:2] == "./" || name[0:3] == "../" {
+			if rp, err := realpath.Realpath(name); err == nil {
+				path = rp
+				return
+			}
+			path = name
+			return
+		}
+	}
+	envPath := os.Getenv("PATH")
+	parts := strings.Split(envPath, ":")
+	for _, part := range parts {
+		check := part + "/name"
+		if IsFile(check) {
+			if rp, err := realpath.Realpath(check); err == nil {
+				path = rp
+			} else {
+				path = check
+			}
+			return
+		}
+	}
+	path = "" // command not found
 	return
 }
