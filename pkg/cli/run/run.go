@@ -15,10 +15,15 @@
 package run
 
 import (
+	"bufio"
 	"bytes"
+	"fmt"
+	"io"
 	"os"
 	"os/exec"
 )
+
+var CustomExeIndent string
 
 type PipeCmd struct {
 	Name string
@@ -78,13 +83,37 @@ func Cmd(name string, argv ...string) (stdout, stderr string, status int, err er
 func Exe(name string, argv ...string) (status int, err error) {
 	cmd := exec.Command(name, argv...)
 	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err = cmd.Run(); err != nil {
-		if exitError, ok := err.(*exec.ExitError); ok {
-			status = exitError.ExitCode()
-		}
+
+	var o, e io.ReadCloser
+	if o, err = cmd.StdoutPipe(); err != nil {
 		return
+	}
+	if e, err = cmd.StderrPipe(); err != nil {
+		return
+	}
+
+	if err = cmd.Start(); err != nil {
+		err = fmt.Errorf("exe start error: %v", err)
+		return
+	}
+
+	so := bufio.NewScanner(o)
+	se := bufio.NewScanner(e)
+
+	go func() {
+		for so.Scan() {
+			_, _ = os.Stdout.WriteString(CustomExeIndent + so.Text() + "\n")
+		}
+	}()
+
+	go func() {
+		for se.Scan() {
+			_, _ = os.Stderr.WriteString(CustomExeIndent + se.Text() + "\n")
+		}
+	}()
+
+	if err = cmd.Wait(); err != nil {
+		err = fmt.Errorf("exe wait error: %v", err)
 	}
 	return
 }
