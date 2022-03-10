@@ -361,7 +361,7 @@ func Which(name string) (path string) {
 	envPath := os.Getenv("PATH")
 	parts := strings.Split(envPath, ":")
 	for _, part := range parts {
-		check := part + "/name"
+		check := part + "/" + name
 		if IsFile(check) {
 			if rp, err := realpath.Realpath(check); err == nil {
 				path = rp
