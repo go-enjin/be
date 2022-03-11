@@ -46,6 +46,15 @@ var (
 	Hostname, _ = os.Hostname()
 )
 
+func BuildVersion() (version string) {
+	return fmt.Sprintf(
+		"%v [%v] (%v)",
+		Version,
+		Release,
+		BinHash,
+	)
+}
+
 func BuildInfoString() string {
 	return fmt.Sprintf(
 		"%v [r=%v go=%v] (%v)",

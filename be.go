@@ -72,12 +72,15 @@ func newEnjin(be *EnjinBuilder) *Enjin {
 		cli: &cli.App{
 			Name:    globals.BinName,
 			Usage:   globals.Summary,
-			Version: globals.Version,
+			Version: globals.BuildVersion(),
 			Flags:   be.flags,
 		},
 		router: chi.NewRouter(),
 	}
 	r.cli.Action = r.Action
+	cli.VersionPrinter = func(c *cli.Context) {
+		fmt.Printf("%s %s\n", globals.BinName, c.App.Version)
+	}
 	return r
 }
 
