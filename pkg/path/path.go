@@ -348,7 +348,16 @@ func Mkdir(path string) (err error) {
 }
 
 func Which(name string) (path string) {
-	if len(name) > 3 {
+	ln := len(name)
+	if ln > 1 {
+		if name[0] == '/' {
+			if rp, err := realpath.Realpath(name); err == nil {
+				path = rp
+				return
+			}
+		}
+	}
+	if ln > 3 {
 		if name[0:2] == "./" || name[0:3] == "../" {
 			if rp, err := realpath.Realpath(name); err == nil {
 				path = rp
