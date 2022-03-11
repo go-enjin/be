@@ -207,6 +207,19 @@ func (e *Enjin) Startup() (err error) {
 
 	log.DebugF(e.String())
 
+	for _, f := range e.be.features {
+		if rm, ok := f.(feature.RequestModifier); ok {
+			log.DebugF("including %v request modifier middleware", f.Tag())
+			e.router.Use(func(next http.Handler) http.Handler {
+				log.DebugF("using %v request modifier middleware", f.Tag())
+				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					rm.ModifyRequest(w, r)
+					next.ServeHTTP(w, r)
+				})
+			})
+		}
+	}
+
 	e.router.Use(middleware.Logger)
 
 	e.router.Use(e.headersMiddleware)

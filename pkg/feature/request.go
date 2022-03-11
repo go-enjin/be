@@ -26,6 +26,10 @@ type RequestFilter interface {
 	FilterRequest(r *http.Request) (err error)
 }
 
+type RequestModifier interface {
+	ModifyRequest(w http.ResponseWriter, r *http.Request)
+}
+
 type HeadersModifier interface {
 	ModifyHeaders(w http.ResponseWriter, r *http.Request)
 }
