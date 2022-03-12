@@ -70,15 +70,19 @@ type CmdFn = func(argv ...string) (stdout string, stderr string, err error)
 
 func Cmd(name string, argv ...string) (stdout, stderr string, status int, err error) {
 	cmd := exec.Command(name, argv...)
+	cmd.Env = os.Environ()
+
 	var ob, eb bytes.Buffer
 	cmd.Stdout = &ob
 	cmd.Stderr = &eb
+
 	if err = cmd.Run(); err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
 			status = exitError.ExitCode()
 		}
 		return
 	}
+
 	stdout = ob.String()
 	stderr = eb.String()
 	return
@@ -113,6 +117,7 @@ type ExeFn = func(argv ...string) (err error)
 func Exe(name string, argv ...string) (status int, err error) {
 	cmd := exec.Command(name, argv...)
 	cmd.Stdin = os.Stdin
+	cmd.Env = os.Environ()
 
 	var o, e io.ReadCloser
 	if o, err = cmd.StdoutPipe(); err != nil {
