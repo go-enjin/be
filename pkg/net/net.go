@@ -15,15 +15,21 @@
 package net
 
 import (
-	"net/url"
+	"net/http"
 	"regexp"
 )
 
-func BaseURL(u *url.URL) (baseUrl string) {
+func BaseURL(r *http.Request) (baseUrl string) {
+	u := r.URL
 	if baseUrl = u.Scheme; baseUrl == "" {
 		baseUrl = "https"
 	}
-	baseUrl += "://" + u.Host
+	baseUrl += "://"
+	if u.Host != "" {
+		baseUrl += u.Host
+	} else {
+		baseUrl += r.Host
+	}
 	if portNum := u.Port(); portNum != "" {
 		baseUrl += ":" + portNum
 	}

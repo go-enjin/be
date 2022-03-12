@@ -44,7 +44,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	ctx := e.Context()
-	ctx.Set("BaseUrl", net.BaseURL(r.URL))
+	ctx.Set("BaseUrl", net.BaseURL(r))
 	ctx.Apply(p.Context.Copy())
 	for _, f := range e.be.features {
 		if s, ok := f.(feature.PageContextModifier); ok {
