@@ -21,6 +21,8 @@ import (
 	"io"
 	"os"
 	"os/exec"
+
+	bePath "github.com/go-enjin/be/pkg/path"
 )
 
 var CustomExeIndent string
@@ -64,6 +66,8 @@ func ExePipe(inputs ...PipeCmd) (status int, err error) {
 	return
 }
 
+type CmdFn = func(argv ...string) (stdout string, stderr string, err error)
+
 func Cmd(name string, argv ...string) (stdout, stderr string, status int, err error) {
 	cmd := exec.Command(name, argv...)
 	var ob, eb bytes.Buffer
@@ -79,6 +83,32 @@ func Cmd(name string, argv ...string) (stdout, stderr string, status int, err er
 	stderr = eb.String()
 	return
 }
+
+func CheckCmd(name string, argv ...string) (stdout string, stderr string, err error) {
+	var status int
+	exeBin := bePath.Which(name)
+	if exeBin == "" || !bePath.IsFile(exeBin) {
+		err = fmt.Errorf("%v not found", exeBin)
+	} else if stdout, stderr, status, err = Cmd(exeBin, argv...); err == nil && status != 0 {
+		err = fmt.Errorf("%v exited with status: %d", exeBin, status)
+	}
+	return
+}
+
+func MakeCmdFn(exeName string) CmdFn {
+	return func(argv ...string) (stdout string, stderr string, err error) {
+		var status int
+		exeBin := bePath.Which(exeName)
+		if exeBin == "" || !bePath.IsFile(exeBin) {
+			err = fmt.Errorf("%v not found", exeBin)
+		} else if stdout, stderr, status, err = Cmd(exeBin, argv...); err == nil && status != 0 {
+			err = fmt.Errorf("%v exited with status: %d", exeBin, status)
+		}
+		return
+	}
+}
+
+type ExeFn = func(argv ...string) (err error)
 
 func Exe(name string, argv ...string) (status int, err error) {
 	cmd := exec.Command(name, argv...)
@@ -116,4 +146,28 @@ func Exe(name string, argv ...string) (status int, err error) {
 		err = fmt.Errorf("exe wait error: %v", err)
 	}
 	return
+}
+
+func CheckExe(name string, argv ...string) (err error) {
+	var status int
+	exeBin := bePath.Which(name)
+	if exeBin == "" || !bePath.IsFile(exeBin) {
+		err = fmt.Errorf("%v not found", exeBin)
+	} else if status, err = Exe(exeBin, argv...); err == nil && status != 0 {
+		err = fmt.Errorf("%v exited with status: %d", exeBin, status)
+	}
+	return
+}
+
+func MakeExeFn(exeName string) ExeFn {
+	return func(argv ...string) (err error) {
+		var status int
+		exeBin := bePath.Which(exeName)
+		if exeBin == "" || !bePath.IsFile(exeBin) {
+			err = fmt.Errorf("%v not found", exeBin)
+		} else if status, err = Exe(exeBin, argv...); err == nil && status != 0 {
+			err = fmt.Errorf("%v exited with status: %d", exeBin, status)
+		}
+		return
+	}
 }
