@@ -17,6 +17,7 @@ package globals
 import (
 	"fmt"
 	"os"
+	"regexp"
 )
 
 var (
@@ -43,8 +44,22 @@ var (
 	// SumsIntegrity is the expected hash of a Shasums file (set by enjenv)
 	SumsIntegrity = ""
 	// Hostname is set at runtime with the output of os.Hostname
-	Hostname, _ = os.Hostname()
+	Hostname = ""
 )
+
+var rxHerokuHostname = regexp.MustCompile(`^\s*([a-f0-9]{8})-([a-f0-9]{4})-([a-f0-9]{4})-([a-f0-9]{4})-([a-z0-9]{12})\s*$`)
+
+func init() {
+	if Hostname, _ = os.Hostname(); Hostname == "" {
+		Hostname = "os-Hostname-error"
+		return
+	}
+	//  2be2ef99-65c1-4a47-a9d0-4bd9a1f203b9 buildpack build_23a520f7
+	if rxHerokuHostname.MatchString(Hostname) {
+		m := rxHerokuHostname.FindStringSubmatch(Hostname)
+		Hostname = "heroku-" + m[1]
+	}
+}
 
 func BuildVersion() (version string) {
 	return fmt.Sprintf(
