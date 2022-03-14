@@ -71,7 +71,15 @@ func (c Context) Set(key string, value interface{}) Context {
 	return c
 }
 
+func (c Context) SetSpecific(key string, value interface{}) Context {
+	c[key] = value
+	return c
+}
+
 func (c Context) Get(key string) interface{} {
+	if v, ok := c[key]; ok {
+		return v
+	}
 	camel := strcase.ToCamel(key)
 	if v, ok := c[camel]; ok {
 		return v
@@ -80,13 +88,14 @@ func (c Context) Get(key string) interface{} {
 	if v, ok := c[snake]; ok {
 		return v
 	}
-	if v, ok := c[key]; ok {
-		return v
-	}
 	return nil
 }
 
 func (c Context) Delete(key string) (deleted bool) {
+	if _, ok := c[key]; ok {
+		delete(c, key)
+		return true
+	}
 	camel := strcase.ToCamel(key)
 	if _, ok := c[camel]; ok {
 		delete(c, camel)
@@ -95,10 +104,6 @@ func (c Context) Delete(key string) (deleted bool) {
 	snake := strcase.ToSnake(key)
 	if _, ok := c[snake]; ok {
 		delete(c, snake)
-		return true
-	}
-	if _, ok := c[key]; ok {
-		delete(c, key)
 		return true
 	}
 	return true
