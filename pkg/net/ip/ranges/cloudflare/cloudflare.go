@@ -21,8 +21,8 @@ import (
 	"sync"
 
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/net"
 	strings2 "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/be/pkg/utils"
 )
 
 var (
@@ -67,7 +67,7 @@ func CheckRequestIP(req *http.Request) bool {
 	if len(knownRanges) == 0 {
 		Init()
 	}
-	return utils.CheckRequestIpWithList(req, knownRanges)
+	return net.CheckRequestIpWithList(req, knownRanges)
 }
 
 func GetIpRanges() (ranges []string, err error) {

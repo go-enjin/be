@@ -23,7 +23,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/utils"
+	"github.com/go-enjin/be/pkg/net"
 )
 
 var _headerProxy *Feature
@@ -83,7 +83,7 @@ func (f *Feature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *Feature) ModifyRequest(w http.ResponseWriter, r *http.Request) {
-	if ip, err := utils.GetIpFromRequest(r); err == nil {
+	if ip, err := net.GetIpFromRequest(r); err == nil {
 		if ip != r.RemoteAddr {
 			log.DebugF("setting RemoteAddr to %v (was: %v)", ip, r.RemoteAddr)
 			r.RemoteAddr = ip

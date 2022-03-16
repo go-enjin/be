@@ -21,15 +21,15 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	beNet "github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/net/headers"
 	bePath "github.com/go-enjin/be/pkg/path"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/be/pkg/utils"
 )
 
 func (e *Enjin) requestFiltersMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		remoteAddr, _ := utils.GetIpFromRequest(r)
+		remoteAddr, _ := beNet.GetIpFromRequest(r)
 		for _, f := range e.be.features {
 			if rf, ok := f.(feature.RequestFilter); ok {
 				if err := rf.FilterRequest(r); err != nil {

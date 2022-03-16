@@ -24,8 +24,8 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/net/ip/ranges/cloudflare"
-	"github.com/go-enjin/be/pkg/utils"
 )
 
 var _cloudflare *Feature
@@ -80,9 +80,9 @@ func (f *Feature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *Feature) FilterRequest(r *http.Request) (err error) {
-	address, _ := utils.GetIpFromRequest(r)
+	address, _ := net.GetIpFromRequest(r)
 	var ip string
-	if ip, err = utils.GetProxyIpFromRequest(r); err != nil {
+	if ip, err = net.GetProxyIpFromRequest(r); err != nil {
 		if f.allowDirect {
 			err = nil
 			log.DebugF("cloudflare allowing direct request from: %v", address)
@@ -91,7 +91,7 @@ func (f *Feature) FilterRequest(r *http.Request) (err error) {
 	}
 	found := false
 	for _, ipRange := range f.ipRanges {
-		if utils.IsIpInRange(ip, ipRange) {
+		if net.IsIpInRange(ip, ipRange) {
 			found = true
 			break
 		}

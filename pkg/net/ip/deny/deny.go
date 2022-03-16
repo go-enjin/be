@@ -18,7 +18,7 @@ import (
 	"net/http"
 
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/utils"
+	"github.com/go-enjin/be/pkg/net"
 )
 
 func DenyWordPressPaths() {
@@ -48,7 +48,7 @@ func IsAddressDenied(address string) bool {
 func CheckRequestDenied(req *http.Request) (address string, denied bool) {
 	var err error
 	var addr string
-	if addr, err = utils.GetIpFromRequest(req); err != nil {
+	if addr, err = net.GetIpFromRequest(req); err != nil {
 		return err.Error(), true
 	}
 	if _manager.Denied(addr) {

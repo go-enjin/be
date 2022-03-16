@@ -20,8 +20,8 @@ import (
 	"sync"
 
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/be/pkg/utils"
 )
 
 type IpRangeItem struct {
@@ -71,7 +71,7 @@ func CheckRequestIP(req *http.Request) bool {
 	if len(knownRanges) == 0 {
 		Init()
 	}
-	return utils.CheckRequestIpWithList(req, knownRanges)
+	return net.CheckRequestIpWithList(req, knownRanges)
 }
 
 // GetIpRanges retrieves Atlassian IP ranges and returns the results
