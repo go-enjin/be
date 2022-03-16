@@ -16,18 +16,16 @@ package feature
 
 import (
 	"net/http"
+
+	"github.com/go-enjin/be/pkg/context"
 )
 
-type RequestFilterFn = func(r *http.Request) (err error)
+type PageContextFilterFn = func(ctx context.Context, r *http.Request) (out context.Context)
 
-type RequestFilter interface {
-	FilterRequest(r *http.Request) (err error)
+type PageContextModifier interface {
+	FilterPageContext(tCtx, pCtx context.Context, r *http.Request) (out context.Context)
 }
 
-type RequestModifier interface {
-	ModifyRequest(w http.ResponseWriter, r *http.Request)
-}
-
-type HeadersModifier interface {
-	ModifyHeaders(w http.ResponseWriter, r *http.Request)
+type PageRestrictionHandler interface {
+	RestrictServePage(ctx context.Context, w http.ResponseWriter, r *http.Request) (out context.Context, allow bool)
 }
