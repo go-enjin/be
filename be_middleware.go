@@ -55,7 +55,7 @@ func (e *Enjin) domainsMiddleware(next http.Handler) http.Handler {
 			}
 			if !beStrings.StringInStrings(host, e.be.domains...) {
 				e.Serve404(w, r)
-				log.WarnF("ignoring request for unsupported domain: %v", r.Host)
+				log.WarnF("ignoring request for unsupported domain: %v", host)
 				return
 			}
 		}
