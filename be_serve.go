@@ -52,6 +52,18 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 			ctx = s.FilterPageContext(ctx, p.Context, r)
 		}
 	}
+
+	for _, f := range e.be.features {
+		if prh, ok := f.(feature.PageRestrictionHandler); ok {
+			log.DebugF("checking restricted pages with: %v", f.Tag())
+			if ctx, ok = prh.RestrictServePage(ctx, w, r); !ok {
+				log.WarnF("access denied to: %v", r.URL.Path)
+				e.Serve403(w, r)
+				return
+			}
+		}
+	}
+
 	if data, err = t.RenderPage(ctx, p); err != nil {
 		return
 	}
