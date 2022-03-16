@@ -124,6 +124,43 @@ func (c Context) String(key, def string) string {
 	return def
 }
 
+func (c Context) StringOrStrings(key string) (values []string) {
+	if v := c.Get(key); v != nil {
+		if s, ok := v.(string); ok {
+			values = []string{s}
+			return
+		}
+		if vi, ok := v.([]interface{}); ok {
+			for _, i := range vi {
+				if s, ok := i.(string); ok {
+					values = append(values, s)
+				}
+			}
+			return
+		}
+	}
+	return
+}
+
+func (c Context) Strings(key string) (values []string) {
+	if v := c.Get(key); v != nil {
+		if vs, ok := v.([]string); ok {
+			values = vs
+			return
+		}
+	}
+	return
+}
+
+func (c Context) DefaultStrings(key string, def []string) []string {
+	if v := c.Get(key); v != nil {
+		if s, ok := v.([]string); ok {
+			return s
+		}
+	}
+	return def
+}
+
 func (c Context) Bool(key string, def bool) bool {
 	if v := c.Get(key); v != nil {
 		if b, ok := v.(bool); ok {
