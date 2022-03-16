@@ -47,6 +47,7 @@ import (
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/net/ip/deny"
 	"github.com/go-enjin/be/pkg/slug"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 var _ feature.Runner = &Enjin{}
@@ -116,8 +117,15 @@ func (e *Enjin) Action(ctx *cli.Context) (err error) {
 		}
 	}
 
-	if domains := ctx.StringSlice("domain"); domains != nil {
-		e.be.domains = append(e.be.domains, domains...)
+	if domains := ctx.StringSlice("domain"); domains != nil && len(domains) > 0 {
+		for _, domain := range domains {
+			if domain != "" && !beStrings.StringInStrings(domain, e.be.domains...) {
+				e.be.domains = append(e.be.domains, domains...)
+			}
+		}
+	}
+	if len(e.be.domains) > 0 {
+		log.InfoF("listening for domains: %v", e.be.domains)
 	}
 
 	eicPrefix := "enjin integrity checks"
