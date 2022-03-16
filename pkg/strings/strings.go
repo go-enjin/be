@@ -21,6 +21,20 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
+func StringsToKebabs(in ...string) (out []string) {
+	for _, i := range in {
+		out = append(out, strcase.ToKebab(i))
+	}
+	return
+}
+
+func LowerStrings(in ...string) (out []string) {
+	for _, i := range in {
+		out = append(out, strings.ToLower(i))
+	}
+	return
+}
+
 func StringInStrings(src string, dst ...string) bool {
 	for _, v := range dst {
 		if src == v {
