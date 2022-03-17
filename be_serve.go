@@ -25,6 +25,13 @@ import (
 	"github.com/go-enjin/be/pkg/theme"
 )
 
+func (e *Enjin) ServeBasic401(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("WWW-Authenticate", "Basic")
+	w.WriteHeader(http.StatusUnauthorized)
+	_, _ = w.Write([]byte("401 - Unauthorized"))
+}
+
 func (e *Enjin) Serve403(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusForbidden)
@@ -59,7 +66,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 			if ctx, r, ok = prh.RestrictServePage(ctx, w, r); !ok {
 				addr, _ := net.GetIpFromRequest(r)
 				log.WarnF("[restricted] permission denied %v for: %v", addr, r.URL.Path)
-				e.Serve403(w, r)
+				e.ServeBasic401(w, r)
 				return
 			}
 		}
@@ -79,7 +86,7 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 			if r, ok = prh.RestrictServeData(data, mime, w, r); !ok {
 				addr, _ := net.GetIpFromRequest(r)
 				log.WarnF("[restricted] permission denied %v for: %v", addr, r.URL.Path)
-				e.Serve403(w, r)
+				e.ServeBasic401(w, r)
 				return
 			}
 		}
