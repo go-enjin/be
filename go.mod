@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/BurntSushi/toml v1.0.0
+	github.com/abbot/go-http-auth v0.4.0
 	github.com/felixge/httpsnoop v1.0.2
 	github.com/fvbommel/sortorder v1.0.2
 	github.com/gabriel-vasile/mimetype v1.4.0
@@ -17,6 +18,7 @@ require (
 	github.com/polds/logrus-papertrail-hook v0.0.0-20180214143432-bcfe7b72c1a4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/tdewolff/minify/v2 v2.10.0
+	github.com/tg123/go-htpasswd v1.2.0
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	github.com/yookoala/realpath v1.0.0
@@ -30,6 +32,7 @@ require (
 )
 
 require (
+	github.com/GehirnInc/crypt v0.0.0-20200316065508-bb7000b8a962 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
