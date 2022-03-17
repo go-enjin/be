@@ -27,5 +27,9 @@ type PageContextModifier interface {
 }
 
 type PageRestrictionHandler interface {
-	RestrictServePage(ctx context.Context, w http.ResponseWriter, r *http.Request) (out context.Context, allow bool)
+	RestrictServePage(ctx context.Context, w http.ResponseWriter, r *http.Request) (co context.Context, ro *http.Request, allow bool)
+}
+
+type DataRestrictionHandler interface {
+	RestrictServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request) (out *http.Request, allow bool)
 }

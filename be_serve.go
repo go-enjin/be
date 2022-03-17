@@ -56,8 +56,9 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	for _, f := range e.be.features {
 		if prh, ok := f.(feature.PageRestrictionHandler); ok {
 			log.DebugF("checking restricted pages with: %v", f.Tag())
-			if ctx, ok = prh.RestrictServePage(ctx, w, r); !ok {
-				log.WarnF("access denied to: %v", r.URL.Path)
+			if ctx, r, ok = prh.RestrictServePage(ctx, w, r); !ok {
+				addr, _ := net.GetIpFromRequest(r)
+				log.WarnF("[restricted] permission denied %v for: %v", addr, r.URL.Path)
 				e.Serve403(w, r)
 				return
 			}
@@ -72,6 +73,18 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 }
 
 func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request) {
+	for _, f := range e.be.features {
+		if prh, ok := f.(feature.DataRestrictionHandler); ok {
+			log.DebugF("checking restricted data with: %v", f.Tag())
+			if r, ok = prh.RestrictServeData(data, mime, w, r); !ok {
+				addr, _ := net.GetIpFromRequest(r)
+				log.WarnF("[restricted] permission denied %v for: %v", addr, r.URL.Path)
+				e.Serve403(w, r)
+				return
+			}
+		}
+	}
+
 	// only one translation allowed, non-feature translators take precedence
 	basicMime := beStrings.GetBasicMime(mime)
 	if fn, ok := e.be.translators[basicMime]; ok {
