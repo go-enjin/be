@@ -454,6 +454,10 @@ func (f *Feature) getRestrictionGroups(r *http.Request) (groups []string) {
 			groups = append(groups, "users")
 		}
 	}
+	if len(groups) == 0 {
+		// default to public if groups found
+		groups = append(groups, "public")
+	}
 	return
 }
 
