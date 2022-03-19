@@ -428,7 +428,7 @@ func (f *Feature) checkRequestIgnored(r *http.Request) (ignore bool) {
 	return
 }
 
-func (f *Feature) getRestrictionGroups(r *http.Request) (groups []string) {
+func (f *Feature) getRestrictionGroups(r *http.Request, restrictAll bool) (groups []string) {
 	urlPath := net.TrimQueryParams(r.URL.Path)
 	lup := len(urlPath)
 	var sortPaths []string
@@ -449,7 +449,7 @@ func (f *Feature) getRestrictionGroups(r *http.Request) (groups []string) {
 			break
 		}
 	}
-	if f.restrictAllPages {
+	if restrictAll {
 		if !beStrings.StringInStrings("users", groups...) {
 			groups = append(groups, "users")
 		}
@@ -471,7 +471,7 @@ func (f *Feature) RestrictServePage(ctx beContext.Context, w http.ResponseWriter
 		return
 	}
 
-	restricted := f.getRestrictionGroups(r)
+	restricted := f.getRestrictionGroups(r, f.restrictAllPages)
 
 	if ctx.Has("BasicAuthGroups") {
 		for _, group := range ctx.StringOrStrings("BasicAuthGroups") {
@@ -557,7 +557,7 @@ func (f *Feature) RestrictServeData(data []byte, mime string, w http.ResponseWri
 
 	if !allow {
 		// check for any restriction groups
-		if restricted := f.getRestrictionGroups(r); len(restricted) > 0 {
+		if restricted := f.getRestrictionGroups(r, f.restrictAllData); len(restricted) > 0 {
 			if beStrings.StringInStrings("public", restricted...) {
 				// public requires no auth
 				allow = true
