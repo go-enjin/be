@@ -438,7 +438,6 @@ func (f *Feature) getRestrictionGroups(r *http.Request) (groups []string) {
 	sort.Slice(sortPaths, func(i, j int) bool {
 		return len(sortPaths[i]) > len(sortPaths[j])
 	})
-	log.DebugF("sortPaths: %v", sortPaths)
 	for _, path := range sortPaths {
 		lp := len(path)
 		if lp <= lup && urlPath[0:lp] == path {
