@@ -558,15 +558,23 @@ func (f *Feature) RestrictServeData(data []byte, mime string, w http.ResponseWri
 	if !allow {
 		// check for any restriction groups
 		if restricted := f.getRestrictionGroups(r); len(restricted) > 0 {
-			if authInfo != nil && authInfo.Authenticated {
-				userGroups := f.groupsProvider(authInfo.Username)
-				for _, group := range restricted {
-					if beStrings.StringInStrings(group, "public", "user", "users") || beStrings.StringInStrings(group, userGroups...) {
-						allow = true
-						break
+			if beStrings.StringInStrings("public", restricted...) {
+				// public requires no auth
+				allow = true
+			} else {
+				if authInfo != nil && authInfo.Authenticated {
+					userGroups := f.groupsProvider(authInfo.Username)
+					for _, group := range restricted {
+						if beStrings.StringInStrings(group, "user", "users") || beStrings.StringInStrings(group, userGroups...) {
+							allow = true
+							break
+						}
 					}
 				}
 			}
+		} else {
+			// no groups found, default is "public"
+			allow = true
 		}
 	}
 
