@@ -46,7 +46,14 @@ var (
 	_ feature.DataRestrictionHandler = (*Feature)(nil)
 )
 
-type IgnoreRequestFn = func(r *http.Request) (ignore bool)
+type IgnoreRequestFn func(r *http.Request) (ignore bool)
+
+type SecretProvider func(user string, realm string) string
+
+type GroupsProvider interface {
+	IsUserInGroup(user string, group string) bool
+	GetUserGroups(user string) []string
+}
 
 const Tag feature.Tag = "basic-auth"
 
@@ -67,8 +74,8 @@ type Feature struct {
 	envUsers  map[string]string
 	envGroup  map[string][]string
 
-	htpFiles map[string]auth.SecretProvider
-	htGroups map[string]*htpasswd.HTGroup
+	secretProviders map[string]SecretProvider
+	groupsProviders map[string]GroupsProvider
 
 	authenticator *auth.BasicAuth
 }
@@ -89,6 +96,9 @@ type MakeFeature interface {
 
 	Htpasswd(paths ...string) MakeFeature
 	Htgroups(paths ...string) MakeFeature
+
+	AddSecretProvider(name string, fn SecretProvider) MakeFeature
+	AddGroupsProvider(name string, fn GroupsProvider) MakeFeature
 
 	EnableEnv(enabled bool) MakeFeature
 	AddEnvUser(name, password string) MakeFeature
@@ -161,15 +171,31 @@ func (f *Feature) IgnoreRequestFunc(fn IgnoreRequestFn) MakeFeature {
 
 func (f *Feature) Htpasswd(paths ...string) MakeFeature {
 	for _, path := range paths {
-		f.htpFiles[path] = nil
+		f.secretProviders[path] = nil
 	}
 	return f
 }
 
 func (f *Feature) Htgroups(paths ...string) MakeFeature {
 	for _, path := range paths {
-		f.htGroups[path] = nil
+		f.groupsProviders[path] = nil
 	}
+	return f
+}
+
+func (f *Feature) AddSecretProvider(name string, fn SecretProvider) MakeFeature {
+	if _, ok := f.secretProviders[name]; ok {
+		log.FatalF("overwriting secret provider (%v) is not allowed", name)
+	}
+	f.secretProviders[name] = fn
+	return f
+}
+
+func (f *Feature) AddGroupsProvider(name string, fn GroupsProvider) MakeFeature {
+	if _, ok := f.groupsProviders[name]; ok {
+		log.FatalF("overwriting groups provider (%v) is not allowed", name)
+	}
+	f.groupsProviders[name] = fn
 	return f
 }
 
@@ -222,8 +248,8 @@ func (f *Feature) AddEnvUserGroups(name string, groups ...string) MakeFeature {
 
 func (f *Feature) Init(this interface{}) {
 	f.CFeature.Init(this)
-	f.htpFiles = make(map[string]auth.SecretProvider)
-	f.htGroups = make(map[string]*htpasswd.HTGroup)
+	f.secretProviders = make(map[string]SecretProvider)
+	f.groupsProviders = make(map[string]GroupsProvider)
 	f.authenticator = nil
 	f.realm = "Restricted Content"
 	f.envUsers = make(map[string]string)
@@ -304,26 +330,26 @@ func (f *Feature) Startup(ctx *cli.Context) (err error) {
 	f.authenticator = auth.NewBasicAuthenticator(realm, f.secretsProvider)
 
 	htpFiles := ctx.StringSlice("restrict-basic-htpasswd")
-	for path, _ := range f.htpFiles {
+	for path, _ := range f.secretProviders {
 		if !beStrings.StringInStrings(path, htpFiles...) {
 			htpFiles = append(htpFiles, path)
 		}
 	}
 
 	for _, path := range htpFiles {
-		f.htpFiles[path] = auth.HtpasswdFileProvider(path)
+		f.secretProviders[path] = SecretProvider(auth.HtpasswdFileProvider(path))
 		log.DebugF("loaded htpasswd file: %v", path)
 	}
 
 	htGroups := ctx.StringSlice("restrict-basic-htgroups")
-	for path, _ := range f.htGroups {
+	for path, _ := range f.groupsProviders {
 		if !beStrings.StringInStrings(path, htGroups...) {
 			htGroups = append(htGroups, path)
 		}
 	}
 
 	for _, path := range htGroups {
-		if f.htGroups[path], err = htpasswd.NewGroups(path, nil); err != nil {
+		if f.groupsProviders[path], err = htpasswd.NewGroups(path, nil); err != nil {
 			return
 		}
 		log.DebugF("loaded htgroups file: %v", path)
@@ -613,7 +639,7 @@ func (f *Feature) groupsProvider(user string) (groups []string) {
 			}
 		}
 	}
-	for _, htg := range f.htGroups {
+	for _, htg := range f.groupsProviders {
 		for _, group := range htg.GetUserGroups(user) {
 			group = strcase.ToKebab(group)
 			if !beStrings.StringInStrings(group, groups...) {
@@ -632,7 +658,7 @@ func (f *Feature) secretsProvider(user, realm string) (secret string) {
 			return
 		}
 	}
-	for file, htp := range f.htpFiles {
+	for file, htp := range f.secretProviders {
 		if secret = htp(user, realm); secret != "" {
 			log.DebugF("%v provided user %v", file, user)
 			return
