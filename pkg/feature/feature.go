@@ -41,25 +41,29 @@ type MakeFeature interface {
 }
 
 type CFeature struct {
-	This interface{}
-	Ctx  context.Context
+	this interface{}
+	ctx  context.Context
 
 	sync.RWMutex
 }
 
 func (f *CFeature) Init(this interface{}) {
-	f.This = this
-	f.Ctx = context.New()
+	f.this = this
+	f.ctx = context.New()
 }
 
 func (f *CFeature) Tag() (tag Tag) {
 	return NotImplemented
 }
 
+func (f *CFeature) This() (this interface{}) {
+	return f.this
+}
+
 func (f *CFeature) Self() (self Feature) {
 	var ok bool
-	if self, ok = f.This.(Feature); !ok {
-		log.FatalF("feature not a feature: %T %+v", f.This, f.This)
+	if self, ok = f.this.(Feature); !ok {
+		log.FatalF("feature not a feature: %T %+v", f.this, f.this)
 	}
 	return
 }
@@ -74,7 +78,7 @@ func (f *CFeature) Depends() (deps Tags) {
 }
 
 func (f *CFeature) Context() (ctx context.Context) {
-	ctx = f.Ctx.Copy()
+	ctx = f.ctx.Copy()
 	return
 }
 
