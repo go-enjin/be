@@ -46,9 +46,10 @@ func TrimQueryParams(path string) string {
 }
 
 func TrimTrailingSlash(url string) string {
-	lu := len(url)
-	if url[lu-1] == '/' {
-		url = url[0 : lu-1]
+	if lu := len(url); lu > 0 {
+		if url[lu-1] == '/' {
+			url = url[0 : lu-1]
+		}
 	}
 	return url
 }
