@@ -76,15 +76,16 @@ func Cmd(name string, argv ...string) (stdout, stderr string, status int, err er
 	cmd.Stdout = &ob
 	cmd.Stderr = &eb
 
-	if err = cmd.Run(); err != nil {
-		if exitError, ok := err.(*exec.ExitError); ok {
-			status = exitError.ExitCode()
-		}
-		return
-	}
+	err = cmd.Run()
 
 	stdout = ob.String()
 	stderr = eb.String()
+
+	if err != nil {
+		if exitError, ok := err.(*exec.ExitError); ok {
+			status = exitError.ExitCode()
+		}
+	}
 	return
 }
 
