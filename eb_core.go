@@ -117,5 +117,16 @@ func (eb *EnjinBuilder) resolveFeatureDeps() (err error) {
 		}
 		found = append(found, f.Tag())
 	}
+	for _, c := range eb.consoles {
+		if deps := c.Depends(); len(deps) > 0 {
+			for _, d := range deps {
+				if !found.Has(d) {
+					err = fmt.Errorf("%v is missing dependency: %v", c.Tag(), d)
+					return
+				}
+			}
+		}
+		found = append(found, c.Tag())
+	}
 	return
 }

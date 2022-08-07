@@ -42,6 +42,7 @@ type EnjinBuilder struct {
 	features     []feature.Feature
 	headers      []headers.ModifyHeadersFn
 	domains      []string
+	consoles     map[feature.Tag]feature.Console
 	processors   map[string]feature.ReqProcessFn
 	translators  map[string]feature.TranslateOutputFn
 	transformers map[string]feature.TransformOutputFn
@@ -59,6 +60,7 @@ func New() (be *EnjinBuilder) {
 	be.features = make([]feature.Feature, 0)
 	be.headers = make([]headers.ModifyHeadersFn, 0)
 	be.domains = make([]string, 0)
+	be.consoles = make(map[feature.Tag]feature.Console)
 	be.processors = make(map[string]feature.ReqProcessFn)
 	be.translators = make(map[string]feature.TranslateOutputFn)
 	be.transformers = make(map[string]feature.TransformOutputFn)
@@ -106,7 +108,14 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 
 	for _, f := range eb.features {
 		if err := f.Self().Build(eb); err != nil {
-			log.FatalF("%v", err)
+			log.FatalF("feature [%v] - %v", f.Tag(), err)
+			return nil
+		}
+	}
+
+	for tag, console := range eb.consoles {
+		if err := console.Build(eb); err != nil {
+			log.FatalF("console [%v] - %v", tag, err)
 			return nil
 		}
 	}
@@ -169,5 +178,6 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 			EnvVars: eb.MakeEnvKeys("SUMS_INTEGRITY_" + strings.ToUpper(globals.BinHash)),
 		},
 	)
+
 	return newEnjin(eb)
 }
