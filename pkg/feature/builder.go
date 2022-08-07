@@ -34,6 +34,9 @@ type Builder interface {
 	// AddFlags adds custom command line flags
 	AddFlags(flags ...cli.Flag) Builder
 
+	// AddCommands adds custom command line commands
+	AddCommands(commands ...*cli.Command) Builder
+
 	// AddFeature includes the given feature within the built Enjin
 	AddFeature(f Feature) Builder
 
