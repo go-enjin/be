@@ -37,6 +37,9 @@ type Builder interface {
 	// AddCommands adds custom command line commands
 	AddCommands(commands ...*cli.Command) Builder
 
+	// AddConsole adds custom command line go-curses consoles (ctk.Window)
+	AddConsole(c Console) Builder
+
 	// AddFeature includes the given feature within the built Enjin
 	AddFeature(f Feature) Builder
 
