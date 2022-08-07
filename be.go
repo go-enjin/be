@@ -62,72 +62,41 @@ type Enjin struct {
 
 	debug bool
 
-	be     *EnjinBuilder
+	eb     *EnjinBuilder
 	cli    *cli.App
 	router *chi.Mux
 }
 
-func newEnjin(be *EnjinBuilder) *Enjin {
-	r := &Enjin{
-		be: be,
+func newEnjin(eb *EnjinBuilder) *Enjin {
+	be := &Enjin{
+		eb: eb,
 		cli: &cli.App{
-			Name:    globals.BinName,
-			Usage:   globals.Summary,
-			Version: globals.BuildVersion(),
-			Flags:   be.flags,
+			Name:     globals.BinName,
+			Usage:    globals.Summary,
+			Version:  globals.BuildVersion(),
+			Flags:    eb.flags,
+			Commands: eb.commands,
 		},
 		router: chi.NewRouter(),
 	}
-	r.cli.Action = r.Action
+	be.initConsoles()
+	be.cli.Action = be.webServicesAction
 	cli.VersionPrinter = func(c *cli.Context) {
 		fmt.Printf("%s %s\n", globals.BinName, c.App.Version)
 	}
-	return r
+	return be
 }
 
-func (e *Enjin) Action(ctx *cli.Context) (err error) {
-	if len(e.be.theming) == 0 {
-		err = fmt.Errorf("builder error: at least one theme is required")
-		return
-	}
-	e.port = ctx.Int("port")
-	e.listen = ctx.String("listen")
-	e.debug = ctx.Bool("debug")
-	e.prefix = ctx.String("prefix")
-	e.prefix = strings.ToLower(e.prefix)
-	e.production = e.prefix == "" || e.prefix == "prd"
-	if e.production {
-		e.prefix = ""
-		e.debug = false
-	}
-	if e.debug {
-		log.Config.LogLevel = log.LevelDebug
-		log.Config.Apply()
-	} else if ctx.Bool("quiet") {
-		log.Config.LogLevel = log.LevelWarn
-		log.Config.Apply()
-	}
-	middleware.DefaultLogger = func(next http.Handler) http.Handler {
-		return handlers.LoggingHandler(log.InfoWriter(), next)
-	}
-	deny.DenyDuration = ctx.Int64("deny-duration")
-	for _, f := range e.be.features {
+func (e *Enjin) startupFeatures(ctx *cli.Context) (err error) {
+	for _, f := range e.eb.features {
 		if err = f.Startup(ctx); err != nil {
 			return
 		}
 	}
+	return
+}
 
-	if domains := ctx.StringSlice("domain"); domains != nil && len(domains) > 0 {
-		for _, domain := range domains {
-			if domain != "" && !beStrings.StringInStrings(domain, e.be.domains...) {
-				e.be.domains = append(e.be.domains, domains...)
-			}
-		}
-	}
-	if len(e.be.domains) > 0 {
-		log.InfoF("listening for domains: %v", e.be.domains)
-	}
-
+func (e *Enjin) startupIntegrityChecks(ctx *cli.Context) (err error) {
 	eicPrefix := "enjin integrity checks"
 	eicLogMsg := func(status, format string, argv ...interface{}) (msg string) {
 		msgFmt := fmt.Sprintf("%v %v: %v", eicPrefix, status, format)
@@ -138,7 +107,7 @@ func (e *Enjin) Action(ctx *cli.Context) (err error) {
 		e = fmt.Errorf(eicLogMsg("failed", format, argv...))
 		return
 	}
-	if e.be.slugsums {
+	if e.eb.slugsums {
 		if slug.SlugsumsPresent() {
 			var slugMap slug.ShaMap
 			var imposters, extraneous, validated []string
@@ -202,10 +171,60 @@ func (e *Enjin) Action(ctx *cli.Context) (err error) {
 		}
 	}
 
-	return e.Startup()
+	return
 }
 
-func (e *Enjin) Startup() (err error) {
+func (e *Enjin) webServicesAction(ctx *cli.Context) (err error) {
+	if len(e.eb.theming) == 0 {
+		err = fmt.Errorf("builder error: at least one theme is required")
+		return
+	}
+	e.port = ctx.Int("port")
+	e.listen = ctx.String("listen")
+	e.debug = ctx.Bool("debug")
+	e.prefix = ctx.String("prefix")
+	e.prefix = strings.ToLower(e.prefix)
+	e.production = e.prefix == "" || e.prefix == "prd"
+	if e.production {
+		e.prefix = ""
+		e.debug = false
+	}
+	if e.debug {
+		log.Config.LogLevel = log.LevelDebug
+		log.Config.Apply()
+	} else if ctx.Bool("quiet") {
+		log.Config.LogLevel = log.LevelWarn
+		log.Config.Apply()
+	}
+
+	middleware.DefaultLogger = func(next http.Handler) http.Handler {
+		return handlers.LoggingHandler(log.InfoWriter(), next)
+	}
+	deny.DenyDuration = ctx.Int64("deny-duration")
+
+	if err = e.startupFeatures(ctx); err != nil {
+		return
+	}
+
+	if err = e.startupIntegrityChecks(ctx); err != nil {
+		return
+	}
+
+	if domains := ctx.StringSlice("domain"); domains != nil && len(domains) > 0 {
+		for _, domain := range domains {
+			if domain != "" && !beStrings.StringInStrings(domain, e.eb.domains...) {
+				e.eb.domains = append(e.eb.domains, domains...)
+			}
+		}
+	}
+	if len(e.eb.domains) > 0 {
+		log.InfoF("listening for domains: %v", e.eb.domains)
+	}
+
+	return e.startupWebServices()
+}
+
+func (e *Enjin) startupWebServices() (err error) {
 	deny.DenyWordPressPaths()
 
 	c := make(chan os.Signal, 10)
@@ -218,7 +237,7 @@ func (e *Enjin) Startup() (err error) {
 
 	log.DebugF(e.String())
 
-	for _, f := range e.be.features {
+	for _, f := range e.eb.features {
 		if rm, ok := f.(feature.RequestModifier); ok {
 			log.DebugF("including %v request modifier middleware", f.Tag())
 			e.router.Use(func(next http.Handler) http.Handler {
@@ -243,7 +262,7 @@ func (e *Enjin) Startup() (err error) {
 	// theme static files
 	e.router.Use(e.themeMiddleware)
 
-	for _, f := range e.be.features {
+	for _, f := range e.eb.features {
 		if mf, ok := f.(feature.Middleware); ok {
 			if mw := mf.Use(e); mw != nil {
 				// log.DebugF("including %v feature middleware", f.Tag())
@@ -252,14 +271,14 @@ func (e *Enjin) Startup() (err error) {
 		}
 	}
 
-	for _, f := range e.be.features {
+	for _, f := range e.eb.features {
 		if hm, ok := f.(feature.HeadersModifier); ok {
 			log.DebugF("including %v use-after modify headers middleware", f.Tag())
 			e.router.Use(headers.ModifyAfterUseMiddleware(hm.ModifyHeaders))
 		}
 	}
 
-	for _, f := range e.be.features {
+	for _, f := range e.eb.features {
 		if proc, ok := f.(feature.Processor); ok {
 			log.DebugF("including %v processor middleware", f.Tag())
 			e.router.Use(func(next http.Handler) http.Handler {
@@ -270,7 +289,7 @@ func (e *Enjin) Startup() (err error) {
 		}
 	}
 
-	for route, processor := range e.be.processors {
+	for route, processor := range e.eb.processors {
 		log.DebugF("including enjin %v route processor middleware", route)
 		e.router.Use(func(next http.Handler) http.Handler {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -286,7 +305,7 @@ func (e *Enjin) Startup() (err error) {
 
 	e.router.Use(e.pagesMiddleware)
 
-	for _, f := range e.be.features {
+	for _, f := range e.eb.features {
 		if mf, ok := f.(feature.Middleware); ok {
 			if err = mf.Apply(e); err != nil {
 				return
@@ -314,7 +333,7 @@ func (e *Enjin) Startup() (err error) {
 }
 
 func (e *Enjin) Shutdown() {
-	for _, f := range e.be.features {
+	for _, f := range e.eb.features {
 		f.Shutdown()
 	}
 	e.Notify("web process shutdown")

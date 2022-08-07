@@ -44,9 +44,9 @@ func (e *Enjin) ServerName() (name string) {
 }
 
 func (e *Enjin) GetTheme() (t *theme.Theme, err error) {
-	tName := e.be.context.String("Theme", e.be.theme)
+	tName := e.eb.context.String("Theme", e.eb.theme)
 	var ok bool
-	if t, ok = e.be.theming[tName]; !ok {
+	if t, ok = e.eb.theming[tName]; !ok {
 		err = fmt.Errorf(`theme not found: "%v" %v`, tName, e.ThemeNames())
 		return
 	}
@@ -54,7 +54,7 @@ func (e *Enjin) GetTheme() (t *theme.Theme, err error) {
 }
 
 func (e *Enjin) ThemeNames() (names []string) {
-	for name := range e.be.theming {
+	for name := range e.eb.theming {
 		names = append(names, name)
 	}
 	sort.Sort(sortorder.Natural(names))
@@ -66,7 +66,7 @@ func (e *Enjin) Prefix() (prefix string) {
 }
 
 func (e *Enjin) Context() (ctx context.Context) {
-	ctx = e.be.context.Copy()
+	ctx = e.eb.context.Copy()
 	if e.debug {
 		ctx.Set("Debug", true)
 	}
@@ -77,8 +77,8 @@ func (e *Enjin) Context() (ctx context.Context) {
 	} else {
 		ctx.Set("PrefixLabel", "["+strings.ToUpper(e.prefix)+"] ")
 	}
-	tName := ctx.String("Theme", e.be.theme)
-	if _, ok := e.be.theming[tName]; ok {
+	tName := ctx.String("Theme", e.eb.theme)
+	if _, ok := e.eb.theming[tName]; ok {
 		ctx.Set("Theme", tName)
 	} else {
 		if tNames := e.ThemeNames(); len(tNames) > 0 {

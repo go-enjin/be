@@ -53,14 +53,14 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	ctx := e.Context()
 	ctx.Set("BaseUrl", net.BaseURL(r))
 	ctx.Apply(p.Context.Copy())
-	for _, f := range e.be.features {
+	for _, f := range e.eb.features {
 		if s, ok := f.(feature.PageContextModifier); ok {
 			log.DebugF("filtering page context with: %v", f.Tag())
 			ctx = s.FilterPageContext(ctx, p.Context, r)
 		}
 	}
 
-	for _, f := range e.be.features {
+	for _, f := range e.eb.features {
 		if prh, ok := f.(feature.PageRestrictionHandler); ok {
 			log.DebugF("checking restricted pages with: %v", f.Tag())
 			if ctx, r, ok = prh.RestrictServePage(ctx, w, r); !ok {
@@ -80,7 +80,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 }
 
 func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request) {
-	for _, f := range e.be.features {
+	for _, f := range e.eb.features {
 		if prh, ok := f.(feature.DataRestrictionHandler); ok {
 			log.DebugF("checking restricted data with: %v", f.Tag())
 			if r, ok = prh.RestrictServeData(data, mime, w, r); !ok {
@@ -94,11 +94,11 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 
 	// only one translation allowed, non-feature translators take precedence
 	basicMime := beStrings.GetBasicMime(mime)
-	if fn, ok := e.be.translators[basicMime]; ok {
+	if fn, ok := e.eb.translators[basicMime]; ok {
 		data, mime = fn(data)
 		basicMime = beStrings.GetBasicMime(mime)
 	} else {
-		for _, f := range e.be.features {
+		for _, f := range e.eb.features {
 			if v, ok := f.(feature.OutputTranslator); ok {
 				// log.DebugF("checking output filter: %v", f.Tag())
 				if v.CanTranslate(mime) {
@@ -118,7 +118,7 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 	w.Header().Set("Content-Disposition", "inline")
 	w.Header().Set("Content-Type", mime)
 
-	for _, f := range e.be.features {
+	for _, f := range e.eb.features {
 		if tfr, ok := f.(feature.OutputTransformer); ok {
 			if tfr.CanTransform(mime, r) {
 				data = tfr.TransformOutput(mime, data)
@@ -127,9 +127,9 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 	}
 
 	// non-feature transformers happen after features
-	if fn, ok := e.be.transformers[mime]; ok {
+	if fn, ok := e.eb.transformers[mime]; ok {
 		data = fn(data)
-	} else if fn, ok := e.be.transformers[basicMime]; ok {
+	} else if fn, ok := e.eb.transformers[basicMime]; ok {
 		data = fn(data)
 	}
 

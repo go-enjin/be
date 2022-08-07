@@ -30,7 +30,7 @@ import (
 func (e *Enjin) requestFiltersMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		remoteAddr, _ := beNet.GetIpFromRequest(r)
-		for _, f := range e.be.features {
+		for _, f := range e.eb.features {
 			if rf, ok := f.(feature.RequestFilter); ok {
 				if err := rf.FilterRequest(r); err != nil {
 					log.WarnF("filtering request from: %v - %v", remoteAddr, err)
@@ -47,13 +47,13 @@ func (e *Enjin) requestFiltersMiddleware(next http.Handler) http.Handler {
 
 func (e *Enjin) domainsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if len(e.be.domains) > 0 {
+		if len(e.eb.domains) > 0 {
 			var err error
 			var host string
 			if host, _, err = net.SplitHostPort(r.Host); err != nil {
 				host = r.Host
 			}
-			if !beStrings.StringInStrings(host, e.be.domains...) {
+			if !beStrings.StringInStrings(host, e.eb.domains...) {
 				e.Serve404(w, r)
 				log.WarnF("ignoring request for unsupported domain: %v", host)
 				return
@@ -69,7 +69,7 @@ func (e *Enjin) headersMiddleware(next http.Handler) http.Handler {
 
 func (e *Enjin) modifyHeadersFn(request *http.Request, headers map[string]string) map[string]string {
 	headers["Server"] = e.ServerName()
-	for _, fn := range e.be.headers {
+	for _, fn := range e.eb.headers {
 		headers = fn(request, headers)
 	}
 	return headers
@@ -79,7 +79,7 @@ func (e *Enjin) pagesMiddleware(next http.Handler) http.Handler {
 	log.DebugF("including pages middleware")
 	return http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
 		path := request.URL.Path
-		if p, ok := e.be.pages[path]; ok {
+		if p, ok := e.eb.pages[path]; ok {
 			if err := e.ServePage(p, w, request); err == nil {
 				log.DebugF("page served: %v", path)
 				return
@@ -87,7 +87,7 @@ func (e *Enjin) pagesMiddleware(next http.Handler) http.Handler {
 				log.ErrorF("serve page err: %v", err)
 			}
 		}
-		// log.DebugF("not a page: %v, %v", path, e.be.pages)
+		// log.DebugF("not a page: %v, %v", path, e.eb.pages)
 		next.ServeHTTP(w, request)
 	})
 }
@@ -102,7 +102,7 @@ func (e *Enjin) themeMiddleware(next http.Handler) http.Handler {
 		var mime string
 		var name string
 		for _, k := range keys {
-			t := e.be.theming[k]
+			t := e.eb.theming[k]
 			if data, err = t.FileSystem.ReadFile(path); err == nil {
 				name = t.Name
 				mime, _ = t.FileSystem.MimeType(path)
