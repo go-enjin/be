@@ -60,6 +60,14 @@ func (eb *EnjinBuilder) AddFlags(flags ...cli.Flag) feature.Builder {
 	return eb
 }
 
+func (eb *EnjinBuilder) AddCommands(commands ...*cli.Command) feature.Builder {
+	eb.commands = append(
+		eb.commands,
+		commands...,
+	)
+	return eb
+}
+
 func (eb *EnjinBuilder) MakeEnvKey(name string) (key string) {
 	key = name
 	if globals.EnvPrefix != "" {

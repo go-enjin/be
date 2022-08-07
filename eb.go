@@ -34,6 +34,7 @@ var _ feature.Builder = &EnjinBuilder{}
 
 type EnjinBuilder struct {
 	flags        []cli.Flag
+	commands     cli.Commands
 	pages        map[string]*page.Page
 	context      context.Context
 	theme        string
@@ -51,6 +52,7 @@ func New() (be *EnjinBuilder) {
 	be = new(EnjinBuilder)
 	be.theme = globals.DefaultTheme
 	be.flags = make([]cli.Flag, 0)
+	be.commands = make(cli.Commands, 0)
 	be.pages = make(map[string]*page.Page)
 	be.context = context.New()
 	be.theming = make(map[string]*theme.Theme)
