@@ -44,7 +44,7 @@ type Builder interface {
 	// processing middleware
 	AddRouteProcessor(route string, processor ReqProcessFn) Builder
 
-	// AddOutputFilter adds the given output filter (for the given mime type)
+	// AddOutputTranslator adds the given output filter (for the given mime type)
 	AddOutputTranslator(mime string, filter TranslateOutputFn) Builder
 
 	// AddModifyHeadersFn adds the given headers.ModifyHeadersFn function to the
