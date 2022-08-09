@@ -23,6 +23,7 @@ import (
 	"github.com/go-curses/cdk"
 	"github.com/go-curses/ctk"
 	"github.com/iancoleman/strcase"
+	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/log"
 )
@@ -36,6 +37,7 @@ type Console interface {
 	Title() (title string)
 	Build(c Buildable) (err error)
 	Depends() (deps Tags)
+	Setup(ctx *cli.Context)
 	Prepare(app ctk.Application)
 	Startup(display cdk.Display)
 	Shutdown()
@@ -98,6 +100,9 @@ func (c *CConsole) Build(b Buildable) (err error) {
 
 func (c *CConsole) Depends() (deps Tags) {
 	return
+}
+
+func (c *CConsole) Setup(ctx *cli.Context) {
 }
 
 func (c *CConsole) Prepare(app ctk.Application) {
