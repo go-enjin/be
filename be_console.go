@@ -72,6 +72,8 @@ func (e *Enjin) consoleAction(ctx *cli.Context) (err error) {
 	ctkConsoleTag = feature.Tag(strcase.ToCamel(argv[0]))
 	if console, ok := e.eb.consoles[ctkConsoleTag]; !ok {
 		return cli.ShowCommandHelp(ctx, "console")
+	} else {
+		console.Setup(ctx)
 	}
 
 	if err = e.startupFeatures(ctx); err != nil {
