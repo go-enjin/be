@@ -28,6 +28,11 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 )
 
+var (
+	_ Console     = (*CConsole)(nil)
+	_ MakeConsole = (*CConsole)(nil)
+)
+
 type Console interface {
 	Tag() (tag Tag)
 	Init(this interface{})
