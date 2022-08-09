@@ -17,6 +17,7 @@
 package feature
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/go-enjin/be/pkg/log"
