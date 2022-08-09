@@ -18,11 +18,13 @@ package be
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/go-curses/cdk"
 	cenums "github.com/go-curses/cdk/lib/enums"
 	"github.com/go-curses/cdk/log"
 	"github.com/go-curses/ctk"
+	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
@@ -37,15 +39,21 @@ var (
 )
 
 func (e *Enjin) initConsoles() {
-	if len(e.eb.consoles) > 0 {
-		var included []feature.Tag
+	numConsoles := len(e.eb.consoles)
+	if numConsoles > 0 {
+		var included []string
 		for tag, _ := range e.eb.consoles {
-			included = append(included, tag)
+			included = append(included, tag.String())
+		}
+		sort.Strings(included)
+		var includedText string
+		for _, tag := range included {
+			includedText += "\n  - " + strcase.ToKebab(tag) + " (" + tag + ")"
 		}
 		e.cli.Commands = append(e.cli.Commands, &cli.Command{
 			Name:        "console",
 			Usage:       "go-curses console user interface",
-			Description: fmt.Sprintf("The following consoles are included within this build: %v", included),
+			Description: fmt.Sprintf("%d console(s) are included within this build:%v", numConsoles, includedText),
 			UsageText:   fmt.Sprintf("%v [global options] console <tag>", globals.BinName),
 			Action:      e.consoleAction,
 		})
@@ -61,8 +69,8 @@ func (e *Enjin) consoleAction(ctx *cli.Context) (err error) {
 		return cli.ShowCommandHelp(ctx, "console")
 	}
 
-	ctkConsoleTag = feature.Tag(argv[0])
-	if _, ok := e.eb.consoles[ctkConsoleTag]; !ok {
+	ctkConsoleTag = feature.Tag(strcase.ToCamel(argv[0]))
+	if console, ok := e.eb.consoles[ctkConsoleTag]; !ok {
 		return cli.ShowCommandHelp(ctx, "console")
 	}
 
