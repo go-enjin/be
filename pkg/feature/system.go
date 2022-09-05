@@ -20,6 +20,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/theme"
 )
@@ -42,4 +43,18 @@ type System interface {
 	Service
 
 	Router() (router *chi.Mux)
+}
+
+type Internals interface {
+	Features() (features []Feature)
+	Pages() (pages map[string]*page.Page)
+	Theme() (theme string)
+	Theming() (theming map[string]*theme.Theme)
+	Headers() (headers []headers.ModifyHeadersFn)
+	Domains() (domains []string)
+	Consoles() (consoles map[Tag]Console)
+	Processors() (processors map[string]ReqProcessFn)
+	Translators() (translators map[string]TranslateOutputFn)
+	Transformers() (transformers map[string]TransformOutputFn)
+	Slugsums() (enabled bool)
 }
