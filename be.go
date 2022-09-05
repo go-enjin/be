@@ -50,9 +50,11 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
-var _ feature.Runner = &Enjin{}
-var _ feature.System = &Enjin{}
-var _ feature.Service = &Enjin{}
+var (
+	_ feature.Runner    = &Enjin{}
+	_ feature.System    = &Enjin{}
+	_ feature.Internals = &Enjin{}
+)
 
 type Enjin struct {
 	port       int
