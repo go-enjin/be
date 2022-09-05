@@ -73,7 +73,7 @@ func (e *Enjin) consoleAction(ctx *cli.Context) (err error) {
 	if console, ok := e.eb.consoles[ctkConsoleTag]; !ok {
 		return cli.ShowCommandHelp(ctx, "console")
 	} else {
-		console.Setup(ctx)
+		console.Setup(ctx, e)
 	}
 
 	if err = e.startupFeatures(ctx); err != nil {
