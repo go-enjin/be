@@ -42,7 +42,7 @@ type Console interface {
 	Title() (title string)
 	Build(c Buildable) (err error)
 	Depends() (deps Tags)
-	Setup(ctx *cli.Context)
+	Setup(ctx *cli.Context, ei Internals)
 	Prepare(app ctk.Application)
 	Startup(display cdk.Display)
 	Shutdown()
@@ -107,7 +107,7 @@ func (c *CConsole) Depends() (deps Tags) {
 	return
 }
 
-func (c *CConsole) Setup(ctx *cli.Context) {
+func (c *CConsole) Setup(ctx *cli.Context, ei Internals) {
 }
 
 func (c *CConsole) Prepare(app ctk.Application) {
