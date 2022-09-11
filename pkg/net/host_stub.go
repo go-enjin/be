@@ -1,4 +1,4 @@
-//go:build !linux
+//go:build !linux && !darwin
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //
