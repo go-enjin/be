@@ -64,13 +64,13 @@ func New(path string, fs fs.FileSystem) (t *Theme, err error) {
 	path = bePath.TrimSlashes(path)
 	t = new(Theme)
 	t.Path = path
-	t.Name = bePath.Base(path)
 	t.FileSystem = fs
 	err = t.init()
 	return
 }
 
 func (t *Theme) init() (err error) {
+	t.Name = bePath.Base(t.Path)
 	t.Layouts = make(map[string]*Layout)
 	t.Archetypes = make(map[string]*Archetype)
 	if t.FileSystem == nil {
