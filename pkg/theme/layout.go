@@ -16,8 +16,8 @@ package theme
 
 import (
 	"html/template"
-	"io/fs"
 	"os"
+	"strings"
 
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
@@ -45,19 +45,14 @@ func NewLayout(path string, efs beFs.FileSystem, fm template.FuncMap) (layout *L
 
 	var walker func(p string) (e error)
 	walker = func(p string) (e error) {
-		var entries []fs.DirEntry
-		if entries, e = efs.ReadDir(p); e != nil {
+		var entries []string
+		if entries, e = efs.ListAllFiles(p); e != nil {
 			return
 		}
 		for _, entry := range entries {
-			entryName := layout.Name + string(os.PathSeparator) + entry.Name()
-			entryPath := p + string(os.PathSeparator) + entry.Name()
-			if entry.IsDir() {
-				if e = walker(entryPath); e != nil {
-					return
-				}
-				continue
-			}
+			entryBase := strings.TrimPrefix(entry, p+"/")
+			entryName := layout.Name + string(os.PathSeparator) + entryBase
+			entryPath := entry
 			var data []byte
 			if data, e = efs.ReadFile(entryPath); e != nil {
 				log.ErrorF("error efs.ReadFile: %v", e)
