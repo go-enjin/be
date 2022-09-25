@@ -15,6 +15,7 @@
 package strings
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -92,5 +93,21 @@ func GetBasicMime(mime string) (basic string) {
 		return
 	}
 	basic = mime
+	return
+}
+
+var RxQuoteStringsOnly = regexp.MustCompile(`(?i)^(true|false|-?\d*[.,]?\d*)$`)
+
+// QuoteJsonValue will quote everything other than numbers or boolean text
+func QuoteJsonValue(in string) (out string) {
+	if RxQuoteStringsOnly.MatchString(in) {
+		return strings.ToLower(in)
+	}
+	out = fmt.Sprintf(`"%v"`, strings.ReplaceAll(in, `"`, `\"`))
+	return
+}
+
+func EscapeHtmlAttribute(unescaped string) (escaped string) {
+	escaped = strings.ReplaceAll(unescaped, `"`, "&quot;")
 	return
 }
