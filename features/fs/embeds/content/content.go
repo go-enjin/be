@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strings"
 
 	"github.com/fvbommel/sortorder"
 	"github.com/urfave/cli/v2"
@@ -44,9 +45,9 @@ const Tag feature.Tag = "EmbedContent"
 type Feature struct {
 	feature.CMiddleware
 
-	paths   map[string]string
-	setup   map[string]embed.FS
-	mounted map[string]fs.FileSystem
+	paths map[string]string
+	setup map[string]embed.FS
+	cache *page.Cache
 }
 
 type MakeFeature interface {
@@ -73,7 +74,7 @@ func (f *Feature) Init(this interface{}) {
 	f.CMiddleware.Init(this)
 	f.paths = make(map[string]string)
 	f.setup = make(map[string]embed.FS)
-	f.mounted = make(map[string]fs.FileSystem)
+	f.cache = page.NewCache()
 }
 
 func (f *Feature) Tag() (tag feature.Tag) {
@@ -81,58 +82,61 @@ func (f *Feature) Tag() (tag feature.Tag) {
 	return
 }
 
-func (f *Feature) listMountPoints() (mounts []string) {
+func (f *Feature) Build(_ feature.Buildable) (err error) {
+	var mounts []string
 	for mount, _ := range f.setup {
 		mounts = append(mounts, mount)
 	}
 	sort.Sort(sortorder.Natural(mounts))
-	return
-}
-
-func (f *Feature) Build(_ feature.Buildable) (err error) {
-	for _, mount := range f.listMountPoints() {
-		if _, ok := f.mounted[mount]; ok {
+	for _, mount := range mounts {
+		if f.cache.Mounted(mount) {
 			err = fmt.Errorf(`"%v" already mounted`, mount)
 			return
 		}
-		path := f.paths[mount]
 		var lfs fs.FileSystem
-		if lfs, err = beFsEmbed.New(path, f.setup[mount]); err != nil {
+		if lfs, err = beFsEmbed.New(f.paths[mount], f.setup[mount]); err != nil {
 			log.FatalF(`error mounting filesystem: %v`, err)
 			return nil
 		}
-		f.mounted[mount] = lfs
-		log.DebugF("mounted embed content filesystem on %v to %v", mount, path)
+		f.cache.Mount(mount, f.paths[mount], lfs)
+		log.DebugF("mounted embed content filesystem on %v to %v", mount, f.paths[mount])
 	}
 	return
 }
 
 func (f *Feature) Startup(ctx *cli.Context) (err error) {
+	f.cache.Rebuild()
 	return
 }
 
 func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
-	mounts := f.listMountPoints()
 	log.DebugF("including embed content %v middleware: %v", page.Extensions, f.setup)
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			path := net.TrimQueryParams(r.URL.Path)
-			for _, m := range mounts {
-				if pages, err := fs.FindAllFilePages(f.mounted[m], m, ""); err == nil {
-					for _, p := range pages {
-						if p.Url == path {
-							if err = s.ServePage(p, w, r); err == nil {
-								log.DebugF("embed content served: %v", path)
-								return
-							} else {
-								log.ErrorF("serve embed %v content: %v - error: %v", m, path, err)
-							}
-						}
-					}
-				}
+			if err := f.ServePath(path, s, w, r); err == nil {
+				return
 			}
 			// log.DebugF("not embed content: %v", path)
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func (f *Feature) ServePath(path string, s feature.System, w http.ResponseWriter, r *http.Request) (err error) {
+	path = net.TrimQueryParams(path)
+	path = strings.TrimSuffix(path, "/")
+	if path == "" {
+		path = "/"
+	}
+	if mount, mpath, pg, e := f.cache.Lookup(path); e == nil {
+		if err = s.ServePage(pg, w, r); err == nil {
+			log.DebugF("served embed %v content: %v", mount, mpath)
+			return
+		}
+		err = fmt.Errorf("serve embed %v content: %v - error: %v", mount, mpath, err)
+		return
+	}
+	err = fmt.Errorf("path not found")
+	return
 }

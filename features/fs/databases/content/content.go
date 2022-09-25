@@ -112,17 +112,29 @@ func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			path := net.TrimQueryParams(r.URL.Path)
-			for mount, table := range f.mounted {
-				if p, err := table.Get(path); err == nil {
-					if err := s.ServePage(p, w, r); err != nil {
-						log.ErrorF("error serving database content: %v", err)
-					} else {
-						log.DebugF("%v database content served: %v", mount, path)
-					}
-					return
-				}
+			if err := f.ServePath(path, s, w, r); err == nil {
+				return
+			} else if err.Error() != "path not found" {
+				log.ErrorF("%v", err)
+				s.Serve500(w, r)
+				return
 			}
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func (f *Feature) ServePath(path string, s feature.System, w http.ResponseWriter, r *http.Request) (err error) {
+	for mount, table := range f.mounted {
+		if p, e := table.Get(path); e == nil {
+			if ee := s.ServePage(p, w, r); ee != nil {
+				ee = fmt.Errorf("error serving database content: %v", ee)
+			} else {
+				log.DebugF("%v database content served: %v", mount, path)
+			}
+			return
+		}
+	}
+	err = fmt.Errorf("path not found")
+	return
 }

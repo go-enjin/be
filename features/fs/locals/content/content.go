@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strings"
 
 	"github.com/fvbommel/sortorder"
 	"github.com/urfave/cli/v2"
@@ -43,8 +44,8 @@ const Tag feature.Tag = "LocalContent"
 type Feature struct {
 	feature.CMiddleware
 
-	setup   map[string]string
-	mounted map[string]fs.FileSystem
+	setup map[string]string
+	cache *page.Cache
 }
 
 type MakeFeature interface {
@@ -69,7 +70,7 @@ func (f *Feature) MountPath(mount, path string) MakeFeature {
 func (f *Feature) Init(this interface{}) {
 	f.CMiddleware.Init(this)
 	f.setup = make(map[string]string)
-	f.mounted = make(map[string]fs.FileSystem)
+	f.cache = page.NewCache()
 }
 
 func (f *Feature) Tag() (tag feature.Tag) {
@@ -77,17 +78,14 @@ func (f *Feature) Tag() (tag feature.Tag) {
 	return
 }
 
-func (f *Feature) listMountPoints() (mounts []string) {
+func (f *Feature) Build(_ feature.Buildable) (err error) {
+	var mounts []string
 	for mount, _ := range f.setup {
 		mounts = append(mounts, mount)
 	}
 	sort.Sort(sortorder.Natural(mounts))
-	return
-}
-
-func (f *Feature) Build(_ feature.Buildable) (err error) {
-	for _, mount := range f.listMountPoints() {
-		if _, ok := f.mounted[mount]; ok {
+	for _, mount := range mounts {
+		if f.cache.Mounted(mount) {
 			err = fmt.Errorf(`"%v" already mounted`, mount)
 			return
 		}
@@ -97,38 +95,47 @@ func (f *Feature) Build(_ feature.Buildable) (err error) {
 			log.FatalF(`error mounting filesystem: %v`, err)
 			return nil
 		}
-		f.mounted[mount] = lfs
+		f.cache.Mount(mount, f.setup[mount], lfs)
 		log.DebugF("mounted local content filesystem on %v to %v", mount, path)
 	}
 	return
 }
 
 func (f *Feature) Startup(ctx *cli.Context) (err error) {
+	f.cache.Rebuild()
 	return
 }
 
 func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
-	mounts := f.listMountPoints()
 	log.DebugF("including local content %v middleware: %v", page.Extensions, f.setup)
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			path := net.TrimQueryParams(r.URL.Path)
-			for _, m := range mounts {
-				if pages, err := fs.FindAllFilePages(f.mounted[m], m, ""); err == nil {
-					for _, p := range pages {
-						if p.Url == path {
-							if err = s.ServePage(p, w, r); err == nil {
-								log.DebugF("local content served: %v", path)
-								return
-							} else {
-								log.ErrorF("serve local %v content: %v - error: %v", m, path, err)
-							}
-						}
-					}
-				}
+			if err := f.ServePath(path, s, w, r); err == nil {
+				return
+			} else if err.Error() != "path not found" {
+				log.ErrorF("local content error: %v", err)
 			}
-			// log.DebugF("not local content: %v", path)
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func (f *Feature) ServePath(path string, s feature.System, w http.ResponseWriter, r *http.Request) (err error) {
+	f.cache.Rebuild()
+	path = net.TrimQueryParams(path)
+	path = strings.TrimSuffix(path, "/")
+	if path == "" {
+		path = "/"
+	}
+	if mount, mpath, pg, e := f.cache.Lookup(path); e == nil {
+		if err = s.ServePage(pg, w, r); err == nil {
+			log.DebugF("served local %v content: %v", mount, mpath)
+			return
+		}
+		err = fmt.Errorf("serve local %v content: %v - error: %v", mount, mpath, err)
+		return
+	}
+	err = fmt.Errorf("path not found")
+	return
 }
