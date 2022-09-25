@@ -1,0 +1,6 @@
+{{ "<" | asHTML }}input
+{{- if .Input }} type="{{  .Input }}"{{- end -}}
+{{- if .Name  }} name="{{  .Name  }}"{{- end -}}
+{{- if .Value }} value="{{ .Value }}"{{- end -}}
+{{- if .Placeholder }} placeholder="{{ .Placeholder }}"{{- end -}}
+{{- template "partials/element-attributes.tmpl" . }}{{ if eq .Disabled "true" }} disabled{{ end -}}{{ if eq .Checked "true" }} checked{{ end -}} /{{- ">" | asHTML }}

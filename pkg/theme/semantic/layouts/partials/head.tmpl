@@ -1,0 +1,53 @@
+<head>
+  <title>{{ if .SiteTag }}{{ .SiteTag }}: {{ end }}{{ .Title }}</title>
+  <meta charset="utf-8" />
+  <meta name="robots" content="noindex" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+  <meta name="title" content="{{ .Title }}" />
+  <meta name="og:title" content="{{ .Title }}" />
+  <meta name="og:site_name" content="{{ .SiteName }}" />
+  <meta name="og:image" content="/media/logo-000.png" />
+  <meta name="og:property" content="website" />
+  <!-- <meta rel="canonical" content="http://localhost/{{ .Slug }}" /> -->
+  <meta property='twitter:card' content='{{ .Description }}' />
+  <!-- <meta property='twitter:site' content='@sitehandle' /> -->
+  <!-- <meta property='twitter:creator' content='@sitehandle' /> -->
+  <!-- <meta property='og:website' content='http://localhost' /> -->
+  <!-- <meta property='og:url' content='http://localhost/' /> -->
+  <meta name="description" content="{{ .Description }}" />
+  <style>
+    @keyframes loading {
+      from {
+        opacity: 1;
+        visibility: visible;
+      }
+      50% {
+        opacity: 0.5;
+      }
+      to {
+        opacity: 0;
+        visibility: hidden;
+        display: none;
+      }
+    }
+
+    body::after {
+      content: '';
+      display: flex;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #ffffff;
+      z-index: 1000;
+      animation: loading 0.34s 0.54s;
+      animation-fill-mode: forwards;
+    }
+  </style>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Source%20Sans%20Pro&amp;family=Source%20Serif%20Pro" />
+  <link rel="stylesheet" href="/fontawesome-free-6.2.0-web/css/all.css" />
+  <link rel="stylesheet" href="/css/semantic-enjin.css" />
+</head>

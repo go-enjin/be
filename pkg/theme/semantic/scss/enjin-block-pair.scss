@@ -1,0 +1,42 @@
+/* main pair block */
+
+[data-block-type='pair'] > .content > section {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  overflow: hidden;
+  flex-wrap: nowrap;
+  align-content: stretch;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+
+[data-block-type='pair'] > .content > section > :is(.first,.second) {
+  width: 50%;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+[data-block-type='pair'] > .content > section > :is(.first,.second) > .content.content {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+[data-block-type='pair'] > .content > section > .image:is(.first,.second) > .content {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+@media screen and (max-width: 768px) {
+  [data-block-type='pair'] > .content > section {
+    flex-direction: column;
+    gap: var(--page--flex--gap);
+  }
+  [data-block-type='pair'][data-pair-order='reverse'] > .content > section {
+    flex-direction: column-reverse;
+  }
+  [data-block-type='pair'] > .content > section > :is(.first,.second) {
+    width: 100%;
+  }
+}

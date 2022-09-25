@@ -1,0 +1,5 @@
+<samp
+        {{- if .Attributes -}}{{- range $k,$v := .Attributes }} {{ $k }}="{{ $v }}"{{- end -}}{{- end -}}
+>
+{{ .Text }}
+</samp>

@@ -1,0 +1,5 @@
+{{ template "partials/element-open.tmpl" . }}
+{{- range $item := .Items -}}
+    <li>{{ $item }}</li>
+{{- end -}}
+{{ template "partials/element-close.tmpl" . }}

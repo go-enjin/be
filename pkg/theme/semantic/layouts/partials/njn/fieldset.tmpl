@@ -1,0 +1,8 @@
+{{ template "partials/element-open.tmpl" . }}
+{{- if .Legend -}}
+    <legend>{{- range $legend := .Legend }}{{ $legend }}{{ end -}}</legend>
+{{- end -}}
+{{- range $field := .Fields -}}
+    {{ $field }}
+{{- end -}}
+{{ template "partials/element-close.tmpl" . }}

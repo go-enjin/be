@@ -1,0 +1,72 @@
+/* main footer */
+
+body > footer {
+  display: block;
+  background: var(--secondary--bg);
+  color:      var(--secondary--fg);
+}
+
+body > footer a:focus,
+body > footer a:visited,
+body > footer a:active,
+body > footer a:hover,
+body > footer a {
+  color:      var(--accent--fg);
+}
+
+#primary--footer {
+  padding: 25px;
+}
+
+#primary--footer > ul {
+  display: flex;
+  gap: var(--page--flex--gap);
+  flex-wrap: wrap;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: space-between;
+  padding-left: var(--page--column--padding);
+  padding-right: var(--page--column--padding);
+}
+
+#primary--footer > ul :is(a,span) {
+  display: block;
+}
+
+#primary--footer > ul > li > :is(a,span) {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+#primary--footer > ul ul {
+  display: inline-flex;
+  flex-direction: column;
+  flex-basis: 30%;
+  margin-top: 10px;
+}
+
+#primary--footer > ul ul li {
+  margin: 5px 10px;
+}
+
+#secondary--footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 25px;
+}
+
+#secondary--footer ul {
+  display: flex;
+  margin: 25px auto 10px auto;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+  gap: var(--page--flex--gap--sm);
+}
+
+#secondary--footer #copyright {
+  text-align: center;
+}

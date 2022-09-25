@@ -1,0 +1,32 @@
+<!-- custom theme -->
+{{ "<" | asHTML }}{{ if eq .HeadingCount 0}}header{{ else }}section{{ end }}
+        class='block'
+        id='{{ .Tag }}'
+        data-block-tag='{{ .Tag }}'
+        data-block-type='header'
+        data-block-profile='{{ .Profile }}'
+        data-block-padding='{{ .Padding }}'
+        data-block-margins='{{ .Margins }}'
+        data-block-jump-top='{{ .JumpTop }}'
+        data-block-jump-link='{{ .JumpLink }}'
+>
+  <div class='content'>
+    <h{{ .HeadingLevel }}>{{ .Heading }}</h{{ .HeadingLevel }}>
+    {{ if .JumpLink }}
+      <a class="jump-link" href="#{{ .Tag }}">
+        <span class="sr-only">permalink</span>
+      </a>
+    {{ end }}
+  </div>
+  {{ if .Nav }}
+  <nav>
+    <ul>
+      {{ range $item := .Nav }}
+      {{ if eq $item.Type "a" }}
+        <li><a href='{{ $item.Href }}'>{{ $item.Text }}</a></li>
+      {{ end }}
+      {{ end }}
+    </ul>
+  </nav>
+  {{ end }}
+{{ "<" | asHTML }}/{{ if eq .HeadingCount 0}}header{{ else }}section{{ end }}>

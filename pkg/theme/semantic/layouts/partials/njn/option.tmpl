@@ -1,0 +1,6 @@
+{{ "<" | asHTML }}option
+{{- if .Value }} value="{{ .Value }}"{{- end -}}
+{{- template "partials/element-attributes.tmpl" . -}}
+>
+{{- .Text -}}
+{{- "<" | asHTML }}/option>

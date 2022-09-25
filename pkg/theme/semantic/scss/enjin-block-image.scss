@@ -1,0 +1,292 @@
+:root {
+  --block--image--size--actual: 100%;
+  --block--image--size--sliver:  10px;
+  --block--image--size--thin:    100px; 
+  --block--image--size--banner:  200px;
+  --block--image--size--normal:  400px;
+  --block--image--size--tall:    600px;
+  --block--image--size--huge:    800px;
+
+  --block--image--fit:      cover;
+  --block--image--position: center center;
+  --block--image--size:     var(--block--image--size--normal);
+}
+
+:is(
+  [data-image-padding='none'],
+  [data-image~='nopad']
+):is(
+  [data-block-profile='outer--outer'],
+  [data-block-profile='outer--inner']
+) > .content {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.block > .content picture {
+  display: block;
+  overflow: hidden;
+}
+
+[data-block-type='image'] > .content > section {
+  display: flex;
+  justify-content: center;
+}
+
+[data-block-type='image'] > .content > section picture {
+  flex: 1 1 0px;
+}
+
+[data-image] > .content picture img,
+[data-block-type='image'] > .content picture img {
+  object-fit:      var(--block--image--fit);
+  object-position: var(--block--image--position);
+}
+
+[data-image]:not([data-image~='height']) > .content picture img,
+[data-image~='width']           > .content picture img,
+[data-block-type='image']       > .content picture img,
+[data-image-constraint='width'] > .content picture img {
+  width:      100%;
+  height:     auto;
+  min-height: var(--block--image--size);
+  max-height: var(--block--image--size);
+}
+
+[data-image~='height']           > .content picture img,
+[data-image-constraint='height'] > .content picture img {
+  height:    100%;
+  width:     auto;
+  min-width: 100%;
+  max-height: var(--block--image--size);
+}
+
+[data-image-size='actual'] > .content picture img { --block--image--size: var(--block--image--size--actual); }
+[data-image-size='sliver'] > .content picture img { --block--image--size: var(--block--image--size--sliver); }
+[data-image-size='thin']   > .content picture img { --block--image--size: var(--block--image--size--thin); }
+[data-image-size='banner'] > .content picture img { --block--image--size: var(--block--image--size--banner); }
+[data-image-size='normal'] > .content picture img { --block--image--size: var(--block--image--size--normal); }
+[data-image-size='tall']   > .content picture img { --block--image--size: var(--block--image--size--tall); }
+[data-image-size='huge']   > .content picture img { --block--image--size: var(--block--image--size--huge); }
+
+[data-image-fit='cover']      > .content picture img { --block--image--fit: cover; }
+[data-image-fit='fill']       > .content picture img { --block--image--fit: fill; }
+[data-image-fit='contain']    > .content picture img { --block--image--fit: contain; }
+[data-image-fit='none']       > .content picture img { --block--image--fit: none; }
+[data-image-fit='scale-down'] > .content picture img { --block--image--fit: scale-down; }
+
+[data-image-position='center']       > .content picture img { --block--image--position: center center; }
+[data-image-position='top']          > .content picture img { --block--image--position: top center;    }
+[data-image-position='top-left']     > .content picture img { --block--image--position: top left;      }
+[data-image-position='left']         > .content picture img { --block--image--position: left;          }
+[data-image-position='bottom-left']  > .content picture img { --block--image--position: bottom left;   }
+[data-image-position='bottom']       > .content picture img { --block--image--position: bottom;        }
+[data-image-position='bottom-right'] > .content picture img { --block--image--position: bottom right;  }
+[data-image-position='right']        > .content picture img { --block--image--position: right;         }
+[data-image-position='top-right']    > .content picture img { --block--image--position: top right;     }
+
+[data-image~='actual']     > .content picture img { --block--image--size: var(--block--image--size--actual); }
+[data-image~='sliver']     > .content picture img { --block--image--size: var(--block--image--size--sliver); }
+[data-image~='thin']       > .content picture img { --block--image--size: var(--block--image--size--thin); }
+[data-image~='banner']     > .content picture img { --block--image--size: var(--block--image--size--banner); }
+[data-image~='normal']     > .content picture img { --block--image--size: var(--block--image--size--normal); }
+[data-image~='tall']       > .content picture img { --block--image--size: var(--block--image--size--tall); }
+[data-image~='huge']       > .content picture img { --block--image--size: var(--block--image--size--huge); }
+[data-image~='cover']      > .content picture img { --block--image--fit: cover; }
+[data-image~='fill']       > .content picture img { --block--image--fit: fill; }
+[data-image~='contain']    > .content picture img { --block--image--fit: contain; }
+[data-image~='none']       > .content picture img { --block--image--fit: none; }
+[data-image~='scale-down'] > .content picture img { --block--image--fit: scale-down; }
+[data-image~='center']     > .content picture img { --block--image--position: center; }
+[data-image~='top']        > .content picture img { --block--image--position: top; }
+[data-image~='left']       > .content picture img { --block--image--position: left; }
+[data-image~='bottom']     > .content picture img { --block--image--position: bottom; }
+[data-image~='right']      > .content picture img { --block--image--position: right; }
+
+/* actual size position considerations */
+
+/* width actual positioned center */
+:is(
+  [data-image~='width'],
+  [data-image-constraint='width'],
+  [data-image]:not(
+    [data-image~='height'],
+    [data-image~='width'],
+    [data-image-constraint]
+  ),
+  :not([data-image-constraint]):not(
+    [data-image~='height'],
+    [data-image~='width'],
+  )
+):is(
+  :is(
+    [data-image~='actual'],
+    [data-image-size='actual']
+  ):not(
+    [data-image~='top'],
+    [data-image~='top-left'],
+    [data-image~='left'],
+    [data-image~='bottom-left'],
+    [data-image~='bottom'],
+    [data-image~='bottom-right'],
+    [data-image~='right'],
+    [data-image~='top-right'],
+    [data-image-position]
+  ),
+  [data-image~='center'],
+  [data-image-position='center']
+) > .content picture img {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* width actual positioned top */
+:is(
+  [data-image~='width'],
+  [data-image-constraint='width'],
+  [data-image]:not(
+    [data-image~='height'],
+    [data-image~='width'],
+    [data-image-constraint]
+  ),
+  :not([data-image-constraint]):not(
+    [data-image~='height'],
+    [data-image~='width'],
+  )
+):is(
+  [data-image~='top'],
+  [data-image-position='top']
+) > .content picture img {
+  top: 0;
+}
+
+/* width actual positioned left */
+:is(
+  [data-image~='width'],
+  [data-image-constraint='width'],
+  [data-image]:not(
+    [data-image~='height'],
+    [data-image~='width'],
+    [data-image-constraint]
+  ),
+  :not([data-image-constraint]):not(
+    [data-image~='height'],
+    [data-image~='width'],
+  )
+):is(
+  [data-image~='left'],
+  [data-image-position='left']
+) > .content picture img {
+  left: 0;
+}
+
+/* width actual positioned bottom */
+:is(
+  [data-image~='width'],
+  [data-image-constraint='width'],
+  [data-image]:not(
+    [data-image~='height'],
+    [data-image~='width'],
+    [data-image-constraint]
+  ),
+  :not([data-image-constraint]):not(
+    [data-image~='height'],
+    [data-image~='width'],
+  )
+):is(
+  [data-image~='bottom'],
+  [data-image-position='bottom']
+) > .content picture img {
+  bottom: 0;
+}
+
+/* width actual positioned right */
+:is(
+  [data-image~='width'],
+[data-image-constraint='width'],
+  [data-image]:not(
+    [data-image~='height'],
+    [data-image~='width']
+  ),
+  :not([data-image-constraint]):not(
+    [data-image~='height'],
+    [data-image~='width']
+  )
+):is(
+  [data-image~='right'],
+  [data-image-position='right']
+) > .content picture img {
+  right: -100%;
+  transform: translateX(-100%);
+}
+
+/* height actual positioned center */
+:is(
+  [data-image~='height'],
+  [data-image-constraint='height']
+):is(
+  :is(
+    [data-image~='actual'],
+    [data-image-size='actual']
+  ):not(
+    [data-image~='top'],
+    [data-image~='top-left'],
+    [data-image~='left'],
+    [data-image~='bottom-left'],
+    [data-image~='bottom'],
+    [data-image~='bottom-right'],
+    [data-image~='right'],
+    [data-image~='top-right'],
+    [data-image-position]
+  ),
+  [data-image~='center'],
+  [data-image-position='center']
+) > .content picture img {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* height actual positioned top */
+:is(
+  [data-image~='height'],
+  [data-image-constraint='height']
+):is(
+  [data-image~='top'],
+  [data-image-position='top']
+) > .content picture img {
+  top: 0;
+}
+
+/* height actual positioned left */
+:is(
+  [data-image~='height'],
+  [data-image-constraint='height']
+):is(
+  [data-image~='left'],
+  [data-image-position='left']
+) > .content picture img {
+  left: 0;
+}
+
+/* height actual positioned bottom */
+:is(
+  [data-image~='height'],
+  [data-image-constraint='height']
+):is(
+  [data-image~='bottom'],
+  [data-image-position='bottom']
+) > .content picture img {
+  bottom: 0;
+}
+
+/* height actual positioned right */
+:is(
+  [data-image~='height'],
+  [data-image-constraint='height']
+):is(
+  [data-image~='right'],
+  [data-image-position='right']
+) > .content picture img {
+  right: -100%;
+  transform: translateX(-100%);
+}

@@ -1,0 +1,18 @@
+/* main navigation block */
+
+[data-block-type='navigation'] > :is(ul,ol) {
+  display: flex;
+  min-height: 100px;
+  background: var(--style--bg);
+  color: var(--style--fg);
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+}
+
+[data-block-type='navigation'] > :is(ul,ol) > li {
+  padding-left: 25px;
+  padding-right: 25px;
+}

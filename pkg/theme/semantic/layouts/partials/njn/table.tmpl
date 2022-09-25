@@ -1,0 +1,37 @@
+<div class="auto-scroll-x">
+    <table
+            {{ template "partials/element-attributes.tmpl" . }}
+            {{- if .Options -}}
+                {{- if .Options.Sticky -}}
+                    {{- if .Options.Sticky.Head }} data-field-table-sticky-head="{{ .Options.Sticky.Head }}"{{ end -}}
+                    {{- if .Options.Sticky.Data }} data-field-table-sticky-data="{{ .Options.Sticky.Data }}"{{ end -}}
+                {{- end -}}
+            {{- end -}}
+    >
+        {{ if .Caption }}
+            <caption>{{ .Caption }}</caption>
+        {{ end }}
+        {{ if .Head }}
+            <thead>
+            <tr>
+                {{ range $h := .Head }}
+                    {{ template "partials/element.tmpl" $h }}
+                {{ end }}
+            </tr>
+            </thead>
+        {{ end }}
+        {{ if .Body }}
+            <tbody>
+            {{ range $r := .Body }}
+                {{ template "partials/element-open.tmpl" $r }}
+                {{- range $d := $r.Data }}
+                    {{ template "partials/element-open.tmpl" $d }}
+                    {{- $d.Data -}}
+                    {{ template "partials/element-close.tmpl" $d -}}
+                {{ end -}}
+                {{ template "partials/element-close.tmpl" $r -}}
+            {{ end }}
+            </tbody>
+        {{ end }}
+    </table>
+</div>
