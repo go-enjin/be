@@ -52,7 +52,7 @@ type EnjinBuilder struct {
 
 func New() (be *EnjinBuilder) {
 	be = new(EnjinBuilder)
-	be.theme = globals.DefaultTheme
+	be.theme = ""
 	be.flags = make([]cli.Flag, 0)
 	be.commands = make(cli.Commands, 0)
 	be.pages = make(map[string]*page.Page)
@@ -75,36 +75,22 @@ func (eb *EnjinBuilder) IgnoreSlugsums() *EnjinBuilder {
 	return eb
 }
 
-func (eb *EnjinBuilder) ExcludeDefaultTheme() *EnjinBuilder {
-	eb.context.Set("ExcludeDefaultTheme", true)
-	return eb
-}
-
 func (eb *EnjinBuilder) Build() feature.Runner {
 	if err := eb.resolveFeatureDeps(); err != nil {
 		log.FatalF("error resolving feature dependencies: %v", err)
 		return nil
 	}
 
-	if !eb.context.Bool("ExcludeDefaultTheme", false) {
-		if t, err := theme.NewDefault(); err != nil {
-			log.FatalF("error enabling default theme: %v", err)
-		} else {
-			eb.theming["_default"] = t
+	if eb.theme != "" {
+		if _, ok := eb.theming[eb.theme]; !ok {
+			log.FatalF("theme not found: %v", eb.theme)
 		}
 	}
-	delete(eb.context, "ExcludeDefaultTheme")
 
 	if eb.theme == "" {
-		if len(eb.theming) == 1 {
-			if _, ok := eb.theming["_default"]; ok {
-				eb.theme = "_default"
-			} else {
-				for k, _ := range eb.theming {
-					eb.theme = k
-					break
-				}
-			}
+		for k, _ := range eb.theming {
+			eb.theme = k
+			break
 		}
 	}
 
