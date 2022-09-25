@@ -30,7 +30,10 @@ type Middleware interface {
 	Use(s System) MiddlewareFn
 	Middleware(next http.Handler) http.Handler
 	Serve(w http.ResponseWriter, r *http.Request) (err error)
+	ServePath(path string, s System, w http.ResponseWriter, r *http.Request) (err error)
 }
+
+var _ Middleware = (*CMiddleware)(nil)
 
 type CMiddleware struct {
 	CFeature
@@ -54,5 +57,9 @@ func (f *CMiddleware) Middleware(next http.Handler) (this http.Handler) {
 }
 
 func (f *CMiddleware) Serve(w http.ResponseWriter, r *http.Request) (err error) {
-	return fmt.Errorf("not implemented")
+	return fmt.Errorf("feature.Middleware - Serve() not implemented")
+}
+
+func (f *CMiddleware) ServePath(path string, s System, w http.ResponseWriter, r *http.Request) (err error) {
+	return fmt.Errorf("feature.Middleware - ServePath() not implemented")
 }
