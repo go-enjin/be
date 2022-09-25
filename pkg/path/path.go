@@ -107,7 +107,7 @@ func Exists(path string) bool {
 	} else if errors.Is(err, os.ErrNotExist) {
 		// path does *not* exist
 	} else {
-		// Schrodinger: file may or may not exist. See err for details.
+		// Schrödinger: file may or may not exist. See err for details.
 	}
 	return false
 }
@@ -143,7 +143,7 @@ func ListDirs(path string) (paths []string, err error) {
 	if entries, err = os.ReadDir(path); err == nil {
 		for _, info := range entries {
 			if info.IsDir() {
-				paths = append(paths, path+string(os.PathSeparator)+info.Name())
+				paths = append(paths, TrimSlashes(Join(path, info.Name())))
 			}
 		}
 	}
@@ -156,7 +156,7 @@ func ListFiles(path string) (paths []string, err error) {
 	if entries, err = os.ReadDir(path); err == nil {
 		for _, info := range entries {
 			if !info.IsDir() {
-				paths = append(paths, path+string(os.PathSeparator)+info.Name())
+				paths = append(paths, TrimSlashes(Join(path, info.Name())))
 			}
 		}
 	}
@@ -168,7 +168,7 @@ func ListAllDirs(path string) (paths []string, err error) {
 	var entries []os.DirEntry
 	if entries, err = os.ReadDir(path); err == nil {
 		for _, info := range entries {
-			thisPath := path + string(os.PathSeparator) + info.Name()
+			thisPath := TrimSlashes(Join(path, info.Name()))
 			if info.IsDir() {
 				paths = append(paths, thisPath)
 				if subDirs, err := ListAllDirs(thisPath); err == nil && len(subDirs) > 0 {
@@ -185,13 +185,17 @@ func ListAllFiles(path string) (paths []string, err error) {
 	var entries []os.DirEntry
 	if entries, err = os.ReadDir(path); err == nil {
 		for _, info := range entries {
-			thisPath := path + string(os.PathSeparator) + info.Name()
+			thisPath := TrimSlashes(Join(path, info.Name()))
 			if !info.IsDir() {
 				paths = append(paths, thisPath)
 				continue
 			}
-			if moreFiles, err := ListAllFiles(thisPath); err == nil && len(moreFiles) > 0 {
+			var moreFiles []string
+			if moreFiles, err = ListAllFiles(thisPath); err == nil {
 				paths = append(paths, moreFiles...)
+			} else {
+				err = fmt.Errorf("error listing all files: %v - %v", err, thisPath)
+				return
 			}
 		}
 	}
