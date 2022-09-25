@@ -35,3 +35,8 @@ func (eb *EnjinBuilder) AddPageFromString(path, raw string) feature.Builder {
 	}
 	return eb
 }
+
+func (eb *EnjinBuilder) SetStatusPage(status int, path string) feature.Builder {
+	eb.statusPages[status] = path
+	return eb
+}

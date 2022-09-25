@@ -47,6 +47,7 @@ type EnjinBuilder struct {
 	translators  map[string]feature.TranslateOutputFn
 	transformers map[string]feature.TransformOutputFn
 	slugsums     bool
+	statusPages  map[int]string
 }
 
 func New() (be *EnjinBuilder) {
@@ -65,6 +66,7 @@ func New() (be *EnjinBuilder) {
 	be.translators = make(map[string]feature.TranslateOutputFn)
 	be.transformers = make(map[string]feature.TransformOutputFn)
 	be.slugsums = true
+	be.statusPages = make(map[int]string)
 	return be
 }
 
