@@ -24,7 +24,6 @@ package be
 // TODO: allow/deny direct connections
 // TODO: allow/deny proxy connections (all, any, cloudflare, atlassian)
 // TODO: allow/deny requests (atlassian-connect stuff?)
-// DONE: tmpl content format
 
 import (
 	"fmt"
@@ -315,8 +314,34 @@ func (e *Enjin) startupWebServices() (err error) {
 		}
 	}
 
+	e.router.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		if path, ok := e.eb.statusPages[404]; ok {
+			if p, ok := e.eb.pages[path]; ok {
+				if err = e.ServePage(p, w, r); err != nil {
+					log.DebugF("error serving 404 page: %v", err)
+				} else {
+					log.DebugF("served 404 page: %v", path)
+					return
+				}
+			}
+			for _, f := range e.eb.features {
+				if mf, ok := f.(feature.Middleware); ok {
+					if err = mf.ServePath(path, e, w, r); err != nil {
+						log.DebugF("error serving 404 (middleware) page: %v", err)
+					} else {
+						log.DebugF("served 404 (middleware) page: %v", path)
+						return
+					}
+				}
+			}
+		}
+		e.Serve404(w, r)
+	})
+
+	e.router.MethodNotAllowed(e.Serve405)
+
 	// chi needs this for whatever reason, pages can catch before this
-	// so it's really just a nop so chi actually does something with
+	// so that it's really just a nop and chi actually does something with
 	// the middleware set
 	e.router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("ok\n"))
