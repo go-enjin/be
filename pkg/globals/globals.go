@@ -37,7 +37,6 @@ var (
 	DefaultPort = 3334
 	// DefaultListen is the fallback address to listen on
 	DefaultListen = ""
-	DefaultTheme  = "_default"
 	// SlugIntegrity is the expected hash of a Shasums file, without BinName
 	// present (set by enjenv)
 	SlugIntegrity = ""
