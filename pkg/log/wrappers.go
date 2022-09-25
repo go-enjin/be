@@ -50,6 +50,15 @@ func DebugDF(depth int, format string, argv ...interface{}) {
 	logger.Debugf(prefixLogEntry(depth, format), argv...)
 }
 
+func TraceF(format string, argv ...interface{}) {
+	TraceDF(1, format, argv...)
+}
+
+func TraceDF(depth int, format string, argv ...interface{}) {
+	depth += 1
+	logger.Tracef(prefixLogEntry(depth, format), argv...)
+}
+
 func PanicF(format string, argv ...interface{}) {
 	PanicDF(1, format, argv...)
 }
