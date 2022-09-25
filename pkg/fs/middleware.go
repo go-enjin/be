@@ -16,7 +16,6 @@ package fs
 
 import (
 	"github.com/go-enjin/be/pkg/net"
-	"github.com/go-enjin/be/pkg/page"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -53,28 +52,6 @@ func CheckForFileData(fs FileSystem, url, mount string) (data []byte, mime, path
 			ok = true
 			return
 		}
-	}
-	return
-}
-
-func FindAllFilePages(fs FileSystem, mount, path string) (list []*page.Page, err error) {
-	p := net.TrimQueryParams(path)
-	p = bePath.TrimPrefix(p, mount)
-	p = bePath.TrimSlashes(p)
-	var files []string
-	if files, err = fs.ListAllFiles(path); err != nil {
-		return
-	}
-	for _, file := range files {
-		var data []byte
-		if data, err = fs.ReadFile(file); err != nil {
-			return
-		}
-		var p *page.Page
-		if p, err = page.NewFromString(file, string(data)); err != nil {
-			return
-		}
-		list = append(list, p)
 	}
 	return
 }
