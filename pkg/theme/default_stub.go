@@ -1,3 +1,5 @@
+//go:build !all && (excludeDefaultTheme || semanticTheme)
+
 // Copyright (c) 2022  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,24 +16,9 @@
 
 package theme
 
-import (
-	"embed"
+import "github.com/go-enjin/be/pkg/log"
 
-	beFsEmbed "github.com/go-enjin/be/pkg/fs/embed"
-	bePath "github.com/go-enjin/be/pkg/path"
-)
-
-//go:embed _default/theme.toml
-//go:embed _default/layouts/_default/baseof.html
-var DefaultThemeFs embed.FS
-
-func NewDefault() (theme *Theme, err error) {
-	theme = new(Theme)
-	theme.Path = "_default"
-	theme.Name = bePath.Base(theme.Path)
-	if theme.FileSystem, err = beFsEmbed.New(theme.Path, DefaultThemeFs); err != nil {
-		return
-	}
-	err = theme.init()
-	return
+func DefaultTheme() *Theme {
+	log.FatalF("default theme requires go build without the \"excludeDefaultTheme\" and \"semanticTheme\" tags")
+	return nil
 }
