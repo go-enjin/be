@@ -85,7 +85,6 @@ func (t *Theme) init() (err error) {
 	if _, err = toml.Decode(string(cfg), &ctx); err != nil {
 		return
 	}
-
 	t.initConfig(ctx)
 	t.initContext(ctx)
 	t.initFuncMap()
@@ -176,15 +175,24 @@ func (t *Theme) initLayouts() (err error) {
 		err = fmt.Errorf("error listing layouts: %v", err)
 		return
 	}
+
 	for _, path := range paths {
 		var l *Layout
-		// path = utils.StripPrefix(path, t.Path)
-		if l, err = NewLayout(path, t.FileSystem, t.FuncMap); err != nil {
-			err = fmt.Errorf("error creating new layout: %v - %v", path, err)
+		if lo, e := NewLayout(path, t.FileSystem, t.FuncMap); e != nil {
+			err = fmt.Errorf("error creating new layout: %v - %v", path, e)
 			return
+		} else {
+			l = lo
+			log.DebugF("including %v theme layout: %v", t.Name, path)
 		}
 		t.Layouts[bePath.Base(path)] = l
+		var files []string
+		for _, t := range l.Tmpl.Templates() {
+			files = append(files, t.Name())
+		}
+		log.DebugF("included %v theme %v layout templates: %v", t.Name, l.Name, files)
 	}
+
 	if partials, ok := t.Layouts["partials"]; ok {
 		for k, layout := range t.Layouts {
 			if k == "partials" {
