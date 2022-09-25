@@ -54,21 +54,24 @@ func New() *Page {
 	return p
 }
 
-func MakeFromPath(path string) (p *Page, err error) {
+func newPageForPath(path string) (p *Page, err error) {
 	p = New()
 	path = bePath.TrimSlashes(path)
-	name := bePath.Base(path)
 	if extn := bePath.Ext(path); extn != "" {
 		switch strings.ToLower(extn) {
 		case Markdown.String():
 			p.Format = Markdown
+		case OrgMode.String():
+			p.Format = OrgMode
 		case Template.String():
 			p.Format = Template
+		case Semantic.String():
+			p.Format = Semantic
 		default:
 			p.Format = Html
 		}
 	}
-	p.Slug = strcase.ToKebab(name)
+	p.Slug = strcase.ToKebab(bePath.TrimExt(path))
 	if path == "/" {
 		p.Url = "/"
 	} else if len(strings.Split(path, "/")) >= 2 {
@@ -85,7 +88,7 @@ func MakeFromPath(path string) (p *Page, err error) {
 
 func NewFromFile(path, filePath string) (p *Page, err error) {
 	path = net.TrimQueryParams(path)
-	if p, err = MakeFromPath(path); err != nil {
+	if p, err = newPageForPath(path); err != nil {
 		return
 	}
 	var data []byte
@@ -107,7 +110,7 @@ func NewFromFile(path, filePath string) (p *Page, err error) {
 
 func NewFromString(path, raw string) (p *Page, err error) {
 	path = net.TrimQueryParams(path)
-	if p, err = MakeFromPath(path); err != nil {
+	if p, err = newPageForPath(path); err != nil {
 		return
 	}
 	if !p.parseYaml(raw) {
@@ -119,4 +122,8 @@ func NewFromString(path, raw string) (p *Page, err error) {
 		}
 	}
 	return
+}
+
+func (p *Page) String() string {
+	return p.Url
 }
