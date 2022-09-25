@@ -62,6 +62,9 @@ type Builder interface {
 	// AddPageFromString is a convenience wrapper around AddPage
 	AddPageFromString(path, raw string) Builder
 
+	// SetStatusPage overrides specific HTTP error pages, ie: 404
+	SetStatusPage(status int, path string) Builder
+
 	// AddTheme includes the given theme within the built Enjin
 	AddTheme(t *theme.Theme) Builder
 
