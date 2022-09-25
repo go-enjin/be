@@ -36,6 +36,12 @@ func CleanWithSlashes(path string) (clean string) {
 	return
 }
 
+func Join(parts ...string) (joined string) {
+	joined = strings.Join(parts, string(os.PathSeparator))
+	joined = RxDupeSlashes.ReplaceAllString(joined, "/")
+	return
+}
+
 func JoinWithSlash(paths ...string) (joined string) {
 	joined = strings.Join(paths, "/")
 	joined = CleanWithSlash(joined)
