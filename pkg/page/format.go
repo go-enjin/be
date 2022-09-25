@@ -22,9 +22,10 @@ const (
 	Template Format = "tmpl"
 	Html     Format = "html"
 	HtmlTmpl Format = "html.tmpl"
+	Semantic Format = "njn"
 )
 
-var Extensions = []string{"org", "md", "html.tmpl", "tmpl", "html"}
+var Extensions = []string{"org", "md", "html.tmpl", "tmpl", "html", "njn"}
 
 func (pf Format) String() string {
 	switch pf {
@@ -38,6 +39,8 @@ func (pf Format) String() string {
 		return string(Template)
 	case Markdown:
 		return string(Markdown)
+	case Semantic:
+		return string(Semantic)
 	}
 	return "nil"
 }
