@@ -15,13 +15,15 @@
 package path
 
 import (
+	"os"
 	"regexp"
 	"strings"
 )
 
 var (
-	RxDupeSlashes = regexp.MustCompile(`/+`)
-	RxBothSlashes = regexp.MustCompile(`^\s*/?(.+?)/?\s*$`)
+	RxDupeSlashes   = regexp.MustCompile(`/+`)
+	RxBothSlashes   = regexp.MustCompile(`^\s*/?(.+?)/?\s*$`)
+	RxSlashDotSlash = regexp.MustCompile(`/\./`)
 )
 
 func CleanWithSlash(path string) (clean string) {
@@ -98,6 +100,18 @@ func SafeConcatRelPath(root string, paths ...string) (out string) {
 		}
 	}
 	out = root + "/" + TrimSlashes(out)
+	out = RxDupeSlashes.ReplaceAllString(out, "/")
+	lout := len(out)
+	if lout >= 2 {
+		if out[:2] == "/." {
+			out = out[2:]
+		} else if out[lout-2:] == "/." {
+			out = out[:lout-2]
+		} else if out[lout-1:] == "/" {
+			out = out[:lout-1]
+		}
+	}
+	out = RxSlashDotSlash.ReplaceAllString(out, "/")
 	return
 }
 
