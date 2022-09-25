@@ -16,6 +16,7 @@ package embed
 
 import (
 	"embed"
+	"fmt"
 	"io/fs"
 	"os"
 	"sort"
@@ -59,7 +60,7 @@ func ListDirs(path string, efs embed.FS) (paths []string, err error) {
 	}
 	for _, info := range entries {
 		if info.IsDir() {
-			paths = append(paths, path+string(os.PathSeparator)+info.Name())
+			paths = append(paths, bePath.TrimSlashes(bePath.Join(path, info.Name())))
 		}
 	}
 	sort.Sort(sortorder.Natural(paths))
@@ -73,7 +74,7 @@ func ListFiles(path string, efs embed.FS) (paths []string, err error) {
 	}
 	for _, info := range entries {
 		if !info.IsDir() {
-			paths = append(paths, path+string(os.PathSeparator)+info.Name())
+			paths = append(paths, bePath.TrimSlashes(bePath.Join(path, info.Name())))
 		}
 	}
 	sort.Sort(sortorder.Natural(paths))
@@ -84,7 +85,7 @@ func ListAllDirs(path string, efs embed.FS) (paths []string, err error) {
 	var entries []os.DirEntry
 	if entries, err = efs.ReadDir(path); err == nil {
 		for _, info := range entries {
-			thisPath := path + string(os.PathSeparator) + info.Name()
+			thisPath := bePath.TrimSlashes(bePath.Join(path, info.Name()))
 			if info.IsDir() {
 				paths = append(paths, thisPath)
 				if subDirs, err := ListAllDirs(thisPath, efs); err == nil && len(subDirs) > 0 {
@@ -101,13 +102,17 @@ func ListAllFiles(path string, efs embed.FS) (paths []string, err error) {
 	var entries []os.DirEntry
 	if entries, err = efs.ReadDir(path); err == nil {
 		for _, info := range entries {
-			thisPath := path + string(os.PathSeparator) + info.Name()
+			thisPath := bePath.TrimSlashes(bePath.Join(path, info.Name()))
 			if !info.IsDir() {
 				paths = append(paths, thisPath)
 				continue
 			}
-			if moreFiles, err := ListAllFiles(thisPath, efs); err == nil && len(moreFiles) > 0 {
+			var moreFiles []string
+			if moreFiles, err = ListAllFiles(thisPath, efs); err == nil {
 				paths = append(paths, moreFiles...)
+			} else {
+				err = fmt.Errorf("error listing all files: %v - %v", err, thisPath)
+				return
 			}
 		}
 	}
