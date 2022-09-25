@@ -17,26 +17,12 @@ package page
 import (
 	"strings"
 
-	"github.com/iancoleman/strcase"
-
 	"github.com/go-enjin/be/pkg/context"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
-func CamelizeContextKeys(ctx context.Context) {
-	var remove []string
-	for k, v := range ctx {
-		c := strcase.ToCamel(k)
-		if k != c {
-			remove = append(remove, k)
-			ctx.Set(c, v)
-		}
-	}
-	ctx.DeleteKeys(remove...)
-}
-
 func (p *Page) parseContext(ctx context.Context) {
-	CamelizeContextKeys(ctx)
+	context.CamelizeContextKeys(ctx)
 
 	ctx.DeleteKeys("Path", "Content", "Section")
 

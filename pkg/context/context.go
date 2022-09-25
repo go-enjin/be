@@ -239,3 +239,15 @@ func (c Context) AsLogString() (out string) {
 	out += "]"
 	return
 }
+
+func CamelizeContextKeys(ctx Context) {
+	var remove []string
+	for k, v := range ctx {
+		c := strcase.ToCamel(k)
+		if k != c {
+			remove = append(remove, k)
+			ctx.Set(c, v)
+		}
+	}
+	ctx.DeleteKeys(remove...)
+}
