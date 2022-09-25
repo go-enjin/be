@@ -17,6 +17,7 @@ package theme
 import (
 	"fmt"
 	"html/template"
+	"strconv"
 
 	"github.com/BurntSushi/toml"
 	"github.com/iancoleman/strcase"
@@ -160,6 +161,55 @@ func (t *Theme) initFuncMap() {
 		},
 		"fsMime": func(path string) (mime string) {
 			mime, _ = fs.FindFileMime(path)
+			return
+		},
+		"add": func(values ...interface{}) (result string) {
+			var total int
+			for idx, v := range values {
+				switch value := v.(type) {
+				case int:
+					if idx == 0 {
+						total = value
+					} else {
+						total += value
+					}
+				case string:
+					if i, err := strconv.Atoi(value); err != nil {
+						if idx == 0 {
+							total = i
+						} else {
+							total += i
+						}
+					}
+				}
+			}
+			result = fmt.Sprintf("%v", total)
+			return
+		},
+		"sub": func(values ...interface{}) (result string) {
+			if len(values) == 0 {
+				return
+			}
+			var total int
+			for idx, v := range values {
+				switch value := v.(type) {
+				case int:
+					if idx == 0 {
+						total = value
+					} else {
+						total -= value
+					}
+				case string:
+					if i, err := strconv.Atoi(value); err != nil {
+						if idx == 0 {
+							total = i
+						} else {
+							total -= i
+						}
+					}
+				}
+			}
+			result = fmt.Sprintf("%v", total)
 			return
 		},
 	}
