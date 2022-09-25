@@ -63,6 +63,16 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	ctx := e.Context()
+	ctx.Set("Request", map[string]string{
+		"URL":        r.URL.String(),
+		"Path":       r.URL.Path,
+		"Host":       r.Host,
+		"Method":     r.Method,
+		"RequestURI": r.RequestURI,
+		"RemoteAddr": r.RemoteAddr,
+		"Referer":    r.Referer(),
+		"UserAgent":  r.UserAgent(),
+	})
 	ctx.Set("BaseUrl", net.BaseURL(r))
 	ctx.Apply(p.Context.Copy())
 	for _, f := range e.eb.features {
