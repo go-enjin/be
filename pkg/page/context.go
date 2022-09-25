@@ -26,9 +26,8 @@ func (p *Page) parseContext(ctx context.Context) {
 
 	ctx.DeleteKeys("Path", "Content", "Section")
 
-	p.Slug = ctx.String("Slug", p.Slug)
 	p.Url = ctx.String("Url", p.Url)
-	if p.Url == "" || p.Url[0] != '/' {
+	if p.Url[0] != '/' {
 		p.Url = "/" + p.Url
 	}
 	p.Path, p.Section, p.Slug = bePath.GetSectionSlug(p.Url)
