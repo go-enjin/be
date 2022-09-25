@@ -50,7 +50,7 @@ func JoinWithSlash(paths ...string) (joined string) {
 
 func JoinWithSlashes(paths ...string) (joined string) {
 	joined = strings.Join(paths, "/")
-	joined = CleanWithSlashes(joined)
+	joined = CleanWithSlash(joined)
 	return
 }
 
