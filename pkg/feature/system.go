@@ -33,6 +33,8 @@ type Service interface {
 	ServerName() (name string)
 	Serve403(w http.ResponseWriter, _ *http.Request)
 	Serve404(w http.ResponseWriter, _ *http.Request)
+	Serve405(w http.ResponseWriter, _ *http.Request)
+	Serve500(w http.ResponseWriter, _ *http.Request)
 	ServePage(p *page.Page, w http.ResponseWriter, request *http.Request) (err error)
 	ServeData(data []byte, mime string, w http.ResponseWriter, _ *http.Request)
 	Notify(tag string)

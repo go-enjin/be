@@ -44,6 +44,18 @@ func (e *Enjin) Serve404(w http.ResponseWriter, _ *http.Request) {
 	_, _ = w.Write([]byte("404 - Not Found"))
 }
 
+func (e *Enjin) Serve405(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusMethodNotAllowed)
+	_, _ = w.Write([]byte("405 - Method Not Allowed"))
+}
+
+func (e *Enjin) Serve500(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusInternalServerError)
+	_, _ = w.Write([]byte("500 - Internal Server Error"))
+}
+
 func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) (err error) {
 	var data []byte
 	var t *theme.Theme
