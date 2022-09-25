@@ -142,9 +142,8 @@ func GetSectionSlug(url string) (path, section, slug string) {
 	slug = Base(url)
 	section = TrimSlashes(Dir(url))
 	path = "/" + section
-	if section == "" {
-		section = ""
-	} else {
+	if section != "" {
+		// section is the top of parent hierarchy, not the whole tree
 		list := strings.Split(section, "/")
 		section = list[0]
 	}
