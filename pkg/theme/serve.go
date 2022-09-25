@@ -19,13 +19,13 @@ import (
 	"net/http"
 
 	"github.com/go-enjin/be/pkg/log"
-	path2 "github.com/go-enjin/be/pkg/path"
+	bePath "github.com/go-enjin/be/pkg/path"
 )
 
 func (t *Theme) Middleware(next http.Handler) http.Handler {
 	log.DebugF("including %v theme static middleware", t.Name)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		path := fmt.Sprintf("static/%v", path2.TrimSlashes(r.URL.Path))
+		path := fmt.Sprintf("static/%v", bePath.TrimSlashes(r.URL.Path))
 		var err error
 		var data []byte
 		var mime string
