@@ -41,7 +41,7 @@ var (
 type ShaMap map[string]string
 
 func (m ShaMap) Keys() (keys []string) {
-	for key, _ := range m {
+	for key := range m {
 		keys = append(keys, key)
 	}
 	sort.Sort(sortorder.Natural(keys))
