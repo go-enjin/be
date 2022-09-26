@@ -68,6 +68,9 @@ func (re *renderEnjin) renderContainerField(field map[string]interface{}) (combi
 		case "fieldset":
 			data, err = re.prepareFieldsetFieldData(field)
 
+		case "details":
+			data, err = re.prepareDetailsFieldData(field)
+
 		default:
 			if c, e := re.renderInlineField(field); e == nil {
 				combined = c

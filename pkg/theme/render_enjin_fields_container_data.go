@@ -220,3 +220,14 @@ func (re *renderEnjin) prepareFieldsetFieldData(field map[string]interface{}) (d
 	re.finalizeFieldData(data, field, "type", "legend", "fields")
 	return
 }
+
+func (re *renderEnjin) prepareDetailsFieldData(field map[string]interface{}) (data map[string]interface{}, err error) {
+	data = make(map[string]interface{})
+	data["Type"] = "details"
+	data["Summary"], _ = field["summary"]
+	if data["Text"], err = re.renderContainerFieldText(field); err != nil {
+		return
+	}
+	re.finalizeFieldData(data, field, "type", "summary", "text")
+	return
+}

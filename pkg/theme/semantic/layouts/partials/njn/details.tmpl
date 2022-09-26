@@ -1,0 +1,6 @@
+{{ template "partials/element-open.tmpl" . }}
+{{- if .Summary }}
+    <summary>{{ .Summary }}</summary>
+{{- end -}}
+{{- if .Text }}{{ .Text }}{{ end -}}
+{{ template "partials/element-close.tmpl" . }}
