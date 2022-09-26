@@ -140,8 +140,12 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 		&cli.BoolFlag{
 			Name:    "debug",
 			Usage:   "enable verbose logging for debugging purposes",
-			Aliases: []string{"D"},
 			EnvVars: eb.MakeEnvKeys("DEBUG"),
+		},
+		&cli.StringFlag{
+			Name:    "log-level",
+			Usage:   "set logging level: error, warn, info, debug or trace",
+			EnvVars: eb.MakeEnvKeys("LOG_LEVEL"),
 		},
 		&cli.Int64Flag{
 			Name:    "deny-duration",

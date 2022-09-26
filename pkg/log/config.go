@@ -85,6 +85,8 @@ func (c Configuration) Apply() {
 	}
 
 	switch c.LogLevel {
+	case LevelTrace:
+		logger.SetLevel(logrus.TraceLevel)
 	case LevelDebug:
 		logger.SetLevel(logrus.DebugLevel)
 	case LevelInfo:

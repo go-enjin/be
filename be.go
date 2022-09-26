@@ -190,12 +190,22 @@ func (e *Enjin) webServicesAction(ctx *cli.Context) (err error) {
 		e.prefix = ""
 		e.debug = false
 	}
-	if e.debug {
-		log.Config.LogLevel = log.LevelDebug
+
+	lvl := strings.ToLower(ctx.String("log-level"))
+	if v, ok := log.Levels[lvl]; ok {
+		log.Config.LogLevel = v
 		log.Config.Apply()
-	} else if ctx.Bool("quiet") {
-		log.Config.LogLevel = log.LevelWarn
-		log.Config.Apply()
+	} else {
+		if lvl != "" {
+			log.FatalF("invalid log-level: %v", lvl)
+		}
+		if e.debug {
+			log.Config.LogLevel = log.LevelDebug
+			log.Config.Apply()
+		} else if ctx.Bool("quiet") {
+			log.Config.LogLevel = log.LevelWarn
+			log.Config.Apply()
+		}
 	}
 
 	middleware.DefaultLogger = func(next http.Handler) http.Handler {

@@ -21,11 +21,13 @@ const (
 	LevelWarn
 	LevelInfo
 	LevelDebug
+	LevelTrace
 )
 
-var Levels = map[Level]string{
-	LevelError: "error",
-	LevelWarn:  "warn",
-	LevelInfo:  "info",
-	LevelDebug: "debug",
+var Levels = map[string]Level{
+	"error": LevelError,
+	"warn":  LevelWarn,
+	"info":  LevelInfo,
+	"debug": LevelDebug,
+	"trace": LevelTrace,
 }
