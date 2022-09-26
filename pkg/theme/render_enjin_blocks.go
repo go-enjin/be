@@ -15,145 +15,110 @@
 package theme
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 
 	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/strings"
 )
 
-func (re *renderEnjin) processHeaderBlock(ctx context.Context, blockData map[string]interface{}) (html template.HTML, err error) {
-	// log.DebugF("header received: %v", blockData)
+func (re *renderEnjin) processBlock(ctx context.Context, blockData map[string]interface{}) (html template.HTML, err error) {
+	if typeName, ok := blockData["type"]; ok {
 
-	var blockDataContent map[string]interface{}
-	if blockDataContent, err = re.prepareGenericBlockData(blockData["content"]); err != nil {
-		return
-	}
-	preparedData := re.prepareGenericBlock("header", blockData)
+		switch typeName {
+		case "header":
+			html, err = re.processHeaderBlock(ctx, blockData)
 
-	if v, ok := blockDataContent["header"].([]interface{}); ok {
-		var heading string
-		for idx, vv := range v {
-			if vs, ok := vv.(string); ok {
-				if idx > 0 {
-					heading += " "
-				}
-				heading += vs
-			}
+		case "link-list":
+			html, err = re.processLinkListBlock(ctx, blockData)
+
+		case "content":
+			html, err = re.processContentBlock(ctx, blockData)
+
+		default:
+			log.WarnF("unsupported block type: %v", typeName)
+			b, _ := json.MarshalIndent(blockData, "", "  ")
+			html, err = re.processBlock(ctx, map[string]interface{}{
+				"type": "content",
+				"content": map[string]interface{}{
+					"section": []interface{}{
+						map[string]interface{}{
+							"type":    "details",
+							"summary": fmt.Sprintf("Unexpected block type: %v", typeName),
+							"text": []interface{}{
+								map[string]interface{}{
+									"type": "pre",
+									"text": string(b),
+								},
+							},
+						},
+					},
+				},
+			})
 		}
-		preparedData["Heading"] = heading
+
+	} else {
+		err = fmt.Errorf("missing type property: %+v", blockData)
 	}
-
-	if list, ok := blockDataContent["nav"].([]interface{}); ok {
-		var navItems []map[string]interface{}
-		for _, item := range list {
-			var navItem map[string]interface{}
-			if v, ok := item.(map[string]interface{}); ok {
-				if vType, ok := v["type"].(string); ok {
-
-					switch vType {
-					case "a":
-						if navItem, err = re.prepareAnchorFieldData(v); err != nil {
-							return
-						}
-
-					default:
-						err = fmt.Errorf("unsupported heading nav item type: %+v", v)
-					}
-
-				} else {
-					err = fmt.Errorf("heading nav item missing type: %+v", v)
-					return
-				}
-			}
-			navItems = append(navItems, navItem)
-		}
-		preparedData["Nav"] = navItems
-	}
-
-	// log.DebugF("prepared header: %v", preparedData)
-	html, err = re.renderNjnTemplate("header", preparedData)
-
 	return
 }
 
-func (re *renderEnjin) processLinkListBlock(ctx context.Context, blockData map[string]interface{}) (html template.HTML, err error) {
-	// log.DebugF("content received: %v", blockData)
-
-	var blockDataContent map[string]interface{}
-	if blockDataContent, err = re.prepareGenericBlockData(blockData["content"]); err != nil {
-		return
+func (re *renderEnjin) prepareGenericBlockData(contentData interface{}) (blockDataContent map[string]interface{}, err error) {
+	blockDataContent = make(map[string]interface{})
+	if contentData == nil {
+		err = fmt.Errorf("missing content data: %+v", contentData)
+	} else if v, ok := contentData.(map[string]interface{}); ok {
+		blockDataContent = v
+	} else {
+		err = fmt.Errorf("unsupported header content: %T", contentData)
 	}
-	preparedData := re.prepareGenericBlock("content", blockData)
-
-	if v, ok := blockDataContent["header"].([]interface{}); ok {
-		var heading string
-		for idx, vv := range v {
-			if vs, ok := vv.(string); ok {
-				if idx > 0 {
-					heading += " "
-				}
-				heading += vs
-			}
-
-		}
-		preparedData["Heading"] = heading
-	}
-
-	if sections, ok := blockDataContent["section"].([]interface{}); ok {
-		if preparedData["Section"], err = re.renderSectionFields(sections); err != nil {
-			return
-		}
-	}
-
-	if footers, ok := blockDataContent["footer"].([]interface{}); ok {
-		if preparedData["Footer"], err = re.renderFooterFields(footers); err != nil {
-			return
-		}
-	}
-
-	// log.DebugF("prepared content: %v", preparedData)
-	html, err = re.renderNjnTemplate("content", preparedData)
-
 	return
 }
 
-func (re *renderEnjin) processContentBlock(ctx context.Context, blockData map[string]interface{}) (html template.HTML, err error) {
-	// log.DebugF("content received: %v", blockData)
-
-	var blockDataContent map[string]interface{}
-	if blockDataContent, err = re.prepareGenericBlockData(blockData["content"]); err != nil {
-		return
+func (re *renderEnjin) prepareGenericBlock(typeName string, data map[string]interface{}) (preparedData map[string]interface{}) {
+	re.blockCount += 1
+	switch re.headingLevel {
+	case 0, 1:
+		re.headingLevel += 1
 	}
-	preparedData := re.prepareGenericBlock("content", blockData)
-
-	if v, ok := blockDataContent["header"].([]interface{}); ok {
-		var heading string
-		for idx, vv := range v {
-			if vs, ok := vv.(string); ok {
-				if idx > 0 {
-					heading += " "
-				}
-				heading += vs
-			}
-
+	var ok bool
+	preparedData = make(map[string]interface{})
+	preparedData["Type"] = typeName
+	preparedData["BlockIndex"] = re.blockCount
+	if preparedData["Tag"], ok = data["tag"]; !ok {
+		preparedData["Tag"] = fmt.Sprintf("%v-%d", typeName, re.blockCount)
+	}
+	if preparedData["Profile"], ok = data["profile"]; !ok {
+		preparedData["Profile"] = "outer--inner"
+	}
+	if preparedData["Padding"], ok = data["padding"]; !ok {
+		preparedData["Padding"] = "both"
+	}
+	if preparedData["Margins"], ok = data["margins"]; !ok {
+		preparedData["Margins"] = "both"
+	}
+	var v string
+	if v, ok = data["jump-top"].(string); ok {
+		if strings.IsTrue(v) {
+			preparedData["JumpTop"] = "true"
+		} else {
+			preparedData["JumpTop"] = "false"
 		}
-		preparedData["Heading"] = heading
+	} else {
+		preparedData["JumpTop"] = "false"
 	}
-
-	if sections, ok := blockDataContent["section"].([]interface{}); ok {
-		if preparedData["Section"], err = re.renderSectionFields(sections); err != nil {
-			return
+	if v, ok = data["jump-link"].(string); ok {
+		if strings.IsTrue(v) {
+			preparedData["JumpLink"] = "true"
+		} else {
+			preparedData["JumpLink"] = "false"
 		}
+	} else {
+		preparedData["JumpLink"] = "false"
 	}
-
-	if footers, ok := blockDataContent["footer"].([]interface{}); ok {
-		if preparedData["Footer"], err = re.renderFooterFields(footers); err != nil {
-			return
-		}
-	}
-
-	// log.DebugF("prepared content: %v", preparedData)
-	html, err = re.renderNjnTemplate("content", preparedData)
-
+	preparedData["HeadingLevel"] = re.headingLevel
+	preparedData["HeadingCount"] = re.headingCount
 	return
 }

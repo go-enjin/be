@@ -16,16 +16,13 @@ package theme
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"html/template"
-	"strings"
 	"sync"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
-	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 type renderEnjin struct {
@@ -93,47 +90,6 @@ func (re *renderEnjin) getNjnTemplateContent(name string) (contents string, err 
 	return
 }
 
-func (re *renderEnjin) processBlock(ctx context.Context, blockData map[string]interface{}) (html template.HTML, err error) {
-	if typeName, ok := blockData["type"]; ok {
-
-		switch typeName {
-		case "header":
-			html, err = re.processHeaderBlock(ctx, blockData)
-
-		case "link-list":
-			html, err = re.processLinkListBlock(ctx, blockData)
-
-		case "content":
-			html, err = re.processContentBlock(ctx, blockData)
-
-		default:
-			log.WarnF("unsupported block type: %v", typeName)
-			b, _ := json.MarshalIndent(blockData, "", "  ")
-			html, err = re.processBlock(ctx, map[string]interface{}{
-				"type": "content",
-				"content": map[string]interface{}{
-					"section": []interface{}{
-						map[string]interface{}{
-							"type":    "details",
-							"summary": fmt.Sprintf("Unexpected block type: %v", typeName),
-							"text": []interface{}{
-								map[string]interface{}{
-									"type": "pre",
-									"text": string(b),
-								},
-							},
-						},
-					},
-				},
-			})
-		}
-
-	} else {
-		err = fmt.Errorf("missing type property: %+v", blockData)
-	}
-	return
-}
-
 func (re *renderEnjin) renderNjnTemplate(tag string, data map[string]interface{}) (html template.HTML, err error) {
 	var tmplContent string
 	if tmplContent, err = re.getNjnTemplateContent(tag + ".tmpl"); err != nil {
@@ -149,99 +105,6 @@ func (re *renderEnjin) renderNjnTemplate(tag string, data map[string]interface{}
 			}
 		} else {
 			err = fmt.Errorf("error parsing template: %v", err)
-		}
-	}
-	return
-}
-
-func (re *renderEnjin) prepareGenericBlock(typeName string, blockData map[string]interface{}) (fieldData map[string]interface{}) {
-	re.blockCount += 1
-	var ok bool
-	fieldData = make(map[string]interface{})
-	fieldData["Type"] = typeName
-	fieldData["BlockIndex"] = re.blockCount
-	if fieldData["Tag"], ok = blockData["tag"]; !ok {
-		fieldData["Tag"] = fmt.Sprintf("%v-%d", typeName, re.blockCount)
-	}
-	if fieldData["Profile"], ok = blockData["profile"]; !ok {
-		fieldData["Profile"] = "outer--inner"
-	}
-	if fieldData["Padding"], ok = blockData["padding"]; !ok {
-		fieldData["Padding"] = "both"
-	}
-	if fieldData["Margins"], ok = blockData["margins"]; !ok {
-		fieldData["Margins"] = "both"
-	}
-	var v string
-	if v, ok = blockData["jump-top"].(string); ok {
-		if beStrings.IsTrue(v) {
-			fieldData["JumpTop"] = "true"
-		} else {
-			fieldData["JumpTop"] = "false"
-		}
-	}
-	if v, ok = blockData["jump-link"].(string); ok {
-		if beStrings.IsTrue(v) {
-			fieldData["JumpLink"] = "true"
-		} else {
-			fieldData["JumpLink"] = "false"
-		}
-	}
-	switch re.headingLevel {
-	case 0, 1:
-		re.headingLevel += 1
-	}
-	fieldData["HeadingLevel"] = re.headingLevel
-	fieldData["HeadingCount"] = re.headingCount
-	return
-}
-
-func (re *renderEnjin) prepareGenericBlockData(contentData interface{}) (blockDataContent map[string]interface{}, err error) {
-	blockDataContent = make(map[string]interface{})
-	if contentData == nil {
-		err = fmt.Errorf("missing content data: %+v", contentData)
-	} else if v, ok := contentData.(map[string]interface{}); ok {
-		blockDataContent = v
-	} else {
-		err = fmt.Errorf("unsupported header content: %T", contentData)
-	}
-	return
-}
-
-func (re *renderEnjin) parseFieldAttributes(field map[string]interface{}) (attrs map[string]interface{}, classes []string, styles map[string]string, ok bool) {
-	classes = make([]string, 0)
-	styles = make(map[string]string)
-	if attrs, ok = field["attributes"].(map[string]interface{}); ok {
-
-		if v, found := attrs["class"]; found {
-			switch t := v.(type) {
-			case string:
-				classes = strings.Split(t, " ")
-				attrs["class"] = t
-			case []interface{}:
-				for _, i := range t {
-					if name, ok := i.(string); ok {
-						classes = append(classes, name)
-					}
-				}
-				attrs["class"] = strings.Join(classes, " ")
-			}
-		}
-
-		if v, found := attrs["style"]; found {
-			switch t := v.(type) {
-			case string:
-				attrs["style"] = t
-			case map[string]interface{}:
-				var list []string
-				for k, vi := range t {
-					if value, ok := vi.(string); ok {
-						styles[k] = value
-						list = append(list, fmt.Sprintf(`%v="%v"`, k, beStrings.EscapeHtmlAttribute(value)))
-					}
-				}
-				attrs["style"] = strings.Join(list, ";")
-			}
 		}
 	}
 	return

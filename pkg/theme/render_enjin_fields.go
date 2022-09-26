@@ -17,10 +17,11 @@ package theme
 import (
 	"fmt"
 	"html/template"
+	"strings"
 
 	"github.com/iancoleman/strcase"
 
-	"github.com/go-enjin/be/pkg/strings"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 func (re *renderEnjin) renderSectionFields(fields []interface{}) (combined []template.HTML, err error) {
@@ -36,7 +37,7 @@ func (re *renderEnjin) renderFooterFields(fields []interface{}) (combined []temp
 func (re *renderEnjin) finalizeFieldData(data map[string]interface{}, field map[string]interface{}, skip ...string) {
 	for key, value := range field {
 		switch {
-		case strings.StringInStrings(key, skip...):
+		case beStrings.StringInStrings(key, skip...):
 		default:
 			if key == "attributes" {
 				data["Attributes"], _, _, _ = re.parseFieldAttributes(field)
@@ -50,6 +51,45 @@ func (re *renderEnjin) finalizeFieldData(data map[string]interface{}, field map[
 				data[name] = fmt.Sprintf("%v", vv)
 			default:
 				data[name] = vv
+			}
+		}
+	}
+	return
+}
+
+func (re *renderEnjin) parseFieldAttributes(field map[string]interface{}) (attrs map[string]interface{}, classes []string, styles map[string]string, ok bool) {
+	classes = make([]string, 0)
+	styles = make(map[string]string)
+	if attrs, ok = field["attributes"].(map[string]interface{}); ok {
+
+		if v, found := attrs["class"]; found {
+			switch t := v.(type) {
+			case string:
+				classes = strings.Split(t, " ")
+				attrs["class"] = t
+			case []interface{}:
+				for _, i := range t {
+					if name, ok := i.(string); ok {
+						classes = append(classes, name)
+					}
+				}
+				attrs["class"] = strings.Join(classes, " ")
+			}
+		}
+
+		if v, found := attrs["style"]; found {
+			switch t := v.(type) {
+			case string:
+				attrs["style"] = t
+			case map[string]interface{}:
+				var list []string
+				for k, vi := range t {
+					if value, ok := vi.(string); ok {
+						styles[k] = value
+						list = append(list, fmt.Sprintf(`%v="%v"`, k, beStrings.EscapeHtmlAttribute(value)))
+					}
+				}
+				attrs["style"] = strings.Join(list, ";")
 			}
 		}
 	}
