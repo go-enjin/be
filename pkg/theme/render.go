@@ -243,20 +243,54 @@ func (t *Theme) RenderSemanticContent(ctx context.Context, content string) (html
 	var err error
 	if html, err = t.parseSemanticContent(ctx, content); err != nil {
 		log.ErrorF("error parsing semantic content: %v", err)
-		html = "<h1>Internal Theming Error</h1>\n"
-		html += template.HTML(fmt.Sprintf("<p>Error parsing semantic content: \"%v\"</p>\n", err))
-		html += "<pre>\n"
-		html += template.HTML(template.HTMLEscapeString(content))
-		html += "\n</pre>\n"
+		html = "<h1>Internal Theming Error</h1>\n" + html
+		switch err.Error() {
+		case "json syntax error", "json unmarshal error", "json decoding error":
+		default:
+			html += template.HTML(fmt.Sprintf("<p>parsing semantic content error: \"%v\"</p>\n", err))
+			html += "<pre>\n"
+			html += template.HTML(template.HTMLEscapeString(content))
+			html += "\n</pre>\n"
+		}
+
 	}
 	ok = err == nil
 	return
 }
 
+func composeSemanticContentError(content string, e error) (html template.HTML, err error) {
+	switch t := e.(type) {
+	case *json.SyntaxError:
+		err = fmt.Errorf("json syntax error")
+		html = template.HTML(fmt.Sprintf(`<p>json syntax error: <a style="color:red;" href="#json-error">[%d] %v</a></p>`, t.Offset, t.Error()))
+		html += "\n<pre>\n"
+		html += template.HTML(template.HTMLEscapeString(content[:t.Offset]))
+		html += template.HTML(fmt.Sprintf(`<span style="color:red;weight:bold;" id="json-error">&lt;-- %v</span>`, t.Error()))
+		html += template.HTML(template.HTMLEscapeString(content[t.Offset:]))
+		html += "\n</pre>\n"
+	case *json.UnmarshalTypeError:
+		err = fmt.Errorf("json unmarshal error")
+		html = template.HTML(fmt.Sprintf(`<p>json unmarshal error: <a style="color:red;" href="#json-error">[%d] %v</a></p>`, t.Offset, t.Error()))
+		html += "\n<pre>\n"
+		html += template.HTML(template.HTMLEscapeString(content[:t.Offset]))
+		html += template.HTML(fmt.Sprintf(`<span style="color:red;weight:bold;" id="json-error">&lt;-- %v</span>`, t.Error()))
+		html += template.HTML(template.HTMLEscapeString(content[t.Offset:]))
+		html += "\n</pre>\n"
+	default:
+		err = fmt.Errorf("json decoding error")
+		html = template.HTML(fmt.Sprintf(`<p>json decoding error: %v</p>`, t.Error()))
+		html += "\n<pre>\n"
+		html += template.HTML(template.HTMLEscapeString(content))
+		html += "\n</pre>\n"
+	}
+	return
+}
+
 func (t *Theme) parseSemanticContent(ctx context.Context, content string) (html template.HTML, err error) {
 	var data interface{}
-	if err = json.Unmarshal([]byte(content), &data); err != nil {
-		return "", err
+	if e := json.Unmarshal([]byte(content), &data); e != nil {
+		html, err = composeSemanticContentError(content, e)
+		return
 	}
 	renderer := newNjnRenderer(ctx, t)
 	html, err = renderer.render(ctx, data)
