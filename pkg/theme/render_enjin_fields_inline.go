@@ -140,25 +140,27 @@ func (re *renderEnjin) renderInlineFieldText(field map[string]interface{}) (text
 	return
 }
 
-func (re *renderEnjin) renderInlineFieldList(list []interface{}) (text template.HTML, err error) {
+func (re *renderEnjin) renderInlineFieldList(list []interface{}) (html template.HTML, err error) {
 	for idx, tii := range list {
 		if tis, ok := tii.(string); ok {
 			if idx > 0 {
-				text += " "
+				if _, ok := list[idx-1].(string); ok {
+					html += " "
+				}
 			}
-			text += template.HTML(tis)
+			html += template.HTML(tis)
 		} else if tis, ok := tii.(map[string]interface{}); ok {
 			var rendered []template.HTML
 			if rendered, err = re.renderInlineField(tis); err != nil {
 				return
 			}
 			for _, rend := range rendered {
-				text += rend
+				html += rend
 			}
 		} else if tis, ok := tii.([]interface{}); ok {
-			text, err = re.renderInlineFieldList(tis)
+			html, err = re.renderInlineFieldList(tis)
 		} else {
-			text = ""
+			html = ""
 			err = fmt.Errorf("unsupported text value type: %T %+v", tii, tii)
 			return
 		}
