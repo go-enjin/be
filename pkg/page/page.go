@@ -71,7 +71,7 @@ func newPageForPath(path string) (p *Page, err error) {
 			p.Format = Html
 		}
 	}
-	p.Slug = strcase.ToKebab(bePath.TrimExt(path))
+	p.Slug = strcase.ToKebab(bePath.Base(path))
 	if path == "/" {
 		p.Url = "/"
 	} else if len(strings.Split(path, "/")) >= 2 {
