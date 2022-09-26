@@ -82,12 +82,11 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 		}
 	}
 
-	updateCache := func(mount, path, shasum string) {
-		if data, eee := c.mount[mount].FS.ReadFile(path); eee == nil {
-			slug := strings.TrimPrefix(path, c.mount[mount].Path)
-			if p, eeee := NewFromString(slug, string(data)); eeee == nil {
+	updateCache := func(mount, file, path, shasum string) {
+		if data, eee := c.mount[mount].FS.ReadFile(file); eee == nil {
+			if p, eeee := NewFromString(path, string(data)); eeee == nil {
 				p.Context.Set("Shasum", shasum)
-				c.cache[mount][path] = p
+				c.cache[mount][file] = p
 				log.DebugF("updated %v mount path: %v (%v)", mount, path, p.Url)
 			} else {
 				errs = append(errs, fmt.Errorf("error: new %v mount page %v - %v", mount, path, eeee))
@@ -104,25 +103,26 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 		}
 
 		if paths, e := mfs.FS.ListAllFiles(""); e == nil {
-			for _, path := range paths {
+			for _, file := range paths {
 
-				if shasum, ee := mfs.FS.Shasum(path); ee == nil {
+				if shasum, ee := mfs.FS.Shasum(file); ee == nil {
 
-					if pg, ok := c.cache[mount][path]; ok {
-						if pg.Context.String("Shasum", "") != shasum {
+					path := strings.TrimPrefix(file, c.mount[mount].Path)
+					if pg, ok := c.cache[mount][file]; ok {
+						if pgShasum := pg.Context.String("Shasum", shasum); pgShasum != shasum {
 							// update
-							updateCache(mount, path, shasum)
+							updateCache(mount, file, path, shasum)
 						} else {
 							// valid cache
-							log.TraceF("validated %v mount path: %v (%v)", mount, path, pg.Url)
+							log.TraceF("validated %v mount file: %v (%v)", mount, path, pg.Url)
 						}
 					} else {
 						// new
-						updateCache(mount, path, shasum)
+						updateCache(mount, file, path, shasum)
 					}
 
 				} else {
-					errs = append(errs, fmt.Errorf("error: shasum %v mount %v - %v", mount, path, ee))
+					errs = append(errs, fmt.Errorf("error: shasum %v mount %v - %v", mount, file, ee))
 				}
 			}
 		} else {
