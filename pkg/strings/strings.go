@@ -111,3 +111,19 @@ func EscapeHtmlAttribute(unescaped string) (escaped string) {
 	escaped = strings.ReplaceAll(unescaped, `"`, "&quot;")
 	return
 }
+
+func IsTrue(text string) bool {
+	switch strings.ToLower(text) {
+	case "1", "on", "yes", "y", "true":
+		return true
+	}
+	return false
+}
+
+func IsFalse(text string) bool {
+	switch strings.ToLower(text) {
+	case "0", "nil", "off", "no", "n", "false":
+		return true
+	}
+	return false
+}
