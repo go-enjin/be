@@ -34,6 +34,21 @@ func (re *renderEnjin) prepareAnchorFieldData(field map[string]interface{}) (dat
 	return
 }
 
+func (re *renderEnjin) prepareFontAwesomeIconFieldData(field map[string]interface{}) (data map[string]interface{}, err error) {
+	var ok bool
+	data = make(map[string]interface{})
+	data["Type"] = "i"
+	if data["Class"], ok = field["class"]; !ok {
+		data["Class"] = "fa-solid"
+	}
+	if data["Id"], ok = field["id"]; !ok {
+		err = fmt.Errorf("font-awesome icon missing id: %+v", field)
+		return
+	}
+	re.finalizeFieldData(data, field, "type", "class", "id")
+	return
+}
+
 func (re *renderEnjin) prepareFigureFieldData(field map[string]interface{}) (data map[string]interface{}, err error) {
 	data = make(map[string]interface{})
 	data["Type"] = "figure"

@@ -54,6 +54,9 @@ func (re *renderEnjin) renderInlineField(field map[string]interface{}) (combined
 		case "span":
 			data, err = re.prepareInlineTextFieldData(ft, field)
 
+		case "fa-icon":
+			data, err = re.prepareFontAwesomeIconFieldData(field)
+
 		case "figure":
 			data, err = re.prepareFigureFieldData(field)
 
