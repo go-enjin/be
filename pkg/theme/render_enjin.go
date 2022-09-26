@@ -100,6 +100,9 @@ func (re *renderEnjin) processBlock(ctx context.Context, blockData map[string]in
 		case "header":
 			html, err = re.processHeaderBlock(ctx, blockData)
 
+		case "link-list":
+			html, err = re.processLinkListBlock(ctx, blockData)
+
 		case "content":
 			html, err = re.processContentBlock(ctx, blockData)
 

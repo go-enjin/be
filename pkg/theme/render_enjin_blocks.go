@@ -76,6 +76,47 @@ func (re *renderEnjin) processHeaderBlock(ctx context.Context, blockData map[str
 	return
 }
 
+func (re *renderEnjin) processLinkListBlock(ctx context.Context, blockData map[string]interface{}) (html template.HTML, err error) {
+	// log.DebugF("content received: %v", blockData)
+
+	var blockDataContent map[string]interface{}
+	if blockDataContent, err = re.prepareGenericBlockData(blockData["content"]); err != nil {
+		return
+	}
+	preparedData := re.prepareGenericBlock("content", blockData)
+
+	if v, ok := blockDataContent["header"].([]interface{}); ok {
+		var heading string
+		for idx, vv := range v {
+			if vs, ok := vv.(string); ok {
+				if idx > 0 {
+					heading += " "
+				}
+				heading += vs
+			}
+
+		}
+		preparedData["Heading"] = heading
+	}
+
+	if sections, ok := blockDataContent["section"].([]interface{}); ok {
+		if preparedData["Section"], err = re.renderSectionFields(sections); err != nil {
+			return
+		}
+	}
+
+	if footers, ok := blockDataContent["footer"].([]interface{}); ok {
+		if preparedData["Footer"], err = re.renderFooterFields(footers); err != nil {
+			return
+		}
+	}
+
+	// log.DebugF("prepared content: %v", preparedData)
+	html, err = re.renderNjnTemplate("content", preparedData)
+
+	return
+}
+
 func (re *renderEnjin) processContentBlock(ctx context.Context, blockData map[string]interface{}) (html template.HTML, err error) {
 	// log.DebugF("content received: %v", blockData)
 
