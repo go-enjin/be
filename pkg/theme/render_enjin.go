@@ -32,6 +32,7 @@ type renderEnjin struct {
 	theme *Theme
 	ctx   context.Context
 
+	blockCount   int
 	headingLevel int
 	headingCount int
 
@@ -46,25 +47,6 @@ func newNjnRenderer(ctx context.Context, t *Theme) (re *renderEnjin) {
 	re.ctx = ctx
 	re.headingLevel = 0
 	re.cache = make(map[string]string)
-	return
-}
-
-func (re *renderEnjin) getNjnTemplateContent(name string) (contents string, err error) {
-	// TODO: use the already prepared templating?
-	if v, ok := re.cache[name]; ok {
-		log.TraceF("found cached njn template: %v", name)
-		contents = v
-		return
-	}
-	path := bePath.JoinWithSlashes("layouts", "partials", "njn", name)
-	log.TraceF("looking for njn template: %v - %v", name, path)
-	var data []byte
-	if data, err = re.theme.FileSystem.ReadFile(path); err == nil {
-		contents = string(data)
-		re.cache[name] = contents
-	} else {
-		err = fmt.Errorf("njn template not found: %v", name)
-	}
 	return
 }
 
@@ -89,6 +71,25 @@ func (re *renderEnjin) render(ctx context.Context, data interface{}) (html templ
 		err = fmt.Errorf("unsupported njn data received: %T", v)
 	}
 
+	return
+}
+
+func (re *renderEnjin) getNjnTemplateContent(name string) (contents string, err error) {
+	// TODO: use the already prepared templating?
+	if v, ok := re.cache[name]; ok {
+		log.TraceF("found cached njn template: %v", name)
+		contents = v
+		return
+	}
+	path := bePath.JoinWithSlashes("layouts", "partials", "njn", name)
+	log.TraceF("looking for njn template: %v - %v", name, path)
+	var data []byte
+	if data, err = re.theme.FileSystem.ReadFile(path); err == nil {
+		contents = string(data)
+		re.cache[name] = contents
+	} else {
+		err = fmt.Errorf("njn template not found: %v", name)
+	}
 	return
 }
 
@@ -130,36 +131,6 @@ func (re *renderEnjin) processBlock(ctx context.Context, blockData map[string]in
 	return
 }
 
-func (re *renderEnjin) prepareGenericBlock(typeName string, blockData map[string]interface{}) (fieldData map[string]interface{}) {
-	fieldData = make(map[string]interface{})
-	fieldData["Type"] = typeName
-	fieldData["Tag"], _ = blockData["tag"]
-	fieldData["Profile"], _ = blockData["profile"]
-	fieldData["Padding"], _ = blockData["padding"]
-	fieldData["Margins"], _ = blockData["margins"]
-	fieldData["JumpTop"], _ = blockData["jump-top"]
-	fieldData["JumpLink"], _ = blockData["jump-link"]
-	switch re.headingLevel {
-	case 0, 1:
-		re.headingLevel += 1
-	}
-	fieldData["HeadingLevel"] = re.headingLevel
-	fieldData["HeadingCount"] = re.headingCount
-	return
-}
-
-func (re *renderEnjin) prepareGenericBlockData(contentData interface{}) (blockDataContent map[string]interface{}, err error) {
-	blockDataContent = make(map[string]interface{})
-	if contentData == nil {
-		err = fmt.Errorf("header without any content: %+v", contentData)
-	} else if v, ok := contentData.(map[string]interface{}); ok {
-		blockDataContent = v
-	} else {
-		err = fmt.Errorf("unsupported header content: %T", contentData)
-	}
-	return
-}
-
 func (re *renderEnjin) renderNjnTemplate(tag string, data map[string]interface{}) (html template.HTML, err error) {
 	var tmplContent string
 	if tmplContent, err = re.getNjnTemplateContent(tag + ".tmpl"); err != nil {
@@ -176,6 +147,60 @@ func (re *renderEnjin) renderNjnTemplate(tag string, data map[string]interface{}
 		} else {
 			err = fmt.Errorf("error parsing template: %v", err)
 		}
+	}
+	return
+}
+
+func (re *renderEnjin) prepareGenericBlock(typeName string, blockData map[string]interface{}) (fieldData map[string]interface{}) {
+	re.blockCount += 1
+	var ok bool
+	fieldData = make(map[string]interface{})
+	fieldData["Type"] = typeName
+	fieldData["BlockIndex"] = re.blockCount
+	if fieldData["Tag"], ok = blockData["tag"]; !ok {
+		fieldData["Tag"] = fmt.Sprintf("%v-%d", typeName, re.blockCount)
+	}
+	if fieldData["Profile"], ok = blockData["profile"]; !ok {
+		fieldData["Profile"] = "outer--inner"
+	}
+	if fieldData["Padding"], ok = blockData["padding"]; !ok {
+		fieldData["Padding"] = "both"
+	}
+	if fieldData["Margins"], ok = blockData["margins"]; !ok {
+		fieldData["Margins"] = "both"
+	}
+	var v string
+	if v, ok = blockData["jump-top"].(string); ok {
+		if beStrings.IsTrue(v) {
+			fieldData["JumpTop"] = "true"
+		} else {
+			fieldData["JumpTop"] = "false"
+		}
+	}
+	if v, ok = blockData["jump-link"].(string); ok {
+		if beStrings.IsTrue(v) {
+			fieldData["JumpLink"] = "true"
+		} else {
+			fieldData["JumpLink"] = "false"
+		}
+	}
+	switch re.headingLevel {
+	case 0, 1:
+		re.headingLevel += 1
+	}
+	fieldData["HeadingLevel"] = re.headingLevel
+	fieldData["HeadingCount"] = re.headingCount
+	return
+}
+
+func (re *renderEnjin) prepareGenericBlockData(contentData interface{}) (blockDataContent map[string]interface{}, err error) {
+	blockDataContent = make(map[string]interface{})
+	if contentData == nil {
+		err = fmt.Errorf("missing content data: %+v", contentData)
+	} else if v, ok := contentData.(map[string]interface{}); ok {
+		blockDataContent = v
+	} else {
+		err = fmt.Errorf("unsupported header content: %T", contentData)
 	}
 	return
 }
