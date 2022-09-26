@@ -125,8 +125,15 @@ func (re *renderEnjin) prepareInlineTextFieldData(tag string, field map[string]i
 }
 
 func (re *renderEnjin) renderInlineFieldText(field map[string]interface{}) (text template.HTML, err error) {
-	if ti, ok := field["text"].([]interface{}); ok {
-		text, err = re.renderInlineFieldList(ti)
+	if ti, ok := field["text"]; ok {
+		switch t := ti.(type) {
+		case []interface{}:
+			text, err = re.renderInlineFieldList(t)
+		case interface{}:
+			text, err = re.renderInlineFieldList([]interface{}{t})
+		default:
+			err = fmt.Errorf("unsupported field text type: %T %+v", t, t)
+		}
 	} else {
 		err = fmt.Errorf("missing field text: %v", field)
 	}
