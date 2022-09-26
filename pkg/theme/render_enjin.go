@@ -16,6 +16,7 @@ package theme
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"strings"
@@ -102,8 +103,25 @@ func (re *renderEnjin) processBlock(ctx context.Context, blockData map[string]in
 			html, err = re.processContentBlock(ctx, blockData)
 
 		default:
-			log.WarnF("unsupported type received: %v", typeName)
-
+			log.WarnF("unsupported block type: %v", typeName)
+			b, _ := json.MarshalIndent(blockData, "", "  ")
+			html, err = re.processBlock(ctx, map[string]interface{}{
+				"type": "content",
+				"content": map[string]interface{}{
+					"section": []interface{}{
+						map[string]interface{}{
+							"type":    "details",
+							"summary": fmt.Sprintf("Unexpected block type: %v", typeName),
+							"text": []interface{}{
+								map[string]interface{}{
+									"type": "pre",
+									"text": string(b),
+								},
+							},
+						},
+					},
+				},
+			})
 		}
 
 	} else {
