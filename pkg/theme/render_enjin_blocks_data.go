@@ -108,7 +108,7 @@ func (re *renderEnjin) processHeaderBlock(ctx context.Context, blockData map[str
 	}
 
 	// log.DebugF("prepared header: %v", preparedData)
-	html, err = re.renderNjnTemplate("header", preparedData)
+	html, err = re.renderNjnTemplate("block/header", preparedData)
 
 	return
 }
@@ -188,7 +188,7 @@ func (re *renderEnjin) processNoticeBlock(ctx context.Context, blockData map[str
 
 	log.DebugF("notice block: %+v", preparedData)
 	// log.DebugF("prepared content: %v", preparedData)
-	html, err = re.renderNjnTemplate("notice", preparedData)
+	html, err = re.renderNjnTemplate("block/notice", preparedData)
 
 	return
 }
@@ -229,7 +229,7 @@ func (re *renderEnjin) processLinkListBlock(ctx context.Context, blockData map[s
 	}
 
 	// log.DebugF("prepared content: %v", preparedData)
-	html, err = re.renderNjnTemplate("link-list", preparedData)
+	html, err = re.renderNjnTemplate("block/link-list", preparedData)
 
 	return
 }
@@ -270,7 +270,7 @@ func (re *renderEnjin) processContentBlock(ctx context.Context, blockData map[st
 	}
 
 	// log.DebugF("prepared content: %v", preparedData)
-	html, err = re.renderNjnTemplate("content", preparedData)
+	html, err = re.renderNjnTemplate("block/content", preparedData)
 
 	return
 }
