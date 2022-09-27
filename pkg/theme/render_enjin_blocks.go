@@ -73,7 +73,7 @@ func (re *renderEnjin) processBlock(blockData map[string]interface{}) (html temp
 func (re *renderEnjin) prepareGenericBlockData(contentData interface{}) (blockDataContent map[string]interface{}, err error) {
 	blockDataContent = make(map[string]interface{})
 	if contentData == nil {
-		err = fmt.Errorf("missing content data: %+v", contentData)
+		err = fmt.Errorf("content not found")
 	} else if v, ok := contentData.(map[string]interface{}); ok {
 		blockDataContent = v
 	} else {
@@ -87,6 +87,7 @@ func (re *renderEnjin) prepareGenericBlock(typeName string, data map[string]inte
 
 	var ok bool
 	preparedData = make(map[string]interface{})
+	preparedData["Context"] = re.ctx
 	preparedData["Type"] = typeName
 	preparedData["BlockIndex"] = re.blockCount
 	if preparedData["Tag"], ok = data["tag"]; !ok {
@@ -114,6 +115,8 @@ func (re *renderEnjin) prepareGenericBlock(typeName string, data map[string]inte
 	}
 
 	if re.headingCount == 0 && typeName != "header" {
+		// first block on page is not a header, need to ensure that only one
+		// h1 tag exists on the page
 		switch re.headingLevel {
 		case 0, 1:
 			// first heading is 0, becomes h1
