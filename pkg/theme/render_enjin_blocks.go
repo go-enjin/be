@@ -39,6 +39,9 @@ func (re *renderEnjin) processBlock(blockData map[string]interface{}) (html temp
 		case "toc":
 			html, err = re.processTableOfContentsBlock(blockData)
 
+		case "image":
+			html, err = re.processImageBlock(blockData)
+
 		case "content":
 			html, err = re.processContentBlock(blockData)
 
