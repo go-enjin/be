@@ -100,21 +100,13 @@ func (re *renderEnjin) prepareGenericBlock(typeName string, data map[string]inte
 		preparedData["Margins"] = "both"
 	}
 	var v string
-	if v, ok = data["jump-top"].(string); ok {
-		if strings.IsTrue(v) {
-			preparedData["JumpTop"] = "true"
-		} else {
-			preparedData["JumpTop"] = "false"
-		}
+	if v, ok = data["jump-top"].(string); ok && strings.IsTrue(v) {
+		preparedData["JumpTop"] = "true"
 	} else {
 		preparedData["JumpTop"] = "false"
 	}
-	if v, ok = data["jump-link"].(string); ok {
-		if strings.IsTrue(v) {
-			preparedData["JumpLink"] = "true"
-		} else {
-			preparedData["JumpLink"] = "false"
-		}
+	if v, ok = data["jump-link"].(string); ok && strings.IsTrue(v) {
+		preparedData["JumpLink"] = "true"
 	} else {
 		preparedData["JumpLink"] = "false"
 	}
