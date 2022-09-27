@@ -23,6 +23,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/log"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 func (re *renderEnjin) processHeaderBlock(ctx context.Context, blockData map[string]interface{}) (html template.HTML, err error) {
@@ -108,6 +109,86 @@ func (re *renderEnjin) processHeaderBlock(ctx context.Context, blockData map[str
 
 	// log.DebugF("prepared header: %v", preparedData)
 	html, err = re.renderNjnTemplate("header", preparedData)
+
+	return
+}
+
+func (re *renderEnjin) processNoticeBlock(ctx context.Context, blockData map[string]interface{}) (html template.HTML, err error) {
+	// log.DebugF("content received: %v", blockData)
+
+	var blockDataContent map[string]interface{}
+	if blockDataContent, err = re.prepareGenericBlockData(blockData["content"]); err != nil {
+		return
+	}
+	preparedData := re.prepareGenericBlock("content", blockData)
+
+	if v, ok := blockData["dismiss"].(string); ok && beStrings.IsTrue(v) {
+		preparedData["Dismiss"] = "true"
+	} else {
+		preparedData["Dismiss"] = "false"
+	}
+
+	if v, ok := blockData["open"].(string); ok && beStrings.IsTrue(v) {
+		preparedData["Open"] = "true"
+	} else {
+		preparedData["Open"] = "false"
+	}
+
+	if v, ok := blockData["notice-type"].(string); ok {
+		v = strings.ToLower(v)
+		switch v {
+		case "info", "warn", "error":
+			preparedData["NoticeType"] = v
+		default:
+			err = fmt.Errorf("invalid notice type: %v", v)
+			return
+		}
+	} else {
+		preparedData["NoticeType"] = "info"
+	}
+
+	var sectionHtml template.HTML
+	if sections, ok := blockDataContent["section"].([]interface{}); ok {
+		var renderedSectionFields []template.HTML
+		if renderedSectionFields, err = re.renderSectionFields(sections); err != nil {
+			err = fmt.Errorf("error rendering notice section field: %v", err)
+			return
+		} else {
+			preparedData["Section"] = renderedSectionFields
+			for _, s := range renderedSectionFields {
+				sectionHtml += s
+			}
+		}
+	}
+
+	if v, ok := blockDataContent["summary"].([]interface{}); ok {
+		var summary string
+		for idx, vv := range v {
+			if vs, ok := vv.(string); ok {
+				if idx > 0 {
+					summary += " "
+				}
+				summary += vs
+			}
+		}
+		preparedData["Summary"] = summary
+	} else if sectionHtml != "" {
+		preparedData["Summary"] = sectionHtml
+		delete(preparedData, "Section")
+	} else {
+		err = fmt.Errorf("notice block missing summary: %v - %v", blockData, sectionHtml)
+		return
+	}
+
+	if footers, ok := blockDataContent["footer"].([]interface{}); ok {
+		if preparedData["Footer"], err = re.renderFooterFields(footers); err != nil {
+			return
+		}
+	}
+
+	log.DebugF("notice block: %+v", preparedData)
+	// log.DebugF("prepared content: %v", preparedData)
+	html, err = re.renderNjnTemplate("notice", preparedData)
 
 	return
 }
