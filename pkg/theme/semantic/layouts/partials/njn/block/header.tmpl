@@ -11,7 +11,8 @@
         data-block-margins="{{ .Margins }}"
         data-block-jump-top="{{ .JumpTop }}"
         data-block-jump-link="{{ .JumpLink }}"
-        data-header-level="{{ .HeadingLevel }}"
+        {{ if .HeadingReset }}data-header-reset="{{ .HeadingReset }}"{{ end -}}
+        {{ if .HeadingLevel }}data-header-level="{{ .HeadingLevel }}"{{ end -}}
 >
     <div class="content">
         <h{{ .HeadingLevel }}>{{ .Heading }}</h{{ .HeadingLevel }}>

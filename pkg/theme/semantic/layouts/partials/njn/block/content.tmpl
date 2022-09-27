@@ -1,16 +1,16 @@
-<!-- custom theme -->
+<!-- content block -->
 <article
-        class='block'
-        id='{{ .Tag }}'
-        data-block-tag='{{ .Tag }}'
-        data-block-type='content'
-        data-block-profile='{{ .Profile }}'
-        data-block-padding='{{ .Padding }}'
-        data-block-margins='{{ .Margins }}'
-        data-block-jump-top='{{ .JumpTop }}'
-        data-block-jump-link='{{ .JumpLink }}'
+        class="block"
+        id="{{ .Tag }}"
+        data-block-tag="{{ .Tag }}"
+        data-block-type="content"
+        data-block-profile="{{ .Profile }}"
+        data-block-padding="{{ .Padding }}"
+        data-block-margins="{{ .Margins }}"
+        data-block-jump-top="{{ .JumpTop }}"
+        data-block-jump-link="{{ .JumpLink }}"
 >
-    <div class='content'>
+    <div class="content">
         {{ if .Heading }}
             <header>
                 <h{{ .HeadingLevel }}>{{ .Heading }}</h{{ .HeadingLevel }}>
