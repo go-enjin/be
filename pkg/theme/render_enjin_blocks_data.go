@@ -127,7 +127,49 @@ func (re *renderEnjin) processLinkListBlock(blockData map[string]interface{}) (h
 	}
 
 	if sections, ok := blockDataContent["section"].([]interface{}); ok {
-		if preparedData["Section"], err = re.renderSectionFields(sections); err != nil {
+		sectionFields := make([]interface{}, 0)
+		for _, si := range sections {
+			switch st := si.(type) {
+			case map[string]interface{}:
+				if itype, ok := st["type"].(string); ok {
+					if itype == "a" {
+						st["decorated"] = "true"
+						if attrs, ok := st["attributes"].(map[string]interface{}); ok {
+							if ci, ok := attrs["class"]; ok {
+								switch ct := ci.(type) {
+								case string:
+									attrs["class"] = ct + " decorated"
+								case []interface{}:
+									var classes []string
+									for _, cli := range ct {
+										if cls, ok := cli.(string); ok {
+											classes = append(classes, cls)
+										}
+									}
+									classes = append(classes, "decorated")
+								}
+								st["attributes"] = attrs
+							} else {
+								st["class"] = "decorated"
+							}
+						} else {
+							st["class"] = "decorated"
+						}
+						sectionFields = append(sectionFields, st)
+					} else {
+						err = fmt.Errorf("link-list block has more than just anchor tags: %+v", st)
+						return
+					}
+				}
+			}
+		}
+
+		if preparedData["Section"], err = re.renderSectionFields([]interface{}{
+			map[string]interface{}{
+				"type": "ul",
+				"list": sectionFields,
+			},
+		}); err != nil {
 			return
 		}
 	}
