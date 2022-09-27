@@ -14,7 +14,11 @@
 
 package theme
 
-import "fmt"
+import (
+	"fmt"
+
+	beStrings "github.com/go-enjin/be/pkg/strings"
+)
 
 func (re *renderEnjin) prepareAnchorFieldData(field map[string]interface{}) (data map[string]interface{}, err error) {
 	data = make(map[string]interface{})
@@ -30,7 +34,26 @@ func (re *renderEnjin) prepareAnchorFieldData(field map[string]interface{}) (dat
 	if data["Text"] == "" {
 		data["Text"] = data["Href"]
 	}
-	re.finalizeFieldData(data, field, "type", "href", "text")
+
+	decorated := false
+	if v, ok := field["decorated"].(string); ok {
+		if beStrings.IsTrue(v) {
+			decorated = true
+		}
+	}
+	data["Decorated"] = decorated
+	if attrs, classes, _, ok := re.parseFieldAttributes(field); ok {
+		if decorated {
+			classes = append(classes, "decorated")
+		}
+		data["Attributes"] = attrs
+	} else if decorated {
+		data["Attributes"] = map[string]interface{}{
+			"class": "decorated",
+		}
+	}
+
+	re.finalizeFieldData(data, field, "type", "href", "text", "decorated", "attributes")
 	return
 }
 
