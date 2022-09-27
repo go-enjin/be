@@ -26,16 +26,52 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
-func (re *renderEnjin) processHeaderBlock(ctx context.Context, blockData map[string]interface{}) (html template.HTML, err error) {
-	// log.DebugF("header received: %v", blockData)
+func (re *renderEnjin) updateHeadingLevel(blockData map[string]interface{}) {
 
-	var blockDataContent map[string]interface{}
-	if blockDataContent, err = re.prepareGenericBlockData(blockData["content"]); err != nil {
-		return
-	}
+	if v, ok := blockData["heading-reset"]; ok {
 
-	re.headingCount += 1
-	if v, ok := blockData["heading-level"]; ok {
+		switch t := v.(type) {
+		case string:
+			if i, err := strconv.Atoi(t); err != nil {
+				switch i {
+				case 0, 1:
+					if re.headingCount == 0 {
+						re.headingLevel = 1
+					}
+				default:
+					if i > 0 {
+						// positive numbers set literal
+						re.headingLevel = i
+					} else {
+						re.headingLevel += i // add neg is sub op
+					}
+				}
+			} else {
+				log.ErrorF("invalid block heading-reset value: %v", t)
+			}
+
+		case int:
+			if t > 0 {
+				re.headingLevel = t
+			} else {
+				re.headingLevel += t
+			}
+
+		case float64:
+			ti := int(math.Round(t))
+			if ti > 0 {
+				re.headingLevel = ti
+			} else {
+				re.headingLevel += ti
+			}
+
+		default:
+			log.ErrorF("invalid block heading-reset type: %T %+v", t, t)
+			return
+		}
+
+	} else if v, ok := blockData["heading-level"]; ok {
+
 		switch t := v.(type) {
 		case string:
 			switch strings.ToLower(t) {
@@ -61,11 +97,34 @@ func (re *renderEnjin) processHeaderBlock(ctx context.Context, blockData map[str
 		default:
 			log.ErrorF("invalid block heading-level value: %T %+v", t, t)
 		}
-	}
-	preparedData := re.prepareGenericBlock("header", blockData)
-	re.headingLevel += 1
 
-	log.DebugF("heading-level: (%v) %v", re.headingCount, re.headingLevel)
+	}
+
+	// guard invalid levels
+	if re.headingLevel <= 1 {
+		if re.headingCount == 0 {
+			re.headingLevel = 1
+		} else {
+			re.headingLevel = 2
+		}
+	}
+
+	log.DebugF("update heading level: (%v) %v", re.headingCount, re.headingLevel)
+	return
+}
+
+func (re *renderEnjin) processHeaderBlock(ctx context.Context, blockData map[string]interface{}) (html template.HTML, err error) {
+	// log.DebugF("header received: %v", blockData)
+
+	var blockDataContent map[string]interface{}
+	if blockDataContent, err = re.prepareGenericBlockData(blockData["content"]); err != nil {
+		return
+	}
+
+	re.updateHeadingLevel(blockData)
+	re.headingCount += 1 // total number of header blocks on the page
+	preparedData := re.prepareGenericBlock("header", blockData)
+	re.headingLevel += 1 // header blocks cause further blocks to be level+1
 
 	if v, ok := blockDataContent["header"].([]interface{}); ok {
 		var heading string

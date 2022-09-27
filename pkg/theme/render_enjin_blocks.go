@@ -82,10 +82,7 @@ func (re *renderEnjin) prepareGenericBlockData(contentData interface{}) (blockDa
 
 func (re *renderEnjin) prepareGenericBlock(typeName string, data map[string]interface{}) (preparedData map[string]interface{}) {
 	re.blockCount += 1
-	switch re.headingLevel {
-	case 0, 1:
-		re.headingLevel += 1
-	}
+
 	var ok bool
 	preparedData = make(map[string]interface{})
 	preparedData["Type"] = typeName
@@ -113,6 +110,16 @@ func (re *renderEnjin) prepareGenericBlock(typeName string, data map[string]inte
 	} else {
 		preparedData["JumpLink"] = "false"
 	}
+
+	if re.headingCount == 0 && typeName != "header" {
+		switch re.headingLevel {
+		case 0, 1:
+			// first heading is 0, becomes h1
+			// second heading is 1, becomes h2
+			re.headingLevel += 1
+		}
+	}
+
 	preparedData["HeadingLevel"] = re.headingLevel
 	preparedData["HeadingCount"] = re.headingCount
 	return
