@@ -148,7 +148,7 @@ func (re *renderEnjin) processLinkListBlock(ctx context.Context, blockData map[s
 	}
 
 	// log.DebugF("prepared content: %v", preparedData)
-	html, err = re.renderNjnTemplate("content", preparedData)
+	html, err = re.renderNjnTemplate("link-list", preparedData)
 
 	return
 }
