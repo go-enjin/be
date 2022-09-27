@@ -19,31 +19,33 @@ import (
 	"fmt"
 	"html/template"
 
-	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/strings"
 )
 
-func (re *renderEnjin) processBlock(ctx context.Context, blockData map[string]interface{}) (html template.HTML, err error) {
+func (re *renderEnjin) processBlock(blockData map[string]interface{}) (html template.HTML, err error) {
 	if typeName, ok := blockData["type"]; ok {
 
 		switch typeName {
 		case "header":
-			html, err = re.processHeaderBlock(ctx, blockData)
+			html, err = re.processHeaderBlock(blockData)
 
 		case "notice":
-			html, err = re.processNoticeBlock(ctx, blockData)
+			html, err = re.processNoticeBlock(blockData)
 
 		case "link-list":
-			html, err = re.processLinkListBlock(ctx, blockData)
+			html, err = re.processLinkListBlock(blockData)
+
+		case "toc":
+			html, err = re.processTableOfContentsBlock(blockData)
 
 		case "content":
-			html, err = re.processContentBlock(ctx, blockData)
+			html, err = re.processContentBlock(blockData)
 
 		default:
 			log.WarnF("unsupported block type: %v", typeName)
 			b, _ := json.MarshalIndent(blockData, "", "  ")
-			html, err = re.processBlock(ctx, map[string]interface{}{
+			html, err = re.processBlock(map[string]interface{}{
 				"type": "content",
 				"content": map[string]interface{}{
 					"section": []interface{}{

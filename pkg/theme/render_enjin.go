@@ -34,26 +34,29 @@ type renderEnjin struct {
 	headingCount int
 
 	cache map[string]string
+	data  interface{}
 
 	sync.RWMutex
 }
 
-func newNjnRenderer(ctx context.Context, t *Theme) (re *renderEnjin) {
-	re = new(renderEnjin)
+func renderNjnData(ctx context.Context, t *Theme, data interface{}) (html template.HTML, err error) {
+	re := new(renderEnjin)
 	re.theme = t
 	re.ctx = ctx
 	re.headingLevel = 0
 	re.cache = make(map[string]string)
+	re.data = data
+	html, err = re.render(data)
 	return
 }
 
-func (re *renderEnjin) render(ctx context.Context, data interface{}) (html template.HTML, err error) {
+func (re *renderEnjin) render(data interface{}) (html template.HTML, err error) {
 
 	switch v := data.(type) {
 
 	case []interface{}:
 		for _, c := range v {
-			if h, e := re.render(ctx, c); e != nil {
+			if h, e := re.render(c); e != nil {
 				err = e
 				return
 			} else {
@@ -62,7 +65,7 @@ func (re *renderEnjin) render(ctx context.Context, data interface{}) (html templ
 		}
 
 	case map[string]interface{}:
-		html, err = re.processBlock(ctx, v)
+		html, err = re.processBlock(v)
 
 	default:
 		err = fmt.Errorf("unsupported njn data received: %T", v)

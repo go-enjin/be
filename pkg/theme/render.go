@@ -292,7 +292,6 @@ func (t *Theme) parseSemanticContent(ctx context.Context, content string) (html 
 		html, err = composeSemanticContentError(content, e)
 		return
 	}
-	renderer := newNjnRenderer(ctx, t)
-	html, err = renderer.render(ctx, data)
+	html, err = renderNjnData(ctx, t, data)
 	return
 }
