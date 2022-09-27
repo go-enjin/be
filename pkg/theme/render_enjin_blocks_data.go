@@ -19,19 +19,18 @@ import (
 	"html/template"
 	"strings"
 
-	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/log"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
-func (re *renderEnjin) processNoticeBlock(ctx context.Context, blockData map[string]interface{}) (html template.HTML, err error) {
+func (re *renderEnjin) processNoticeBlock(blockData map[string]interface{}) (html template.HTML, err error) {
 	// log.DebugF("content received: %v", blockData)
 
 	var blockDataContent map[string]interface{}
 	if blockDataContent, err = re.prepareGenericBlockData(blockData["content"]); err != nil {
 		return
 	}
-	preparedData := re.prepareGenericBlock("content", blockData)
+	preparedData := re.prepareGenericBlock("notice", blockData)
 
 	if v, ok := blockData["dismiss"].(string); ok && beStrings.IsTrue(v) {
 		preparedData["Dismiss"] = "true"
@@ -104,14 +103,14 @@ func (re *renderEnjin) processNoticeBlock(ctx context.Context, blockData map[str
 	return
 }
 
-func (re *renderEnjin) processLinkListBlock(ctx context.Context, blockData map[string]interface{}) (html template.HTML, err error) {
+func (re *renderEnjin) processLinkListBlock(blockData map[string]interface{}) (html template.HTML, err error) {
 	// log.DebugF("content received: %v", blockData)
 
 	var blockDataContent map[string]interface{}
 	if blockDataContent, err = re.prepareGenericBlockData(blockData["content"]); err != nil {
 		return
 	}
-	preparedData := re.prepareGenericBlock("content", blockData)
+	preparedData := re.prepareGenericBlock("link-list", blockData)
 
 	if v, ok := blockDataContent["header"].([]interface{}); ok {
 		var heading string
@@ -145,7 +144,7 @@ func (re *renderEnjin) processLinkListBlock(ctx context.Context, blockData map[s
 	return
 }
 
-func (re *renderEnjin) processContentBlock(ctx context.Context, blockData map[string]interface{}) (html template.HTML, err error) {
+func (re *renderEnjin) processContentBlock(blockData map[string]interface{}) (html template.HTML, err error) {
 	// log.DebugF("content received: %v", blockData)
 
 	var blockDataContent map[string]interface{}
