@@ -23,6 +23,17 @@ import (
 	"github.com/go-enjin/be/pkg/strings"
 )
 
+type tocItem struct {
+	Tag      string
+	Title    string
+	Level    int
+	Children []*tocItem
+}
+
+func (i *tocItem) String() string {
+	return fmt.Sprintf(`<a href="#%v">%v</a>`, i.Tag, i.Title)
+}
+
 func (re *renderEnjin) walkTableOfContents(count, level int, data interface{}) (upCount, upLevel int, list []*tocItem) {
 	list = make([]*tocItem, 0)
 
@@ -235,15 +246,4 @@ func (re *renderEnjin) processTableOfContentsBlock(blockData map[string]interfac
 	html, err = re.renderNjnTemplate("block/toc", preparedData)
 
 	return
-}
-
-type tocItem struct {
-	Tag      string
-	Title    string
-	Level    int
-	Children []*tocItem
-}
-
-func (i *tocItem) String() string {
-	return fmt.Sprintf(`<a href="#%v">%v</a>`, i.Tag, i.Title)
 }
