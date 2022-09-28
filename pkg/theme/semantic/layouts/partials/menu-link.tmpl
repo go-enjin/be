@@ -1,17 +1,9 @@
 {{- if .Href -}}
-    <a href="{{- .Href -}}"
-       {{- if .Attributes -}}
-           {{- range $k, $v := .Attributes -}}
-               {{ $k }}="{{ $v }}"
-           {{- end -}}
-       {{- end -}}
-    >{{- .Text -}}</a>
+    <a href="{{- .Href -}}" {{- template "partials/element-attributes.tmpl" . -}}>
+        {{- .Text -}}
+    </a>
 {{- else -}}
-    <span
-    {{- if .Attributes -}}
-        {{- range $k, $v := .Attributes -}}
-            {{ $k }}="{{ $v }}"
-        {{- end -}}
-    {{- end -}}
-    >{{- .Text -}}</span>
+    <span {{- template "partials/element-attributes.tmpl" . -}}>
+        {{- .Text -}}
+    </span>
 {{- end -}}
