@@ -126,16 +126,7 @@ func (re *renderEnjin) processHeaderBlock(blockData map[string]interface{}) (htm
 		re.headingLevel += 1 // header blocks cause further blocks to be level+1
 	}
 
-	if v, ok := blockDataContent["header"].([]interface{}); ok {
-		var heading string
-		for idx, vv := range v {
-			if vs, ok := vv.(string); ok {
-				if idx > 0 {
-					heading += " "
-				}
-				heading += vs
-			}
-		}
+	if heading, ok := re.parseBlockHeader(blockDataContent); ok {
 		preparedData["Heading"] = heading
 	}
 
@@ -164,6 +155,10 @@ func (re *renderEnjin) processHeaderBlock(blockData map[string]interface{}) (htm
 			navItems = append(navItems, navItem)
 		}
 		preparedData["Nav"] = navItems
+	}
+
+	if footer, ok := re.parseBlockFooter(blockDataContent); ok {
+		preparedData["Footer"] = footer
 	}
 
 	// log.DebugF("prepared header: %v", preparedData)

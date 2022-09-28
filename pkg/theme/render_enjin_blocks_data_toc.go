@@ -200,35 +200,20 @@ func (re *renderEnjin) processTableOfContentsBlock(blockData map[string]interfac
 	_, _, toc := re.walkTableOfContents(0, 0, re.data)
 	items := re.sortTableOfContents(toc)
 
-	if v, ok := blockDataContent["header"].([]interface{}); ok {
-		var heading string
-		for idx, vv := range v {
-			if vs, ok := vv.(string); ok {
-				if idx > 0 {
-					heading += " "
-				}
-				heading += vs
-			}
-		}
-		preparedData["Heading"] = heading
-
+	if heading, ok := re.parseBlockHeader(blockDataContent); ok {
+		preparedData["Header"] = heading
 		if withSelf {
 			items = append([]*tocItem{
 				{
 					Tag:   blockTag,
-					Title: heading,
+					Title: string(heading),
 				},
 			}, items...)
 		}
-		log.DebugF("have header - %+v", items[0])
-	} else {
-		log.DebugF("missing header - %+v", blockDataContent)
 	}
 
-	if footers, ok := blockDataContent["footer"].([]interface{}); ok {
-		if preparedData["Footer"], err = re.renderFooterFields(footers); err != nil {
-			return
-		}
+	if footer, ok := re.parseBlockFooter(blockDataContent); ok {
+		preparedData["Footer"] = footer
 	}
 
 	preparedData["Items"] = items

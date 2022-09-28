@@ -90,10 +90,8 @@ func (re *renderEnjin) processNoticeBlock(blockData map[string]interface{}) (htm
 		return
 	}
 
-	if footers, ok := blockDataContent["footer"].([]interface{}); ok {
-		if preparedData["Footer"], err = re.renderFooterFields(footers); err != nil {
-			return
-		}
+	if footer, ok := re.parseBlockFooter(blockDataContent); ok {
+		preparedData["Footer"] = footer
 	}
 
 	log.DebugF("notice block: %+v", preparedData)
@@ -112,17 +110,7 @@ func (re *renderEnjin) processLinkListBlock(blockData map[string]interface{}) (h
 	}
 	preparedData := re.prepareGenericBlock("link-list", blockData)
 
-	if v, ok := blockDataContent["header"].([]interface{}); ok {
-		var heading string
-		for idx, vv := range v {
-			if vs, ok := vv.(string); ok {
-				if idx > 0 {
-					heading += " "
-				}
-				heading += vs
-			}
-
-		}
+	if heading, ok := re.parseBlockHeader(blockDataContent); ok {
 		preparedData["Heading"] = heading
 	}
 
@@ -174,10 +162,8 @@ func (re *renderEnjin) processLinkListBlock(blockData map[string]interface{}) (h
 		}
 	}
 
-	if footers, ok := blockDataContent["footer"].([]interface{}); ok {
-		if preparedData["Footer"], err = re.renderFooterFields(footers); err != nil {
-			return
-		}
+	if footer, ok := re.parseBlockFooter(blockDataContent); ok {
+		preparedData["Footer"] = footer
 	}
 
 	// log.DebugF("prepared content: %v", preparedData)
@@ -195,17 +181,7 @@ func (re *renderEnjin) processContentBlock(blockData map[string]interface{}) (ht
 	}
 	preparedData := re.prepareGenericBlock("content", blockData)
 
-	if v, ok := blockDataContent["header"].([]interface{}); ok {
-		var heading string
-		for idx, vv := range v {
-			if vs, ok := vv.(string); ok {
-				if idx > 0 {
-					heading += " "
-				}
-				heading += vs
-			}
-
-		}
+	if heading, ok := re.parseBlockHeader(blockDataContent); ok {
 		preparedData["Heading"] = heading
 	}
 
@@ -215,10 +191,8 @@ func (re *renderEnjin) processContentBlock(blockData map[string]interface{}) (ht
 		}
 	}
 
-	if footers, ok := blockDataContent["footer"].([]interface{}); ok {
-		if preparedData["Footer"], err = re.renderFooterFields(footers); err != nil {
-			return
-		}
+	if footer, ok := re.parseBlockFooter(blockDataContent); ok {
+		preparedData["Footer"] = footer
 	}
 
 	// log.DebugF("prepared content: %v", preparedData)
@@ -266,10 +240,8 @@ func (re *renderEnjin) processImageBlock(blockData map[string]interface{}) (html
 		return
 	}
 
-	if footers, ok := blockDataContent["footer"].([]interface{}); ok {
-		if preparedData["Footer"], err = re.renderFooterFields(footers); err != nil {
-			return
-		}
+	if footer, ok := re.parseBlockFooter(blockDataContent); ok {
+		preparedData["Footer"] = footer
 	}
 
 	// log.DebugF("prepared content: %v", preparedData)
