@@ -116,6 +116,10 @@ func (f *Feature) CanTransform(mime string, r *http.Request) (ok bool) {
 }
 
 func (f *Feature) TransformOutput(_ string, input []byte) (output []byte) {
+	gohtml.Condense = true
+	gohtml.InlineTagMaxLength = 0
+	gohtml.InlineTags["img"] = true
+	gohtml.InlineTags["input"] = true
 	output = []byte(gohtml.Format(string(input)))
 	return
 }
