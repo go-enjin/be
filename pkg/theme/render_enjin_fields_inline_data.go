@@ -127,9 +127,6 @@ func (re *renderEnjin) preparePictureFieldData(field map[string]interface{}) (da
 				dataSources = append(dataSources, src)
 			}
 		}
-	} else {
-		err = fmt.Errorf("picture field requires one or more sources: %v", field)
-		return
 	}
 	data["Sources"] = dataSources
 	re.finalizeFieldData(data, field, "type", "sources", "default")
