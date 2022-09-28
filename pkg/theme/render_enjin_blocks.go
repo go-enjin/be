@@ -132,3 +132,33 @@ func (re *renderEnjin) prepareGenericBlock(typeName string, data map[string]inte
 	preparedData["HeadingCount"] = re.headingCount
 	return
 }
+
+func (re *renderEnjin) parseBlockHeader(content map[string]interface{}) (html template.HTML, ok bool) {
+	var v []interface{}
+	if v, ok = content["header"].([]interface{}); ok {
+		if headings, err := re.renderInlineFields(v); err != nil {
+			ok = false
+			return
+		} else {
+			for _, heading := range headings {
+				html += heading
+			}
+		}
+	}
+	return
+}
+
+func (re *renderEnjin) parseBlockFooter(content map[string]interface{}) (html template.HTML, ok bool) {
+	var v []interface{}
+	if v, ok = content["footer"].([]interface{}); ok {
+		if footers, err := re.renderContainerFields(v); err != nil {
+			ok = false
+			return
+		} else {
+			for _, footer := range footers {
+				html += footer
+			}
+		}
+	}
+	return
+}
