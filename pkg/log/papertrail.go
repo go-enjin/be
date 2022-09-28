@@ -32,6 +32,7 @@ func NewPapertrailHook(appName, host string, port int) (*papertrail.Hook, error)
 			logrus.WarnLevel,
 			logrus.InfoLevel,
 			logrus.DebugLevel,
+			logrus.TraceLevel,
 		})
 		return hook, nil
 	}
