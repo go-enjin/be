@@ -3,22 +3,17 @@
     <input type="checkbox" name="search-menu" id="search-menu"/>
     <input type="radio" name="main-menu" id="menu-close" checked=""/>
 
-    {{- range $i, $item := .MainMenu -}}
+    {{- range $i, $item := .MainMenu }}
         <input type="radio" name="main-menu" id="menu-{{- add $i 1 -}}"/>
         {{- if $item.SubMenu -}}
-
-            {{- range $j, $sub_item := $item.SubMenu -}}
+            {{- range $j, $sub_item := $item.SubMenu }}
                 <input type="radio" name="main-menu" id="menu-{{- add $i 1 -}}-{{- add $j 1 -}}"/>
                 {{- if $sub_item.SubMenu -}}
-
-                    {{- range $k, $sub_sub_item := $sub_item.SubMenu -}}
-                        <input type="radio" name="main-menu"
-                               id="menu-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}"/>
+                    {{- range $k, $sub_sub_item := $sub_item.SubMenu }}
+                        <input type="radio" name="main-menu" id="menu-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}"/>
                         {{- if $sub_sub_item.SubMenu -}}
-
-                            {{- range $l, $sub_sub_sub_item := $sub_sub_item.SubMenu -}}
-                                <input type="radio" name="main-menu"
-                                       id="menu-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}-{{ add $l 1 }}"/>
+                            {{- range $l, $sub_sub_sub_item := $sub_sub_item.SubMenu }}
+                                <input type="radio" name="main-menu" id="menu-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}-{{ add $l 1 }}"/>
                             {{- end -}}
                         {{- end -}}
                     {{- end -}}
@@ -31,11 +26,12 @@
     <div class="banner page-column">
         <div class="brand">
             <a href="/">
-                {{- if .SiteLogoUrl -}}
-                    <img src="{{- .SiteLogoUrl -}}"
-                         alt="{{- if .SiteLogoAlt -}}{{- .SiteLogoAlt -}}{{- else -}}site logo{{- end -}}"/>
-                {{- end -}}
-                {{- if .SiteName -}}<span>{{- .SiteName -}}</span>{{- end -}}
+                {{- if .SiteLogoUrl }}
+                    <img src="{{- .SiteLogoUrl -}}" alt="{{- if .SiteLogoAlt -}}{{- .SiteLogoAlt -}}{{- else -}}site logo{{- end -}}"/>
+                {{- end }}
+                {{- if .SiteName }}
+                    <span>{{- .SiteName -}}</span>
+                {{- end }}
             </a>
         </div>
 
@@ -46,79 +42,62 @@
 
                 <nav>
                     <ol>
-                        {{- range $i, $item := .MainMenu -}}
+                        {{- range $i, $item := .MainMenu }}
                             <li class="menu-item" id="menu-item-{{- add $i 1 -}}">
-                                <label class="{{- if $item.SubMenu -}}parent{{- else -}}child{{- end -}}"
-                                       for="menu-{{- add $i 1 -}}"
-                                       id="menu-item-{{- add $i 1 -}}--label">
+                                <label class="{{- if $item.SubMenu -}}parent{{- else -}}child{{- end -}}" for="menu-{{- add $i 1 -}}" id="menu-item-{{- add $i 1 -}}--label">
                                     {{ template "partials/menu-link.tmpl" $item }}
                                 </label>
-
-                                {{- if $item.SubMenu -}}
+                                {{- if $item.SubMenu }}
                                     <label class="close" for="menu-close" id="menu-item-{{- add $i 1 -}}--close">
                                         <span class="sr-only">close menu</span>
                                     </label>
                                     <ol class="sub-menu">
-                                        {{- range $j, $sub_item := $item.SubMenu -}}
+                                        {{- range $j, $sub_item := $item.SubMenu }}
                                             <li class="menu-item" id="menu-item-{{- add $i 1 -}}-{{- add $j 1 -}}">
-                                                <label class="{{- if $sub_item.SubMenu -}}parent{{- else -}}child{{- end -}}"
-                                                       for="menu-{{- add $i 1 -}}-{{- add $j 1 -}}"
-                                                       id="menu-item-{{- add $i 1 -}}-{{- add $j 1 -}}--label">
+                                                <label class="{{- if $sub_item.SubMenu -}}parent{{- else -}}child{{- end -}}" for="menu-{{- add $i 1 -}}-{{- add $j 1 -}}" id="menu-item-{{- add $i 1 -}}-{{- add $j 1 -}}--label">
                                                     {{ template "partials/menu-link.tmpl" $sub_item }}
                                                 </label>
-
-                                                {{- if $sub_item.SubMenu -}}
-                                                    <label class="close"
-                                                           for="menu-{{- add $i 1 -}}-{{- add $j 1 -}}"
-                                                           id="menu-item-{{- add $i 1 -}}-{{- add $j 1 -}}--close">
+                                                {{- if $sub_item.SubMenu }}
+                                                    <label class="close" for="menu-{{- add $i 1 -}}-{{- add $j 1 -}}" id="menu-item-{{- add $i 1 -}}-{{- add $j 1 -}}--close">
                                                         <span class="sr-only">close menu</span>
                                                     </label>
                                                     <ol class="sub-menu">
-                                                        {{- range $k, $sub_sub_item := $sub_item.SubMenu -}}
-                                                            <li class="menu-item"
-                                                                id="menu-item-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}">
-                                                                <label class="{{- if $sub_sub_item.SubMenu -}}parent{{- else -}}child{{- end -}}"
-                                                                       for="menu-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}"
-                                                                       id="menu-item-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}--label">
+                                                        {{- range $k, $sub_sub_item := $sub_item.SubMenu }}
+                                                            <li class="menu-item" id="menu-item-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}">
+                                                                <label class="{{- if $sub_sub_item.SubMenu -}}parent{{- else -}}child{{- end -}}" for="menu-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}" id="menu-item-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}--label">
                                                                     {{ template "partials/menu-link.tmpl" $sub_sub_item }}
                                                                 </label>
-
-                                                                {{- if $sub_sub_item.SubMenu -}}
-                                                                    <label class="close"
-                                                                           for="menu-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}"
-                                                                           id="menu-item-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}--close">
+                                                                {{- if $sub_sub_item.SubMenu }}
+                                                                    <label class="close" for="menu-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}" id="menu-item-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}--close">
                                                                         <span class="sr-only">close menu</span>
                                                                     </label>
                                                                     <ol class="sub-menu">
-                                                                        {{- range $l, $sub_sub_sub_item := $sub_sub_item.SubMenu -}}
-                                                                            <li class="menu-item"
-                                                                                id="menu-item-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}-{{- add $l 1 -}}">
-                                                                                <label class="child"
-                                                                                       for="menu-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}-{{- add $l 1 -}}"
-                                                                                       id="menu-item-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}-{{- add $l 1 -}}--label">
+                                                                        {{- range $l, $sub_sub_sub_item := $sub_sub_item.SubMenu }}
+                                                                            <li class="menu-item" id="menu-item-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}-{{- add $l 1 -}}">
+                                                                                <label class="child" for="menu-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}-{{- add $l 1 -}}" id="menu-item-{{- add $i 1 -}}-{{- add $j 1 -}}-{{- add $k 1 -}}-{{- add $l 1 -}}--label">
                                                                                     {{ template "partials/menu-link.tmpl" $sub_sub_sub_item }}
                                                                                 </label>
                                                                             </li>
-                                                                        {{- end -}}
+                                                                        {{- end }}
                                                                     </ol>
-                                                                {{- end -}}
+                                                                {{- end }}
                                                             </li>
-                                                        {{- end -}}
+                                                        {{- end }}
                                                     </ol>
-                                                {{- end -}}
+                                                {{- end }}
                                             </li>
-                                        {{- end -}}
+                                        {{- end }}
                                     </ol>
-                                {{- end -}}
+                                {{- end }}
                             </li>
-                        {{- end -}}
+                        {{- end }}
                     </ol>
                 </nav>
 
                 <div class="controls">
                     <div class="search">
                         <form>
-                            <input type="text" name="query" placeholder="Search">
+                            <input type="text" name="query" placeholder="Search" />
                             <button type="submit" value="submit">
                                 <i class="fas fa-search"></i>
                                 <span class="sr-only">Search</span>
