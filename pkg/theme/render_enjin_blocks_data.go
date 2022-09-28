@@ -210,17 +210,59 @@ func (re *renderEnjin) processImageBlock(blockData map[string]interface{}) (html
 	}
 	preparedData := re.prepareGenericBlock("image", blockData)
 
-	if v, ok := blockDataContent["header"].([]interface{}); ok {
-		var heading string
-		for idx, vv := range v {
-			if vs, ok := vv.(string); ok {
-				if idx > 0 {
-					heading += " "
-				}
-				heading += vs
-			}
-
+	if v, ok := blockData["constraint"].(string); ok {
+		v = strings.ToLower(v)
+		switch v {
+		case "width", "height":
+			preparedData["Constraint"] = v
+		default:
+			err = fmt.Errorf("invalid image block constraint: %v", v)
+			return
 		}
+	} else {
+		preparedData["Constraint"] = "width"
+	}
+
+	if v, ok := blockData["fitting"].(string); ok {
+		v = strings.ToLower(v)
+		switch v {
+		case "cover", "fill", "contain", "none", "scale-down":
+			preparedData["Fitting"] = v
+		default:
+			err = fmt.Errorf("invalid image block fitting: %v", v)
+			return
+		}
+	} else {
+		preparedData["Fitting"] = "cover"
+	}
+
+	if v, ok := blockData["position"].(string); ok {
+		v = strings.ToLower(v)
+		switch v {
+		case "center", "top", "top-left", "left", "bottom-left", "bottom", "bottom-right", "right", "top-right":
+			preparedData["Position"] = v
+		default:
+			err = fmt.Errorf("invalid image block position: %v", v)
+			return
+		}
+	} else {
+		preparedData["Position"] = "center"
+	}
+
+	if v, ok := blockData["size"].(string); ok {
+		v = strings.ToLower(v)
+		switch v {
+		case "sliver", "thin", "banner", "normal", "tall", "huge", "actual":
+			preparedData["Size"] = v
+		default:
+			err = fmt.Errorf("invalid image block size: %v", v)
+			return
+		}
+	} else {
+		preparedData["Size"] = "normal"
+	}
+
+	if heading, ok := re.parseBlockHeader(blockDataContent); ok {
 		preparedData["Heading"] = heading
 	}
 
