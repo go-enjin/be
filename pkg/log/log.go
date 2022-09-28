@@ -25,12 +25,24 @@ var logLogger *log.Logger
 
 var logger = logrus.New()
 
+func ErrorWriter() *io.PipeWriter {
+	return logger.WriterLevel(logrus.ErrorLevel)
+}
+
+func WarnWriter() *io.PipeWriter {
+	return logger.WriterLevel(logrus.WarnLevel)
+}
+
 func InfoWriter() *io.PipeWriter {
 	return logger.WriterLevel(logrus.InfoLevel)
 }
 
 func DebugWriter() *io.PipeWriter {
 	return logger.WriterLevel(logrus.DebugLevel)
+}
+
+func TraceWriter() *io.PipeWriter {
+	return logger.WriterLevel(logrus.TraceLevel)
 }
 
 func Logrus() *logrus.Logger {
