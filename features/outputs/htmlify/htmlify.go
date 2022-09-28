@@ -18,6 +18,7 @@ package htmlify
 
 import (
 	"net/http"
+	"regexp"
 
 	"github.com/urfave/cli/v2"
 	"github.com/yosssi/gohtml"
@@ -42,7 +43,8 @@ const Tag feature.Tag = "OutputHtmlify"
 type Feature struct {
 	feature.CFeature
 
-	ignored []string
+	ignore  []string
+	ignored []*regexp.Regexp
 }
 
 type MakeFeature interface {
@@ -58,11 +60,11 @@ func New() MakeFeature {
 	}
 	return _htmlify
 }
-func (f *Feature) Ignore(paths ...string) MakeFeature {
-	for _, path := range paths {
-		path = bePath.TrimSlash(net.TrimQueryParams(path))
-		if !beStrings.StringInStrings(path, f.ignored...) {
-			f.ignored = append(f.ignored, path)
+
+func (f *Feature) Ignore(pathsOrPatterns ...string) MakeFeature {
+	for _, pathOrPattern := range pathsOrPatterns {
+		if !beStrings.StringInStrings(pathOrPattern, f.ignore...) {
+			f.ignore = append(f.ignore, pathOrPattern)
 		}
 	}
 	return f
@@ -78,20 +80,37 @@ func (f *Feature) Build(b feature.Buildable) (err error) {
 }
 
 func (f *Feature) Startup(ctx *cli.Context) (err error) {
+	for _, path := range f.ignore {
+		if rx, e := regexp.Compile(path); e != nil {
+			f.ignored = append(f.ignored, nil)
+		} else {
+			f.ignored = append(f.ignored, rx)
+		}
+	}
 	return
 }
 
 func (f *Feature) CanTransform(mime string, r *http.Request) (ok bool) {
 	urlPath := bePath.TrimSlash(net.TrimQueryParams(r.URL.Path))
-	for _, path := range f.ignored {
-		if urlPath == path {
-			log.DebugF("htmlify ignoring: %v", path)
+	for idx, rx := range f.ignored {
+		ignore := false
+		if rx != nil {
+			ignore = rx.MatchString(urlPath)
+		} else {
+			ignore = urlPath == f.ignore[idx]
+		}
+		if ignore {
+			log.TraceF("htmlify ignoring (path or pattern): (%v) - %v", f.ignore[idx], urlPath)
 			return
 		}
 	}
-	switch beStrings.GetBasicMime(mime) {
+	basicMime := beStrings.GetBasicMime(mime)
+	switch basicMime {
 	case "text/html":
 		ok = true
+		log.TraceF("htmlify transforming: %v", basicMime, urlPath)
+	default:
+		log.TraceF("htmlify ignoring (mime type): (%v) - %v", basicMime, urlPath)
 	}
 	return
 }
