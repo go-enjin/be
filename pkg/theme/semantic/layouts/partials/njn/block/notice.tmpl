@@ -35,9 +35,7 @@
             {{- end -}}
             {{- if .Footer -}}
                 <footer>
-                    {{ range $part := .Footer }}
-                        {{ $part | asHTML }}
-                    {{ end }}
+                    {{ .Footer | asHTML }}
                 </footer>
             {{ end }}
             {{ if eq .JumpTop "true" }}

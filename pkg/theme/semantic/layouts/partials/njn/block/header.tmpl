@@ -15,7 +15,7 @@
         {{ if .HeadingLevel }}data-header-level="{{ .HeadingLevel }}"{{ end -}}
 >
     <div class="content">
-        <h{{ .HeadingLevel }}>{{ .Heading }}</h{{ .HeadingLevel }}>
+        <h{{ .HeadingLevel }}>{{ .Heading | asHTML }}</h{{ .HeadingLevel }}>
         {{ if .JumpLink }}
             <a class="jump-link" href="#{{ .Tag }}">
                 <span class="sr-only">permalink</span>
@@ -32,6 +32,14 @@
                 {{ end }}
             </ul>
         </nav>
+    {{ end }}
+    {{ if .Footer }}
+        <footer>
+            {{ .Footer | asHTML }}
+        </footer>
+    {{ end }}
+    {{ if .JumpTop }}
+        <a class="jump-top" href="#top">top</a>
     {{ end }}
     {{ if ne .HeadingCount 0}}
 </section>{{ else }}

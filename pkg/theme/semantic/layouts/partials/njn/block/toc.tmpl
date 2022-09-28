@@ -16,7 +16,7 @@
     <div class="content">
         {{ if .Heading }}
             <header>
-                <h{{ .HeadingLevel }}>{{ .Heading }}</h{{ .HeadingLevel }}>
+                <h{{ .HeadingLevel }}>{{ .Heading | asHTML }}</h{{ .HeadingLevel }}>
                 {{ if .JumpLink }}
                     <a class="jump-link" href="#{{ .Tag }}">
                         <span class="sr-only">permalink</span>
@@ -63,9 +63,7 @@
         </section>
         {{ if .Footer }}
             <footer>
-                {{ range $part := .Footer }}
-                    {{ $part | asHTML }}
-                {{ end }}
+                {{ .Footer | asHTML }}
             </footer>
         {{ end }}
         {{ if .JumpTop }}
