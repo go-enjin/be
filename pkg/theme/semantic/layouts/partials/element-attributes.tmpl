@@ -1,3 +1,0 @@
-{{- if .Attributes -}}
-    {{- range $k, $v := .Attributes }} {{ if eq $k "type" -}}type{{- else -}}{{ $k -}}{{- end -}}="{{ $v }}"{{- end -}}
-{{- end -}}
