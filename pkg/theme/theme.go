@@ -17,7 +17,6 @@ package theme
 import (
 	"fmt"
 	"html/template"
-	"strconv"
 
 	"github.com/BurntSushi/toml"
 	"github.com/iancoleman/strcase"
@@ -27,6 +26,7 @@ import (
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
+	"github.com/go-enjin/be/pkg/tmpl"
 )
 
 type Author struct {
@@ -136,82 +136,19 @@ func (t *Theme) initFuncMap() {
 		"toScreamingKebab":     strcase.ToScreamingKebab,
 		"toSnake":              strcase.ToSnake,
 		"toScreamingSnake":     strcase.ToScreamingSnake,
-		"asHTML": func(input interface{}) template.HTML {
-			switch v := input.(type) {
-			case string:
-				return template.HTML(v)
-			case template.HTML:
-				return v
-			default:
-				return template.HTML(fmt.Sprintf("%v", v))
-			}
-		},
-		"fsHash": func(path string) (shasum string) {
-			shasum, _ = fs.FindFileShasum(path)
-			return
-		},
-		"fsUrl": func(path string) (url string) {
-			url = path
-			if shasum, err := fs.FindFileShasum(path); err == nil {
-				url += "?rev=" + shasum
-			} else {
-				log.ErrorF("error finding file shasum: %v", path)
-			}
-			return
-		},
-		"fsMime": func(path string) (mime string) {
-			mime, _ = fs.FindFileMime(path)
-			return
-		},
-		"add": func(values ...interface{}) (result string) {
-			var total int
-			for idx, v := range values {
-				switch value := v.(type) {
-				case int:
-					if idx == 0 {
-						total = value
-					} else {
-						total += value
-					}
-				case string:
-					if i, err := strconv.Atoi(value); err != nil {
-						if idx == 0 {
-							total = i
-						} else {
-							total += i
-						}
-					}
-				}
-			}
-			result = fmt.Sprintf("%v", total)
-			return
-		},
-		"sub": func(values ...interface{}) (result string) {
-			if len(values) == 0 {
-				return
-			}
-			var total int
-			for idx, v := range values {
-				switch value := v.(type) {
-				case int:
-					if idx == 0 {
-						total = value
-					} else {
-						total -= value
-					}
-				case string:
-					if i, err := strconv.Atoi(value); err != nil {
-						if idx == 0 {
-							total = i
-						} else {
-							total -= i
-						}
-					}
-				}
-			}
-			result = fmt.Sprintf("%v", total)
-			return
-		},
+
+		"asHTML":     tmpl.AsHTML,
+		"asHTMLAttr": tmpl.AsHTMLAttr,
+		"fsHash":     tmpl.FsHash,
+		"fsUrl":      tmpl.FsUrl,
+		"fsMime":     tmpl.FsMime,
+		"add":        tmpl.Add,
+		"sub":        tmpl.Sub,
+
+		"element":           tmpl.Element,
+		"elementOpen":       tmpl.ElementOpen,
+		"elementClose":      tmpl.ElementClose,
+		"elementAttributes": tmpl.ElementAttributes,
 	}
 	for k, v := range gtf.GtfFuncMap {
 		t.FuncMap[k] = v
