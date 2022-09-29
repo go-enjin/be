@@ -24,7 +24,6 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/fs"
-	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/tmpl"
 )
@@ -55,7 +54,7 @@ type Theme struct {
 	Minify bool
 
 	FuncMap    template.FuncMap
-	Layouts    map[string]*Layout
+	Layouts    *Layouts
 	Archetypes map[string]*Archetype
 
 	FileSystem fs.FileSystem
@@ -72,7 +71,7 @@ func New(path string, fs fs.FileSystem) (t *Theme, err error) {
 
 func (t *Theme) init() (err error) {
 	t.Name = bePath.Base(t.Path)
-	t.Layouts = make(map[string]*Layout)
+	t.Layouts = nil
 	t.Archetypes = make(map[string]*Archetype)
 	if t.FileSystem == nil {
 		err = fmt.Errorf(`missing filesystem`)
@@ -156,55 +155,7 @@ func (t *Theme) initFuncMap() {
 }
 
 func (t *Theme) initLayouts() (err error) {
-	t.Layouts = make(map[string]*Layout)
-	var paths []string
-	if paths, err = t.FileSystem.ListDirs("layouts"); err != nil {
-		err = fmt.Errorf("error listing layouts: %v", err)
-		return
-	}
-
-	for _, path := range paths {
-		var l *Layout
-		if lo, e := NewLayout(path, t.FileSystem, t.FuncMap); e != nil {
-			err = fmt.Errorf("error creating new layout: %v - %v", path, e)
-			return
-		} else {
-			l = lo
-			log.DebugF("including %v theme layout: %v", t.Name, path)
-		}
-		t.Layouts[bePath.Base(path)] = l
-		var files []string
-		for _, t := range l.Tmpl.Templates() {
-			files = append(files, t.Name())
-		}
-		log.DebugF("included %v theme %v layout templates: %v", t.Name, l.Name, files)
-	}
-
-	if partials, ok := t.Layouts["partials"]; ok {
-		for k, layout := range t.Layouts {
-			if k == "partials" {
-				continue
-			}
-			for _, tmpl := range partials.Tmpl.Templates() {
-				if _, err = layout.Tmpl.AddParseTree(tmpl.Name(), tmpl.Tree); err != nil {
-					return
-				}
-			}
-		}
-	}
-	if defaultLayout, ok := t.Layouts["_default"]; ok {
-		for k, layout := range t.Layouts {
-			switch k {
-			case "partials", "_default":
-				continue
-			}
-			for _, tmpl := range defaultLayout.Tmpl.Templates() {
-				if _, err = layout.Tmpl.AddParseTree(tmpl.Name(), tmpl.Tree); err != nil {
-					return
-				}
-			}
-		}
-	}
+	t.Layouts, err = NewLayouts(t)
 	return
 }
 

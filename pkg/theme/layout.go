@@ -18,10 +18,12 @@ import (
 	"html/template"
 	"os"
 	"strings"
+	"sync"
 
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 type Layout struct {
@@ -29,48 +31,83 @@ type Layout struct {
 	Name string
 	Keys []string
 	Tmpl *template.Template
+
+	efs beFs.FileSystem
+	fm  template.FuncMap
+	// s map[string]string
+
+	sync.RWMutex
 }
 
 func NewLayout(path string, efs beFs.FileSystem, fm template.FuncMap) (layout *Layout, err error) {
+	layout = new(Layout)
+	layout.Path = path
+	layout.Name = bePath.Base(path)
+	layout.efs = efs
+	layout.fm = fm
+	err = layout.Reload()
+	return
+}
+
+func (l *Layout) Reload() (err error) {
+	l.Lock()
+	defer l.Unlock()
+
 	var tmpl *template.Template
 	if tmpl, err = template.New("empty").Parse(`{{/* empty */}}`); err != nil {
 		return
 	}
-
-	layout = new(Layout)
-	layout.Path = path
-	layout.Name = bePath.Base(path)
-	layout.Keys = make([]string, 0)
-	layout.Tmpl = tmpl
+	l.Keys = make([]string, 0)
+	l.Tmpl = tmpl
 
 	var walker func(p string) (e error)
 	walker = func(p string) (e error) {
 		var entries []string
-		if entries, e = efs.ListAllFiles(p); e != nil {
+		if entries, e = l.efs.ListAllFiles(p); e != nil {
 			return
 		}
 		for _, entry := range entries {
+			var ee error
+
 			entryBase := strings.TrimPrefix(entry, p+"/")
-			entryName := layout.Name + string(os.PathSeparator) + entryBase
+			entryName := l.Name + string(os.PathSeparator) + entryBase
 			entryPath := entry
+
+			// var shasum string
+			// if shasum, ee = l.efs.Shasum(entryPath); ee != nil {
+			// 	log.ErrorF("error efs.Shasum: %v", ee)
+			// 	continue
+			// }
+			// if v, ok := l.s[entryName]; ok {
+			// 	if v == shasum {
+			// 		log.TraceF("validated known entry: %v", entryName)
+			// 		continue
+			// 	} else {
+			// 		log.TraceF("overwriting known entry: %v", entryName)
+			// 	}
+			// }
+			// l.s[entryName] = shasum
+
 			var data []byte
-			if data, e = efs.ReadFile(entryPath); e != nil {
-				log.ErrorF("error efs.ReadFile: %v", e)
-				return
+			if data, ee = l.efs.ReadFile(entryPath); ee != nil {
+				log.ErrorF("error efs.ReadFile: %v", ee)
+				continue
 			}
-			if _, e = layout.Tmpl.New(entryName).Funcs(fm).Parse(string(data)); e != nil {
-				log.ErrorF("template initial parse error: %v", e)
-				return
+
+			if _, ee = l.Tmpl.New(entryName).Funcs(l.fm).Parse(string(data)); ee != nil {
+				log.ErrorF("template initial parse error: %v", ee)
+				continue
 			}
-			layout.Keys = append(layout.Keys, entryName)
-			log.DebugF("including layout %v, from file: %v", entryName, entryPath)
+
+			if !beStrings.StringInStrings(entryName, l.Keys...) {
+				l.Keys = append(l.Keys, entryName)
+			}
+			log.TraceF("layout %v entry set: %v", entryName, entryPath)
 		}
 		return
 	}
 
-	if err = walker(path); err != nil {
-		layout = nil
-	}
+	err = walker(l.Path)
 	return
 }
 

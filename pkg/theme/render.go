@@ -89,25 +89,9 @@ func (t *Theme) RenderTemplateContent(ctx context.Context, tmplContent string) (
 	return
 }
 
-func (t *Theme) FindAllPartials() (partials []*Layout) {
-	if p, ok := t.Layouts["partials"]; ok {
-		partials = append(partials, p)
-	}
-	return
-}
-
-func (t *Theme) AddAllPartialsToHtmlTemplate(tt *template.Template) {
-	partials := t.FindAllPartials()
-	for _, partial := range partials {
-		for _, tmpl := range partial.Tmpl.Templates() {
-			_, _ = tt.AddParseTree(tmpl.Name(), tmpl.Tree)
-		}
-	}
-}
-
 func (t *Theme) NewHtmlTemplate(name string) (tt *template.Template) {
 	tt = template.New(name).Funcs(t.FuncMap)
-	t.AddAllPartialsToHtmlTemplate(tt)
+	t.Layouts.AddPartialsToTemplate(tt)
 	return
 }
 
@@ -129,11 +113,11 @@ func (t *Theme) FindLayout(named string) (layout *Layout, name string, err error
 		named = "_default"
 	}
 	name = named
-	var ok bool
-	if layout, ok = t.Layouts[name]; !ok {
+	if layout = t.Layouts.getLayout(name); layout == nil {
 		err = fmt.Errorf("%v theme layout not found, expected: \"%v\"", t.Name, name)
+	} else {
+		log.DebugF("using layout from context: %v", name)
 	}
-	log.DebugF("using layout from context: %v", name)
 	return
 }
 
@@ -165,7 +149,7 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *templ
 		fmt.Sprintf("%s/baseof", layoutName),
 	)
 	if layoutName != "_default" {
-		if _, ok := t.Layouts["_default"]; ok {
+		if defaultLayout := t.Layouts.getLayout("_default"); defaultLayout != nil {
 			if section != "" {
 				baseLookups = append(baseLookups, fmt.Sprintf("_default/%s-baseof", section))
 			}
@@ -181,8 +165,8 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *templ
 		lookups = append(lookups, name+".html.tmpl", name+".tmpl", name+".html")
 	}
 	if tt = layout.Lookup(lookups...); tt == nil {
-		log.ErrorF("%v theme lookups checked: %v", t.Name, lookups)
-		log.ErrorF("%v context used: %v", t.Name, ctx.AsLogString())
+		// log.ErrorF("%v theme lookups checked: %v", t.Name, lookups)
+		// log.ErrorF("%v context used: %v", t.Name, ctx.AsLogString())
 		err = fmt.Errorf("no %v theme template found: archetype=%v, section=%v, layout=%v", t.Name, archetype, section, layoutName)
 		return
 	}
