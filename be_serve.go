@@ -57,11 +57,11 @@ func (e *Enjin) Serve500(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) (err error) {
-	var data []byte
 	var t *theme.Theme
 	if t, err = e.GetTheme(); err != nil {
 		return
 	}
+
 	ctx := e.Context()
 	ctx.Set("Request", map[string]string{
 		"URL":        r.URL.String(),
@@ -75,6 +75,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	})
 	ctx.Set("BaseUrl", net.BaseURL(r))
 	ctx.Apply(p.Context.Copy())
+
 	for _, f := range e.eb.features {
 		if s, ok := f.(feature.PageContextModifier); ok {
 			log.DebugF("filtering page context with: %v", f.Tag())
@@ -94,6 +95,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
+	var data []byte
 	if data, err = t.RenderPage(ctx, p); err != nil {
 		return
 	}
