@@ -11,9 +11,9 @@
         data-block-margins="{{ .Margins }}"
         data-block-jump-top="{{ .JumpTop }}"
         data-block-jump-link="{{ .JumpLink }}"
-        {{ if .HeadingReset }}data-header-reset="{{ .HeadingReset }}"{{ end -}}
-        {{ if .HeadingLevel }}data-header-level="{{ .HeadingLevel }}"{{ end -}}
->
+        data-header-reset="{{ .HeadingReset }}"
+        data-header-level="{{ .HeadingLevel }}"
+        data-header-count="{{ .HeadingCount }}">
     <div class="content">
         <h{{ .HeadingLevel }}>{{ .Heading | asHTML }}</h{{ .HeadingLevel }}>
         {{ if .JumpLink }}
@@ -27,7 +27,9 @@
             <ul>
                 {{ range $item := .Nav }}
                     {{ if eq $item.Type "a" }}
-                        <li><a href="{{ $item.Href }}">{{ $item.Text }}</a></li>
+                        <li>
+                            <a href="{{ $item.Href }}">{{ $item.Text }}</a>
+                        </li>
                     {{ end }}
                 {{ end }}
             </ul>

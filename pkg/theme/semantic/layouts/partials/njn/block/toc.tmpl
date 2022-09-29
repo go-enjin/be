@@ -1,5 +1,5 @@
 <!-- toc block -->
-<article
+<section
         class="block"
         id="{{ .Tag }}"
         data-block-tag="{{ .Tag }}"
@@ -11,8 +11,7 @@
         data-block-jump-link="{{ .JumpLink }}"
         data-toc-page-title="{{ .PageTitle }}"
         data-toc-with-self="{{ .WithSelf }}"
-        data-toc-counter="{{ .Counter }}"
->
+        data-toc-counter="{{ .Counter }}">
     <div class="content">
         {{ if .Heading }}
             <header>
@@ -25,10 +24,12 @@
             </header>
         {{ end }}
         <section>
-            {{ if eq .PageTitle "true" }}<a href="#top">{{ .Context.Title }}</a>{{ end }}
+            {{- if eq .PageTitle "true" }}
+                <a href="#top">{{ .Context.Title }}</a>
+            {{ end -}}
             <ol>
                 {{ range $item := .Items }}
-                    <li{{- if eq $item.Title $.Heading }} class="toc"{{ end -}}>
+                    <li{{- if eq $item.Title $.TocHeading }} class="toc"{{ end -}}>
                         {{ $item | asHTML }}
                         {{ if $item.Children }}
                             <ol>
@@ -70,4 +71,4 @@
             <a class="jump-top" href="#top">top</a>
         {{ end }}
     </div>
-</article>
+</section>

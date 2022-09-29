@@ -9,8 +9,7 @@
         data-block-margins="{{ .Margins }}"
         data-block-jump-top="{{ .JumpTop }}"
         data-block-jump-link="{{ .JumpLink }}"
-        {{- if .NoticeType }}data-notice-type="{{ .NoticeType }}"{{- end -}}
->
+        data-notice-type="{{ .NoticeType }}">
     <div class="content">
         {{- if eq .Dismiss "true" }}
             <input type="checkbox" name="dismiss-notice"/>
