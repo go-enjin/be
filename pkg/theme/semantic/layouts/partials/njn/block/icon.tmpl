@@ -1,0 +1,54 @@
+<!-- content block -->
+<section
+        class="block"
+        id="{{ .Tag }}"
+        data-block-tag="{{ .Tag }}"
+        data-block-type="icon"
+        data-block-profile="{{ .Profile }}"
+        data-block-padding="{{ .Padding }}"
+        data-block-margins="{{ .Margins }}"
+        data-block-jump-top="{{ .JumpTop }}"
+        data-block-jump-link="{{ .JumpLink }}"
+>
+    <div class="content">
+        {{ if .Heading }}
+            <header>
+                <h{{ .HeadingLevel }}>{{ .Heading | asHTML }}</h{{ .HeadingLevel }}>
+                {{ if .JumpLink }}
+                    <a class="jump-link" href="#{{ .Tag }}">
+                        <span class="sr-only">permalink</span>
+                    </a>
+                {{ end }}
+            </header>
+        {{ end }}
+        {{ if .Icon }}
+            {{- if .Icon.Href }}
+                <a class="{{ .Icon.Align }}" href="{{ .Icon.Href }}"{{- if .Icon.Target }} target="{{ .Icon.Target }}"{{- end -}}{{- elementAttributes .Icon -}}>
+            {{- else -}}
+                <div class="icon--container {{ .Icon.Align }}">
+            {{- end -}}
+            {{ if eq .Icon.Class "icon" }}
+                <span class="icon {{ .Icon.Name }}"></span>
+            {{ else }}
+                <i class="{{ .Icon.Class }} {{ .Icon.Name }}"></i>
+            {{ end }}
+            {{- if .Icon.Caption }}
+                <br/>
+                <small>{{ .Icon.Caption }}</small>
+            {{- end -}}
+            {{- if not .Icon.Href }}
+                </div>
+            {{- else -}}
+                </a>
+            {{- end -}}
+        {{ end }}
+        {{ if .Footer }}
+            <footer>
+                {{ .Footer | asHTML }}
+            </footer>
+        {{ end }}
+        {{ if .JumpTop }}
+            <a class="jump-top" href="#top">top</a>
+        {{ end }}
+    </div>
+</section>

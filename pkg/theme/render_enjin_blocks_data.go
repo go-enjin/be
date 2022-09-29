@@ -270,3 +270,89 @@ func (re *renderEnjin) processImageBlock(blockData map[string]interface{}) (html
 
 	return
 }
+
+func (re *renderEnjin) processIconBlock(blockData map[string]interface{}) (html template.HTML, err error) {
+
+	var blockDataContent map[string]interface{}
+	if blockDataContent, err = re.prepareGenericBlockData(blockData["content"]); err != nil {
+		return
+	}
+	preparedData := re.prepareGenericBlock("icon", blockData)
+
+	if heading, ok := re.parseBlockHeader(blockDataContent); ok {
+		preparedData["Heading"] = heading
+	}
+
+	if iconMap, ok := blockDataContent["icon"].(map[string]interface{}); ok {
+		icon := make(map[string]interface{})
+
+		if v, ok := iconMap["align"].(string); ok {
+			v = strings.ToLower(v)
+			switch v {
+			case "left", "center", "right":
+				icon["Align"] = v
+			default:
+				err = fmt.Errorf("invalid icon block icon alignment: %v", v)
+				return
+			}
+		} else {
+			icon["Align"] = "center"
+		}
+
+		if v, ok := iconMap["href"].(string); ok {
+			icon["Href"] = v
+		}
+
+		if v, ok := iconMap["target"].(string); ok {
+			icon["Target"] = v
+		}
+
+		if v, ok := iconMap["caption"].(string); ok {
+			icon["Caption"] = v
+		}
+
+		if attrs, _, _, ok := re.parseFieldAttributes(iconMap); ok {
+			icon["Attributes"] = re.finalizeFieldAttributes(attrs)
+		} else if v, ok := iconMap["attributes"]; ok {
+			log.ErrorF("error parsing attributes type: %T %+v", v, v)
+		}
+
+		if v, ok := iconMap["class"]; ok {
+			switch t := v.(type) {
+			case string:
+				icon["Class"] = t
+			case []interface{}:
+				var classes []string
+				for _, i := range t {
+					if vi, ok := i.(string); ok {
+						classes = append(classes, vi)
+					} else {
+						err = fmt.Errorf("invalid icon block icon class type: %T %+v", i, i)
+						return
+					}
+				}
+				icon["class"] = strings.Join(classes, " ")
+			}
+		} else {
+			err = fmt.Errorf("icon block missing icon class: %+v", iconMap)
+			return
+		}
+
+		if v, ok := iconMap["name"].(string); ok {
+			icon["Name"] = v
+		} else {
+			err = fmt.Errorf("icon block missing icon name: %+v", iconMap)
+			return
+		}
+
+		preparedData["Icon"] = icon
+	}
+
+	if footer, ok := re.parseBlockFooter(blockDataContent); ok {
+		preparedData["Footer"] = footer
+	}
+
+	html, err = re.renderNjnTemplate("block/icon", preparedData)
+
+	return
+}
