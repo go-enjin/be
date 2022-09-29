@@ -22,6 +22,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"github.com/yosssi/gohtml"
+	"golang.org/x/net/html"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
@@ -108,7 +109,7 @@ func (f *Feature) CanTransform(mime string, r *http.Request) (ok bool) {
 	switch basicMime {
 	case "text/html":
 		ok = true
-		log.TraceF("htmlify transforming: %v", basicMime, urlPath)
+		log.TraceF("htmlify transforming: %v", urlPath)
 	default:
 		log.TraceF("htmlify ignoring (mime type): (%v) - %v", basicMime, urlPath)
 	}
@@ -118,8 +119,12 @@ func (f *Feature) CanTransform(mime string, r *http.Request) (ok bool) {
 func (f *Feature) TransformOutput(_ string, input []byte) (output []byte) {
 	gohtml.Condense = true
 	gohtml.InlineTagMaxLength = 0
+	gohtml.LineWrapMaxSpillover = 0
 	gohtml.InlineTags["img"] = true
 	gohtml.InlineTags["input"] = true
+	gohtml.IsPreformatted = func(token html.Token) bool {
+		return token.Data == "pre" || token.Data == "textarea" || token.Data == "code"
+	}
 	output = []byte(gohtml.Format(string(input)))
 	return
 }
