@@ -1,8 +1,8 @@
-{{ template "partials/element-open.tmpl" . }}
+{{ elementOpen . }}
 {{ if .Sources -}}
     {{- range $source := .Sources }}
         <source srcset="{{ $source.Srcset }}" media="{{ $source.Media }}"/>
     {{- end -}}
 {{- end }}
 {{ template "partials/njn/img.tmpl" .Default }}
-{{ template "partials/element-close.tmpl" . }}
+{{ elementClose . }}

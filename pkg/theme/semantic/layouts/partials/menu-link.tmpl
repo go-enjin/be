@@ -1,9 +1,9 @@
 {{- if .Href -}}
-    <a href="{{- .Href -}}" {{- template "partials/element-attributes.tmpl" . -}}>
+    <a href="{{- .Href -}}" {{- elementAttributes . -}}>
         {{- .Text -}}
     </a>
 {{- else -}}
-    <span {{- template "partials/element-attributes.tmpl" . -}}>
+    <span {{- elementAttributes . -}}>
         {{- .Text -}}
     </span>
 {{- end -}}

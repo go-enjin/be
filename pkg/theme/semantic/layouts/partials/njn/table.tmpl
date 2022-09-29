@@ -1,6 +1,6 @@
 <div class="auto-scroll-x">
     <table
-            {{ template "partials/element-attributes.tmpl" . }}
+            {{ elementAttributes . }}
             {{- if .Options -}}
                 {{- if .Options.Sticky -}}
                     {{- if .Options.Sticky.Head }} data-field-table-sticky-head="{{ .Options.Sticky.Head }}"{{ end -}}
@@ -15,7 +15,7 @@
             <thead>
             <tr>
                 {{ range $h := .Head }}
-                    {{ template "partials/element.tmpl" $h }}
+                    {{ element $h }}
                 {{ end }}
             </tr>
             </thead>
@@ -23,13 +23,13 @@
         {{ if .Body }}
             <tbody>
             {{ range $r := .Body }}
-                {{ template "partials/element-open.tmpl" $r }}
+                {{ elementOpen $r }}
                 {{- range $d := $r.Data }}
-                    {{ template "partials/element-open.tmpl" $d }}
+                    {{ elementOpen $d }}
                     {{- $d.Data -}}
-                    {{ template "partials/element-close.tmpl" $d -}}
+                    {{ elementClose $d -}}
                 {{ end -}}
-                {{ template "partials/element-close.tmpl" $r -}}
+                {{ elementClose $r -}}
             {{ end }}
             </tbody>
         {{ end }}

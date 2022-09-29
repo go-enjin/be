@@ -3,5 +3,5 @@
         {{- if .Style  }} style="{{- .Style -}}"{{- end -}}
         {{- if .Rel    }} rel="{{- .Rel -}}"{{- end -}}
         {{- if .Target }} target="{{- .Target -}}"{{- end -}}
-        {{- template "partials/element-attributes.tmpl" . -}}
+        {{- elementAttributes . -}}
 >{{- .Text -}}</a>

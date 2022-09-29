@@ -1,6 +1,6 @@
-{{ template "partials/element-open.tmpl" . }}
+{{ elementOpen . }}
 {{ .Text }}
 {{ if .Caption -}}
     <figcaption>{{ .Caption }}</figcaption>
 {{- end -}}
-{{ template "partials/element-close.tmpl" . }}
+{{ elementClose . }}

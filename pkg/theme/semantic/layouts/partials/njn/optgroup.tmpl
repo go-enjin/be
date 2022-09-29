@@ -1,6 +1,6 @@
 {{ "<" | asHTML }}optgroup
 {{- if .Label }} label="{{ .Label }}"{{- end -}}
-{{- template "partials/element-attributes.tmpl" . -}}
+{{- elementAttributes . -}}
 >
 {{- .Options -}}
 {{- "<" | asHTML }}/optgroup>

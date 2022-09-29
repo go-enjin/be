@@ -1,5 +1,5 @@
 <meter
-        {{- template "partials/element-attributes.tmpl" . -}}
+        {{- elementAttributes . -}}
         {{- if .Min   }} min="{{ .Min }}"{{- end -}}
         {{- if .Max   }} max="{{ .Max }}"{{- end -}}
         {{- if .Value }} value="{{ .Value }}"{{- end -}}

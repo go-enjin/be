@@ -1,9 +1,11 @@
-{{ template "partials/element-open.tmpl" . }}
+{{- elementOpen . -}}
 {{- if .Lines }}
     <ol>
         {{- range $line := .Lines }}
             <li>{{ $line }}</li>
         {{- end -}}
     </ol>
-{{- else }}{{ .Text }}{{ end -}}
-{{ template "partials/element-close.tmpl" . }}
+{{- else -}}
+    {{- .Text -}}
+{{- end -}}
+{{- elementClose . -}}
