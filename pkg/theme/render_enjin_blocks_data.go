@@ -24,7 +24,6 @@ import (
 )
 
 func (re *renderEnjin) processNoticeBlock(blockData map[string]interface{}) (html template.HTML, err error) {
-	// log.DebugF("content received: %v", blockData)
 
 	var blockDataContent map[string]interface{}
 	if blockDataContent, err = re.prepareGenericBlockData(blockData["content"]); err != nil {
@@ -94,15 +93,12 @@ func (re *renderEnjin) processNoticeBlock(blockData map[string]interface{}) (htm
 		preparedData["Footer"] = footer
 	}
 
-	log.DebugF("notice block: %+v", preparedData)
-	// log.DebugF("prepared content: %v", preparedData)
 	html, err = re.renderNjnTemplate("block/notice", preparedData)
 
 	return
 }
 
 func (re *renderEnjin) processLinkListBlock(blockData map[string]interface{}) (html template.HTML, err error) {
-	// log.DebugF("content received: %v", blockData)
 
 	var blockDataContent map[string]interface{}
 	if blockDataContent, err = re.prepareGenericBlockData(blockData["content"]); err != nil {
@@ -122,26 +118,14 @@ func (re *renderEnjin) processLinkListBlock(blockData map[string]interface{}) (h
 				if itype, ok := st["type"].(string); ok {
 					if itype == "a" {
 						st["decorated"] = "true"
-						if attrs, ok := st["attributes"].(map[string]interface{}); ok {
-							if ci, ok := attrs["class"]; ok {
-								switch ct := ci.(type) {
-								case string:
-									attrs["class"] = ct + " decorated"
-								case []interface{}:
-									var classes []string
-									for _, cli := range ct {
-										if cls, ok := cli.(string); ok {
-											classes = append(classes, cls)
-										}
-									}
-									classes = append(classes, "decorated")
-								}
-								st["attributes"] = attrs
-							} else {
-								st["class"] = "decorated"
-							}
+						if attrs, classes, _, ok := re.parseFieldAttributes(st); ok {
+							classes = append(classes, "decorated")
+							attrs["class"] = classes
+							st["attributes"] = re.finalizeFieldAttributes(attrs)
 						} else {
-							st["class"] = "decorated"
+							st["attributes"] = re.finalizeFieldAttributes(map[string]interface{}{
+								"class": "decorated",
+							})
 						}
 						sectionFields = append(sectionFields, st)
 					} else {
@@ -166,14 +150,12 @@ func (re *renderEnjin) processLinkListBlock(blockData map[string]interface{}) (h
 		preparedData["Footer"] = footer
 	}
 
-	// log.DebugF("prepared content: %v", preparedData)
 	html, err = re.renderNjnTemplate("block/link-list", preparedData)
 
 	return
 }
 
 func (re *renderEnjin) processContentBlock(blockData map[string]interface{}) (html template.HTML, err error) {
-	// log.DebugF("content received: %v", blockData)
 
 	var blockDataContent map[string]interface{}
 	if blockDataContent, err = re.prepareGenericBlockData(blockData["content"]); err != nil {
@@ -195,14 +177,12 @@ func (re *renderEnjin) processContentBlock(blockData map[string]interface{}) (ht
 		preparedData["Footer"] = footer
 	}
 
-	// log.DebugF("prepared content: %v", preparedData)
 	html, err = re.renderNjnTemplate("block/content", preparedData)
 
 	return
 }
 
 func (re *renderEnjin) processImageBlock(blockData map[string]interface{}) (html template.HTML, err error) {
-	// log.DebugF("content received: %v", blockData)
 
 	var blockDataContent map[string]interface{}
 	if blockDataContent, err = re.prepareGenericBlockData(blockData["content"]); err != nil {
@@ -286,7 +266,6 @@ func (re *renderEnjin) processImageBlock(blockData map[string]interface{}) (html
 		preparedData["Footer"] = footer
 	}
 
-	// log.DebugF("prepared content: %v", preparedData)
 	html, err = re.renderNjnTemplate("block/image", preparedData)
 
 	return

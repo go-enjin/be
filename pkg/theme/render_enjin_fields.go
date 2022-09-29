@@ -21,6 +21,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 
+	"github.com/go-enjin/be/pkg/log"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -40,7 +41,9 @@ func (re *renderEnjin) finalizeFieldData(data map[string]interface{}, field map[
 		case beStrings.StringInStrings(key, skip...):
 		default:
 			if key == "attributes" {
-				data["Attributes"], _, _, _ = re.parseFieldAttributes(field)
+				if attrs, _, _, ok := re.parseFieldAttributes(field); ok {
+					data["Attributes"] = re.finalizeFieldAttributes(attrs)
+				}
 				continue
 			}
 			name := strcase.ToCamel(key)
@@ -57,40 +60,79 @@ func (re *renderEnjin) finalizeFieldData(data map[string]interface{}, field map[
 	return
 }
 
-func (re *renderEnjin) parseFieldAttributes(field map[string]interface{}) (attrs map[string]interface{}, classes []string, styles map[string]string, ok bool) {
+func (re *renderEnjin) parseFieldAttributes(field map[string]interface{}) (attributes map[string]interface{}, classes []string, styles map[string]string, ok bool) {
+	attributes = make(map[string]interface{})
 	classes = make([]string, 0)
 	styles = make(map[string]string)
-	if attrs, ok = field["attributes"].(map[string]interface{}); ok {
+
+	if attrs, check := field["attributes"].(map[string]interface{}); check {
 
 		if v, found := attrs["class"]; found {
 			switch t := v.(type) {
 			case string:
 				classes = strings.Split(t, " ")
-				attrs["class"] = t
+				attributes["class"] = t
 			case []interface{}:
 				for _, i := range t {
 					if name, ok := i.(string); ok {
 						classes = append(classes, name)
 					}
 				}
-				attrs["class"] = strings.Join(classes, " ")
+				attributes["class"] = strings.Join(classes, " ")
+			default:
+				log.ErrorF("error parsing class attribute: %T %+v", v, v)
+				return
 			}
 		}
 
 		if v, found := attrs["style"]; found {
 			switch t := v.(type) {
 			case string:
-				attrs["style"] = t
+				attributes["style"] = t
 			case map[string]interface{}:
 				var list []string
 				for k, vi := range t {
 					if value, ok := vi.(string); ok {
 						styles[k] = value
-						list = append(list, fmt.Sprintf(`%v="%v"`, k, beStrings.EscapeHtmlAttribute(value)))
+						list = append(list, fmt.Sprintf(`%v:%v`, k, value))
 					}
 				}
-				attrs["style"] = strings.Join(list, ";")
+				attributes["style"] = strings.Join(list, ";")
+			default:
+				log.ErrorF("error parsing style attribute: %T %+v", v, v)
+				return
 			}
+		}
+
+		for k, v := range attrs {
+			switch k {
+			case "class", "style":
+			default:
+				if vs, ok := v.(string); ok {
+					attributes[k] = vs
+				} else {
+					attributes[k] = fmt.Sprintf("%v", v)
+				}
+			}
+		}
+
+		ok = true
+	} else if v, found := field["attributes"]; found {
+		log.ErrorF("invalid attributes type found: %T %+v", v, v)
+	}
+
+	return
+}
+
+func (re *renderEnjin) finalizeFieldAttributes(attrs map[string]interface{}) (attributes []template.HTMLAttr) {
+	for k, v := range attrs {
+		switch t := v.(type) {
+		case string:
+			attributes = append(attributes, template.HTMLAttr(fmt.Sprintf(`%v="%v"`, k, beStrings.EscapeHtmlAttribute(t))))
+		case template.HTMLAttr:
+			attributes = append(attributes, template.HTMLAttr(fmt.Sprintf(`%v="%v"`, k, t)))
+		default:
+			log.ErrorF("unknown attributes value type: %T %+v", t, t)
 		}
 	}
 	return

@@ -87,7 +87,9 @@ func (re *renderEnjin) prepareTableFieldData(field map[string]interface{}) (data
 
 						row := make(map[string]interface{})
 						row["Type"] = "tr"
-						row["Attributes"], _, _, _ = re.parseFieldAttributes(bodyRowMap)
+						if attrs, _, _, ok := re.parseFieldAttributes(bodyRowMap); ok {
+							data["Attributes"] = re.finalizeFieldAttributes(attrs)
+						}
 						var rowCells []interface{}
 						if bodyRowDataList, ok := bodyRowMap["data"].([]interface{}); ok {
 							for _, bodyRowDataItem := range bodyRowDataList {
@@ -97,7 +99,9 @@ func (re *renderEnjin) prepareTableFieldData(field map[string]interface{}) (data
 										case "td":
 											rowData := make(map[string]interface{})
 											rowData["Type"] = "td"
-											rowData["Attributes"], _, _, _ = re.parseFieldAttributes(bodyRowDataMap)
+											if attrs, _, _, ok := re.parseFieldAttributes(bodyRowDataMap); ok {
+												data["Attributes"] = re.finalizeFieldAttributes(attrs)
+											}
 											if rowData["Data"], err = re.renderContainerFieldText(bodyRowDataMap); err != nil {
 												return
 											}
@@ -172,11 +176,11 @@ func (re *renderEnjin) prepareCodeFieldData(field map[string]interface{}) (data 
 			classes = append(classes, "decorated")
 			attrs["class"] = strings.Join(classes, " ")
 		}
-		data["Attributes"] = attrs
+		data["Attributes"] = re.finalizeFieldAttributes(attrs)
 	} else if decorated {
-		data["Attributes"] = map[string]interface{}{
+		data["Attributes"] = re.finalizeFieldAttributes(map[string]interface{}{
 			"class": "decorated",
-		}
+		})
 	}
 
 	re.finalizeFieldData(data, field, "type", "decorated", "code", "attributes")

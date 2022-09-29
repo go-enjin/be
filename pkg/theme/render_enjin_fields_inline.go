@@ -17,8 +17,6 @@ package theme
 import (
 	"fmt"
 	"html/template"
-
-	"github.com/go-enjin/be/pkg/log"
 )
 
 func (re *renderEnjin) renderInlineFields(fields []interface{}) (combined []template.HTML, err error) {
@@ -113,9 +111,8 @@ func (re *renderEnjin) prepareInlineFieldData(tag string, field map[string]inter
 func (re *renderEnjin) prepareInlineTextFieldData(tag string, field map[string]interface{}) (data map[string]interface{}, err error) {
 	data = make(map[string]interface{})
 	data["Type"] = tag
-	if attrs, ok := field["attributes"]; ok {
-		data["Attributes"] = attrs
-		log.DebugF("attrs: %+v", attrs)
+	if attrs, _, _, ok := re.parseFieldAttributes(field); ok {
+		data["Attributes"] = re.finalizeFieldAttributes(attrs)
 	}
 	if data["Text"], err = re.renderInlineFieldText(field); err != nil {
 		return

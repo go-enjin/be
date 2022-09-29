@@ -16,6 +16,7 @@ package theme
 
 import (
 	"fmt"
+	"strconv"
 
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
@@ -46,11 +47,11 @@ func (re *renderEnjin) prepareAnchorFieldData(field map[string]interface{}) (dat
 		if decorated {
 			classes = append(classes, "decorated")
 		}
-		data["Attributes"] = attrs
+		data["Attributes"] = re.finalizeFieldAttributes(attrs)
 	} else if decorated {
-		data["Attributes"] = map[string]interface{}{
+		data["Attributes"] = re.finalizeFieldAttributes(map[string]interface{}{
 			"class": "decorated",
-		}
+		})
 	}
 
 	re.finalizeFieldData(data, field, "type", "href", "text", "decorated", "attributes")
@@ -82,15 +83,47 @@ func (re *renderEnjin) prepareFigureFieldData(field map[string]interface{}) (dat
 	return
 }
 
+func parseKeyIntVal(key string, data map[string]interface{}) (v int, ok bool) {
+	if i, found := data[key]; found {
+		switch t := i.(type) {
+		case int:
+			v = t
+			ok = true
+			return
+		case string:
+			if s, err := strconv.Atoi(t); err == nil {
+				v = s
+				ok = true
+				return
+			}
+		}
+	}
+	return
+}
+
 func (re *renderEnjin) prepareImageFieldData(field map[string]interface{}) (data map[string]interface{}, err error) {
 	data = make(map[string]interface{})
 	data["Type"] = "img"
-	data["Src"], _ = field["src"]
-	data["Alt"], _ = field["alt"]
-	data["Width"], _ = field["width"]
-	data["Height"], _ = field["height"]
-	data["Attributes"], _ = field["attributes"]
-	re.finalizeFieldData(data, field, "type", "src", "alt", "width", "height", "attributes")
+	data["Src"], _ = field["src"].(string)
+	data["Alt"], _ = field["alt"].(string)
+	var width, height int
+	var hasWidth, hasHeight bool
+	if width, hasWidth = parseKeyIntVal("width", field); hasWidth {
+		data["Width"] = width
+	}
+	if height, hasHeight = parseKeyIntVal("height", field); hasHeight {
+		data["Height"] = height
+	}
+	if attrs, _, _, ok := re.parseFieldAttributes(field); ok {
+		if hasWidth {
+			delete(attrs, "width")
+		}
+		if hasHeight {
+			delete(attrs, "height")
+		}
+		data["Attributes"] = re.finalizeFieldAttributes(attrs)
+	}
+	re.finalizeFieldData(data, field, "type", "src", "alt", "attributes")
 	return
 }
 
