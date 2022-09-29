@@ -108,6 +108,15 @@ func QuoteJsonValue(in string) (out string) {
 }
 
 func EscapeHtmlAttribute(unescaped string) (escaped string) {
+	var quote uint8
+	switch unescaped[0] {
+	case '"', '\'':
+		quote = unescaped[0]
+		last := len(unescaped) - 1
+		if unescaped[last] == quote {
+			unescaped = unescaped[1 : last-1]
+		}
+	}
 	escaped = strings.ReplaceAll(unescaped, `"`, "&quot;")
 	return
 }
