@@ -25,7 +25,7 @@ import (
 
 type tocItem struct {
 	Tag      string
-	Title    string
+	Title    template.HTML
 	Level    int
 	Children []*tocItem
 }
@@ -34,38 +34,38 @@ func (i *tocItem) String() string {
 	return fmt.Sprintf(`<a href="#%v">%v</a>`, i.Tag, i.Title)
 }
 
-func (re *renderEnjin) walkTableOfContents(count, level int, data interface{}) (upCount, upLevel int, list []*tocItem) {
-	list = make([]*tocItem, 0)
-
-	parseNameTagTitle := func(dt map[string]interface{}) (name, tag, title string, valid bool) {
-		var ok bool
-		if name, ok = dt["type"].(string); ok {
-			if tag, ok = dt["tag"].(string); ok {
-				if c, ok := dt["content"].(map[string]interface{}); ok {
-					if hi, ok := c["header"]; ok {
-						switch ht := hi.(type) {
-						case []interface{}:
-							for _, hti := range ht {
-								if hts, ok := hti.(string); ok {
-									if title != "" {
-										title += " "
-									}
-									title += hts
+func parseNameTagTitle(dt map[string]interface{}) (name, tag, title string, valid bool) {
+	var ok bool
+	if name, ok = dt["type"].(string); ok {
+		if tag, ok = dt["tag"].(string); ok {
+			if c, ok := dt["content"].(map[string]interface{}); ok {
+				if hi, ok := c["header"]; ok {
+					switch ht := hi.(type) {
+					case []interface{}:
+						for _, hti := range ht {
+							if hts, ok := hti.(string); ok {
+								if title != "" {
+									title += " "
 								}
+								title += hts
 							}
-						case string:
-							if title != "" {
-								title += " "
-							}
-							title += ht
 						}
+					case string:
+						if title != "" {
+							title += " "
+						}
+						title += ht
 					}
 				}
-				valid = true
 			}
+			valid = true
 		}
-		return
 	}
+	return
+}
+
+func (re *renderEnjin) walkTableOfContents(count, level int, data interface{}) (upCount, upLevel int, list []*tocItem) {
+	list = make([]*tocItem, 0)
 
 	switch dt := data.(type) {
 	case []interface{}:
@@ -95,13 +95,13 @@ func (re *renderEnjin) walkTableOfContents(count, level int, data interface{}) (
 				}
 
 			case "header":
-				log.TraceF("header found: %v, %v, %v, %v", count, level, tag, title)
 				var hr, hl int
 				level, hr, hl = re.parseHeadingLevel(count, level, dt)
-				if level > 1 {
+				log.TraceF("header found: count=%v, level=%v, tag=%v, title=%v", count, level, tag, title)
+				if level > 1 { // skip h1
 					list = append(list, &tocItem{
 						Tag:   tag,
-						Title: title,
+						Title: template.HTML(title),
 						Level: level,
 					})
 				}
@@ -114,7 +114,7 @@ func (re *renderEnjin) walkTableOfContents(count, level int, data interface{}) (
 				if title != "" {
 					list = append(list, &tocItem{
 						Tag:   tag,
-						Title: title,
+						Title: template.HTML(title),
 						Level: level,
 					})
 				}
@@ -212,12 +212,12 @@ func (re *renderEnjin) processTableOfContentsBlock(blockData map[string]interfac
 	items := re.sortTableOfContents(toc)
 
 	if heading, ok := re.parseBlockHeader(blockDataContent); ok {
-		preparedData["Header"] = heading
+		preparedData["TocHeading"] = heading
 		if withSelf {
 			items = append([]*tocItem{
 				{
 					Tag:   blockTag,
-					Title: string(heading),
+					Title: heading,
 				},
 			}, items...)
 		}
