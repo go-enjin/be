@@ -190,6 +190,7 @@ func (t *Theme) Render(view string, ctx context.Context) (data []byte, err error
 
 func (t *Theme) RenderPage(ctx context.Context, p *page.Page) (data []byte, err error) {
 	ctx.Apply(p.Context.Copy())
+	ctx.Set("Theme", t.Config)
 	switch p.Format {
 	case page.OrgMode:
 		if text, ok := t.RenderTemplateContent(ctx, p.Content); ok {
