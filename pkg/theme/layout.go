@@ -32,9 +32,10 @@ type Layout struct {
 	Keys []string
 	Tmpl *template.Template
 
-	efs beFs.FileSystem
-	fm  template.FuncMap
-	// s map[string]string
+	fileSystem beFs.FileSystem
+	funcMap    template.FuncMap
+	lastMods   map[string]int64
+	cache      map[string]*template.Template
 
 	sync.RWMutex
 }
@@ -43,8 +44,10 @@ func NewLayout(path string, efs beFs.FileSystem, fm template.FuncMap) (layout *L
 	layout = new(Layout)
 	layout.Path = path
 	layout.Name = bePath.Base(path)
-	layout.efs = efs
-	layout.fm = fm
+	layout.fileSystem = efs
+	layout.funcMap = fm
+	layout.lastMods = make(map[string]int64)
+	layout.cache = make(map[string]*template.Template)
 	err = layout.Reload()
 	return
 }
@@ -58,12 +61,12 @@ func (l *Layout) Reload() (err error) {
 		return
 	}
 	l.Keys = make([]string, 0)
-	l.Tmpl = tmpl
+	l.Tmpl = tmpl.Funcs(l.funcMap)
 
 	var walker func(p string) (e error)
 	walker = func(p string) (e error) {
 		var entries []string
-		if entries, e = l.efs.ListAllFiles(p); e != nil {
+		if entries, e = l.fileSystem.ListAllFiles(p); e != nil {
 			return
 		}
 		for _, entry := range entries {
@@ -73,35 +76,49 @@ func (l *Layout) Reload() (err error) {
 			entryName := l.Name + string(os.PathSeparator) + entryBase
 			entryPath := entry
 
-			// var shasum string
-			// if shasum, ee = l.efs.Shasum(entryPath); ee != nil {
-			// 	log.ErrorF("error efs.Shasum: %v", ee)
-			// 	continue
-			// }
-			// if v, ok := l.s[entryName]; ok {
-			// 	if v == shasum {
-			// 		log.TraceF("validated known entry: %v", entryName)
-			// 		continue
-			// 	} else {
-			// 		log.TraceF("overwriting known entry: %v", entryName)
-			// 	}
-			// }
-			// l.s[entryName] = shasum
+			var lastMod int64
+			if lastMod, ee = l.fileSystem.LastModified(entryPath); ee != nil {
+				log.ErrorF("error fileSystem.LastModified: %V", ee)
+				continue
+			} else if v, ok := l.lastMods[entryName]; ok {
+				if v == lastMod {
+					log.TraceF("validated known entry: %v (%v == %v)", entryName, v, lastMod)
+					if _, eee := l.Tmpl.AddParseTree(entryName, l.cache[entryName].Tree); eee != nil {
+						log.ErrorF("error adding %v parse tree: %v", entryName, eee)
+						delete(l.lastMods, entryName)
+						delete(l.cache, entryName)
+						continue
+					}
+					if !beStrings.StringInStrings(entryName, l.Keys...) {
+						l.Keys = append(l.Keys, entryName)
+					}
+					continue
+				}
+				log.TraceF("overwriting known entry: %v", entryName)
+				delete(l.lastMods, entryName)
+				delete(l.cache, entryName)
+			} else {
+				log.TraceF("caching new entry: %v (%v)", entryName, lastMod)
+			}
 
 			var data []byte
-			if data, ee = l.efs.ReadFile(entryPath); ee != nil {
-				log.ErrorF("error efs.ReadFile: %v", ee)
+			if data, ee = l.fileSystem.ReadFile(entryPath); ee != nil {
+				log.ErrorF("error fileSystem.ReadFile: %v", ee)
 				continue
 			}
 
-			if _, ee = l.Tmpl.New(entryName).Funcs(l.fm).Parse(string(data)); ee != nil {
+			l.lastMods[entryName] = lastMod
+			if l.cache[entryName], ee = l.Tmpl.New(entryName).Parse(string(data)); ee != nil {
 				log.ErrorF("template initial parse error: %v", ee)
+				delete(l.lastMods, entryName)
+				delete(l.cache, entryName)
 				continue
 			}
 
 			if !beStrings.StringInStrings(entryName, l.Keys...) {
 				l.Keys = append(l.Keys, entryName)
 			}
+
 			log.TraceF("layout %v entry set: %v", entryName, entryPath)
 		}
 		return
@@ -121,13 +138,10 @@ func (l *Layout) HasKey(key string) bool {
 }
 
 func (l *Layout) Lookup(names ...string) (tmpl *template.Template) {
-	// log.DebugF("checking %v layout%v", l.Name, l.Tmpl.DefinedTemplates())
 	for _, name := range names {
 		if tmpl = l.Tmpl.Lookup(name); tmpl != nil {
 			log.DebugF("using %v layout template: %v", l.Name, name)
 			return
-			// } else {
-			// 	log.DebugF("%v layout template not found: %v", l.Name, name)
 		}
 	}
 	return
