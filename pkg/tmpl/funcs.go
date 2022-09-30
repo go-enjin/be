@@ -22,6 +22,28 @@ import (
 	"github.com/go-enjin/be/pkg/fs"
 )
 
+func AsJS(input interface{}) template.JS {
+	switch v := input.(type) {
+	case string:
+		return template.JS(v)
+	case template.JS:
+		return v
+	default:
+		return template.JS(fmt.Sprintf("%v", v))
+	}
+}
+
+func AsCSS(input interface{}) template.CSS {
+	switch v := input.(type) {
+	case string:
+		return template.CSS(v)
+	case template.CSS:
+		return v
+	default:
+		return template.CSS(fmt.Sprintf("%v", v))
+	}
+}
+
 func AsHTML(input interface{}) template.HTML {
 	switch v := input.(type) {
 	case string:
