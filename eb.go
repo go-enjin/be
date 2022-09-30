@@ -72,7 +72,7 @@ func New() (be *EnjinBuilder) {
 	return be
 }
 
-func (eb *EnjinBuilder) HotReload(enabled bool) *EnjinBuilder {
+func (eb *EnjinBuilder) HotReload(enabled bool) feature.Builder {
 	eb.hotReload = enabled
 	return eb
 }
