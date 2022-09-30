@@ -212,6 +212,8 @@ func (t *Theme) initFuncMap() {
 
 		"asHTML":     tmpl.AsHTML,
 		"asHTMLAttr": tmpl.AsHTMLAttr,
+		"asCSS":      tmpl.AsCSS,
+		"asJS":       tmpl.AsJS,
 		"fsHash":     tmpl.FsHash,
 		"fsUrl":      tmpl.FsUrl,
 		"fsMime":     tmpl.FsMime,
