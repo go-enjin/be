@@ -17,13 +17,17 @@ package theme
 import (
 	"fmt"
 	"html/template"
+	"sort"
 
 	"github.com/BurntSushi/toml"
+	"github.com/fvbommel/sortorder"
 	"github.com/iancoleman/strcase"
 	"github.com/leekchan/gtf"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/fs"
+	"github.com/go-enjin/be/pkg/fs/local"
+	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/tmpl"
 )
@@ -41,6 +45,7 @@ type Config struct {
 	Homepage    string
 	Authors     []Author
 	Extends     string
+	RootStyles  []template.CSS
 	Context     context.Context
 }
 
@@ -104,7 +109,6 @@ func (t *Theme) init() (err error) {
 		return
 	}
 	t.initConfig(ctx)
-	t.initContext(ctx)
 	t.initFuncMap()
 	if err = t.initLayouts(); err != nil {
 		return
@@ -115,12 +119,12 @@ func (t *Theme) init() (err error) {
 
 func (t *Theme) initConfig(ctx context.Context) {
 	t.Config = Config{}
-	t.Config.Name = ctx.String("Name", t.Name)
-	t.Config.Extends = ctx.String("Extends", "")
-	t.Config.License = ctx.String("License", "")
-	t.Config.LicenseLink = ctx.String("LicenseLink", "")
-	t.Config.Description = ctx.String("Description", "")
-	t.Config.Homepage = ctx.String("Homepage", "")
+	t.Config.Name = ctx.String("name", t.Name)
+	t.Config.Extends = ctx.String("extends", "")
+	t.Config.License = ctx.String("license", "")
+	t.Config.LicenseLink = ctx.String("licenselink", "")
+	t.Config.Description = ctx.String("description", "")
+	t.Config.Homepage = ctx.String("homepage", "")
 	t.Config.Authors = make([]Author, 0)
 	if ctx.Has("author") {
 		v := ctx.Get("author")
@@ -128,19 +132,71 @@ func (t *Theme) initConfig(ctx context.Context) {
 		case map[string]interface{}:
 			actx := context.NewFromMap(value)
 			author := Author{}
-			author.Name = actx.String("Name", "")
-			author.Homepage = actx.String("Homepage", "")
+			author.Name = actx.String("name", "")
+			author.Homepage = actx.String("homepage", "")
 			t.Config.Authors = append(t.Config.Authors, author)
 		}
 	}
-}
 
-func (t *Theme) initContext(ctx context.Context) {
+	if v := ctx.Get("styles"); v != nil {
+		// t.Config.RootStyles = make([]template.CSS, 0)
+		rootStyles := make([]string, 0)
+		switch vt := v.(type) {
+		case map[string]interface{}:
+			for section, values := range vt {
+				switch section {
+
+				case "color", "primary", "secondary", "accent", "highlight", "alternate", "overlay", "style", "page":
+					if subSections, ok := values.(map[string]interface{}); ok {
+						for subSection, subSectionValue := range subSections {
+							if valueString, ok := subSectionValue.(string); ok {
+								key := "--" + section + "--" + subSection
+								rootStyles = append(rootStyles, key+": "+valueString+";")
+								log.DebugF("root style: %v => %v", key, valueString)
+							} else if subValues, ok := subSectionValue.(map[string]interface{}); ok {
+								for subKey, subValue := range subValues {
+									if valueString, ok := subValue.(string); ok {
+										key := "--" + section + "--" + subSection + "--" + subKey
+										rootStyles = append(rootStyles, key+": "+valueString+";")
+										log.DebugF("root style: %v => %v", key, valueString)
+									} else {
+										log.DebugF("unknown root style value type: %T %+v", subValue, subValue)
+									}
+								}
+							} else {
+								log.DebugF("unknown root style type: %T %+v", values, values)
+							}
+						}
+					} else {
+						log.DebugF("unknown root type: %T %+v", values, values)
+					}
+
+				default:
+					log.DebugF("unknown root key: %v", section)
+
+				}
+			}
+		default:
+			log.ErrorF("invalid styles type: %T %+v", vt, vt)
+		}
+		sort.Sort(sortorder.Natural(rootStyles))
+		t.Config.RootStyles = make([]template.CSS, len(rootStyles))
+		for idx, rootStyle := range rootStyles {
+			t.Config.RootStyles[idx] = template.CSS(rootStyle)
+		}
+	}
+
 	// setup context (global variables for use in templates)
 	t.Config.Context = context.New()
 	for k, v := range ctx {
-		t.Config.Context[k] = v
+		switch k {
+		case "author", "styles":
+		default:
+			t.Config.Context[k] = v
+			log.DebugF("adding context: %v => (%T)%+v", k, v, v)
+		}
 	}
+	context.CamelizeContextKeys(t.Config.Context)
 }
 
 func (t *Theme) initFuncMap() {
