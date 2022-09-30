@@ -89,3 +89,12 @@ func (f FileSystem) Shasum(path string) (shasum string, err error) {
 	shasum, err = sha.FileHash10(f.realpath(path))
 	return
 }
+
+func (f FileSystem) LastModified(path string) (modTime int64, err error) {
+	var info os.FileInfo
+	if info, err = os.Stat(path); err != nil {
+		return
+	}
+	modTime = info.ModTime().Unix()
+	return
+}

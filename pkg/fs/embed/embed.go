@@ -17,6 +17,8 @@ package embed
 import (
 	"embed"
 	"io/fs"
+	"os"
+	"path/filepath"
 
 	bePath "github.com/go-enjin/be/pkg/path"
 	bePathEmbed "github.com/go-enjin/be/pkg/path/embed"
@@ -104,5 +106,18 @@ func (f FileSystem) MimeType(path string) (mime string, err error) {
 
 func (f FileSystem) Shasum(path string) (shasum string, err error) {
 	shasum, err = bePathEmbed.Shasum(f.realpath(path), f.embed)
+	return
+}
+
+func (f FileSystem) LastModified(path string) (modTime int64, err error) {
+	var info os.FileInfo
+	var name, tgt string
+	if name, err = os.Executable(); err == nil {
+		if tgt, err = filepath.EvalSymlinks(name); err == nil {
+			if info, err = os.Stat(tgt); err == nil {
+				modTime = info.ModTime().Unix()
+			}
+		}
+	}
 	return
 }
