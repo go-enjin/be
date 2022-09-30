@@ -69,6 +69,24 @@ func New(path string, fs fs.FileSystem) (t *Theme, err error) {
 	return
 }
 
+func NewLocal(path string) (theme *Theme, err error) {
+	if !bePath.IsDir(path) {
+		err = bePath.ErrorDirNotFound
+		return
+	}
+	theme = new(Theme)
+	theme.Path = bePath.TrimSlashes(path)
+	theme.Name = bePath.Base(path)
+	if theme.FileSystem, err = local.New(path); err != nil {
+		return
+	}
+	if staticFs, e := local.New(path + "/static"); e == nil {
+		fs.RegisterFileSystem("/", staticFs)
+	}
+	err = theme.init()
+	return
+}
+
 func (t *Theme) init() (err error) {
 	t.Name = bePath.Base(t.Path)
 	t.Layouts = nil
