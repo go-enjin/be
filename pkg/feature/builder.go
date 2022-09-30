@@ -80,6 +80,9 @@ type Builder interface {
 	// EmbedThemes is a wrapper to include all themes in the given embed.FS
 	EmbedThemes(path string, fs embed.FS) Builder
 
+	// HotReload enables or disables hot-reloading theme templates and content files
+	HotReload(enabled bool) Builder
+
 	// Build constructs an Enjin Runner from the Builder configuration
 	Build() Runner
 }

@@ -48,6 +48,7 @@ type EnjinBuilder struct {
 	transformers map[string]feature.TransformOutputFn
 	slugsums     bool
 	statusPages  map[int]string
+	hotReload    bool
 }
 
 func New() (be *EnjinBuilder) {
@@ -67,7 +68,13 @@ func New() (be *EnjinBuilder) {
 	be.transformers = make(map[string]feature.TransformOutputFn)
 	be.slugsums = true
 	be.statusPages = make(map[int]string)
+	be.hotReload = false
 	return be
+}
+
+func (eb *EnjinBuilder) HotReload(enabled bool) *EnjinBuilder {
+	eb.hotReload = enabled
+	return eb
 }
 
 func (eb *EnjinBuilder) IgnoreSlugsums() *EnjinBuilder {
