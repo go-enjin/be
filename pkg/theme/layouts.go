@@ -26,7 +26,6 @@ import (
 type Layouts struct {
 	t *Theme
 	m map[string]*Layout
-	p map[string][]string
 
 	sync.RWMutex
 }
@@ -35,7 +34,6 @@ func NewLayouts(t *Theme) (layouts *Layouts, err error) {
 	layouts = &Layouts{
 		t: t,
 		m: make(map[string]*Layout),
-		p: make(map[string][]string),
 	}
 	err = layouts.Reload()
 	return
@@ -115,11 +113,7 @@ func (l *Layouts) setLayout(name string, layout *Layout) {
 	l.Lock()
 	defer l.Unlock()
 	l.m[name] = layout
-	l.p[name] = make([]string, 0)
-	for _, t := range layout.Tmpl.Templates() {
-		l.p[name] = append(l.p[name], t.Name())
-	}
-	log.DebugF("set %v theme %v layout templates: %v", l.t.Name, layout.Name, l.p[name])
+	log.DebugF("set %v theme %v layout templates: %v", l.t.Name, layout.Name)
 	return
 }
 
