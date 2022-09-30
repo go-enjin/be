@@ -69,7 +69,7 @@ func VerifyFile64(sum, file string) (err error) {
 	if fh, err = os.Open(file); err != nil {
 		return
 	}
-	defer fh.Close()
+	defer func() { _ = fh.Close() }()
 	shaHash := sha256.New()
 	if _, err = io.Copy(shaHash, fh); err != nil {
 		return
