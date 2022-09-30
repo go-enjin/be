@@ -15,6 +15,7 @@
 package be
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/go-enjin/be/pkg/feature"
@@ -60,6 +61,13 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	var t *theme.Theme
 	if t, err = e.GetTheme(); err != nil {
 		return
+	}
+
+	if e.eb.hotReload {
+		if err = t.Layouts.Reload(); err != nil {
+			err = fmt.Errorf("error refreshing layout template: %v", err)
+			return
+		}
 	}
 
 	ctx := e.Context()
