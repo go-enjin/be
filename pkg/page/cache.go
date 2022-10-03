@@ -77,7 +77,7 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 			if _, e := c.mount[mount].FS.Shasum(path); e != nil {
 				// remove page from cache
 				delete(c.cache[mount], path)
-				log.DebugF("removing page from %v cache: %v", mount, path)
+				log.TraceF("removing page from %v cache: %v, shasum error: %v", mount, path, e)
 			}
 		}
 	}
@@ -86,8 +86,13 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 		if data, eee := c.mount[mount].FS.ReadFile(file); eee == nil {
 			if p, eeee := NewFromString(path, string(data)); eeee == nil {
 				p.Context.Set("Shasum", shasum)
+				_, found := c.cache[mount][file]
 				c.cache[mount][file] = p
-				log.DebugF("updated %v mount path: %v (%v)", mount, path, p.Url)
+				if found {
+					log.DebugF("updated %v mount path: %v (%v)", mount, path, p.Url)
+				} else {
+					log.TraceF("created %v mount path: %v (%v)", mount, path, p.Url)
+				}
 			} else {
 				errs = append(errs, fmt.Errorf("error: new %v mount page %v - %v", mount, path, eeee))
 			}
@@ -131,7 +136,7 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 	}
 
 	if ok = len(errs) == 0; !ok {
-		log.DebugF("errors (%d) during cache rebuilding: %v", len(errs), errs)
+		log.ErrorF("errors (%d) during cache rebuilding: %v", len(errs), errs)
 	}
 	return
 }
