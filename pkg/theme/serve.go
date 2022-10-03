@@ -23,7 +23,7 @@ import (
 )
 
 func (t *Theme) Middleware(next http.Handler) http.Handler {
-	log.DebugF("including %v theme static middleware", t.Name)
+	log.DebugF("including %v theme static middleware", t.Config.Name)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := fmt.Sprintf("static/%v", bePath.TrimSlashes(r.URL.Path))
 		var err error
@@ -38,6 +38,6 @@ func (t *Theme) Middleware(next http.Handler) http.Handler {
 		w.Header().Set("Content-Type", mime)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write(data)
-		log.DebugF("%v served: %v (%v)", t.Name, path, mime)
+		log.DebugF("%v served: %v (%v)", t.Config.Name, path, mime)
 	})
 }
