@@ -1,0 +1,159 @@
+// Copyright (c) 2022  The Go-Enjin Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package njn
+
+import (
+	"bytes"
+	"fmt"
+	"html/template"
+	"sync"
+
+	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/log"
+	path2 "github.com/go-enjin/be/pkg/path"
+	"github.com/go-enjin/be/pkg/theme/types"
+)
+
+var _ feature.EnjinRenderer = (*RenderEnjin)(nil)
+
+type RenderEnjin struct {
+	Njn   feature.EnjinProvider
+	Theme types.Theme
+	ctx   context.Context
+
+	blockCount   int
+	headingLevel int
+	headingCount int
+
+	cache map[string]string
+	data  interface{}
+
+	sync.RWMutex
+}
+
+func renderNjnData(f feature.EnjinProvider, ctx context.Context, t types.Theme, data interface{}) (html template.HTML, err error) {
+	re := new(RenderEnjin)
+	re.Njn = f
+	re.Theme = t
+	re.ctx = ctx
+	re.headingLevel = 0
+	re.cache = make(map[string]string)
+	re.data = data
+	html, err = re.Render(data)
+	return
+}
+
+func (re *RenderEnjin) Render(data interface{}) (html template.HTML, err error) {
+
+	switch v := data.(type) {
+
+	case []interface{}:
+		for _, c := range v {
+			if h, e := re.Render(c); e != nil {
+				err = e
+				return
+			} else {
+				html += h
+			}
+		}
+
+	case map[string]interface{}:
+		html, err = re.ProcessBlock(v)
+
+	default:
+		err = fmt.Errorf("unsupported njn data received: %T", v)
+	}
+
+	return
+}
+
+func (re *RenderEnjin) GetNjnTemplateContent(name string) (contents string, err error) {
+	// TODO: use the already prepared templating?
+	if v, ok := re.cache[name]; ok {
+		log.TraceF("found cached njn template: %v", name)
+		contents = v
+		return
+	}
+	path := path2.JoinWithSlashes("layouts", "partials", "njn", name)
+	log.TraceF("looking for njn template: %v - %v", name, path)
+	var data []byte
+	if data, err = re.Theme.FS().ReadFile(path); err == nil {
+		contents = string(data)
+		re.cache[name] = contents
+	} else {
+		err = fmt.Errorf("njn template not found: %v", name)
+	}
+	return
+}
+
+func (re *RenderEnjin) RenderNjnTemplate(tag string, data map[string]interface{}) (html template.HTML, err error) {
+	var tmplContent string
+	if tmplContent, err = re.GetNjnTemplateContent(tag + ".tmpl"); err != nil {
+		return
+	} else {
+		var tt *template.Template
+		if tt, err = re.Theme.NewHtmlTemplate(tag).Parse(tmplContent); err == nil {
+			var w bytes.Buffer
+			if err = tt.Execute(&w, data); err == nil {
+				html = template.HTML(w.Bytes())
+			} else {
+				err = fmt.Errorf("error rendering template: %v", err)
+			}
+		} else {
+			err = fmt.Errorf("error parsing template: %v", err)
+		}
+	}
+	return
+}
+
+func (re *RenderEnjin) GetData() (data interface{}) {
+	return re.data
+}
+
+func (re *RenderEnjin) GetHeadingLevel() (level int) {
+	level = re.headingLevel
+	return
+}
+
+func (re *RenderEnjin) IncHeadingLevel() {
+	re.headingLevel += 1
+	return
+}
+
+func (re *RenderEnjin) DecHeadingLevel() {
+	re.headingLevel -= 1
+	return
+}
+
+func (re *RenderEnjin) SetHeadingLevel(level int) {
+	re.headingLevel = level
+	return
+}
+
+func (re *RenderEnjin) GetHeadingCount() (count int) {
+	count = re.headingCount
+	return
+}
+
+func (re *RenderEnjin) IncHeadingCount() {
+	re.headingCount += 1
+	return
+}
+
+func (re *RenderEnjin) SetHeadingCount(count int) {
+	re.headingCount = count
+	return
+}
