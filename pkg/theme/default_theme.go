@@ -1,4 +1,4 @@
-//go:build all || (!excludeDefaultTheme && !semanticTheme)
+//go:build all || !excludeDefaultTheme
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //
