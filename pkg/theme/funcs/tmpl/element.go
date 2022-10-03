@@ -23,9 +23,9 @@ import (
 	"github.com/go-enjin/be/pkg/menu"
 )
 
-func Element(data map[string]interface{}) (html template.HTML) {
-	if eo := ElementOpen(data); eo == "" {
-		log.ErrorF("element data missing Type property: %+v", data)
+func Element(data map[string]interface{}) (html template.HTML, err error) {
+	if eo, e := ElementOpen(data); e != nil {
+		err = e
 		return
 	} else {
 		html += eo
@@ -37,15 +37,17 @@ func Element(data map[string]interface{}) (html template.HTML) {
 		case template.HTML:
 			html += t
 		default:
-			log.ErrorF("unknown element text type: %T %+v", t, t)
+			err = fmt.Errorf("unknown element text type: %T %+v", t, t)
+			return
 		}
 	} else {
-		log.ErrorF("element data missing Text property: %+v", data)
+		err = fmt.Errorf("element data missing Text property: %+v", data)
+		return
 	}
-	if ec := ElementClose(data); ec != "" {
+	if ec, _ := ElementClose(data); ec != "" {
 		html += ec
 	} else {
-		log.ErrorF("element failed to close, yet was able to be opened: %+v", data)
+		err = fmt.Errorf("element failed to close, yet was able to be opened: %+v", data)
 	}
 	return
 }
@@ -105,7 +107,7 @@ func ElementAttributes(value interface{}) (html template.HTMLAttr) {
 	return
 }
 
-func ElementOpen(data map[string]interface{}) (html template.HTML) {
+func ElementOpen(data map[string]interface{}) (html template.HTML, err error) {
 	if dataType, ok := data["Type"]; ok {
 		switch dt := dataType.(type) {
 		case string:
@@ -133,15 +135,15 @@ func ElementOpen(data map[string]interface{}) (html template.HTML) {
 			}
 			html += ">"
 		default:
-			log.ErrorF("element open invalid type property: %T %+v", dt, dt)
+			err = fmt.Errorf("element open invalid type property: %T %+v", dt, dt)
 		}
 	} else {
-		log.ErrorF("element open missing type property: %+v", data)
+		err = fmt.Errorf("element open missing type property: %+v", data)
 	}
 	return
 }
 
-func ElementClose(data map[string]interface{}) (html template.HTML) {
+func ElementClose(data map[string]interface{}) (html template.HTML, err error) {
 	if dataType, ok := data["Type"]; ok {
 		switch dt := dataType.(type) {
 		case string:
@@ -156,7 +158,7 @@ func ElementClose(data map[string]interface{}) (html template.HTML) {
 			html += ">"
 		}
 	} else {
-		log.ErrorF("element close missing type property: %+v", data)
+		err = fmt.Errorf("element close missing type property: %+v", data)
 	}
 	return
 }
