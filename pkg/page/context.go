@@ -38,14 +38,14 @@ func (p *Page) parseContext(ctx context.Context) {
 	p.Title = ctx.String("Title", p.Title)
 	ctx.Set("Title", p.Title)
 
-	raw := ctx.String("Format", p.Format.String())
-	format := Format(strings.ToLower(raw))
-	if format.String() != "nil" {
-		p.Format = format
+	raw := ctx.String("Format", p.Format)
+	name := strings.ToLower(raw)
+	if format := GetFormat(name); format != nil {
+		p.Format = name
 	} else {
-		p.Format = Html
+		p.Format = "<unsupported>"
 	}
-	ctx.Set("Format", p.Format.String())
+	ctx.Set("Format", p.Format)
 
 	p.Summary = ctx.String("Summary", p.Summary)
 	ctx.Set("Summary", p.Summary)
