@@ -104,7 +104,7 @@ func (e *Enjin) themeMiddleware(next http.Handler) http.Handler {
 		for _, k := range keys {
 			t := e.eb.theming[k]
 			if data, err = t.FileSystem.ReadFile(path); err == nil {
-				name = t.Name
+				name = t.Config.Name
 				mime, _ = t.FileSystem.MimeType(path)
 				e.ServeData(data, mime, w, request)
 				log.DebugF("%v served: %v (%v)", name, path, mime)
