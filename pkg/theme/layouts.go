@@ -50,10 +50,10 @@ func (l *Layouts) Reload() (err error) {
 		name := bePath.Base(path)
 		if exists := l.getLayout(name); exists != nil {
 			if err = exists.Reload(); err != nil {
-				err = fmt.Errorf("error refreshing existing layout %v: %v", name, err)
+				err = fmt.Errorf("%v theme: error reloading %v layout: %v", l.t.Config.Name, name, err)
 				return
 			}
-			log.DebugF("existing layout refreshed: %v", name)
+			log.DebugF("%v theme: reloaded %v layout", l.t.Config.Name, exists.Name)
 			continue
 		}
 		if layout, e := NewLayout(path, l.t.FileSystem, l.t.FuncMap); e != nil {
@@ -61,7 +61,7 @@ func (l *Layouts) Reload() (err error) {
 			return
 		} else {
 			l.setLayout(name, layout)
-			log.DebugF("%v theme layout set: %v", l.t.Name, path)
+			log.DebugF("%v theme: loaded %v layout", l.t.Config.Name, layout.Name)
 		}
 	}
 
@@ -113,7 +113,6 @@ func (l *Layouts) setLayout(name string, layout *Layout) {
 	l.Lock()
 	defer l.Unlock()
 	l.m[name] = layout
-	log.DebugF("set %v theme %v layout templates: %v", l.t.Name, layout.Name)
 	return
 }
 
