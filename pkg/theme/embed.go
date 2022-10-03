@@ -27,7 +27,6 @@ func NewEmbed(path string, efs embed.FS) (t *Theme, err error) {
 	path = bePath.TrimSlashes(path)
 	t = new(Theme)
 	t.Path = path
-	t.Name = bePath.Base(path)
 	if t.FileSystem, err = beFsEmbed.New(path, efs); err != nil {
 		return
 	}
