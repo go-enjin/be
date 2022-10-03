@@ -16,76 +16,24 @@ package theme
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"html/template"
-	"strings"
 	"time"
-
-	"github.com/gomarkdown/markdown"
-	mdHtml "github.com/gomarkdown/markdown/html"
-	mdParser "github.com/gomarkdown/markdown/parser"
-	"github.com/microcosm-cc/bluemonday"
-	"github.com/niklasfasching/go-org/org"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
 )
 
-func (t *Theme) RenderOrgModeContent(content string) (html string, ok bool) {
-	var err error
-	input := strings.NewReader(content)
-	if html, err = org.New().Parse(input, "./").Write(org.NewHTMLWriter()); err != nil {
-		log.ErrorF("error rendering org-mode content: %v", err)
-		html = "<h2>Internal Theming Error</h2>\n"
-		html += fmt.Sprintf("<p>Error rendering org-mode content: \"%v\"</p>", err)
-		html += "<pre>\n"
-		html += content
-		html += "\n</pre>\n"
-	}
-	ok = err == nil
-	return
-}
-
-func (t *Theme) RenderMarkdownContent(content string) (html string, ok bool) {
-	normalizedNewlines := markdown.NormalizeNewlines([]byte(content))
-	extensions := mdParser.CommonExtensions |
-		mdParser.AutoHeadingIDs |
-		mdParser.NoIntraEmphasis |
-		mdParser.Strikethrough |
-		mdParser.Attributes
-	pageParser := mdParser.NewWithExtensions(extensions)
-	mdHtmlFlags := mdHtml.CommonFlags | mdHtml.HrefTargetBlank | mdHtml.FootnoteReturnLinks
-	opts := mdHtml.RendererOptions{Flags: mdHtmlFlags}
-	pageRenderer := mdHtml.NewRenderer(opts)
-	parsedBytes := markdown.ToHTML(normalizedNewlines, pageParser, pageRenderer)
-	sanitizedBytes := bluemonday.UGCPolicy().SanitizeBytes(parsedBytes)
-	ok = true
-	html = string(sanitizedBytes)
-	return
-}
-
-func (t *Theme) RenderTemplateContent(ctx context.Context, tmplContent string) (html string, ok bool) {
-	var err error
+func (t *Theme) RenderTemplateContent(ctx context.Context, tmplContent string) (html string, err error) {
 	var tt *template.Template
 	if tt, err = t.NewHtmlTemplate("content").Parse(tmplContent); err == nil {
 		var w bytes.Buffer
 		if err = tt.Execute(&w, ctx); err == nil {
-			ok = true
 			html = string(w.Bytes())
 			return
-		} else {
-			log.ErrorF("error rendering template: %v", err)
 		}
-	} else {
-		log.ErrorF("error parsing template: %v", err)
 	}
-	html += "<h2>Internal Theming Error</h2>\n"
-	html += fmt.Sprintf("<p>Error rendering template content: \"%v\"</p>", err)
-	html += "<pre>\n"
-	html += tmplContent
-	html += "\n</pre>\n"
 	return
 }
 
@@ -95,26 +43,13 @@ func (t *Theme) NewHtmlTemplate(name string) (tt *template.Template) {
 	return
 }
 
-func (t *Theme) ListAllFiles(path string) (paths []string) {
-	if filenames, err := t.FileSystem.ListAllFiles(path); err == nil {
-		paths = append(paths, filenames...)
-	} else {
-		log.ErrorF("error listing all (%v) %v theme files: %v", path, t.Name, err)
-	}
-	return
-}
-
-func (t *Theme) LayoutFromContext(ctx context.Context) (layout *Layout, name string, err error) {
-	return t.FindLayout(ctx.String("Layout", "_default"))
-}
-
 func (t *Theme) FindLayout(named string) (layout *Layout, name string, err error) {
 	if named == "" {
 		named = "_default"
 	}
 	name = named
 	if layout = t.Layouts.getLayout(name); layout == nil {
-		err = fmt.Errorf("%v theme layout not found, expected: \"%v\"", t.Name, name)
+		err = fmt.Errorf("%v theme layout not found, expected: \"%v\"", t.Config.Name, name)
 	} else {
 		log.DebugF("using layout from context: %v", name)
 	}
@@ -124,12 +59,13 @@ func (t *Theme) FindLayout(named string) (layout *Layout, name string, err error
 func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *template.Template, err error) {
 	var layout *Layout
 	var layoutName string
-	if layout, layoutName, err = t.LayoutFromContext(ctx); err != nil {
+	if layout, layoutName, err = t.FindLayout(ctx.String("Layout", "_default")); err != nil {
 		return
 	}
 	var baseLookups []string
 	section := ctx.String("Section", "")
 	archetype := ctx.String("Archetype", "")
+	pageFormat := ctx.String("Format", "")
 	if archetype != "" {
 		if section != "" {
 			baseLookups = append(baseLookups, fmt.Sprintf("%s/%s", archetype, section))
@@ -162,12 +98,13 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *templ
 	}
 	var lookups []string
 	for _, name := range baseLookups {
-		lookups = append(lookups, name+".html.tmpl", name+".tmpl", name+".html")
+		lookups = append(lookups, name+".tmpl")
+		if pageFormat != "" {
+			lookups = append(lookups, name+"."+pageFormat+".tmpl")
+		}
 	}
 	if tt = layout.Lookup(lookups...); tt == nil {
-		// log.ErrorF("%v theme lookups checked: %v", t.Name, lookups)
-		// log.ErrorF("%v context used: %v", t.Name, ctx.AsLogString())
-		err = fmt.Errorf("no %v theme template found: archetype=%v, section=%v, layout=%v", t.Name, archetype, section, layoutName)
+		err = fmt.Errorf("%v theme template not found for: archetype=%v, section=%v, layout=%v, pageFormat=%v", t.Config.Name, archetype, section, layoutName, pageFormat)
 		return
 	}
 	return
@@ -178,7 +115,7 @@ func (t *Theme) Render(view string, ctx context.Context) (data []byte, err error
 	ctx.Set("CurrentYear", now.Year())
 	var tt *template.Template
 	if tt, err = t.TemplateFromContext(view, ctx); err == nil {
-		log.DebugF("%v theme template used: (%v) %v - \"%v\"", t.Name, view, tt.Name(), ctx.String("Url", "nil"))
+		log.DebugF("%v theme template used: (%v) %v - \"%v\"", t.Config.Name, view, tt.Name(), ctx.String("Url", "nil"))
 		var wr bytes.Buffer
 		if err = tt.Execute(&wr, ctx); err != nil {
 			return
@@ -188,95 +125,37 @@ func (t *Theme) Render(view string, ctx context.Context) (data []byte, err error
 	return
 }
 
+func (t *Theme) renderErrorPage(heading string, output string) (html template.HTML) {
+	html = "<header><h1>" + template.HTML(heading) + "</h1></header>\n"
+	html += "<section>\n"
+	html += "<pre>\n"
+	html += template.HTML(template.HTMLEscapeString(output))
+	html += "\n</pre>\n"
+	html += "</section>"
+	return
+}
+
 func (t *Theme) RenderPage(ctx context.Context, p *page.Page) (data []byte, err error) {
 	ctx.Apply(p.Context.Copy())
 	ctx.Set("Theme", t.Config)
-	switch p.Format {
-	case page.OrgMode:
-		if text, ok := t.RenderTemplateContent(ctx, p.Content); ok {
-			ctx["Content"], _ = t.RenderOrgModeContent(text)
-		} else {
-			ctx["Content"] = text
-		}
-	case page.Markdown:
-		if text, ok := t.RenderTemplateContent(ctx, p.Content); ok {
-			ctx["Content"], _ = t.RenderMarkdownContent(text)
-		} else {
-			ctx["Content"] = text
-		}
-	case page.Template:
-		ctx["Content"], _ = t.RenderTemplateContent(ctx, p.Content)
-	case page.HtmlTmpl:
-		if text, ok := t.RenderTemplateContent(ctx, p.Content); ok {
-			ctx["Content"] = template.HTML(text)
-		} else {
-			ctx["Content"] = text
-		}
-	case page.Semantic:
-		if text, ok := t.RenderTemplateContent(ctx, p.Content); ok {
-			ctx["Content"], _ = t.RenderSemanticContent(ctx, text)
-		} else {
-			ctx["Content"] = text
-		}
-	default:
-		ctx["Content"] = p.Content
-	}
-	return t.Render("single", ctx)
-}
 
-func (t *Theme) RenderSemanticContent(ctx context.Context, content string) (html template.HTML, ok bool) {
-	var err error
-	if html, err = t.parseSemanticContent(ctx, content); err != nil {
-		log.ErrorF("error parsing semantic content: %v", err)
-		html = "<h1>Internal Theming Error</h1>\n" + html
-		switch err.Error() {
-		case "json syntax error", "json unmarshal error", "json decoding error":
-		default:
-			html += template.HTML(fmt.Sprintf("<p>parsing semantic content error: \"%v\"</p>\n", err))
-			html += "<pre>\n"
-			html += template.HTML(template.HTMLEscapeString(content))
-			html += "\n</pre>\n"
+	if output, e := t.RenderTemplateContent(ctx, p.Content); e == nil {
+		if p.Format == "<unsupported>" {
+			ctx["Content"] = t.renderErrorPage("Unsupported Page Format", output)
+		} else if format := page.GetFormat(p.Format); format != nil {
+			if html, e := format.Process(ctx, t, output); e != nil {
+				err = fmt.Errorf("error processing %v page format: %v", p.Format, e)
+				return
+			} else {
+				ctx["Content"] = html
+			}
+		} else {
+			ctx["Content"] = t.renderErrorPage("Unknown Page Format: "+p.Format, output)
 		}
-
-	}
-	ok = err == nil
-	return
-}
-
-func composeSemanticContentError(content string, e error) (html template.HTML, err error) {
-	switch t := e.(type) {
-	case *json.SyntaxError:
-		err = fmt.Errorf("json syntax error")
-		html = template.HTML(fmt.Sprintf(`<p>json syntax error: <a style="color:red;" href="#json-error">[%d] %v</a></p>`, t.Offset, t.Error()))
-		html += "\n<pre>\n"
-		html += template.HTML(template.HTMLEscapeString(content[:t.Offset]))
-		html += template.HTML(fmt.Sprintf(`<span style="color:red;weight:bold;" id="json-error">&lt;-- %v</span>`, t.Error()))
-		html += template.HTML(template.HTMLEscapeString(content[t.Offset:]))
-		html += "\n</pre>\n"
-	case *json.UnmarshalTypeError:
-		err = fmt.Errorf("json unmarshal error")
-		html = template.HTML(fmt.Sprintf(`<p>json unmarshal error: <a style="color:red;" href="#json-error">[%d] %v</a></p>`, t.Offset, t.Error()))
-		html += "\n<pre>\n"
-		html += template.HTML(template.HTMLEscapeString(content[:t.Offset]))
-		html += template.HTML(fmt.Sprintf(`<span style="color:red;weight:bold;" id="json-error">&lt;-- %v</span>`, t.Error()))
-		html += template.HTML(template.HTMLEscapeString(content[t.Offset:]))
-		html += "\n</pre>\n"
-	default:
-		err = fmt.Errorf("json decoding error")
-		html = template.HTML(fmt.Sprintf(`<p>json decoding error: %v</p>`, t.Error()))
-		html += "\n<pre>\n"
-		html += template.HTML(template.HTMLEscapeString(content))
-		html += "\n</pre>\n"
-	}
-	return
-}
-
-func (t *Theme) parseSemanticContent(ctx context.Context, content string) (html template.HTML, err error) {
-	var data interface{}
-	if e := json.Unmarshal([]byte(content), &data); e != nil {
-		html, err = composeSemanticContentError(content, e)
+	} else {
+		err = fmt.Errorf("error rendering template: %v", e)
 		return
 	}
-	html, err = renderNjnData(ctx, t, data)
-	return
+
+	return t.Render("single", ctx)
 }
