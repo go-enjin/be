@@ -1,8 +1,0 @@
-{{ elementOpen . }}
-{{- if .Legend -}}
-    <legend>{{- range $legend := .Legend }}{{ $legend }}{{ end -}}</legend>
-{{- end -}}
-{{- range $field := .Fields -}}
-    {{ $field }}
-{{- end -}}
-{{ elementClose . }}
