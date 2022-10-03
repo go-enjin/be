@@ -16,6 +16,7 @@ package strings
 
 import (
 	"fmt"
+	"html/template"
 	"regexp"
 	"strings"
 
@@ -135,4 +136,83 @@ func IsFalse(text string) bool {
 		return true
 	}
 	return false
+}
+
+var (
+	RxParseHtmlTagKeyOnly    = regexp.MustCompile(`^([a-zA-Z][-a-zA-Z0-9]+)$`)
+	RxParseHtmlTagKeyValue   = regexp.MustCompile(`^([a-zA-Z][-a-zA-Z0-9]+)=(.+?)$`)
+	RxSplitHtmlTagAttributes = regexp.MustCompile(`\s+`)
+)
+
+func TrimQuotes(quoted string) (unquoted string) {
+	quotedLen := len(quoted)
+	unquoted = quoted
+	if quotedLen < 2 {
+		return
+	}
+	switch quoted[0] {
+	case '"', '\'':
+		if quoted[quotedLen-1] == quoted[0] {
+			unquoted = unquoted[1 : quotedLen-1]
+		}
+	}
+	return
+}
+
+func ParseHtmlTagAttributes(input interface{}) (attributes map[string]interface{}, err error) {
+	attributes = make(map[string]interface{})
+
+	parseAndUpdate := func(raw string) (e error) {
+		parts := RxSplitHtmlTagAttributes.Split(raw, -1)
+		for _, part := range parts {
+			if RxParseHtmlTagKeyOnly.MatchString(part) {
+				if m := RxParseHtmlTagKeyOnly.FindAllStringSubmatch(part, -1); m != nil {
+					key := m[0][1]
+					attributes[key] = nil
+				}
+			} else if RxParseHtmlTagKeyValue.MatchString(part) {
+				if m := RxParseHtmlTagKeyValue.FindAllStringSubmatch(part, -1); m != nil {
+					key, quoted := m[0][1], m[0][2]
+					unquoted := TrimQuotes(quoted)
+					attributes[key] = unquoted
+				}
+			} else {
+				e = fmt.Errorf(`unsupported HTMLAttr format: %v`, part)
+				return
+			}
+		}
+		return
+	}
+
+	switch v := input.(type) {
+
+	case string:
+		err = parseAndUpdate(v)
+	case template.HTML:
+		err = parseAndUpdate(string(v))
+	case template.HTMLAttr:
+		err = parseAndUpdate(string(v))
+	case []string:
+		for _, tha := range v {
+			if err = parseAndUpdate(tha); err != nil {
+				return
+			}
+		}
+	case []template.HTML:
+		for _, tha := range v {
+			if err = parseAndUpdate(string(tha)); err != nil {
+				return
+			}
+		}
+	case []template.HTMLAttr:
+		for _, tha := range v {
+			if err = parseAndUpdate(string(tha)); err != nil {
+				return
+			}
+		}
+
+	default:
+		err = fmt.Errorf("unknown input type: (%T) %+v", v, v)
+	}
+	return
 }
