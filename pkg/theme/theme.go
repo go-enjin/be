@@ -29,7 +29,7 @@ import (
 	"github.com/go-enjin/be/pkg/fs/local"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
-	"github.com/go-enjin/be/pkg/tmpl"
+	"github.com/go-enjin/be/pkg/theme/funcs/tmpl"
 )
 
 type Author struct {
@@ -81,7 +81,6 @@ func NewLocal(path string) (theme *Theme, err error) {
 	}
 	theme = new(Theme)
 	theme.Path = bePath.TrimSlashes(path)
-	theme.Name = bePath.Base(path)
 	if theme.FileSystem, err = local.New(path); err != nil {
 		return
 	}
@@ -117,14 +116,20 @@ func (t *Theme) init() (err error) {
 	return
 }
 
+func (t *Theme) FS() fs.FileSystem {
+	return t.FileSystem
+}
+
 func (t *Theme) initConfig(ctx context.Context) {
-	t.Config = Config{}
-	t.Config.Name = ctx.String("name", t.Name)
-	t.Config.Extends = ctx.String("extends", "")
-	t.Config.License = ctx.String("license", "")
-	t.Config.LicenseLink = ctx.String("licenselink", "")
-	t.Config.Description = ctx.String("description", "")
-	t.Config.Homepage = ctx.String("homepage", "")
+	t.Config = Config{
+		Name:        ctx.String("name", t.Name),
+		Extends:     ctx.String("extends", ""),
+		License:     ctx.String("license", ""),
+		LicenseLink: ctx.String("licenselink", ""),
+		Description: ctx.String("description", ""),
+		Homepage:    ctx.String("homepage", ""),
+	}
+
 	t.Config.Authors = make([]Author, 0)
 	if ctx.Has("author") {
 		v := ctx.Get("author")
@@ -139,7 +144,6 @@ func (t *Theme) initConfig(ctx context.Context) {
 	}
 
 	if v := ctx.Get("styles"); v != nil {
-		// t.Config.RootStyles = make([]template.CSS, 0)
 		rootStyles := make([]string, 0)
 		switch vt := v.(type) {
 		case map[string]interface{}:
@@ -152,32 +156,32 @@ func (t *Theme) initConfig(ctx context.Context) {
 							if valueString, ok := subSectionValue.(string); ok {
 								key := "--" + section + "--" + subSection
 								rootStyles = append(rootStyles, key+": "+valueString+";")
-								log.DebugF("root style: %v => %v", key, valueString)
+								log.DebugF("%v theme: root style: %v => %v", t.Config.Name, key, valueString)
 							} else if subValues, ok := subSectionValue.(map[string]interface{}); ok {
 								for subKey, subValue := range subValues {
 									if valueString, ok := subValue.(string); ok {
 										key := "--" + section + "--" + subSection + "--" + subKey
 										rootStyles = append(rootStyles, key+": "+valueString+";")
-										log.DebugF("root style: %v => %v", key, valueString)
+										log.DebugF("%v theme: root style: %v => %v", t.Config.Name, key, valueString)
 									} else {
-										log.DebugF("unknown root style value type: %T %+v", subValue, subValue)
+										log.DebugF("%v theme: unknown root style value type: (%T) %+v", t.Config.Name, subValue, subValue)
 									}
 								}
 							} else {
-								log.DebugF("unknown root style type: %T %+v", values, values)
+								log.DebugF("%v theme: unknown root style type: (%T) %+v", t.Config.Name, values, values)
 							}
 						}
 					} else {
-						log.DebugF("unknown root type: %T %+v", values, values)
+						log.DebugF("%v theme: unknown root type: (%T) %+v", t.Config.Name, values, values)
 					}
 
 				default:
-					log.DebugF("unknown root key: %v", section)
+					log.DebugF("%v theme: unknown root key: %v", t.Config.Name, section)
 
 				}
 			}
 		default:
-			log.ErrorF("invalid styles type: %T %+v", vt, vt)
+			log.ErrorF("%v theme: invalid styles type: (%T) %+v", t.Config.Name, vt, vt)
 		}
 		sort.Sort(sortorder.Natural(rootStyles))
 		t.Config.RootStyles = make([]template.CSS, len(rootStyles))
@@ -193,7 +197,7 @@ func (t *Theme) initConfig(ctx context.Context) {
 		case "author", "styles":
 		default:
 			t.Config.Context[k] = v
-			log.DebugF("adding context: %v => (%T)%+v", k, v, v)
+			log.DebugF("%v theme: adding context: %v => %+v", t.Config.Name, k, v)
 		}
 	}
 	context.CamelizeContextKeys(t.Config.Context)
