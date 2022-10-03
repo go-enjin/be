@@ -29,7 +29,7 @@ import (
 	"github.com/go-enjin/be/pkg/fs/local"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
-	"github.com/go-enjin/be/pkg/theme/funcs/tmpl"
+	"github.com/go-enjin/be/pkg/theme/funcs"
 )
 
 type Author struct {
@@ -214,20 +214,20 @@ func (t *Theme) initFuncMap() {
 		"toSnake":              strcase.ToSnake,
 		"toScreamingSnake":     strcase.ToScreamingSnake,
 
-		"asHTML":     tmpl.AsHTML,
-		"asHTMLAttr": tmpl.AsHTMLAttr,
-		"asCSS":      tmpl.AsCSS,
-		"asJS":       tmpl.AsJS,
-		"fsHash":     tmpl.FsHash,
-		"fsUrl":      tmpl.FsUrl,
-		"fsMime":     tmpl.FsMime,
-		"add":        tmpl.Add,
-		"sub":        tmpl.Sub,
+		"asHTML":     funcs.AsHTML,
+		"asHTMLAttr": funcs.AsHTMLAttr,
+		"asCSS":      funcs.AsCSS,
+		"asJS":       funcs.AsJS,
+		"fsHash":     funcs.FsHash,
+		"fsUrl":      funcs.FsUrl,
+		"fsMime":     funcs.FsMime,
+		"add":        funcs.Add,
+		"sub":        funcs.Sub,
 
-		"element":           tmpl.Element,
-		"elementOpen":       tmpl.ElementOpen,
-		"elementClose":      tmpl.ElementClose,
-		"elementAttributes": tmpl.ElementAttributes,
+		"element":           funcs.Element,
+		"elementOpen":       funcs.ElementOpen,
+		"elementClose":      funcs.ElementClose,
+		"elementAttributes": funcs.ElementAttributes,
 	}
 	for k, v := range gtf.GtfFuncMap {
 		t.FuncMap[k] = v
