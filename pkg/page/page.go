@@ -34,7 +34,7 @@ type Page struct {
 	Slug        string `json:"slug"`
 	Path        string `json:"path"`
 	Title       string `json:"title" gorm:"index"`
-	Format      Format `json:"format" gorm:"type:string"`
+	Format      string `json:"format" gorm:"type:string"`
 	Summary     string `json:"summary"`
 	Description string `json:"description"`
 	Layout      string `json:"layout"`
@@ -49,7 +49,6 @@ type Page struct {
 
 func New() *Page {
 	p := new(Page)
-	p.Format = Html
 	p.Context = context.New()
 	return p
 }
@@ -58,17 +57,11 @@ func newPageForPath(path string) (p *Page, err error) {
 	p = New()
 	path = bePath.TrimSlashes(path)
 	if extn := bePath.Ext(path); extn != "" {
-		switch strings.ToLower(extn) {
-		case Markdown.String():
-			p.Format = Markdown
-		case OrgMode.String():
-			p.Format = OrgMode
-		case Template.String():
-			p.Format = Template
-		case Semantic.String():
-			p.Format = Semantic
-		default:
-			p.Format = Html
+		name := strings.ToLower(extn)
+		if format := GetFormat(name); format != nil {
+			p.Format = name
+		} else {
+			p.Format = "<unsupported>"
 		}
 	}
 	p.Slug = strcase.ToKebab(bePath.Base(path))

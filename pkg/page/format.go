@@ -14,33 +14,33 @@
 
 package page
 
-type Format string
-
-const (
-	Markdown Format = "md"
-	OrgMode  Format = "org"
-	Template Format = "tmpl"
-	Html     Format = "html"
-	HtmlTmpl Format = "html.tmpl"
-	Semantic Format = "njn"
+import (
+	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/theme/types"
 )
 
-var Extensions = []string{"org", "md", "html.tmpl", "tmpl", "html", "njn"}
+var (
+	knownFormats = make(map[string]types.Format)
+	Extensions   = make([]string, 0)
+)
 
-func (pf Format) String() string {
-	switch pf {
-	case OrgMode:
-		return string(OrgMode)
-	case Html:
-		return string(Html)
-	case HtmlTmpl:
-		return string(Html) + "." + string(Template)
-	case Template:
-		return string(Template)
-	case Markdown:
-		return string(Markdown)
-	case Semantic:
-		return string(Semantic)
+func GetFormat(name string) (format types.Format) {
+	if v, ok := knownFormats[name]; ok {
+		format = v
 	}
-	return "nil"
+	return
+}
+
+func AddFormat(format types.Format) {
+	knownFormats[format.Name()] = format
+	if !beStrings.StringInStrings(format.Name(), Extensions...) {
+		Extensions = append(Extensions, format.Name())
+	}
+}
+
+func RemoveFormat(name string) {
+	delete(knownFormats, name)
+	if idx := beStrings.StringIndexInStrings(name, Extensions...); idx >= 0 {
+		Extensions = beStrings.RemoveIndexFromStrings(idx, Extensions)
+	}
 }
