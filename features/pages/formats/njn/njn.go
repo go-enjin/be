@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"html/template"
 
+	"github.com/go-enjin/be/features/pages/formats/njn/blocks/card"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/content"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/header"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/icon"
@@ -33,6 +34,7 @@ import (
 	"github.com/go-enjin/be/features/pages/formats/njn/fields/fa"
 	"github.com/go-enjin/be/features/pages/formats/njn/fields/fieldset"
 	"github.com/go-enjin/be/features/pages/formats/njn/fields/figure"
+	"github.com/go-enjin/be/features/pages/formats/njn/fields/footnote"
 	"github.com/go-enjin/be/features/pages/formats/njn/fields/img"
 	"github.com/go-enjin/be/features/pages/formats/njn/fields/inline"
 	"github.com/go-enjin/be/features/pages/formats/njn/fields/input"
@@ -114,6 +116,7 @@ func (f *CFeature) Defaults() MakeFeature {
 	f.AddInlineField(option.New().Make())
 	f.AddInlineField(picture.New().Make())
 	f.AddInlineField(_select.New().Make())
+	f.AddInlineField(footnote.New().Make())
 	// all container fields
 	f.AddContainerField(details.New().Make())
 	f.AddContainerField(p.New().Make())
@@ -131,6 +134,7 @@ func (f *CFeature) Defaults() MakeFeature {
 	f.AddInlineBlock(toc.New().Make())
 	f.AddInlineBlock(image.New().Make())
 	f.AddInlineBlock(icon.New().Make())
+	f.AddInlineBlock(card.New().Make())
 	f.AddInlineBlock(content.New().Make())
 	return f
 }
