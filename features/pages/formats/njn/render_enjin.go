@@ -42,6 +42,8 @@ type RenderEnjin struct {
 	cache map[string]string
 	data  interface{}
 
+	footnotes map[int][]map[string]interface{}
+
 	sync.RWMutex
 }
 
@@ -53,6 +55,7 @@ func renderNjnData(f feature.EnjinProvider, ctx context.Context, t types.Theme, 
 	re.headingLevel = 0
 	re.cache = make(map[string]string)
 	re.data = data
+	re.footnotes = make(map[int][]map[string]interface{}, 0)
 	html, err = re.Render(data)
 	return
 }
@@ -165,5 +168,24 @@ func (re *RenderEnjin) IncHeadingCount() {
 
 func (re *RenderEnjin) SetHeadingCount(count int) {
 	re.headingCount = count
+	return
+}
+
+func (re *RenderEnjin) AddFootnote(blockIndex int, field map[string]interface{}) (index int) {
+	if _, ok := re.footnotes[blockIndex]; !ok {
+		re.footnotes[blockIndex] = make([]map[string]interface{}, 0)
+	}
+	re.footnotes[blockIndex] = append(re.footnotes[blockIndex], field)
+	index = len(re.footnotes[blockIndex]) - 1
+	return
+}
+
+func (re *RenderEnjin) GetFootnotes(blockIndex int) (footnotes []map[string]interface{}) {
+	footnotes, _ = re.footnotes[blockIndex]
+	return
+}
+
+func (re *RenderEnjin) GetBlockIndex() (index int) {
+	index = re.blockCount - 1
 	return
 }
