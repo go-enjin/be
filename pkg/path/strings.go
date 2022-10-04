@@ -16,6 +16,7 @@ package path
 
 import (
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -161,5 +162,7 @@ func GetSectionSlug(url string) (path, section, slug string) {
 		list := strings.Split(section, "/")
 		section = list[0]
 	}
+	path = filepath.Clean(path)
+	slug = filepath.Clean(slug)
 	return
 }
