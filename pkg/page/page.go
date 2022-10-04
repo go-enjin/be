@@ -57,12 +57,7 @@ func newPageForPath(path string) (p *Page, err error) {
 	p = New()
 	path = bePath.TrimSlashes(path)
 	if extn := bePath.Ext(path); extn != "" {
-		name := strings.ToLower(extn)
-		if format := GetFormat(name); format != nil {
-			p.Format = name
-		} else {
-			p.Format = "<unsupported>"
-		}
+		p.Format = strings.ToLower(extn)
 	}
 	p.Slug = strcase.ToKebab(bePath.Base(path))
 	if path == "/" {

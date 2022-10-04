@@ -39,12 +39,7 @@ func (p *Page) parseContext(ctx context.Context) {
 	ctx.Set("Title", p.Title)
 
 	raw := ctx.String("Format", p.Format)
-	name := strings.ToLower(raw)
-	if format := GetFormat(name); format != nil {
-		p.Format = name
-	} else {
-		p.Format = "<unsupported>"
-	}
+	p.Format = strings.ToLower(raw)
 	ctx.Set("Format", p.Format)
 
 	p.Summary = ctx.String("Summary", p.Summary)
