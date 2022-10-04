@@ -79,7 +79,7 @@ func (f *CFeature) Label() (label string) {
 	return
 }
 
-func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, err error) {
+func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, err *types.EnjinError) {
 	normalizedNewlines := markdown.NormalizeNewlines([]byte(content))
 	extensions := mdParser.CommonExtensions |
 		mdParser.AutoHeadingIDs |
