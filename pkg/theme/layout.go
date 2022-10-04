@@ -15,6 +15,7 @@
 package theme
 
 import (
+	"fmt"
 	"html/template"
 	"os"
 	"strings"
@@ -103,16 +104,16 @@ func (l *Layout) Reload() (err error) {
 
 			var data []byte
 			if data, ee = l.fileSystem.ReadFile(entryPath); ee != nil {
-				log.ErrorF("error fileSystem.ReadFile: %v", ee)
-				continue
+				e = fmt.Errorf("error fileSystem.ReadFile: %v", ee)
+				return
 			}
 
 			l.lastMods[entryName] = lastMod
 			if l.cache[entryName], ee = l.Tmpl.New(entryName).Parse(string(data)); ee != nil {
-				log.ErrorF("template initial parse error: %v", ee)
+				e = ee
 				delete(l.lastMods, entryName)
 				delete(l.cache, entryName)
-				continue
+				return
 			}
 
 			if !beStrings.StringInStrings(entryName, l.Keys...) {
