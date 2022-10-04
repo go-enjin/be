@@ -55,7 +55,7 @@ func (re *RenderEnjin) RenderContainerField(field map[string]interface{}) (combi
 		}
 
 		// log.DebugF("rendering container field %v: %+v", ft, data)
-		if html, e := re.RenderNjnTemplate(ft, data); e != nil {
+		if html, e := re.RenderNjnTemplate("field/"+ft, data); e != nil {
 			err = e
 		} else {
 			combined = append(combined, html)

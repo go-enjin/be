@@ -56,7 +56,7 @@ func (re *RenderEnjin) RenderInlineField(field map[string]interface{}) (combined
 		}
 
 		// log.DebugF("rendering inline field %v: %+v", ft, data)
-		if html, e := re.RenderNjnTemplate(ft, data); e != nil {
+		if html, e := re.RenderNjnTemplate("field/"+ft, data); e != nil {
 			err = e
 			return
 		} else {
