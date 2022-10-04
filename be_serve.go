@@ -26,6 +26,18 @@ import (
 	"github.com/go-enjin/be/pkg/theme"
 )
 
+func (e *Enjin) Serve204(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusNoContent)
+	_, _ = w.Write([]byte("204 - No Content"))
+}
+
+func (e *Enjin) Serve401(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusUnauthorized)
+	_, _ = w.Write([]byte("401 - Unauthorized"))
+}
+
 func (e *Enjin) ServeBasic401(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("WWW-Authenticate", "Basic")
@@ -55,6 +67,52 @@ func (e *Enjin) Serve500(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusInternalServerError)
 	_, _ = w.Write([]byte("500 - Internal Server Error"))
+}
+
+func (e *Enjin) ServeNotFound(w http.ResponseWriter, r *http.Request) {
+	e.ServeStatusPage(404, w, r)
+}
+
+func (e *Enjin) ServeInternalServerError(w http.ResponseWriter, r *http.Request) {
+	e.ServeStatusPage(500, w, r)
+}
+
+func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Request) {
+	if path, ok := e.eb.statusPages[status]; ok {
+		if p, ok := e.eb.pages[path]; ok {
+			if err := e.ServePage(p, w, r); err != nil {
+				log.DebugF("error serving %v (pages) page: %v", status, err)
+			} else {
+				log.DebugF("served %v (pages) page: %v", status, path)
+				return
+			}
+		}
+		for _, f := range e.eb.features {
+			if mf, ok := f.(feature.Middleware); ok {
+				if err := mf.ServePath(path, e, w, r); err != nil {
+					log.DebugF("error serving %v (middleware) page: %v", status, err)
+				} else {
+					log.DebugF("served %v (middleware) page: %v", status, path)
+					return
+				}
+			}
+		}
+	}
+	switch status {
+	case 401:
+		e.Serve401(w, r)
+	case 403:
+		e.Serve403(w, r)
+	case 404:
+		e.Serve404(w, r)
+	case 405:
+		e.Serve405(w, r)
+	case 500:
+		e.Serve500(w, r)
+	default:
+		log.WarnF("unsupported status page: %v, serving 404 instead", status)
+		e.ServeStatusPage(404, w, r)
+	}
 }
 
 func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) (err error) {
