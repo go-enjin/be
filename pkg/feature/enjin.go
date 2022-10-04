@@ -31,6 +31,7 @@ type EnjinRenderer interface {
 	PrepareGenericBlock(typeName string, data map[string]interface{}) (preparedData map[string]interface{})
 
 	GetData() (data interface{})
+	GetBlockIndex() (index int)
 
 	GetHeadingCount() (count int)
 	SetHeadingCount(count int)
@@ -40,6 +41,9 @@ type EnjinRenderer interface {
 	SetHeadingLevel(level int)
 	IncHeadingLevel()
 	DecHeadingLevel()
+
+	AddFootnote(blockIndex int, field map[string]interface{}) (index int)
+	GetFootnotes(blockIndex int) (footnotes []map[string]interface{})
 
 	ParseBlockHeadingLevel(count, current int, blockData map[string]interface{}) (level, headingReset, headingLevel int)
 	ParseBlockHeader(content map[string]interface{}) (html template.HTML, ok bool)
