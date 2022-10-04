@@ -21,10 +21,55 @@ import (
 	"github.com/go-enjin/be/pkg/fs"
 )
 
+type EnjinError struct {
+	Title   string
+	Summary string
+	Content string
+}
+
+func NewEnjinError(title, summary, content string) *EnjinError {
+	return &EnjinError{
+		Title:   title,
+		Summary: summary,
+		Content: content,
+	}
+}
+
+func (e *EnjinError) Html() (html template.HTML) {
+	html = `
+<article
+    class="block"
+    id="theme-enjin-error"
+    data-block-tag="theme-enjin-error"
+    data-block-type="content"
+    data-block-profile="outer--inner"
+    data-block-padding="both"
+    data-block-margins="both"
+    data-block-jump-top="true"
+    data-block-jump-link="true">
+    <div class="content">
+        <header>
+            <h1>` + template.HTML(e.Title) + `</h1>
+            <a class="jump-link" href="#theme-enjin-error">
+                <span class="sr-only">permalink</span>
+            </a>
+        </header>
+        <section>
+            <details>
+                <summary>` + template.HTML(e.Summary) + `</summary>
+                <pre>` + template.HTML(e.Content) + `</pre>
+            </details>
+        </section>
+    </div>
+</article>
+`
+	return
+}
+
 type Format interface {
 	Name() (name string)
 	Label() (label string)
-	Process(ctx context.Context, t Theme, content string) (html template.HTML, err error)
+	Process(ctx context.Context, t Theme, content string) (html template.HTML, err *EnjinError)
 }
 
 type Theme interface {
