@@ -98,9 +98,8 @@ func (f *CFeature) Label() (label string) {
 	return
 }
 
-func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, err error) {
+func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, err *types.EnjinError) {
 	input := strings.NewReader(content)
-	var text string
 	orgConfig := org.New()
 	if f.replaced != nil {
 		orgConfig.DefaultSettings = f.replaced
@@ -110,7 +109,12 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 			log.DebugF(`setting default: %v = "%v"`, k, v)
 		}
 	}
-	if text, err = orgConfig.Parse(input, "./").Write(org.NewHTMLWriter()); err != nil {
+	if text, e := orgConfig.Parse(input, "./").Write(org.NewHTMLWriter()); e != nil {
+		err = types.NewEnjinError(
+			"org-mode parse error",
+			e.Error(),
+			content,
+		)
 		return
 	} else {
 		html = template.HTML(text)
