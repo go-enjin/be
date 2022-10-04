@@ -107,6 +107,23 @@ func (re *RenderEnjin) PrepareGenericBlock(typeName string, data map[string]inte
 		preparedData["JumpLink"] = "false"
 	}
 
+	if linkHref, ok := data["link-href"].(string); ok {
+		preparedData["LinkHref"] = linkHref
+		if linkText, ok := data["link-text"].(string); ok {
+			preparedData["LinkText"] = linkText
+		} else {
+			preparedData["LinkText"] = linkHref
+		}
+		if linkTarget, ok := data["link-target"].(string); ok {
+			switch linkTarget {
+			case "_self", "_blank", "_parent", "_top":
+				preparedData["LinkTarget"] = linkTarget
+			default:
+				log.ErrorF(`invalid block link target: - "%v"`, linkTarget)
+			}
+		}
+	}
+
 	if re.headingCount == 0 && typeName != "header" {
 		// first block on page is not a header, need to ensure that only one
 		// h1 tag exists on the page
