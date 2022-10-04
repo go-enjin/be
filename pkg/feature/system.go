@@ -31,12 +31,22 @@ type Service interface {
 	GetTheme() (t *theme.Theme, err error)
 	ThemeNames() (names []string)
 	ServerName() (name string)
-	Serve403(w http.ResponseWriter, _ *http.Request)
-	Serve404(w http.ResponseWriter, _ *http.Request)
-	Serve405(w http.ResponseWriter, _ *http.Request)
-	Serve500(w http.ResponseWriter, _ *http.Request)
-	ServePage(p *page.Page, w http.ResponseWriter, request *http.Request) (err error)
-	ServeData(data []byte, mime string, w http.ResponseWriter, _ *http.Request)
+
+	Serve204(w http.ResponseWriter, r *http.Request)
+	Serve401(w http.ResponseWriter, r *http.Request)
+	ServeBasic401(w http.ResponseWriter, r *http.Request)
+	Serve403(w http.ResponseWriter, r *http.Request)
+	Serve404(w http.ResponseWriter, r *http.Request)
+	Serve405(w http.ResponseWriter, r *http.Request)
+	Serve500(w http.ResponseWriter, r *http.Request)
+
+	ServeNotFound(w http.ResponseWriter, r *http.Request)
+	ServeInternalServerError(w http.ResponseWriter, r *http.Request)
+
+	ServeStatusPage(status int, w http.ResponseWriter, r *http.Request)
+	ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) (err error)
+	ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request)
+
 	Notify(tag string)
 	NotifyF(tag, format string, argv ...interface{})
 }
