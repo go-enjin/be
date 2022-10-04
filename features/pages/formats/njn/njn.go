@@ -200,32 +200,34 @@ func (f *CFeature) ContainerBlocks() (field map[string]feature.EnjinBlock) {
 	return f.containerBlocks
 }
 
-func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, err error) {
+func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, err *types.EnjinError) {
 	var data interface{}
 	if e := json.Unmarshal([]byte(content), &data); e != nil {
 		switch t := e.(type) {
 		case *json.SyntaxError:
-			err = fmt.Errorf("json syntax error")
-			html = template.HTML(fmt.Sprintf(`<p>json syntax error: <a style="color:red;" href="#json-error">[%d] %v</a></p>`, t.Offset, t.Error()))
-			html += "\n<pre>\n"
-			html += template.HTML(template.HTMLEscapeString(content[:t.Offset]))
-			html += template.HTML(fmt.Sprintf(`<span style="color:red;weight:bold;" id="json-error">&lt;-- %v</span>`, t.Error()))
-			html += template.HTML(template.HTMLEscapeString(content[t.Offset:]))
-			html += "\n</pre>\n"
+			output := template.HTMLEscapeString(content[:t.Offset])
+			output += fmt.Sprintf(`<span style="color:red;weight:bold;" id="json-error">&lt;-- %v</span>`, t.Error())
+			output += template.HTMLEscapeString(content[t.Offset:])
+			err = types.NewEnjinError(
+				"json syntax error",
+				fmt.Sprintf(`<a style="color:red;" href="#json-error">[%d] %v</a>`, t.Offset, t.Error()),
+				output,
+			)
 		case *json.UnmarshalTypeError:
-			err = fmt.Errorf("json unmarshal error")
-			html = template.HTML(fmt.Sprintf(`<p>json unmarshal error: <a style="color:red;" href="#json-error">[%d] %v</a></p>`, t.Offset, t.Error()))
-			html += "\n<pre>\n"
-			html += template.HTML(template.HTMLEscapeString(content[:t.Offset]))
-			html += template.HTML(fmt.Sprintf(`<span style="color:red;weight:bold;" id="json-error">&lt;-- %v</span>`, t.Error()))
-			html += template.HTML(template.HTMLEscapeString(content[t.Offset:]))
-			html += "\n</pre>\n"
+			output := template.HTMLEscapeString(content[:t.Offset])
+			output += fmt.Sprintf(`<span style="color:red;weight:bold;" id="json-error">&lt;-- %v</span>`, t.Error())
+			output += template.HTMLEscapeString(content[t.Offset:])
+			err = types.NewEnjinError(
+				"json unmarshal error",
+				fmt.Sprintf(`<a style="color:red;" href="#json-error">[%d] %v</a>`, t.Offset, t.Error()),
+				output,
+			)
 		default:
-			err = fmt.Errorf("json decoding error")
-			html = template.HTML(fmt.Sprintf(`<p>json decoding error: %v</p>`, t.Error()))
-			html += "\n<pre>\n"
-			html += template.HTML(template.HTMLEscapeString(content))
-			html += "\n</pre>\n"
+			err = types.NewEnjinError(
+				"json decoding error",
+				t.Error(),
+				content,
+			)
 		}
 		return
 	}

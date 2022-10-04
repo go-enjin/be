@@ -16,6 +16,7 @@ package njn
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"sync"
@@ -44,7 +45,7 @@ type RenderEnjin struct {
 	sync.RWMutex
 }
 
-func renderNjnData(f feature.EnjinProvider, ctx context.Context, t types.Theme, data interface{}) (html template.HTML, err error) {
+func renderNjnData(f feature.EnjinProvider, ctx context.Context, t types.Theme, data interface{}) (html template.HTML, err *types.EnjinError) {
 	re := new(RenderEnjin)
 	re.Njn = f
 	re.Theme = t
@@ -56,7 +57,7 @@ func renderNjnData(f feature.EnjinProvider, ctx context.Context, t types.Theme, 
 	return
 }
 
-func (re *RenderEnjin) Render(data interface{}) (html template.HTML, err error) {
+func (re *RenderEnjin) Render(data interface{}) (html template.HTML, err *types.EnjinError) {
 
 	switch v := data.(type) {
 
@@ -71,10 +72,19 @@ func (re *RenderEnjin) Render(data interface{}) (html template.HTML, err error) 
 		}
 
 	case map[string]interface{}:
-		html, err = re.ProcessBlock(v)
+		if processed, e := re.ProcessBlock(v); e != nil {
+			content, _ := json.MarshalIndent(v, "", "    ")
+			err = types.NewEnjinError("error processing njn block", e.Error(), string(content))
+		} else {
+			html += processed
+		}
 
 	default:
-		err = fmt.Errorf("unsupported njn data received: %T", v)
+		err = types.NewEnjinError(
+			"unsupported njn data type",
+			fmt.Sprintf("unsupported njn data type received: %T", v),
+			fmt.Sprintf("%+v", v),
+		)
 	}
 
 	return

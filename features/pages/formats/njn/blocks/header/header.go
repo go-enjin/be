@@ -114,7 +114,8 @@ func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block 
 						}
 
 					default:
-						err = fmt.Errorf("unsupported heading nav item type: %+v", v)
+						err = fmt.Errorf("unsupported heading nav item type: %v", vType)
+						return
 					}
 
 				} else {
