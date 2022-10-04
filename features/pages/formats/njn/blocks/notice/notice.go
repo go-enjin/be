@@ -73,6 +73,10 @@ func (f *CBlock) NjnBlockType() (name string) {
 }
 
 func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block map[string]interface{}) (html template.HTML, err error) {
+	if blockType != "notice" {
+		err = fmt.Errorf("%v does not implement %v block type", f.Tag(), blockType)
+		return
+	}
 
 	var blockContent map[string]interface{}
 	if blockContent, err = re.PrepareGenericBlockData(block["content"]); err != nil {

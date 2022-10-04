@@ -15,6 +15,7 @@
 package content
 
 import (
+	"fmt"
 	"html/template"
 
 	"github.com/go-enjin/be/pkg/feature"
@@ -70,6 +71,10 @@ func (f *CBlock) NjnBlockType() (name string) {
 }
 
 func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block map[string]interface{}) (html template.HTML, err error) {
+	if blockType != "content" {
+		err = fmt.Errorf("%v does not implement %v block type", f.Tag(), blockType)
+		return
+	}
 
 	var blockDataContent map[string]interface{}
 	if blockDataContent, err = re.PrepareGenericBlockData(block["content"]); err != nil {
