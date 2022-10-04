@@ -23,6 +23,7 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/pkg/theme/types"
 )
 
 func (t *Theme) RenderTemplateContent(ctx context.Context, tmplContent string) (html string, err error) {
@@ -125,13 +126,8 @@ func (t *Theme) Render(view string, ctx context.Context) (data []byte, err error
 	return
 }
 
-func (t *Theme) renderErrorPage(heading string, output string) (html template.HTML) {
-	html = "<header><h1>" + template.HTML(heading) + "</h1></header>\n"
-	html += "<section>\n"
-	html += "<pre>\n"
-	html += template.HTML(template.HTMLEscapeString(output))
-	html += "\n</pre>\n"
-	html += "</section>"
+func (t *Theme) renderErrorPage(title, summary, output string) (html template.HTML) {
+	html = types.NewEnjinError(title, summary, output).Html()
 	return
 }
 
@@ -140,20 +136,18 @@ func (t *Theme) RenderPage(ctx context.Context, p *page.Page) (data []byte, err 
 	ctx.Set("Theme", t.Config)
 
 	if output, e := t.RenderTemplateContent(ctx, p.Content); e == nil {
-		if p.Format == "<unsupported>" {
-			ctx["Content"] = t.renderErrorPage("Unsupported Page Format", output)
-		} else if format := page.GetFormat(p.Format); format != nil {
-			if html, e := format.Process(ctx, t, output); e != nil {
-				err = fmt.Errorf("error processing %v page format: %v", p.Format, e)
-				return
+		if format := page.GetFormat(p.Format); format != nil {
+			if html, ee := format.Process(ctx, t, output); ee != nil {
+				log.ErrorF("error processing %v page format: %v - %v", p.Format, ee.Title, ee.Summary)
+				ctx["Content"] = ee.Html()
 			} else {
 				ctx["Content"] = html
 			}
 		} else {
-			ctx["Content"] = t.renderErrorPage("Unknown Page Format: "+p.Format, output)
+			ctx["Content"] = t.renderErrorPage("Unsupported Page Format", fmt.Sprintf(`Unknown page format specified: "%v"`, p.Format), p.String())
 		}
 	} else {
-		err = fmt.Errorf("error rendering template: %v", e)
+		ctx["Content"] = t.renderErrorPage("Template Render Error", e.Error(), p.String())
 		return
 	}
 
