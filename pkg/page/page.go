@@ -15,6 +15,7 @@
 package page
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/iancoleman/strcase"
@@ -113,5 +114,6 @@ func NewFromString(path, raw string) (p *Page, err error) {
 }
 
 func (p *Page) String() string {
-	return p.Url
+	ctx, _ := json.MarshalIndent(p.Context, "", "    ")
+	return string(ctx) + "\n" + p.Content
 }
