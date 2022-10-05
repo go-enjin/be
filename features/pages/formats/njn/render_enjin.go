@@ -21,6 +21,8 @@ import (
 	"html/template"
 	"sync"
 
+	"github.com/iancoleman/strcase"
+
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
@@ -77,7 +79,8 @@ func (re *RenderEnjin) Render(data interface{}) (html template.HTML, err *types.
 	case map[string]interface{}:
 		if processed, e := re.ProcessBlock(v); e != nil {
 			content, _ := json.MarshalIndent(v, "", "    ")
-			err = types.NewEnjinError("error processing njn block", e.Error(), string(content))
+			blockType, _ := v["type"]
+			err = types.NewEnjinError(fmt.Sprintf("error processing njn %v block", blockType), e.Error(), string(content))
 		} else {
 			html += processed
 		}
@@ -187,5 +190,19 @@ func (re *RenderEnjin) GetFootnotes(blockIndex int) (footnotes []map[string]inte
 
 func (re *RenderEnjin) GetBlockIndex() (index int) {
 	index = re.blockCount - 1
+	return
+}
+
+func (re *RenderEnjin) ParseTypeName(data map[string]interface{}) (name string, ok bool) {
+	if name, ok = data["type"].(string); ok {
+		name = strcase.ToKebab(name)
+	}
+	return
+}
+
+func (re *RenderEnjin) ParseFieldAndTypeName(data interface{}) (field map[string]interface{}, name string, ok bool) {
+	if field, ok = data.(map[string]interface{}); ok {
+		name, ok = re.ParseTypeName(field)
+	}
 	return
 }
