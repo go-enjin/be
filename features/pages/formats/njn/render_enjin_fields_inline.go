@@ -17,7 +17,9 @@ package njn
 import (
 	"fmt"
 	"html/template"
-	"strings"
+
+	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/log"
 )
 
 func (re *RenderEnjin) RenderInlineFields(fields []interface{}) (combined []template.HTML, err error) {
@@ -40,22 +42,18 @@ func (re *RenderEnjin) RenderInlineFields(fields []interface{}) (combined []temp
 }
 
 func (re *RenderEnjin) RenderInlineField(field map[string]interface{}) (combined []template.HTML, err error) {
-	if ft, ok := field["type"].(string); ok {
-		ft = strings.ToLower(ft)
+	if ft, ok := re.ParseTypeName(field); ok {
 		var data map[string]interface{}
 
-		inlineFields := re.Njn.InlineFields()
-		if inlineField, ok := inlineFields[ft]; ok {
-			// log.DebugF("preparing inline field %v: %+v", ft, inlineField.Tag())
+		if inlineField, ok := re.Njn.FindField(feature.InlineNjnClass, ft); ok {
 			if data, err = inlineField.PrepareNjnData(re, ft, field); err != nil {
 				return
 			}
 		} else {
-			err = fmt.Errorf("unsupported field type: %v", ft)
+			err = fmt.Errorf("unsupported inline field type: %v", ft)
 			return
 		}
 
-		// log.DebugF("rendering inline field %v: %+v", ft, data)
 		if html, e := re.RenderNjnTemplate("field/"+ft, data); e != nil {
 			err = e
 			return
@@ -63,50 +61,101 @@ func (re *RenderEnjin) RenderInlineField(field map[string]interface{}) (combined
 			combined = append(combined, html)
 		}
 	} else {
-		err = fmt.Errorf("inline field missing type: %+v", field)
+		err = fmt.Errorf("inline field missing type")
 	}
 	return
 }
 
-func (re *RenderEnjin) RenderInlineFieldText(field map[string]interface{}) (text template.HTML, err error) {
-	if ti, ok := field["text"]; ok {
-		switch t := ti.(type) {
-		case []interface{}:
-			text, err = re.RenderInlineFieldList(t)
-		case interface{}:
-			text, err = re.RenderInlineFieldList([]interface{}{t})
-		default:
-			err = fmt.Errorf("unsupported field text type: %T %+v", t, t)
+func (re *RenderEnjin) CheckInlineFieldText(parent feature.EnjinField, parentName string, child interface{}) (njn feature.EnjinField, field map[string]interface{}, name string, err error) {
+	if childField, childName, ok := re.ParseFieldAndTypeName(child); ok {
+		if childNjnField, ok := re.Njn.FindField(feature.InlineNjnClass, childName); ok {
+			if parent.NjnCheckTag(childName) && parent.NjnCheckClass(childNjnField.NjnClass()) {
+				njn = childNjnField
+				field = childField
+				name = childName
+			} else {
+				log.TraceF("%v denied as child of %v", childName, parentName)
+			}
+		} else {
+			err = fmt.Errorf("inline njn field not found: %v", childName)
+			return
 		}
 	} else {
-		err = fmt.Errorf("missing field text: %v", field)
+		err = fmt.Errorf("inline field missing type or unsupported structure: %T", child)
 	}
+	return
+}
+
+func (re *RenderEnjin) RenderInlineFieldText(field map[string]interface{}) (html template.HTML, err error) {
+	if typeName, ok := re.ParseTypeName(field); ok {
+		if njnField, ok := re.Njn.FindField(feature.AnyNjnClass, typeName); ok {
+			if textItem, ok := field["text"]; ok {
+				switch t := textItem.(type) {
+				case []interface{}:
+					var allowed []interface{}
+					for _, item := range t {
+						if childText, ok := item.(string); ok {
+							allowed = append(allowed, childText)
+						} else {
+							if _, child, _, e := re.CheckInlineFieldText(njnField, typeName, item); e != nil {
+								err = e
+								return
+							} else {
+								allowed = append(allowed, child)
+							}
+						}
+					}
+					html, err = re.RenderInlineFieldList(allowed)
+				case interface{}:
+					if childText, ok := t.(string); ok {
+						html, err = re.RenderInlineFieldList([]interface{}{childText})
+					} else {
+						if _, child, _, e := re.CheckInlineFieldText(njnField, typeName, t); e != nil {
+							err = e
+							return
+						} else {
+							html, err = re.RenderInlineFieldList([]interface{}{child})
+						}
+					}
+				default:
+					err = fmt.Errorf("unsupported inline field text structure: %T", field["text"])
+				}
+			} else {
+				err = fmt.Errorf("inline field missing text")
+			}
+		} else {
+			err = fmt.Errorf("inline field not found: %v", typeName)
+		}
+	} else {
+		err = fmt.Errorf("inline field missing type")
+	}
+
 	return
 }
 
 func (re *RenderEnjin) RenderInlineFieldList(list []interface{}) (html template.HTML, err error) {
-	for idx, listItemIface := range list {
-		if listItemString, ok := listItemIface.(string); ok {
+	for idx, item := range list {
+		if itemString, ok := item.(string); ok {
 			if idx > 0 {
 				if _, ok := list[idx-1].(string); ok {
 					html += " "
 				}
 			}
-			html += template.HTML(listItemString)
-		} else if listItemMap, ok := listItemIface.(map[string]interface{}); ok {
+			html += template.HTML(itemString)
+		} else if itemMap, ok := item.(map[string]interface{}); ok {
 			var rendered []template.HTML
-			if rendered, err = re.RenderInlineField(listItemMap); err != nil {
+			if rendered, err = re.RenderInlineField(itemMap); err != nil {
 				html = ""
 				return
 			}
 			for _, rend := range rendered {
 				html += rend
 			}
-		} else if listItemIfaceList, ok := listItemIface.([]interface{}); ok {
-			html, err = re.RenderInlineFieldList(listItemIfaceList)
+		} else if itemList, ok := item.([]interface{}); ok {
+			html, err = re.RenderInlineFieldList(itemList)
 		} else {
 			html = ""
-			err = fmt.Errorf("unsupported text value type: %T %+v", listItemIface, listItemIface)
+			err = fmt.Errorf("unsupported inline field text structure: %T", item)
 			return
 		}
 	}
