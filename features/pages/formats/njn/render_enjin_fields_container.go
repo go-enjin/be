@@ -17,20 +17,21 @@ package njn
 import (
 	"fmt"
 	"html/template"
-	"strings"
+
+	"github.com/go-enjin/be/pkg/feature"
 )
 
 func (re *RenderEnjin) RenderContainerFields(fields []interface{}) (combined []template.HTML, err error) {
-	for _, field := range fields {
-		if fieldMap, ok := field.(map[string]interface{}); ok {
-			if c, e := re.RenderContainerField(fieldMap); e != nil {
+	for _, fieldItem := range fields {
+		if field, ok := fieldItem.(map[string]interface{}); ok {
+			if c, e := re.RenderContainerField(field); e != nil {
 				err = e
 				return
 			} else {
 				combined = append(combined, c...)
 			}
 		} else {
-			err = fmt.Errorf("unsupported container field structure: %T", field)
+			err = fmt.Errorf("unsupported field structure: %T", fieldItem)
 			return
 		}
 	}
@@ -38,51 +39,55 @@ func (re *RenderEnjin) RenderContainerFields(fields []interface{}) (combined []t
 }
 
 func (re *RenderEnjin) RenderContainerField(field map[string]interface{}) (combined []template.HTML, err error) {
-
-	if ft, ok := field["type"].(string); ok {
-		ft = strings.ToLower(ft)
+	if ft, ok := re.ParseTypeName(field); ok {
 		var data map[string]interface{}
 
-		containerFields := re.Njn.ContainerFields()
-		if containerField, ok := containerFields[ft]; ok {
-			// log.DebugF("preparing container field %v: %+v", ft, containerField.Tag())
+		if containerField, ok := re.Njn.FindField(feature.AnyNjnClass, ft); ok {
 			if data, err = containerField.PrepareNjnData(re, ft, field); err != nil {
 				return
 			}
 		} else {
-			combined, err = re.RenderInlineField(field)
+			err = fmt.Errorf("njn field not found: %v", ft)
 			return
 		}
 
-		// log.DebugF("rendering container field %v: %+v", ft, data)
 		if html, e := re.RenderNjnTemplate("field/"+ft, data); e != nil {
 			err = e
 		} else {
 			combined = append(combined, html)
 		}
 	} else {
-		err = fmt.Errorf("container field missing type: %+v", field)
+		err = fmt.Errorf("field missing type")
 	}
 	return
 }
 
 func (re *RenderEnjin) RenderContainerFieldText(field map[string]interface{}) (text template.HTML, err error) {
-	if ti, ok := field["text"].([]interface{}); ok {
-		text, err = re.RenderContainerFieldList(ti)
+	if textItem, ok := field["text"]; ok {
+		switch t := textItem.(type) {
+		case []interface{}:
+			text, err = re.RenderContainerFieldList(t)
+		case interface{}:
+			text, err = re.RenderContainerFieldList([]interface{}{t})
+		default:
+			err = fmt.Errorf("unsupported field text structure: %T", t)
+		}
+	} else {
+		err = fmt.Errorf("field missing text")
 	}
 	return
 }
 
 func (re *RenderEnjin) RenderContainerFieldList(list []interface{}) (text template.HTML, err error) {
-	for idx, tii := range list {
-		if tis, ok := tii.(string); ok {
+	for idx, listItem := range list {
+		if listItemString, ok := listItem.(string); ok {
 			if idx > 0 {
 				text += " "
 			}
-			text += template.HTML(tis)
-		} else if tis, ok := tii.(map[string]interface{}); ok {
+			text += template.HTML(listItemString)
+		} else if listItemMap, ok := listItem.(map[string]interface{}); ok {
 			var rendered []template.HTML
-			if rendered, err = re.RenderContainerField(tis); err != nil {
+			if rendered, err = re.RenderContainerField(listItemMap); err != nil {
 				return
 			}
 			for _, rend := range rendered {
@@ -90,7 +95,7 @@ func (re *RenderEnjin) RenderContainerFieldList(list []interface{}) (text templa
 			}
 		} else {
 			text = ""
-			err = fmt.Errorf("unsupported anchor text value type: %T %+v", tii, tii)
+			err = fmt.Errorf("unsupported field structure: %T", listItem)
 			return
 		}
 	}
