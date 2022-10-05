@@ -14,29 +14,15 @@
 
 package feature
 
-type NjnTagClass uint
+import "html/template"
 
-const (
-	InlineNjnTag NjnTagClass = iota
-	ContainerNjnTag
-)
+type EnjinBlock interface {
+	EnjinFeature
 
-func (etc NjnTagClass) String() string {
-	switch etc {
-	case InlineNjnTag:
-		return "inline"
-	case ContainerNjnTag:
-		return "container"
-	}
-	return "error"
+	NjnBlockType() (name string)
+	ProcessBlock(re EnjinRenderer, blockType string, block map[string]interface{}) (html template.HTML, err error)
 }
 
-type EnjinFeature interface {
-	Feature
-
-	NjnTagClass() (tagClass NjnTagClass)
-}
-
-type CEnjinFeature struct {
-	CFeature
+type CEnjinBlock struct {
+	CEnjinFeature
 }

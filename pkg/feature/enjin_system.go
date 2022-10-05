@@ -14,29 +14,9 @@
 
 package feature
 
-type NjnTagClass uint
-
-const (
-	InlineNjnTag NjnTagClass = iota
-	ContainerNjnTag
-)
-
-func (etc NjnTagClass) String() string {
-	switch etc {
-	case InlineNjnTag:
-		return "inline"
-	case ContainerNjnTag:
-		return "container"
-	}
-	return "error"
-}
-
-type EnjinFeature interface {
-	Feature
-
-	NjnTagClass() (tagClass NjnTagClass)
-}
-
-type CEnjinFeature struct {
-	CFeature
+type EnjinSystem interface {
+	InlineFields() (field map[string]EnjinField)
+	ContainerFields() (field map[string]EnjinField)
+	InlineBlocks() (field map[string]EnjinBlock)
+	ContainerBlocks() (field map[string]EnjinBlock)
 }
