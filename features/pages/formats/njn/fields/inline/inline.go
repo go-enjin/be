@@ -110,6 +110,11 @@ func (f *CField) Make() Field {
 	return f
 }
 
+func (f *CField) NjnTagClass() (tagClass feature.NjnTagClass) {
+	tagClass = feature.InlineNjnTag
+	return
+}
+
 func (f *CField) NjnFieldNames() (names []string) {
 	names = append(names, f.supported...)
 	return

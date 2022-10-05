@@ -55,6 +55,7 @@ type MakeField interface {
 type CField struct {
 	feature.CEnjinField
 
+	tagClass  feature.NjnTagClass
 	supported []string
 }
 
@@ -73,6 +74,7 @@ func (f *CField) Tag() feature.Tag {
 
 func (f *CField) Init(this interface{}) {
 	f.CEnjinField.Init(this)
+	f.tagClass = feature.InlineNjnTag
 }
 
 func (f *CField) Defaults() MakeField {
@@ -104,6 +106,11 @@ func (f *CField) RemoveTag(name string) MakeField {
 
 func (f *CField) Make() Field {
 	return f
+}
+
+func (f *CField) NjnTagClass() (tagClass feature.NjnTagClass) {
+	tagClass = f.tagClass
+	return
 }
 
 func (f *CField) NjnFieldNames() (names []string) {
