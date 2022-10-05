@@ -65,8 +65,8 @@ func (f *CBlock) Make() Block {
 	return f
 }
 
-func (f *CBlock) NjnTagClass() (tagClass feature.NjnTagClass) {
-	tagClass = feature.InlineNjnTag
+func (f *CBlock) NjnClass() (tagClass feature.NjnClass) {
+	tagClass = feature.InlineNjnClass
 	return
 }
 
