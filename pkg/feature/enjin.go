@@ -14,19 +14,24 @@
 
 package feature
 
-type NjnTagClass uint
+import beStrings "github.com/go-enjin/be/pkg/strings"
+
+type NjnClass uint
 
 const (
-	InlineNjnTag NjnTagClass = iota
-	ContainerNjnTag
+	InlineNjnClass NjnClass = iota
+	ContainerNjnClass
+	AnyNjnClass
 )
 
-func (etc NjnTagClass) String() string {
-	switch etc {
-	case InlineNjnTag:
+func (nc NjnClass) String() string {
+	switch nc {
+	case InlineNjnClass:
 		return "inline"
-	case ContainerNjnTag:
+	case ContainerNjnClass:
 		return "container"
+	case AnyNjnClass:
+		return "any"
 	}
 	return "error"
 }
@@ -34,9 +39,56 @@ func (etc NjnTagClass) String() string {
 type EnjinFeature interface {
 	Feature
 
-	NjnTagClass() (tagClass NjnTagClass)
+	NjnClass() (tagClass NjnClass)
+	NjnCheckTag(tagName string) (allow bool)
+	NjnCheckClass(tagClass NjnClass) (allow bool)
+	NjnTagsAllowed() (allowed []string, ok bool)
+	NjnTagsDenied() (denied []string, ok bool)
+	NjnClassAllowed() (allowed NjnClass, ok bool)
 }
 
 type CEnjinFeature struct {
 	CFeature
+}
+
+func (f *CEnjinFeature) NjnCheckTag(tagName string) (allow bool) {
+	allowed, checkAllowed := f.NjnTagsAllowed()
+	denied, checkDenied := f.NjnTagsDenied()
+	switch {
+	case checkAllowed && checkDenied:
+		allow = !beStrings.StringInStrings(tagName, denied...) && beStrings.StringInStrings(tagName, allowed...)
+	case checkAllowed:
+		allow = beStrings.StringInStrings(tagName, allowed...)
+	case checkDenied:
+		allow = !beStrings.StringInStrings(tagName, denied...)
+	default:
+		allow = true
+	}
+	return
+}
+
+func (f *CEnjinFeature) NjnCheckClass(tagClass NjnClass) (allow bool) {
+	if allowed, checkAllowed := f.NjnClassAllowed(); checkAllowed {
+		switch allowed {
+		case AnyNjnClass:
+			allow = true
+		default:
+			allow = tagClass == allowed
+		}
+	} else {
+		allow = true
+	}
+	return
+}
+
+func (f *CEnjinFeature) NjnTagsAllowed() (allowed []string, ok bool) {
+	return
+}
+
+func (f *CEnjinFeature) NjnTagsDenied() (denied []string, ok bool) {
+	return
+}
+
+func (f *CEnjinFeature) NjnClassAllowed() (allowed NjnClass, ok bool) {
+	return
 }
