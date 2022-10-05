@@ -85,27 +85,28 @@ func (re *RenderEnjin) RenderInlineFieldText(field map[string]interface{}) (text
 }
 
 func (re *RenderEnjin) RenderInlineFieldList(list []interface{}) (html template.HTML, err error) {
-	for idx, tii := range list {
-		if tis, ok := tii.(string); ok {
+	for idx, listItemIface := range list {
+		if listItemString, ok := listItemIface.(string); ok {
 			if idx > 0 {
 				if _, ok := list[idx-1].(string); ok {
 					html += " "
 				}
 			}
-			html += template.HTML(tis)
-		} else if tis, ok := tii.(map[string]interface{}); ok {
+			html += template.HTML(listItemString)
+		} else if listItemMap, ok := listItemIface.(map[string]interface{}); ok {
 			var rendered []template.HTML
-			if rendered, err = re.RenderInlineField(tis); err != nil {
+			if rendered, err = re.RenderInlineField(listItemMap); err != nil {
+				html = ""
 				return
 			}
 			for _, rend := range rendered {
 				html += rend
 			}
-		} else if tis, ok := tii.([]interface{}); ok {
-			html, err = re.RenderInlineFieldList(tis)
+		} else if listItemIfaceList, ok := listItemIface.([]interface{}); ok {
+			html, err = re.RenderInlineFieldList(listItemIfaceList)
 		} else {
 			html = ""
-			err = fmt.Errorf("unsupported text value type: %T %+v", tii, tii)
+			err = fmt.Errorf("unsupported text value type: %T %+v", listItemIface, listItemIface)
 			return
 		}
 	}
