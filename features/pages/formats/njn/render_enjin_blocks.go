@@ -22,43 +22,47 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
-func (re *RenderEnjin) ProcessBlock(blockData map[string]interface{}) (html template.HTML, err error) {
-	if typeName, ok := blockData["type"].(string); ok {
-
-		inlineBlocks := re.Njn.InlineBlocks()
-		if inlineBlock, ok := inlineBlocks[typeName]; ok {
-			if html, err = inlineBlock.ProcessBlock(re, typeName, blockData); err == nil {
-				log.DebugF("processed block: %v", typeName)
-			}
-			return
-		}
-
-		log.WarnF("unsupported block type: %v", typeName)
-		b, _ := json.MarshalIndent(blockData, "", "  ")
-		html, err = re.ProcessBlock(map[string]interface{}{
-			"type": "content",
-			"content": map[string]interface{}{
-				"section": []interface{}{
-					map[string]interface{}{
-						"type":    "details",
-						"summary": fmt.Sprintf("Unexpected block type: %v", typeName),
-						"text": []interface{}{
-							map[string]interface{}{
-								"type": "pre",
-								"text": string(b),
-							},
+func (re *RenderEnjin) RenderErrorBlock(summary string, data ...interface{}) (html template.HTML, err error) {
+	b, _ := json.MarshalIndent(data, "", "  ")
+	html, err = re.ProcessBlock(map[string]interface{}{
+		"type": "content",
+		"content": map[string]interface{}{
+			"section": []interface{}{
+				map[string]interface{}{
+					"type":    "details",
+					"summary": summary,
+					"text": []interface{}{
+						map[string]interface{}{
+							"type": "pre",
+							"text": string(b),
 						},
 					},
 				},
 			},
-		})
+		},
+	})
+	return
+}
 
+func (re *RenderEnjin) ProcessBlock(block map[string]interface{}) (html template.HTML, err error) {
+	if name, ok := re.ParseTypeName(block); ok {
+
+		if njnBlock, ok := re.Njn.FindBlock(feature.AnyNjnClass, name); ok {
+			if html, err = njnBlock.ProcessBlock(re, name, block); err == nil {
+				log.DebugF("processed block type: %v", name)
+			}
+			return
+		}
+
+		log.WarnF("unsupported block type: %v", name)
+		html, err = re.RenderErrorBlock(fmt.Sprintf("unsupported block type: %v", name), block)
 	} else {
-		err = fmt.Errorf("missing type property: %+v", blockData)
+		html, err = re.RenderErrorBlock("missing block type", block)
 	}
 	return
 }
