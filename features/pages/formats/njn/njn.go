@@ -78,8 +78,8 @@ type MakeFeature interface {
 type CFeature struct {
 	feature.CFeature
 
-	fields map[feature.NjnTagClass]map[string]feature.EnjinField
-	blocks map[feature.NjnTagClass]map[string]feature.EnjinBlock
+	fields map[feature.NjnClass]map[string]feature.EnjinField
+	blocks map[feature.NjnClass]map[string]feature.EnjinBlock
 }
 
 func New() MakeFeature {
@@ -93,30 +93,60 @@ func New() MakeFeature {
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 
-	f.fields = make(map[feature.NjnTagClass]map[string]feature.EnjinField)
-	f.blocks = make(map[feature.NjnTagClass]map[string]feature.EnjinBlock)
+	f.fields = make(map[feature.NjnClass]map[string]feature.EnjinField)
+	f.blocks = make(map[feature.NjnClass]map[string]feature.EnjinBlock)
 }
 
 func (f *CFeature) AddField(field feature.EnjinField) MakeFeature {
-	tagClass := field.NjnTagClass()
-	if _, ok := f.fields[tagClass]; !ok {
-		f.fields[tagClass] = make(map[string]feature.EnjinField)
+
+	add := func(tagClass feature.NjnClass) {
+		if _, ok := f.fields[tagClass]; !ok {
+			f.fields[tagClass] = make(map[string]feature.EnjinField)
+		}
+		for _, name := range field.NjnFieldNames() {
+			f.fields[tagClass][name] = field
+			log.TraceF("added %v field: %v", tagClass.String(), name)
+		}
 	}
-	for _, name := range field.NjnFieldNames() {
-		f.fields[tagClass][name] = field
-		log.DebugF("added %v field: %v", tagClass.String(), name)
+
+	switch field.NjnClass() {
+	case feature.AnyNjnClass:
+		add(feature.InlineNjnClass)
+		add(feature.ContainerNjnClass)
+	case feature.ContainerNjnClass:
+		add(feature.ContainerNjnClass)
+	case feature.InlineNjnClass:
+		add(feature.InlineNjnClass)
+	default:
+		log.FatalDF(1, "unsupported feature.NjnClass: %v", field.NjnClass())
 	}
+
 	return f
 }
 
 func (f *CFeature) AddBlock(block feature.EnjinBlock) MakeFeature {
-	tagClass := block.NjnTagClass()
-	if _, ok := f.blocks[tagClass]; !ok {
-		f.blocks[tagClass] = make(map[string]feature.EnjinBlock)
+
+	add := func(tagClass feature.NjnClass) {
+		if _, ok := f.blocks[tagClass]; !ok {
+			f.blocks[tagClass] = make(map[string]feature.EnjinBlock)
+		}
+		name := block.NjnBlockType()
+		f.blocks[tagClass][name] = block
+		log.TraceF("added %v block: %v", tagClass.String(), name)
 	}
-	name := block.NjnBlockType()
-	f.blocks[tagClass][name] = block
-	log.DebugF("added %v block: %v", tagClass.String(), name)
+
+	switch block.NjnClass() {
+	case feature.AnyNjnClass:
+		add(feature.InlineNjnClass)
+		add(feature.ContainerNjnClass)
+	case feature.ContainerNjnClass:
+		add(feature.ContainerNjnClass)
+	case feature.InlineNjnClass:
+		add(feature.InlineNjnClass)
+	default:
+		log.FatalDF(1, "unsupported feature.NjnClass: %v", block.NjnClass())
+	}
+
 	return f
 }
 
@@ -139,7 +169,7 @@ func (f *CFeature) Defaults() MakeFeature {
 	f.AddField(p.New().Make())
 	f.AddField(table.New().Make())
 	f.AddField(pre.New().Make())
-	f.AddField(literal.New().SetTagClass(feature.ContainerNjnTag).AddTag("hr").Make())
+	f.AddField(literal.New().SetTagClass(feature.ContainerNjnClass).AddTag("hr").Make())
 	f.AddField(code.New().Make())
 	f.AddField(container.New().Defaults().Make())
 	f.AddField(list.New().Defaults().Make())
@@ -176,22 +206,46 @@ func (f *CFeature) Label() (label string) {
 }
 
 func (f *CFeature) InlineFields() (fields map[string]feature.EnjinField) {
-	fields, _ = f.fields[feature.InlineNjnTag]
+	fields, _ = f.fields[feature.InlineNjnClass]
 	return
 }
 
 func (f *CFeature) ContainerFields() (fields map[string]feature.EnjinField) {
-	fields, _ = f.fields[feature.ContainerNjnTag]
+	fields, _ = f.fields[feature.ContainerNjnClass]
 	return
 }
 
 func (f *CFeature) InlineBlocks() (blocks map[string]feature.EnjinBlock) {
-	blocks, _ = f.blocks[feature.InlineNjnTag]
+	blocks, _ = f.blocks[feature.InlineNjnClass]
 	return
 }
 
 func (f *CFeature) ContainerBlocks() (blocks map[string]feature.EnjinBlock) {
-	blocks, _ = f.blocks[feature.ContainerNjnTag]
+	blocks, _ = f.blocks[feature.ContainerNjnClass]
+	return
+}
+
+func (f *CFeature) FindField(tagClass feature.NjnClass, fieldType string) (field feature.EnjinField, ok bool) {
+	switch tagClass {
+	case feature.AnyNjnClass:
+		if field, ok = f.fields[feature.ContainerNjnClass][fieldType]; !ok {
+			field, ok = f.fields[feature.InlineNjnClass][fieldType]
+		}
+	case feature.InlineNjnClass, feature.ContainerNjnClass:
+		field, ok = f.fields[tagClass][fieldType]
+	}
+	return
+}
+
+func (f *CFeature) FindBlock(tagClass feature.NjnClass, blockType string) (block feature.EnjinBlock, ok bool) {
+	switch tagClass {
+	case feature.AnyNjnClass:
+		if block, ok = f.blocks[feature.ContainerNjnClass][blockType]; !ok {
+			block, ok = f.blocks[feature.InlineNjnClass][blockType]
+		}
+	case feature.InlineNjnClass, feature.ContainerNjnClass:
+		block, ok = f.blocks[tagClass][blockType]
+	}
 	return
 }
 
