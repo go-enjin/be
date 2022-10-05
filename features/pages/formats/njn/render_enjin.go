@@ -31,7 +31,7 @@ import (
 var _ feature.EnjinRenderer = (*RenderEnjin)(nil)
 
 type RenderEnjin struct {
-	Njn   feature.EnjinProvider
+	Njn   feature.EnjinSystem
 	Theme types.Theme
 	ctx   context.Context
 
@@ -47,7 +47,7 @@ type RenderEnjin struct {
 	sync.RWMutex
 }
 
-func renderNjnData(f feature.EnjinProvider, ctx context.Context, t types.Theme, data interface{}) (html template.HTML, err *types.EnjinError) {
+func renderNjnData(f feature.EnjinSystem, ctx context.Context, t types.Theme, data interface{}) (html template.HTML, err *types.EnjinError) {
 	re := new(RenderEnjin)
 	re.Njn = f
 	re.Theme = t
