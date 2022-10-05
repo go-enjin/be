@@ -19,4 +19,6 @@ type EnjinSystem interface {
 	ContainerFields() (field map[string]EnjinField)
 	InlineBlocks() (field map[string]EnjinBlock)
 	ContainerBlocks() (field map[string]EnjinBlock)
+	FindField(tagClass NjnClass, fieldType string) (field EnjinField, ok bool)
+	FindBlock(tagClass NjnClass, blockType string) (block EnjinBlock, ok bool)
 }
