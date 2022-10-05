@@ -49,6 +49,8 @@ type MakeField interface {
 
 	Defaults() MakeField
 
+	SetTagClass(tagClass feature.NjnTagClass) MakeField
+
 	Make() Field
 }
 
@@ -77,14 +79,6 @@ func (f *CField) Init(this interface{}) {
 	f.tagClass = feature.InlineNjnTag
 }
 
-func (f *CField) Defaults() MakeField {
-	f.supported = append(
-		f.supported,
-		TagNames...,
-	)
-	return f
-}
-
 func (f *CField) AddTag(name string) MakeField {
 	name = strings.ToLower(name)
 	if beStrings.StringInStrings(name, TagNames...) {
@@ -101,6 +95,19 @@ func (f *CField) RemoveTag(name string) MakeField {
 	if idx := beStrings.StringIndexInStrings(name, f.supported...); idx >= 0 {
 		f.supported = beStrings.RemoveIndexFromStrings(idx, f.supported)
 	}
+	return f
+}
+
+func (f *CField) SetTagClass(tagClass feature.NjnTagClass) MakeField {
+	f.tagClass = tagClass
+	return f
+}
+
+func (f *CField) Defaults() MakeField {
+	f.supported = append(
+		f.supported,
+		TagNames...,
+	)
 	return f
 }
 
