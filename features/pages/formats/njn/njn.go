@@ -20,6 +20,7 @@ import (
 	"html/template"
 
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/card"
+	"github.com/go-enjin/be/features/pages/formats/njn/blocks/carousel"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/content"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/header"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/icon"
@@ -183,6 +184,7 @@ func (f *CFeature) Defaults() MakeFeature {
 	f.AddBlock(icon.New().Make())
 	f.AddBlock(card.New().Make())
 	f.AddBlock(content.New().Make())
+	f.AddBlock(carousel.New().Make())
 	return f
 }
 
