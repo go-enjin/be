@@ -216,3 +216,40 @@ func ParseHtmlTagAttributes(input interface{}) (attributes map[string]interface{
 	}
 	return
 }
+
+func UniqueFromSpaceSep(value string, original []string) (updated []string) {
+	updated = original
+	parts := RxSplitHtmlTagAttributes.Split(value, -1)
+	for _, part := range parts {
+		if !StringInStrings(part, updated...) {
+			updated = append(updated, part)
+		}
+	}
+	return
+}
+
+func AddClassNamesToNjnBlock(data map[string]interface{}, classes ...string) map[string]interface{} {
+	if v, ok := data["class"]; ok {
+		var unique []string
+		switch t := v.(type) {
+		case string:
+			parts := RxSplitHtmlTagAttributes.Split(t, -1)
+			for _, p := range parts {
+				unique = UniqueFromSpaceSep(p, unique)
+			}
+			for _, c := range classes {
+				unique = UniqueFromSpaceSep(c, unique)
+			}
+		case []interface{}:
+			for _, iface := range t {
+				if s, ok := iface.(string); ok {
+					unique = UniqueFromSpaceSep(s, unique)
+				}
+			}
+		}
+		data["class"] = strings.Join(unique, " ")
+	} else {
+		data["class"] = strings.Join(classes, " ")
+	}
+	return data
+}
