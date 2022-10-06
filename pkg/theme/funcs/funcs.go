@@ -18,8 +18,11 @@ import (
 	"fmt"
 	"html/template"
 	"strconv"
+	"strings"
 
 	"github.com/go-enjin/be/pkg/fs"
+	"github.com/go-enjin/be/pkg/log"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 func AsJS(input interface{}) template.JS {
@@ -132,5 +135,35 @@ func Sub(values ...interface{}) (result string) {
 		}
 	}
 	result = fmt.Sprintf("%v", total)
+	return
+}
+
+func MergeClassNames(names ...interface{}) (result template.HTML) {
+	var accepted []string
+	for _, name := range names {
+		switch nameTyped := name.(type) {
+		case string:
+			accepted = beStrings.UniqueFromSpaceSep(nameTyped, accepted)
+
+		case map[string]interface{}:
+			if v, ok := nameTyped["Class"]; ok {
+				if vString, ok := v.(string); ok {
+					accepted = beStrings.UniqueFromSpaceSep(vString, accepted)
+				} else if vList, ok := v.([]interface{}); ok {
+					for _, vlItem := range vList {
+						if vliString, ok := vlItem.(string); ok {
+							accepted = beStrings.UniqueFromSpaceSep(vliString, accepted)
+						}
+					}
+				} else {
+					log.ErrorF("unsupported class structure: %T %v", v, v)
+				}
+			}
+
+		default:
+			log.ErrorF("unsupported input structure: %T %v", name, name)
+		}
+	}
+	result = template.HTML(strings.Join(accepted, " "))
 	return
 }

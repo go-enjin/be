@@ -224,6 +224,8 @@ func (t *Theme) initFuncMap() {
 		"add":        funcs.Add,
 		"sub":        funcs.Sub,
 
+		"mergeClassNames": funcs.MergeClassNames,
+
 		"element":           funcs.Element,
 		"elementOpen":       funcs.ElementOpen,
 		"elementClose":      funcs.ElementClose,
