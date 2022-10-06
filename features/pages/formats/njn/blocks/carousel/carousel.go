@@ -168,19 +168,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		}
 	}
 
-	switch {
-	case bookends == 0: // at least one already checked, nop
-	case bookends == 1:
-		if numCards < 3 {
-			err = fmt.Errorf("at least three cards are required for one bookend")
-			return
-		}
-	case bookends == 2:
-		if numCards < 5 {
-			err = fmt.Errorf("at least five cards are required for two bookends")
-			return
-		}
-	default:
+	if bookends > 2 {
 		err = fmt.Errorf("too many bookends specified (%d), 0-2 allowed", bookends)
 		return
 	}
