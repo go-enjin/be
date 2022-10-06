@@ -196,6 +196,8 @@ func (re *RenderEnjin) GetBlockIndex() (index int) {
 func (re *RenderEnjin) ParseTypeName(data map[string]interface{}) (name string, ok bool) {
 	if name, ok = data["type"].(string); ok {
 		name = strcase.ToKebab(name)
+	} else if name, ok = data["Type"].(string); ok {
+		name = strcase.ToKebab(name)
 	}
 	return
 }
