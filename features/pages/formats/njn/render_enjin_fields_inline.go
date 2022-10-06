@@ -24,16 +24,24 @@ import (
 
 func (re *RenderEnjin) RenderInlineFields(fields []interface{}) (combined []template.HTML, err error) {
 	for _, field := range fields {
-		if fieldMap, ok := field.(map[string]interface{}); ok {
-			if c, e := re.RenderInlineField(fieldMap); e != nil {
+		switch fieldTyped := field.(type) {
+		case string:
+			combined = append(combined, template.HTML(fieldTyped))
+		case map[string]interface{}:
+			if c, e := re.RenderInlineField(fieldTyped); e != nil {
 				err = e
 				return
 			} else {
 				combined = append(combined, c...)
 			}
-		} else if fieldString, ok := field.(string); ok {
-			combined = append(combined, template.HTML(fieldString))
-		} else {
+		case []interface{}:
+			if c, e := re.RenderInlineFieldList(fieldTyped); e != nil {
+				err = e
+				return
+			} else {
+				combined = append(combined, c)
+			}
+		default:
 			err = fmt.Errorf("unsupported inline field structure: %T", field)
 			return
 		}
