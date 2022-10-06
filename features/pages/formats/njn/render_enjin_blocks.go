@@ -53,7 +53,7 @@ func (re *RenderEnjin) PrepareBlock(data map[string]interface{}) (block map[stri
 	if name, ok := re.ParseTypeName(data); ok {
 		if njnBlock, ok := re.Njn.FindBlock(feature.AnyNjnClass, name); ok {
 			if block, err = njnBlock.PrepareBlock(re, name, data); err == nil {
-				log.DebugF("prepared block type: %v", name)
+				log.TraceF("prepared block type: %v", name)
 			}
 			return
 		}
@@ -68,7 +68,7 @@ func (re *RenderEnjin) RenderPreparedBlock(block map[string]interface{}) (html t
 	if name, ok := re.ParseTypeName(block); ok {
 		if njnBlock, ok := re.Njn.FindBlock(feature.AnyNjnClass, name); ok {
 			if html, err = njnBlock.RenderPreparedBlock(re, block); err == nil {
-				log.DebugF("rendered prepared block type: %v", name)
+				log.TraceF("rendered prepared block type: %v", name)
 			}
 			return
 		}
@@ -260,6 +260,7 @@ func (re *RenderEnjin) ParseBlockHeader(content map[string]interface{}) (html te
 	var v []interface{}
 	if v, ok = content["header"].([]interface{}); ok {
 		if headings, err := re.RenderInlineFields(v); err != nil {
+			log.ErrorDF(1, "error rendering inline fields: %v", err)
 			ok = false
 			return
 		} else {
@@ -275,6 +276,7 @@ func (re *RenderEnjin) ParseBlockFooter(content map[string]interface{}) (html te
 	var v []interface{}
 	if v, ok = content["footer"].([]interface{}); ok {
 		if footers, err := re.RenderContainerFields(v); err != nil {
+			log.ErrorDF(1, "error rendering container fields: %v", err)
 			ok = false
 			return
 		} else {
