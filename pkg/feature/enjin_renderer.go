@@ -30,6 +30,10 @@ type EnjinRenderer interface {
 	GetData() (data interface{})
 	GetBlockIndex() (index int)
 
+	GetCurrentDepth() (depth int)
+	IncCurrentDepth() (depth int)
+	DecCurrentDepth() (depth int)
+
 	GetHeadingCount() (count int)
 	SetHeadingCount(count int)
 	IncHeadingCount()
