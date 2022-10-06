@@ -27,6 +27,7 @@ import (
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/image"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/linkList"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/notice"
+	"github.com/go-enjin/be/features/pages/formats/njn/blocks/pair"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/toc"
 	"github.com/go-enjin/be/features/pages/formats/njn/fields/anchor"
 	"github.com/go-enjin/be/features/pages/formats/njn/fields/code"
@@ -185,6 +186,7 @@ func (f *CFeature) Defaults() MakeFeature {
 	f.AddBlock(card.New().Make())
 	f.AddBlock(content.New().Make())
 	f.AddBlock(carousel.New().Make())
+	f.AddBlock(pair.New().Make())
 	return f
 }
 
