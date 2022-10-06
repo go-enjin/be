@@ -40,6 +40,7 @@ type RenderEnjin struct {
 	blockCount   int
 	headingLevel int
 	headingCount int
+	currentDepth int
 
 	cache map[string]string
 	data  interface{}
@@ -58,6 +59,7 @@ func renderNjnData(f feature.EnjinSystem, ctx context.Context, t types.Theme, da
 	re.cache = make(map[string]string)
 	re.data = data
 	re.footnotes = make(map[int][]map[string]interface{}, 0)
+	re.currentDepth = 0
 	html, err = re.Render(data)
 	return
 }
@@ -123,6 +125,7 @@ func (re *RenderEnjin) RenderNjnTemplate(tag string, data map[string]interface{}
 		var tt *template.Template
 		if tt, err = re.Theme.NewHtmlTemplate(tag).Parse(tmplContent); err == nil {
 			var w bytes.Buffer
+			data["Depth"] = re.GetCurrentDepth()
 			if err = tt.Execute(&w, data); err == nil {
 				html = template.HTML(w.Bytes())
 			} else {
@@ -207,4 +210,19 @@ func (re *RenderEnjin) ParseFieldAndTypeName(data interface{}) (field map[string
 		name, ok = re.ParseTypeName(field)
 	}
 	return
+}
+
+func (re *RenderEnjin) GetCurrentDepth() (depth int) {
+	depth = re.currentDepth
+	return
+}
+
+func (re *RenderEnjin) IncCurrentDepth() (depth int) {
+	re.currentDepth += 1
+	return re.currentDepth
+}
+
+func (re *RenderEnjin) DecCurrentDepth() (depth int) {
+	re.currentDepth -= 1
+	return re.currentDepth
 }
