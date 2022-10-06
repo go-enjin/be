@@ -128,6 +128,9 @@ func (re *RenderEnjin) PrepareGenericBlock(typeName string, data map[string]inte
 		preparedData["Margins"] = "both"
 	}
 	var v string
+	if v, ok = data["class"].(string); ok {
+		preparedData["Class"] = v
+	}
 	if v, ok = data["jump-top"].(string); ok && beStrings.IsTrue(v) {
 		preparedData["JumpTop"] = "true"
 	} else {
