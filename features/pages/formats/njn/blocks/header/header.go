@@ -76,25 +76,25 @@ func (f *CBlock) NjnBlockType() (name string) {
 	return
 }
 
-func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block map[string]interface{}) (html template.HTML, err error) {
+func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (block map[string]interface{}, err error) {
 	if blockType != "header" {
 		err = fmt.Errorf("%v does not implement %v block type", f.Tag(), blockType)
 		return
 	}
 
 	var blockDataContent map[string]interface{}
-	if blockDataContent, err = re.PrepareGenericBlockData(block["content"]); err != nil {
+	if blockDataContent, err = re.PrepareGenericBlockData(data["content"]); err != nil {
 		return
 	}
 
 	var hr, hl, hc int
 	hc = re.GetHeadingCount()
 	hl = re.GetHeadingLevel()
-	hl, hr, _ /*hl*/ = re.ParseBlockHeadingLevel(hc, hl, block)
+	hl, hr, _ /*hl*/ = re.ParseBlockHeadingLevel(hc, hl, data)
 	re.IncHeadingCount() // total number of header blocks on the page
 	re.SetHeadingLevel(hl)
 
-	preparedData := re.PrepareGenericBlock("header", block)
+	block = re.PrepareGenericBlock("header", data)
 
 	// tag, _ := block["tag"]
 	// log.DebugF("tag=%v, count=%v, level=%v, hr=%v, hl=%v", tag, re.headingCount, re.headingLevel, hr, hl)
@@ -103,7 +103,7 @@ func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block 
 	}
 
 	if heading, ok := re.ParseBlockHeader(blockDataContent); ok {
-		preparedData["Heading"] = heading
+		block["Heading"] = heading
 	}
 
 	anchorField := anchor.New().Make()
@@ -134,15 +134,27 @@ func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block 
 			}
 			navItems = append(navItems, navItem)
 		}
-		preparedData["Nav"] = navItems
+		block["Nav"] = navItems
 	}
 
 	if footer, ok := re.ParseBlockFooter(blockDataContent); ok {
-		preparedData["Footer"] = footer
+		block["Footer"] = footer
 	}
 
-	// log.DebugF("prepared header: %v", preparedData)
-	html, err = re.RenderNjnTemplate("block/header", preparedData)
+	return
+}
 
+func (f *CBlock) RenderPreparedBlock(re feature.EnjinRenderer, block map[string]interface{}) (html template.HTML, err error) {
+	html, err = re.RenderNjnTemplate("block/header", block)
+	return
+}
+
+func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (html template.HTML, err error) {
+	if block, e := f.PrepareBlock(re, blockType, data); e != nil {
+		err = e
+		return
+	} else {
+		html, err = f.RenderPreparedBlock(re, block)
+	}
 	return
 }

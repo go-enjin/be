@@ -75,35 +75,49 @@ func (f *CBlock) NjnBlockType() (name string) {
 	return
 }
 
-func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block map[string]interface{}) (html template.HTML, err error) {
+func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (block map[string]interface{}, err error) {
 	if blockType != "content" {
 		err = fmt.Errorf("%v does not implement %v block type", f.Tag(), blockType)
 		return
 	}
 
 	var blockDataContent map[string]interface{}
-	if blockDataContent, err = re.PrepareGenericBlockData(block["content"]); err != nil {
+	if blockDataContent, err = re.PrepareGenericBlockData(data["content"]); err != nil {
 		return
 	}
-	preparedData := re.PrepareGenericBlock("content", block)
+
+	block = re.PrepareGenericBlock("content", data)
 
 	if heading, ok := re.ParseBlockHeader(blockDataContent); ok {
-		preparedData["Heading"] = heading
+		block["Heading"] = heading
 	}
 
 	if sections, ok := blockDataContent["section"].([]interface{}); ok {
-		if preparedData["Section"], err = re.RenderContainerFields(sections); err != nil {
+		if block["Section"], err = re.RenderContainerFields(sections); err != nil {
 			return
 		}
 	}
 
-	preparedData["Footnotes"] = re.GetFootnotes(re.GetBlockIndex())
+	block["Footnotes"] = re.GetFootnotes(re.GetBlockIndex())
 
 	if footer, ok := re.ParseBlockFooter(blockDataContent); ok {
-		preparedData["Footer"] = footer
+		block["Footer"] = footer
 	}
 
-	html, err = re.RenderNjnTemplate("block/content", preparedData)
+	return
+}
 
+func (f *CBlock) RenderPreparedBlock(re feature.EnjinRenderer, block map[string]interface{}) (html template.HTML, err error) {
+	html, err = re.RenderNjnTemplate("block/content", block)
+	return
+}
+
+func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (html template.HTML, err error) {
+	if block, e := f.PrepareBlock(re, blockType, data); e != nil {
+		err = e
+		return
+	} else {
+		html, err = f.RenderPreparedBlock(re, block)
+	}
 	return
 }

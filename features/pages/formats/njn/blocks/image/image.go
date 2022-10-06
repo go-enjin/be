@@ -76,72 +76,73 @@ func (f *CBlock) NjnBlockType() (name string) {
 	return
 }
 
-func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block map[string]interface{}) (html template.HTML, err error) {
+func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (block map[string]interface{}, err error) {
 	if blockType != "image" {
 		err = fmt.Errorf("%v does not implement %v block type", f.Tag(), blockType)
 		return
 	}
 
 	var blockDataContent map[string]interface{}
-	if blockDataContent, err = re.PrepareGenericBlockData(block["content"]); err != nil {
+	if blockDataContent, err = re.PrepareGenericBlockData(data["content"]); err != nil {
 		return
 	}
-	preparedData := re.PrepareGenericBlock("image", block)
 
-	if v, ok := block["constraint"].(string); ok {
+	block = re.PrepareGenericBlock("image", data)
+
+	if v, ok := data["constraint"].(string); ok {
 		v = strings.ToLower(v)
 		switch v {
 		case "width", "height":
-			preparedData["Constraint"] = v
+			block["Constraint"] = v
 		default:
 			err = fmt.Errorf("invalid image block constraint: %v", v)
 			return
 		}
 	} else {
-		preparedData["Constraint"] = "width"
+		block["Constraint"] = "width"
 	}
 
-	if v, ok := block["fitting"].(string); ok {
+	if v, ok := data["fitting"].(string); ok {
 		v = strings.ToLower(v)
 		switch v {
 		case "cover", "fill", "contain", "none", "scale-down":
-			preparedData["Fitting"] = v
+			block["Fitting"] = v
 		default:
 			err = fmt.Errorf("invalid image block fitting: %v", v)
 			return
 		}
 	} else {
-		preparedData["Fitting"] = "cover"
+		block["Fitting"] = "cover"
 	}
 
-	if v, ok := block["position"].(string); ok {
+	if v, ok := data["position"].(string); ok {
 		v = strings.ToLower(v)
 		switch v {
 		case "center", "top", "top-left", "left", "bottom-left", "bottom", "bottom-right", "right", "top-right":
-			preparedData["Position"] = v
+			block["Position"] = v
 		default:
 			err = fmt.Errorf("invalid image block position: %v", v)
 			return
 		}
 	} else {
-		preparedData["Position"] = "center"
+		block["Position"] = "center"
 	}
 
-	if v, ok := block["size"].(string); ok {
+	if v, ok := data["size"].(string); ok {
 		v = strings.ToLower(v)
 		switch v {
 		case "sliver", "thin", "banner", "normal", "tall", "huge", "actual":
-			preparedData["Size"] = v
+			block["Size"] = v
 		default:
 			err = fmt.Errorf("invalid image block size: %v", v)
 			return
 		}
 	} else {
-		preparedData["Size"] = "normal"
+		block["Size"] = "normal"
 	}
 
 	if heading, ok := re.ParseBlockHeader(blockDataContent); ok {
-		preparedData["Heading"] = heading
+		block["Heading"] = heading
 	}
 
 	if picture, ok := blockDataContent["picture"].(map[string]interface{}); ok {
@@ -153,17 +154,31 @@ func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block 
 			for _, comb := range combine {
 				combined += comb
 			}
-			preparedData["Picture"] = combined
+			block["Picture"] = combined
 		}
 	} else {
-		err = fmt.Errorf("image block missing images: %+v", block)
+		err = fmt.Errorf("image block missing images: %+v", data)
 		return
 	}
 
 	if footer, ok := re.ParseBlockFooter(blockDataContent); ok {
-		preparedData["Footer"] = footer
+		block["Footer"] = footer
 	}
 
-	html, err = re.RenderNjnTemplate("block/image", preparedData)
+	return
+}
+
+func (f *CBlock) RenderPreparedBlock(re feature.EnjinRenderer, block map[string]interface{}) (html template.HTML, err error) {
+	html, err = re.RenderNjnTemplate("block/image", block)
+	return
+}
+
+func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (html template.HTML, err error) {
+	if block, e := f.PrepareBlock(re, blockType, data); e != nil {
+		err = e
+		return
+	} else {
+		html, err = f.RenderPreparedBlock(re, block)
+	}
 	return
 }

@@ -75,25 +75,26 @@ func (f *CBlock) NjnBlockType() (name string) {
 	return
 }
 
-func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block map[string]interface{}) (html template.HTML, err error) {
+func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (block map[string]interface{}, err error) {
 	if blockType != "card" {
 		err = fmt.Errorf("%v does not implement %v block type", f.Tag(), blockType)
 		return
 	}
 
 	var blockDataContent map[string]interface{}
-	if blockDataContent, err = re.PrepareGenericBlockData(block["content"]); err != nil {
+	if blockDataContent, err = re.PrepareGenericBlockData(data["content"]); err != nil {
 		return
 	}
-	preparedData := re.PrepareGenericBlock("card", block)
 
-	preparedData["LinkHref"], _ = block["link-href"]
-	preparedData["LinkTarget"], _ = block["link-target"]
+	block = re.PrepareGenericBlock("card", data)
 
-	preparedData["Image"], _ = block["image"]
-	preparedData["NoImage"], _ = block["no-image"]
-	preparedData["Layout"], _ = block["layout"]
-	preparedData["ProfileImgSrc"], _ = block["profile-img-src"]
+	block["LinkHref"], _ = data["link-href"]
+	block["LinkTarget"], _ = data["link-target"]
+
+	block["Image"], _ = data["image"]
+	block["NoImage"], _ = data["no-image"]
+	block["Layout"], _ = data["layout"]
+	block["ProfileImgSrc"], _ = data["profile-img-src"]
 
 	if background, ok := blockDataContent["background"].(map[string]interface{}); ok {
 		if bgType, ok := background["type"].(string); ok {
@@ -105,7 +106,7 @@ func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block 
 				err = e
 				return
 			} else {
-				preparedData["Background"] = renderBg[0]
+				block["Background"] = renderBg[0]
 			}
 		} else {
 			err = fmt.Errorf("card block missing background type")
@@ -117,20 +118,33 @@ func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block 
 	}
 
 	if heading, ok := re.ParseBlockHeader(blockDataContent); ok {
-		preparedData["Heading"] = heading
+		block["Heading"] = heading
 	}
 
 	if sections, ok := blockDataContent["section"].([]interface{}); ok {
-		if preparedData["Section"], err = re.RenderContainerFields(sections); err != nil {
+		if block["Section"], err = re.RenderContainerFields(sections); err != nil {
 			return
 		}
 	}
 
 	if footer, ok := re.ParseBlockFooter(blockDataContent); ok {
-		preparedData["Footer"] = footer
+		block["Footer"] = footer
 	}
 
-	html, err = re.RenderNjnTemplate("block/card", preparedData)
+	return
+}
 
+func (f *CBlock) RenderPreparedBlock(re feature.EnjinRenderer, block map[string]interface{}) (html template.HTML, err error) {
+	html, err = re.RenderNjnTemplate("block/card", block)
+	return
+}
+
+func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (html template.HTML, err error) {
+	if block, e := f.PrepareBlock(re, blockType, data); e != nil {
+		err = e
+		return
+	} else {
+		html, err = f.RenderPreparedBlock(re, block)
+	}
 	return
 }

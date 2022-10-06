@@ -77,14 +77,14 @@ func (f *CBlock) NjnBlockType() (name string) {
 	return
 }
 
-func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block map[string]interface{}) (html template.HTML, err error) {
+func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (block map[string]interface{}, err error) {
 	if blockType != "toc" {
 		err = fmt.Errorf("%v does not implement %v block type", f.Tag(), blockType)
 		return
 	}
 
 	var blockDataContent map[string]interface{}
-	if blockDataContent, err = re.PrepareGenericBlockData(block["content"]); err != nil {
+	if blockDataContent, err = re.PrepareGenericBlockData(data["content"]); err != nil {
 		if err.Error() != "content not found" {
 			return
 		}
@@ -92,15 +92,15 @@ func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block 
 		blockDataContent = make(map[string]interface{})
 	}
 
-	preparedData := re.PrepareGenericBlock("toc", block)
+	block = re.PrepareGenericBlock("toc", data)
 
 	var blockTag string
-	if v, ok := preparedData["Tag"]; ok {
+	if v, ok := block["Tag"]; ok {
 		blockTag, _ = v.(string)
 	}
 
 	pageTitle := false
-	if v, ok := block["page-title"]; ok {
+	if v, ok := data["page-title"]; ok {
 		switch t := v.(type) {
 		case string:
 			pageTitle = beStrings.IsTrue(t)
@@ -112,16 +112,16 @@ func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block 
 			pageTitle = t > 0
 		}
 		if pageTitle {
-			preparedData["PageTitle"] = "true"
+			block["PageTitle"] = "true"
 		} else {
-			preparedData["PageTitle"] = "false"
+			block["PageTitle"] = "false"
 		}
 	} else {
-		preparedData["PageTitle"] = "false"
+		block["PageTitle"] = "false"
 	}
 
 	var withSelf bool
-	if v, ok := block["with-self"]; ok {
+	if v, ok := data["with-self"]; ok {
 		switch t := v.(type) {
 		case string:
 			withSelf = beStrings.IsTrue(t)
@@ -133,19 +133,19 @@ func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block 
 			withSelf = t > 0
 		}
 		if withSelf {
-			preparedData["WithSelf"] = "true"
+			block["WithSelf"] = "true"
 		} else {
-			preparedData["WithSelf"] = "false"
+			block["WithSelf"] = "false"
 		}
 	} else {
-		preparedData["WithSelf"] = "false"
+		block["WithSelf"] = "false"
 	}
 
 	_, _, toc := walkTableOfContents(re, 0, 0, re.GetData())
 	items := sortTableOfContents(toc)
 
 	if heading, ok := re.ParseBlockHeader(blockDataContent); ok {
-		preparedData["TocHeading"] = heading
+		block["TocHeading"] = heading
 		if withSelf {
 			items = append([]*tocItem{
 				{
@@ -157,26 +157,38 @@ func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block 
 	}
 
 	if footer, ok := re.ParseBlockFooter(blockDataContent); ok {
-		preparedData["Footer"] = footer
+		block["Footer"] = footer
 	}
 
-	preparedData["Items"] = items
+	block["Items"] = items
 
-	if v, ok := block["counter"].(string); ok {
+	if v, ok := data["counter"].(string); ok {
 		v = strings.ToLower(v)
 		switch v {
 		case "nested", "single":
-			preparedData["Counter"] = v
+			block["Counter"] = v
 		default:
 			err = fmt.Errorf("invalid toc counter value: %v", v)
 			return
 		}
 	} else {
-		preparedData["Counter"] = "single"
+		block["Counter"] = "single"
 	}
 
-	// log.DebugF("prepared content: %v", preparedData)
-	html, err = re.RenderNjnTemplate("block/toc", preparedData)
+	return
+}
 
+func (f *CBlock) RenderPreparedBlock(re feature.EnjinRenderer, block map[string]interface{}) (html template.HTML, err error) {
+	html, err = re.RenderNjnTemplate("block/toc", block)
+	return
+}
+
+func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (html template.HTML, err error) {
+	if block, e := f.PrepareBlock(re, blockType, data); e != nil {
+		err = e
+		return
+	} else {
+		html, err = f.RenderPreparedBlock(re, block)
+	}
 	return
 }

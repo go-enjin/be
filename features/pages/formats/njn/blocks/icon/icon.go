@@ -77,20 +77,21 @@ func (f *CBlock) NjnBlockType() (name string) {
 	return
 }
 
-func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block map[string]interface{}) (html template.HTML, err error) {
+func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (block map[string]interface{}, err error) {
 	if blockType != "icon" {
 		err = fmt.Errorf("%v does not implement %v block type", f.Tag(), blockType)
 		return
 	}
 
 	var blockDataContent map[string]interface{}
-	if blockDataContent, err = re.PrepareGenericBlockData(block["content"]); err != nil {
+	if blockDataContent, err = re.PrepareGenericBlockData(data["content"]); err != nil {
 		return
 	}
-	preparedData := re.PrepareGenericBlock("icon", block)
+
+	block = re.PrepareGenericBlock("icon", data)
 
 	if heading, ok := re.ParseBlockHeader(blockDataContent); ok {
-		preparedData["Heading"] = heading
+		block["Heading"] = heading
 	}
 
 	if iconMap, ok := blockDataContent["icon"].(map[string]interface{}); ok {
@@ -159,14 +160,27 @@ func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block 
 			return
 		}
 
-		preparedData["Icon"] = icon
+		block["Icon"] = icon
 	}
 
 	if footer, ok := re.ParseBlockFooter(blockDataContent); ok {
-		preparedData["Footer"] = footer
+		block["Footer"] = footer
 	}
 
-	html, err = re.RenderNjnTemplate("block/icon", preparedData)
+	return
+}
 
+func (f *CBlock) RenderPreparedBlock(re feature.EnjinRenderer, block map[string]interface{}) (html template.HTML, err error) {
+	html, err = re.RenderNjnTemplate("block/icon", block)
+	return
+}
+
+func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (html template.HTML, err error) {
+	if block, e := f.PrepareBlock(re, blockType, data); e != nil {
+		err = e
+		return
+	} else {
+		html, err = f.RenderPreparedBlock(re, block)
+	}
 	return
 }

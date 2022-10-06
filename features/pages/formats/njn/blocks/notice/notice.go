@@ -77,41 +77,42 @@ func (f *CBlock) NjnBlockType() (name string) {
 	return
 }
 
-func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block map[string]interface{}) (html template.HTML, err error) {
+func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (block map[string]interface{}, err error) {
 	if blockType != "notice" {
 		err = fmt.Errorf("%v does not implement %v block type", f.Tag(), blockType)
 		return
 	}
 
 	var blockContent map[string]interface{}
-	if blockContent, err = re.PrepareGenericBlockData(block["content"]); err != nil {
+	if blockContent, err = re.PrepareGenericBlockData(data["content"]); err != nil {
 		return
 	}
-	preparedData := re.PrepareGenericBlock("notice", block)
 
-	if v, ok := block["dismiss"].(string); ok && beStrings.IsTrue(v) {
-		preparedData["Dismiss"] = "true"
+	block = re.PrepareGenericBlock("notice", data)
+
+	if v, ok := data["dismiss"].(string); ok && beStrings.IsTrue(v) {
+		block["Dismiss"] = "true"
 	} else {
-		preparedData["Dismiss"] = "false"
+		block["Dismiss"] = "false"
 	}
 
-	if v, ok := block["open"].(string); ok && beStrings.IsTrue(v) {
-		preparedData["Open"] = "true"
+	if v, ok := data["open"].(string); ok && beStrings.IsTrue(v) {
+		block["Open"] = "true"
 	} else {
-		preparedData["Open"] = "false"
+		block["Open"] = "false"
 	}
 
-	if v, ok := block["notice-type"].(string); ok {
+	if v, ok := data["notice-type"].(string); ok {
 		v = strings.ToLower(v)
 		switch v {
 		case "info", "warn", "error":
-			preparedData["NoticeType"] = v
+			block["NoticeType"] = v
 		default:
 			err = fmt.Errorf("invalid notice type: %v", v)
 			return
 		}
 	} else {
-		preparedData["NoticeType"] = "info"
+		block["NoticeType"] = "info"
 	}
 
 	var sectionHtml template.HTML
@@ -121,7 +122,7 @@ func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block 
 			err = fmt.Errorf("error rendering notice section field: %v", err)
 			return
 		} else {
-			preparedData["Section"] = renderedSectionFields
+			block["Section"] = renderedSectionFields
 			for _, s := range renderedSectionFields {
 				sectionHtml += s
 			}
@@ -138,19 +139,33 @@ func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, block 
 				summary += vs
 			}
 		}
-		preparedData["Summary"] = summary
+		block["Summary"] = summary
 	} else if sectionHtml != "" {
-		preparedData["Summary"] = sectionHtml
-		delete(preparedData, "Section")
+		block["Summary"] = sectionHtml
+		delete(block, "Section")
 	} else {
-		err = fmt.Errorf("notice block missing summary: %v - %v", block, sectionHtml)
+		err = fmt.Errorf("notice block missing summary: %v - %v", data, sectionHtml)
 		return
 	}
 
 	if footer, ok := re.ParseBlockFooter(blockContent); ok {
-		preparedData["Footer"] = footer
+		block["Footer"] = footer
 	}
 
-	html, err = re.RenderNjnTemplate("block/notice", preparedData)
+	return
+}
+
+func (f *CBlock) RenderPreparedBlock(re feature.EnjinRenderer, block map[string]interface{}) (html template.HTML, err error) {
+	html, err = re.RenderNjnTemplate("block/notice", block)
+	return
+}
+
+func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (html template.HTML, err error) {
+	if block, e := f.PrepareBlock(re, blockType, data); e != nil {
+		err = e
+		return
+	} else {
+		html, err = f.RenderPreparedBlock(re, block)
+	}
 	return
 }
