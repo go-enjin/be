@@ -68,7 +68,7 @@ func (re *RenderEnjin) RenderPreparedBlock(block map[string]interface{}) (html t
 	if name, ok := re.ParseTypeName(block); ok {
 		if njnBlock, ok := re.Njn.FindBlock(feature.AnyNjnClass, name); ok {
 			if html, err = njnBlock.RenderPreparedBlock(re, block); err == nil {
-				log.TraceF("rendered prepared block type: %v", name)
+				log.TraceF("rendered prepared block type: %v (depth=%v)", name, re.GetCurrentDepth())
 			}
 			return
 		}
@@ -81,15 +81,13 @@ func (re *RenderEnjin) RenderPreparedBlock(block map[string]interface{}) (html t
 
 func (re *RenderEnjin) ProcessBlock(block map[string]interface{}) (html template.HTML, err error) {
 	if name, ok := re.ParseTypeName(block); ok {
-
 		if njnBlock, ok := re.Njn.FindBlock(feature.AnyNjnClass, name); ok {
 			if html, err = njnBlock.ProcessBlock(re, name, block); err == nil {
-				log.DebugF("processed block type: %v", name)
+				log.DebugF("processed block type: %v (depth=%v)", name, re.GetCurrentDepth())
 			}
 			return
 		}
-
-		log.WarnF("unsupported block type: %v", name)
+		log.ErrorDF(1, "unsupported block type: %v", name)
 		html, err = re.RenderErrorBlock(fmt.Sprintf("unsupported block type: %v", name), block)
 	} else {
 		html, err = re.RenderErrorBlock("missing block type", block)
