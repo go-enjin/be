@@ -125,6 +125,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 
 	var cards []map[string]interface{}
 	if sections, ok := blockDataContent["section"].([]interface{}); ok {
+		re.IncCurrentDepth()
 		for _, section := range sections {
 			if cardBlock, name, ok := re.ParseFieldAndTypeName(section); ok {
 				if name == "card" {
@@ -145,6 +146,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 				}
 			}
 		}
+		re.DecCurrentDepth()
 	}
 
 	numCards := len(cards)
