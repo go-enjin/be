@@ -20,7 +20,11 @@ type EnjinBlock interface {
 	EnjinFeature
 
 	NjnBlockType() (name string)
-	ProcessBlock(re EnjinRenderer, blockType string, block map[string]interface{}) (html template.HTML, err error)
+
+	ProcessBlock(re EnjinRenderer, blockType string, data map[string]interface{}) (html template.HTML, err error)
+
+	PrepareBlock(re EnjinRenderer, blockType string, data map[string]interface{}) (block map[string]interface{}, err error)
+	RenderPreparedBlock(re EnjinRenderer, block map[string]interface{}) (html template.HTML, err error)
 }
 
 type CEnjinBlock struct {

@@ -18,6 +18,7 @@ type EnjinField interface {
 	EnjinFeature
 
 	NjnFieldNames() (tagNames []string)
+
 	PrepareNjnData(re EnjinRenderer, tagName string, field map[string]interface{}) (data map[string]interface{}, err error)
 }
 

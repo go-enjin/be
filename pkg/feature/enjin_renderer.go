@@ -19,7 +19,11 @@ import "html/template"
 type EnjinRenderer interface {
 	RenderNjnTemplate(tag string, data map[string]interface{}) (html template.HTML, err error)
 
-	ProcessBlock(blockData map[string]interface{}) (html template.HTML, err error)
+	ProcessBlock(data map[string]interface{}) (html template.HTML, err error)
+
+	PrepareBlock(data map[string]interface{}) (block map[string]interface{}, err error)
+	RenderPreparedBlock(block map[string]interface{}) (html template.HTML, err error)
+
 	PrepareGenericBlockData(contentData interface{}) (blockDataContent map[string]interface{}, err error)
 	PrepareGenericBlock(typeName string, data map[string]interface{}) (preparedData map[string]interface{})
 
