@@ -22,6 +22,160 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 )
 
+func (re *RenderEnjin) PrepareInlineFieldText(field map[string]interface{}) (combined []interface{}, err error) {
+	if typeName, ok := re.ParseTypeName(field); ok {
+
+		if njnField, ok := re.Njn.FindField(feature.AnyNjnClass, typeName); ok {
+			if textItem, ok := field["text"]; ok {
+
+				switch t := textItem.(type) {
+				case []interface{}:
+					for _, item := range t {
+						if childText, ok := item.(string); ok {
+							combined = append(combined, childText)
+						} else {
+							if _, child, _, e := re.CheckInlineFieldText(njnField, typeName, item); e != nil {
+								err = e
+								return
+							} else {
+								combined = append(combined, child)
+							}
+						}
+					}
+
+				case interface{}:
+					if childText, ok := t.(string); ok {
+						if prepared, e := re.PrepareInlineFieldList([]interface{}{childText}); e != nil {
+							err = e
+							return
+						} else {
+							combined = append(combined, prepared)
+						}
+					} else {
+						if _, child, _, e := re.CheckInlineFieldText(njnField, typeName, t); e != nil {
+							err = e
+							return
+						} else {
+							if prepared, ee := re.PrepareInlineFieldList([]interface{}{child}); ee != nil {
+								err = ee
+								return
+							} else {
+								combined = append(combined, prepared)
+							}
+						}
+					}
+
+				default:
+					err = fmt.Errorf("unsupported inline field text structure: %T", field["text"])
+				}
+			} else {
+				err = fmt.Errorf("inline field missing text")
+			}
+		} else {
+			err = fmt.Errorf("inline field not found: %v", typeName)
+		}
+	} else {
+		err = fmt.Errorf("inline field missing type")
+	}
+
+	return
+}
+
+func (re *RenderEnjin) PrepareInlineFieldList(list []interface{}) (combined []interface{}, err error) {
+	for _, item := range list {
+		switch typedItem := item.(type) {
+		case string:
+			combined = append(combined, template.HTML(typedItem))
+
+		case []interface{}:
+			if prepared, e := re.PrepareInlineFieldList(typedItem); e != nil {
+				err = e
+				return
+			} else {
+				combined = append(combined, prepared...)
+			}
+
+		case map[string]interface{}:
+			if prepared, e := re.PrepareInlineField(typedItem); e != nil {
+				err = e
+				return
+			} else {
+				combined = append(combined, prepared)
+			}
+
+		default:
+			err = fmt.Errorf("unsupported inline field text structure: %T", item)
+			return
+		}
+	}
+	return
+}
+
+func (re *RenderEnjin) PrepareInlineFields(fields []interface{}) (combined []interface{}, err error) {
+	for _, field := range fields {
+		switch fieldTyped := field.(type) {
+		case string:
+			combined = append(combined, template.HTML(fieldTyped))
+		case map[string]interface{}:
+			if c, e := re.PrepareInlineField(fieldTyped); e != nil {
+				err = e
+				return
+			} else {
+				combined = append(combined, c)
+			}
+		case []interface{}:
+			if c, e := re.PrepareInlineFieldList(fieldTyped); e != nil {
+				err = e
+				return
+			} else {
+				combined = append(combined, c...)
+			}
+		default:
+			err = fmt.Errorf("unsupported inline field structure: %T", field)
+			return
+		}
+	}
+	return
+}
+
+func (re *RenderEnjin) PrepareInlineField(field map[string]interface{}) (prepared map[string]interface{}, err error) {
+	if ft, ok := re.ParseTypeName(field); ok {
+
+		if inlineField, ok := re.Njn.FindField(feature.InlineNjnClass, ft); ok {
+			if prepared, err = inlineField.PrepareNjnData(re, ft, field); err != nil {
+				return
+			}
+		} else {
+			err = fmt.Errorf("unsupported inline field type: %v", ft)
+			return
+		}
+
+	} else {
+		err = fmt.Errorf("inline field missing type")
+	}
+	return
+}
+
+func (re *RenderEnjin) CheckInlineFieldText(parent feature.EnjinField, parentName string, child interface{}) (njn feature.EnjinField, field map[string]interface{}, name string, err error) {
+	if childField, childName, ok := re.ParseFieldAndTypeName(child); ok {
+		if childNjnField, ok := re.Njn.FindField(feature.InlineNjnClass, childName); ok {
+			if parent.NjnCheckTag(childName) && parent.NjnCheckClass(childNjnField.NjnClass()) {
+				njn = childNjnField
+				field = childField
+				name = childName
+			} else {
+				log.TraceF("%v denied as child of %v", childName, parentName)
+			}
+		} else {
+			err = fmt.Errorf("inline njn field not found: %v", childName)
+			return
+		}
+	} else {
+		err = fmt.Errorf("inline field missing type or unsupported structure: %T", child)
+	}
+	return
+}
+
 func (re *RenderEnjin) RenderInlineFields(fields []interface{}) (combined []template.HTML, err error) {
 	for _, field := range fields {
 		switch fieldTyped := field.(type) {
@@ -70,26 +224,6 @@ func (re *RenderEnjin) RenderInlineField(field map[string]interface{}) (combined
 		}
 	} else {
 		err = fmt.Errorf("inline field missing type")
-	}
-	return
-}
-
-func (re *RenderEnjin) CheckInlineFieldText(parent feature.EnjinField, parentName string, child interface{}) (njn feature.EnjinField, field map[string]interface{}, name string, err error) {
-	if childField, childName, ok := re.ParseFieldAndTypeName(child); ok {
-		if childNjnField, ok := re.Njn.FindField(feature.InlineNjnClass, childName); ok {
-			if parent.NjnCheckTag(childName) && parent.NjnCheckClass(childNjnField.NjnClass()) {
-				njn = childNjnField
-				field = childField
-				name = childName
-			} else {
-				log.TraceF("%v denied as child of %v", childName, parentName)
-			}
-		} else {
-			err = fmt.Errorf("inline njn field not found: %v", childName)
-			return
-		}
-	} else {
-		err = fmt.Errorf("inline field missing type or unsupported structure: %T", child)
 	}
 	return
 }

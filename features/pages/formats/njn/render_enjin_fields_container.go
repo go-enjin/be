@@ -21,6 +21,79 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 )
 
+func (re *RenderEnjin) PrepareContainerFieldText(field map[string]interface{}) (fields []interface{}, err error) {
+	if textItem, ok := field["text"]; ok {
+		switch t := textItem.(type) {
+		case string:
+			fields, err = re.PrepareContainerFieldList([]interface{}{t})
+		case []interface{}:
+			fields, err = re.PrepareContainerFieldList(t)
+		case map[string]interface{}:
+			fields, err = re.PrepareContainerFieldList([]interface{}{t})
+		default:
+			err = fmt.Errorf("unsupported field text structure: %T", t)
+		}
+	} else {
+		err = fmt.Errorf("field missing text")
+	}
+	return
+}
+
+func (re *RenderEnjin) PrepareContainerFieldList(list []interface{}) (fields []interface{}, err error) {
+	for _, listItem := range list {
+		switch typedItem := listItem.(type) {
+		case string:
+			fields = append(fields, template.HTML(typedItem))
+		case map[string]interface{}:
+			if prepared, e := re.PrepareContainerField(typedItem); e != nil {
+				err = e
+				return
+			} else {
+				fields = append(fields, prepared)
+			}
+		default:
+			err = fmt.Errorf("unsupported field structure: %T", listItem)
+			return
+		}
+	}
+	return
+}
+
+func (re *RenderEnjin) PrepareContainerFields(fields []interface{}) (combined []map[string]interface{}, err error) {
+	for _, fieldItem := range fields {
+		if field, ok := fieldItem.(map[string]interface{}); ok {
+			if c, e := re.PrepareContainerField(field); e != nil {
+				err = e
+				return
+			} else {
+				combined = append(combined, c)
+			}
+		} else {
+			err = fmt.Errorf("unsupported field structure: %T", fieldItem)
+			return
+		}
+	}
+	return
+}
+
+func (re *RenderEnjin) PrepareContainerField(field map[string]interface{}) (prepared map[string]interface{}, err error) {
+	if ft, ok := re.ParseTypeName(field); ok {
+
+		if containerField, ok := re.Njn.FindField(feature.AnyNjnClass, ft); ok {
+			if prepared, err = containerField.PrepareNjnData(re, ft, field); err != nil {
+				return
+			}
+		} else {
+			err = fmt.Errorf("njn field not found: %v", ft)
+			return
+		}
+
+	} else {
+		err = fmt.Errorf("field missing type")
+	}
+	return
+}
+
 func (re *RenderEnjin) RenderContainerFields(fields []interface{}) (combined []template.HTML, err error) {
 	for _, fieldItem := range fields {
 		if field, ok := fieldItem.(map[string]interface{}); ok {
