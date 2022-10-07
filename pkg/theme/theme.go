@@ -200,7 +200,7 @@ func (t *Theme) initConfig(ctx context.Context) {
 			log.DebugF("%v theme: adding context: %v => %+v", t.Config.Name, k, v)
 		}
 	}
-	context.CamelizeContextKeys(t.Config.Context)
+	t.Config.Context.CamelizeKeys()
 }
 
 func (t *Theme) initFuncMap() {

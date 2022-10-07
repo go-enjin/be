@@ -22,7 +22,7 @@ import (
 )
 
 func (p *Page) parseContext(ctx context.Context) {
-	context.CamelizeContextKeys(ctx)
+	ctx.CamelizeKeys()
 
 	ctx.DeleteKeys("Path", "Content", "Section")
 
