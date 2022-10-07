@@ -98,7 +98,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			err = fmt.Errorf("pair block requires two items, %d present", len(sections))
 			return
 		}
-		var combined []template.HTML
+		var combined []map[string]interface{}
 		re.IncCurrentDepth()
 		for idx, section := range sections {
 			if sectionBlock, ok := section.(map[string]interface{}); ok {
@@ -108,11 +108,11 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 				} else {
 					sectionBlock = beStrings.AddClassNamesToNjnBlock(sectionBlock, "second", sectionBlockType)
 				}
-				if html, e := re.ProcessBlock(sectionBlock); e != nil {
+				if prepared, e := re.PrepareBlock(sectionBlock); e != nil {
 					err = e
 					return
 				} else {
-					combined = append(combined, html)
+					combined = append(combined, prepared)
 				}
 			}
 		}

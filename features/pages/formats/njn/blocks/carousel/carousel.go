@@ -132,11 +132,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 					if card, e := re.PrepareBlock(cardBlock); e != nil {
 						err = e
 						return
-					} else if cardHtml, ee := re.RenderPreparedBlock(card); ee != nil {
-						err = ee
-						return
 					} else {
-						card["Html"] = cardHtml
 						card["CardIndex"] = len(cards)
 						cards = append(cards, card)
 					}

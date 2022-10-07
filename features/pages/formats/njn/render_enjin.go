@@ -66,32 +66,53 @@ func renderNjnData(f feature.EnjinSystem, ctx context.Context, t types.Theme, da
 
 func (re *RenderEnjin) Render(data interface{}) (html template.HTML, err *types.EnjinError) {
 
-	switch v := data.(type) {
+	if prepared, e := re.PreparePageData(data); e != nil {
+		err = e
+		return
+	} else {
+		if h, ee := re.RenderNjnTemplateList("block-list", prepared); ee != nil {
+			content, _ := json.MarshalIndent(prepared, "", "    ")
+			err = types.NewEnjinError(
+				"unsupported njn data type",
+				fmt.Sprintf("unsupported njn data type received: %T", ee),
+				string(content),
+			)
+		} else {
+			html = h
+		}
+	}
+
+	return
+}
+
+func (re *RenderEnjin) PreparePageData(data interface{}) (blocks []interface{}, err *types.EnjinError) {
+
+	switch typedData := data.(type) {
 
 	case []interface{}:
-		for _, c := range v {
-			if h, e := re.Render(c); e != nil {
+		for _, c := range typedData {
+			if preparedBlocks, e := re.PreparePageData(c); e != nil {
 				err = e
 				return
 			} else {
-				html += h
+				blocks = append(blocks, preparedBlocks...)
 			}
 		}
 
 	case map[string]interface{}:
-		if processed, e := re.ProcessBlock(v); e != nil {
-			content, _ := json.MarshalIndent(v, "", "    ")
-			blockType, _ := v["type"]
+		if prepared, e := re.PrepareBlock(typedData); e != nil {
+			content, _ := json.MarshalIndent(typedData, "", "    ")
+			blockType, _ := re.ParseTypeName(typedData)
 			err = types.NewEnjinError(fmt.Sprintf("error processing njn %v block", blockType), e.Error(), string(content))
 		} else {
-			html += processed
+			blocks = append(blocks, prepared)
 		}
 
 	default:
 		err = types.NewEnjinError(
 			"unsupported njn data type",
-			fmt.Sprintf("unsupported njn data type received: %T", v),
-			fmt.Sprintf("%+v", v),
+			fmt.Sprintf("unsupported njn data type received: %T", typedData),
+			fmt.Sprintf("%+v", typedData),
 		)
 	}
 
@@ -117,6 +138,26 @@ func (re *RenderEnjin) GetNjnTemplateContent(name string) (contents string, err 
 	return
 }
 
+func (re *RenderEnjin) RenderNjnTemplateList(tag string, data []interface{}) (html template.HTML, err error) {
+	var tmplContent string
+	if tmplContent, err = re.GetNjnTemplateContent(tag + ".tmpl"); err != nil {
+		return
+	} else {
+		var tt *template.Template
+		if tt, err = re.Theme.NewHtmlTemplate(tag).Parse(tmplContent); err == nil {
+			var w bytes.Buffer
+			if err = tt.Execute(&w, data); err == nil {
+				html = template.HTML(w.Bytes())
+			} else {
+				err = fmt.Errorf("error rendering template: %v", err)
+			}
+		} else {
+			err = fmt.Errorf("error parsing template: %v", err)
+		}
+	}
+	return
+}
+
 func (re *RenderEnjin) RenderNjnTemplate(tag string, data map[string]interface{}) (html template.HTML, err error) {
 	var tmplContent string
 	if tmplContent, err = re.GetNjnTemplateContent(tag + ".tmpl"); err != nil {
@@ -125,7 +166,6 @@ func (re *RenderEnjin) RenderNjnTemplate(tag string, data map[string]interface{}
 		var tt *template.Template
 		if tt, err = re.Theme.NewHtmlTemplate(tag).Parse(tmplContent); err == nil {
 			var w bytes.Buffer
-			data["Depth"] = re.GetCurrentDepth()
 			if err = tt.Execute(&w, data); err == nil {
 				html = template.HTML(w.Bytes())
 			} else {

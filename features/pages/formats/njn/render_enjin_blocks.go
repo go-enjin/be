@@ -114,6 +114,7 @@ func (re *RenderEnjin) PrepareGenericBlock(typeName string, data map[string]inte
 	preparedData = make(map[string]interface{})
 	preparedData["Context"] = re.ctx
 	preparedData["Type"] = typeName
+	preparedData["Depth"] = re.GetCurrentDepth()
 	preparedData["BlockIndex"] = re.blockCount
 	if preparedData["Tag"], ok = data["tag"]; !ok {
 		preparedData["Tag"] = fmt.Sprintf("%v-%d", typeName, re.blockCount)
