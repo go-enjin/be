@@ -73,8 +73,8 @@ func (re *RenderEnjin) Render(data interface{}) (html template.HTML, err *types.
 		if h, ee := re.RenderNjnTemplateList("block-list", prepared); ee != nil {
 			content, _ := json.MarshalIndent(prepared, "", "    ")
 			err = types.NewEnjinError(
-				"unsupported njn data type",
-				fmt.Sprintf("unsupported njn data type received: %T", ee),
+				"error rendering njn template list",
+				ee.Error(),
 				string(content),
 			)
 		} else {
@@ -120,7 +120,6 @@ func (re *RenderEnjin) PreparePageData(data interface{}) (blocks []interface{}, 
 }
 
 func (re *RenderEnjin) GetNjnTemplateContent(name string) (contents string, err error) {
-	// TODO: use the already prepared templating?
 	if v, ok := re.cache[name]; ok {
 		log.TraceF("found cached njn template: %v", name)
 		contents = v
@@ -132,8 +131,9 @@ func (re *RenderEnjin) GetNjnTemplateContent(name string) (contents string, err 
 	if data, err = re.Theme.FS().ReadFile(path); err == nil {
 		contents = string(data)
 		re.cache[name] = contents
+		log.TraceF("caching new njn template: %v - %v", name, path)
 	} else {
-		err = fmt.Errorf("njn template not found: %v", name)
+		err = fmt.Errorf("njn template not found: %v, expected path: %v", name, path)
 	}
 	return
 }

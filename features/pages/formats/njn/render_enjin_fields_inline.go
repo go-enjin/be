@@ -137,28 +137,28 @@ func (re *RenderEnjin) PrepareInlineFieldList(list []interface{}) (combined []in
 
 func (re *RenderEnjin) PrepareInlineFields(fields []interface{}) (combined []interface{}, err error) {
 	for _, field := range fields {
-		switch fieldTyped := field.(type) {
+		switch typedField := field.(type) {
 		case string:
-			// combined = append(combined, fieldTyped)
-			if parsed, e := re.PrepareStringTags(fieldTyped); e != nil {
+			// combined = append(combined, typedField)
+			if parsed, e := re.PrepareStringTags(typedField); e != nil {
 				err = fmt.Errorf("error parsing shortcodes: %v", e)
 				return
 			} else {
 				combined = append(combined, parsed...)
 			}
 		case map[string]interface{}:
-			if c, e := re.PrepareInlineField(fieldTyped); e != nil {
+			if c, e := re.PrepareInlineField(typedField); e != nil {
 				err = e
 				return
 			} else {
 				combined = append(combined, c)
 			}
 		case []interface{}:
-			if c, e := re.PrepareInlineFieldList(fieldTyped); e != nil {
+			if c, e := re.PrepareInlineFieldList(typedField); e != nil {
 				err = e
 				return
 			} else {
-				combined = append(combined, c...)
+				combined = append(combined, c)
 			}
 		default:
 			err = fmt.Errorf("unsupported inline field structure: %T", field)
@@ -208,10 +208,10 @@ func (re *RenderEnjin) CheckInlineFieldText(parent feature.EnjinField, parentNam
 
 func (re *RenderEnjin) RenderInlineFields(fields []interface{}) (combined []template.HTML, err error) {
 	for _, field := range fields {
-		switch fieldTyped := field.(type) {
+		switch typedField := field.(type) {
 		case string:
-			// combined = append(combined, template.HTML(fieldTyped))
-			if parsed, e := re.PrepareStringTags(fieldTyped); e != nil {
+			// combined = append(combined, template.HTML(typedField))
+			if parsed, e := re.PrepareStringTags(typedField); e != nil {
 				err = fmt.Errorf("error parsing shortcodes: %v", e)
 				return
 			} else {
@@ -223,14 +223,14 @@ func (re *RenderEnjin) RenderInlineFields(fields []interface{}) (combined []temp
 				}
 			}
 		case map[string]interface{}:
-			if c, e := re.RenderInlineField(fieldTyped); e != nil {
+			if c, e := re.RenderInlineField(typedField); e != nil {
 				err = e
 				return
 			} else {
 				combined = append(combined, c...)
 			}
 		case []interface{}:
-			if c, e := re.RenderInlineFieldList(fieldTyped); e != nil {
+			if c, e := re.RenderInlineFieldList(typedField); e != nil {
 				err = e
 				return
 			} else {
