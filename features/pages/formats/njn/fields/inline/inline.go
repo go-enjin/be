@@ -32,7 +32,7 @@ var (
 	TagNames = []string{
 		"abbr", "b", "cite", "del", "dfn", "em", "i", "ins", "kbd", "mark",
 		"meter", "progress", "q", "s", "small", "strong", "sub", "sup", "u",
-		"var", "span", "button",
+		"var", "span", "button", "code",
 	}
 )
 
