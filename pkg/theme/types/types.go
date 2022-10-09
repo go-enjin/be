@@ -15,6 +15,7 @@
 package types
 
 import (
+	"encoding/json"
 	"html/template"
 
 	"github.com/go-enjin/be/pkg/context"
@@ -35,11 +36,32 @@ func NewEnjinError(title, summary, content string) *EnjinError {
 	}
 }
 
+func (e *EnjinError) NjnData() (data map[string]interface{}) {
+	b, _ := json.MarshalIndent(e.Content, "", "  ")
+	data = map[string]interface{}{
+		"type": "content",
+		"content": map[string]interface{}{
+			"section": []interface{}{
+				map[string]interface{}{
+					"type":    "details",
+					"summary": e.Summary,
+					"text": []interface{}{
+						map[string]interface{}{
+							"type": "pre",
+							"text": string(b),
+						},
+					},
+				},
+			},
+		},
+	}
+	return
+}
+
 func (e *EnjinError) Html() (html template.HTML) {
 	html = `
 <article
     class="block"
-    id="theme-enjin-error"
     data-block-tag="theme-enjin-error"
     data-block-type="content"
     data-block-profile="outer--inner"
@@ -47,19 +69,24 @@ func (e *EnjinError) Html() (html template.HTML) {
     data-block-margins="both"
     data-block-jump-top="true"
     data-block-jump-link="true">
-    <div class="content">
+    <div class="content">`
+	if e.Title != "" {
+		html += `
         <header>
             <h1>` + template.HTML(e.Title) + `</h1>
             <a class="jump-link" href="#theme-enjin-error">
                 <span class="sr-only">permalink</span>
             </a>
-        </header>
+        </header>`
+	}
+	html += `
         <section>
             <details>
                 <summary>` + template.HTML(e.Summary) + `</summary>
                 <pre>` + template.HTML(e.Content) + `</pre>
             </details>
         </section>
+        <a class="jump-top" href="#top">top</a>
     </div>
 </article>
 `
