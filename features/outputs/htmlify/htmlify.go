@@ -120,10 +120,26 @@ func (f *Feature) TransformOutput(_ string, input []byte) (output []byte) {
 	gohtml.Condense = true
 	gohtml.InlineTagMaxLength = 0
 	gohtml.LineWrapMaxSpillover = 0
-	gohtml.InlineTags["img"] = true
-	gohtml.InlineTags["input"] = true
+	gohtml.InlineTags = map[string]bool{
+		"a":      true,
+		"b":      true,
+		"i":      true,
+		"q":      true,
+		"s":      true,
+		"u":      true,
+		"em":     true,
+		"img":    true,
+		"var":    true,
+		"sub":    true,
+		"sup":    true,
+		"code":   true,
+		"span":   true,
+		"input":  true,
+		"small":  true,
+		"strong": true,
+	}
 	gohtml.IsPreformatted = func(token html.Token) bool {
-		return token.Data == "pre" || token.Data == "textarea" || token.Data == "code"
+		return token.Data == "pre" || token.Data == "textarea" || token.Data == "code" || token.Data == "p"
 	}
 	output = []byte(gohtml.Format(string(input)))
 	return
