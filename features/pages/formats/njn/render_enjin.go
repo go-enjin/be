@@ -164,7 +164,7 @@ func (re *RenderEnjin) RenderNjnTemplate(tag string, data map[string]interface{}
 		return
 	} else {
 		var tt *template.Template
-		if tt, err = re.Theme.NewHtmlTemplate(tag).Parse(tmplContent); err == nil {
+		if tt, err = re.Theme.NewHtmlTemplate("render-enjin--" + tag + ".tmpl").Parse(tmplContent); err == nil {
 			var w bytes.Buffer
 			if err = tt.Execute(&w, data); err == nil {
 				html = template.HTML(w.Bytes())
