@@ -258,6 +258,32 @@ func (re *RenderEnjin) ParseBlockHeadingLevel(count, current int, blockData map[
 	return
 }
 
+func (re *RenderEnjin) PrepareBlockHeader(content map[string]interface{}) (combined []interface{}, ok bool) {
+	if v, found := content["header"].([]interface{}); found {
+		var err error
+		if combined, err = re.PrepareInlineFields(v); err != nil {
+			log.ErrorDF(1, "error preparing header inline fields: %v", err)
+			return
+		} else {
+			ok = true
+		}
+	}
+	return
+}
+
+func (re *RenderEnjin) PrepareBlockFooter(content map[string]interface{}) (combined []interface{}, ok bool) {
+	if v, found := content["footer"].([]interface{}); found {
+		var err error
+		if combined, err = re.PrepareContainerFieldList(v); err != nil {
+			log.ErrorDF(1, "error preparing footer container fields: %v", err)
+			return
+		} else {
+			ok = true
+		}
+	}
+	return
+}
+
 func (re *RenderEnjin) ParseBlockHeader(content map[string]interface{}) (html template.HTML, ok bool) {
 	var v []interface{}
 	if v, ok = content["header"].([]interface{}); ok {
