@@ -103,7 +103,7 @@ func walkTableOfContents(re feature.EnjinRenderer, count, level int, data interf
 						Level: level,
 					})
 				}
-				if hr == -255 && hl == -255 {
+				if hr == -255 /*&& hl == -255*/ {
 					level += 1
 				}
 				count += 1
