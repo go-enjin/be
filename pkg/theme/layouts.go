@@ -48,14 +48,15 @@ func (l *Layouts) Reload() (err error) {
 
 	for _, path := range paths {
 		name := bePath.Base(path)
-		if exists := l.getLayout(name); exists != nil {
-			if err = exists.Reload(); err != nil {
-				err = fmt.Errorf("%v theme: error reloading %v layout: %v", l.t.Config.Name, name, err)
-				return
-			}
-			log.DebugF("%v theme: reloaded %v layout", l.t.Config.Name, exists.Name)
-			continue
-		}
+		// TODO: figure out better means of hot-reloading, for now, new layouts each time
+		// if exists := l.getLayout(name); exists != nil {
+		// 	if err = exists.Reload(); err != nil {
+		// 		err = fmt.Errorf("%v theme: error reloading %v layout: %v", l.t.Config.Name, name, err)
+		// 		return
+		// 	}
+		// 	log.DebugF("%v theme: reloaded %v layout", l.t.Config.Name, exists.Name)
+		// 	continue
+		// }
 		if layout, e := NewLayout(path, l.t.FileSystem, l.t.FuncMap); e != nil {
 			err = fmt.Errorf("error creating new layout: %v - %v", path, e)
 			return
