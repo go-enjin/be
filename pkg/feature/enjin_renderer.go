@@ -56,9 +56,22 @@ type EnjinRenderer interface {
 	PrepareStringTags(text string) (data []interface{}, err error)
 	WalkStringTags(doc *html.Node) (prepared []interface{})
 
+	PrepareBlockHeader(content map[string]interface{}) (combined []interface{}, ok bool)
+	PrepareBlockFooter(content map[string]interface{}) (combined []interface{}, ok bool)
+
 	ParseBlockHeadingLevel(count, current int, blockData map[string]interface{}) (level, headingReset, headingLevel int)
 	ParseBlockHeader(content map[string]interface{}) (html template.HTML, ok bool)
 	ParseBlockFooter(content map[string]interface{}) (html template.HTML, ok bool)
+
+	PrepareInlineFieldText(field map[string]interface{}) (combined []interface{}, err error)
+	PrepareInlineFieldList(list []interface{}) (combined []interface{}, err error)
+	PrepareInlineFields(fields []interface{}) (combined []interface{}, err error)
+	PrepareInlineField(field map[string]interface{}) (prepared map[string]interface{}, err error)
+
+	PrepareContainerFieldText(field map[string]interface{}) (fields []interface{}, err error)
+	PrepareContainerFieldList(list []interface{}) (fields []interface{}, err error)
+	PrepareContainerFields(fields []interface{}) (combined []map[string]interface{}, err error)
+	PrepareContainerField(field map[string]interface{}) (prepared map[string]interface{}, err error)
 
 	RenderInlineField(field map[string]interface{}) (combined []template.HTML, err error)
 	RenderInlineFields(fields []interface{}) (combined []template.HTML, err error)
