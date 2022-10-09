@@ -89,11 +89,14 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 	} else {
 		data["Href"] = "#"
 	}
-	if data["Text"], err = re.RenderInlineFieldText(field); err != nil {
+	if dataText, e := re.PrepareInlineFieldText(field); e != nil {
 		return
-	}
-	if data["Text"] == "" {
-		data["Text"] = data["Href"]
+	} else {
+		if len(dataText) > 0 {
+			data["Text"] = dataText
+		} else {
+			data["Text"] = []interface{}{data["Href"]}
+		}
 	}
 
 	decorated := false

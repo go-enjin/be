@@ -85,7 +85,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 	data["Type"] = "select"
 
 	if list, ok := field["placeholder"].([]interface{}); ok {
-		if html, e := re.RenderInlineFieldList(list); e != nil {
+		if html, e := re.PrepareInlineFieldList(list); e != nil {
 			err = fmt.Errorf("error rendering select placeholder: %v", e)
 			return
 		} else {
@@ -96,7 +96,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 	}
 
 	if list, ok := field["options"].([]interface{}); ok {
-		if html, e := re.RenderInlineFieldList(list); e != nil {
+		if html, e := re.PrepareInlineFieldList(list); e != nil {
 			err = fmt.Errorf("error rendering select options: %v", e)
 			return
 		} else {

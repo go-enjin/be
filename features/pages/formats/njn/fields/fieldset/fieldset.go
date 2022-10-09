@@ -85,13 +85,13 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 
 	data["Type"] = "fieldset"
 	if list, ok := field["legend"].([]interface{}); ok {
-		if data["Legend"], err = re.RenderInlineFields(list); err != nil {
+		if data["Legend"], err = re.PrepareInlineFields(list); err != nil {
 			err = fmt.Errorf("error rendering fieldset legend: %v", err)
 			return
 		}
 	}
 	if list, ok := field["fields"].([]interface{}); ok {
-		if data["Fields"], err = re.RenderContainerFields(list); err != nil {
+		if data["Fields"], err = re.PrepareContainerFields(list); err != nil {
 			err = fmt.Errorf("error rendering fieldset fields: %v", err)
 			return
 		}

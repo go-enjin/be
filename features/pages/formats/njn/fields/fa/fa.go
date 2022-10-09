@@ -84,7 +84,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 	var ok bool
 	data = make(map[string]interface{})
 
-	data["Type"] = "i"
+	data["Type"] = "fa-icon"
 
 	if data["Class"], ok = field["class"]; !ok {
 		data["Class"] = "fa-solid"

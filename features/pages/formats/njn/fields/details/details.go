@@ -85,7 +85,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 
 	data["Type"] = "details"
 	data["Summary"], _ = field["summary"]
-	if data["Text"], err = re.RenderContainerFieldText(field); err != nil {
+	if data["Text"], err = re.PrepareContainerFieldText(field); err != nil {
 		return
 	}
 

@@ -96,7 +96,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 	}
 
 	if note, ok := field["note"].([]interface{}); ok {
-		if data["Note"], err = re.RenderInlineFields(note); err != nil {
+		if data["Note"], err = re.PrepareInlineFields(note); err != nil {
 			return
 		}
 	} else {

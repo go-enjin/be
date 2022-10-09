@@ -16,7 +16,6 @@ package list
 
 import (
 	"fmt"
-	"html/template"
 	"strings"
 
 	"github.com/go-enjin/be/pkg/feature"
@@ -134,8 +133,8 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 		err = fmt.Errorf("ordered list missing list: %+v", field)
 		return
 	}
-	var combined []template.HTML
-	if combined, err = re.RenderInlineFields(list); err != nil {
+	var combined []interface{}
+	if combined, err = re.PrepareInlineFields(list); err != nil {
 		return
 	}
 	data["Items"] = combined

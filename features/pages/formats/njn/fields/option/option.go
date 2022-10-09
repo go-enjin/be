@@ -87,7 +87,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 	data["Value"], _ = field["value"].(string)
 
 	if list, ok := field["text"].([]interface{}); ok {
-		if html, e := re.RenderInlineFieldList(list); e != nil {
+		if html, e := re.PrepareInlineFieldList(list); e != nil {
 			err = fmt.Errorf("error rendering option: %v", e)
 			return
 		} else {

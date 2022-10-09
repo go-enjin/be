@@ -101,7 +101,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 							if vv, ok = v.([]interface{}); !ok {
 								vv = []interface{}{v}
 							}
-							if t, e := re.RenderInlineFieldList(vv); e != nil {
+							if t, e := re.PrepareInlineFieldList(vv); e != nil {
 								err = e
 								return
 							} else {
@@ -132,10 +132,8 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 						if attrs, _, _, e := maps.ParseNjnFieldAttributes(bodyRowMap); e != nil {
 							err = e
 							return
-						} else {
-							if data["Attributes"], err = maps.FinalizeNjnFieldAttributes(attrs); err != nil {
-								return
-							}
+						} else if data["Attributes"], err = maps.FinalizeNjnFieldAttributes(attrs); err != nil {
+							return
 						}
 						var rowCells []interface{}
 						if bodyRowDataList, ok := bodyRowMap["data"].([]interface{}); ok {
@@ -154,10 +152,13 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 													return
 												}
 											}
-											if rowData["Data"], err = re.RenderContainerFieldText(bodyRowDataMap); err != nil {
+											if rowData["Text"], err = re.PrepareContainerFieldText(bodyRowDataMap); err != nil {
 												return
 											}
 											rowCells = append(rowCells, rowData)
+										default:
+											err = fmt.Errorf("invalid table row data type: %v", bodyRowDataType)
+											return
 										}
 									} else {
 										err = fmt.Errorf("body row data map missing type: %+v", bodyRowDataItem)
@@ -173,7 +174,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 						dataBody = append(dataBody, row)
 
 					default:
-						err = fmt.Errorf("unsupported table heading type: %v [index=%d]", bodyRowType, idx)
+						err = fmt.Errorf("unsupported table row type: %v [index=%d]", bodyRowType, idx)
 						return
 					}
 				}

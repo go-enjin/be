@@ -127,7 +127,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 	data = make(map[string]interface{})
 
 	data["Type"] = tagName
-	if data["Text"], err = re.RenderContainerFieldText(field); err != nil {
+	if data["Text"], err = re.PrepareContainerFieldText(field); err != nil {
 		return
 	}
 

@@ -87,7 +87,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 	data["Label"], _ = field["label"].(string)
 
 	if list, ok := field["options"].([]interface{}); ok {
-		if html, e := re.RenderInlineFieldList(list); e != nil {
+		if html, e := re.PrepareInlineFieldList(list); e != nil {
 			err = fmt.Errorf("error rendering optgroup options: %v", e)
 			return
 		} else {
