@@ -28,6 +28,7 @@ import (
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/linkList"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/notice"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/pair"
+	"github.com/go-enjin/be/features/pages/formats/njn/blocks/sidebar"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/toc"
 	"github.com/go-enjin/be/features/pages/formats/njn/fields/anchor"
 	"github.com/go-enjin/be/features/pages/formats/njn/fields/code"
@@ -208,8 +209,10 @@ func (f *CFeature) Defaults() MakeFeature {
 	f.AddBlock(icon.New().Make())
 	f.AddBlock(card.New().Make())
 	f.AddBlock(content.New().Make())
+	// all container blocks
 	f.AddBlock(carousel.New().Make())
 	f.AddBlock(pair.New().Make())
+	f.AddBlock(sidebar.New().Make())
 	// stringtags (text-level tags such as `<u>` and `<i>`)
 	f.AddStringTags(DefaultStringTags...)
 	return f
