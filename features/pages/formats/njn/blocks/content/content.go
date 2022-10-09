@@ -88,19 +88,19 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 
 	block = re.PrepareGenericBlock("content", data)
 
-	if heading, ok := re.ParseBlockHeader(blockDataContent); ok {
+	if heading, ok := re.PrepareBlockHeader(blockDataContent); ok {
 		block["Heading"] = heading
 	}
 
 	if sections, ok := blockDataContent["section"].([]interface{}); ok {
-		if block["Section"], err = re.RenderContainerFields(sections); err != nil {
+		if block["Section"], err = re.PrepareContainerFields(sections); err != nil {
 			return
 		}
 	}
 
 	block["Footnotes"] = re.GetFootnotes(re.GetBlockIndex())
 
-	if footer, ok := re.ParseBlockFooter(blockDataContent); ok {
+	if footer, ok := re.PrepareBlockFooter(blockDataContent); ok {
 		block["Footer"] = footer
 	}
 

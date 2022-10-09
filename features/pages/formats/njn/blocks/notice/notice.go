@@ -115,17 +115,14 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		block["NoticeType"] = "info"
 	}
 
-	var sectionHtml template.HTML
+	var sectionFields []interface{}
 	if sections, ok := blockContent["section"].([]interface{}); ok {
-		var renderedSectionFields []template.HTML
-		if renderedSectionFields, err = re.RenderContainerFields(sections); err != nil {
-			err = fmt.Errorf("error rendering notice section field: %v", err)
+		if prepared, e := re.PrepareContainerFieldList(sections); e != nil {
+			err = fmt.Errorf("error preparing notice content section: %v", e)
 			return
 		} else {
-			block["Section"] = renderedSectionFields
-			for _, s := range renderedSectionFields {
-				sectionHtml += s
-			}
+			block["Section"] = prepared
+			sectionFields = prepared
 		}
 	}
 
@@ -140,15 +137,15 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			}
 		}
 		block["Summary"] = summary
-	} else if sectionHtml != "" {
-		block["Summary"] = sectionHtml
+	} else if len(sectionFields) > 0 {
+		block["Summary"] = sectionFields
 		delete(block, "Section")
 	} else {
-		err = fmt.Errorf("notice block missing summary: %v - %v", data, sectionHtml)
+		err = fmt.Errorf("notice block missing summary and section: %v - %v", data, sectionFields)
 		return
 	}
 
-	if footer, ok := re.ParseBlockFooter(blockContent); ok {
+	if footer, ok := re.PrepareBlockFooter(blockContent); ok {
 		block["Footer"] = footer
 	}
 

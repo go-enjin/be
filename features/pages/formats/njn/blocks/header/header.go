@@ -102,7 +102,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		re.IncHeadingLevel() // header blocks cause further blocks to be level+1
 	}
 
-	if heading, ok := re.ParseBlockHeader(blockDataContent); ok {
+	if heading, ok := re.PrepareBlockHeader(blockDataContent); ok {
 		block["Heading"] = heading
 	}
 
@@ -137,7 +137,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		block["Nav"] = navItems
 	}
 
-	if footer, ok := re.ParseBlockFooter(blockDataContent); ok {
+	if footer, ok := re.PrepareBlockFooter(blockDataContent); ok {
 		block["Footer"] = footer
 	}
 

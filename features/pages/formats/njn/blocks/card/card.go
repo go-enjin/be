@@ -102,11 +102,11 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 				err = fmt.Errorf("card block background is not a picture field: %v", bgType)
 				return
 			}
-			if renderBg, e := re.RenderContainerField(background); e != nil {
+			if renderBg, e := re.PrepareContainerField(background); e != nil {
 				err = e
 				return
 			} else {
-				block["Background"] = renderBg[0]
+				block["Background"] = renderBg
 			}
 		} else {
 			err = fmt.Errorf("card block missing background type")
@@ -117,17 +117,19 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		return
 	}
 
-	if heading, ok := re.ParseBlockHeader(blockDataContent); ok {
+	if heading, ok := re.PrepareBlockHeader(blockDataContent); ok {
 		block["Heading"] = heading
 	}
 
 	if sections, ok := blockDataContent["section"].([]interface{}); ok {
-		if block["Section"], err = re.RenderContainerFields(sections); err != nil {
+		// TODO: prevent anchor tags within njn card block content when link-href is set, browsers mangle the DOM in order to make sense of links-within-links
+		if block["Section"], err = re.PrepareContainerFields(sections); err != nil {
 			return
 		}
 	}
 
-	if footer, ok := re.ParseBlockFooter(blockDataContent); ok {
+	// TODO: decide what to do with njn card block footers
+	if footer, ok := re.PrepareBlockFooter(blockDataContent); ok {
 		block["Footer"] = footer
 	}
 

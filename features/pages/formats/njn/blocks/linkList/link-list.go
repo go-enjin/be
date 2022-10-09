@@ -90,7 +90,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 
 	block = re.PrepareGenericBlock("link-list", data)
 
-	if heading, ok := re.ParseBlockHeader(blockDataContent); ok {
+	if heading, ok := re.PrepareBlockHeader(blockDataContent); ok {
 		block["Heading"] = heading
 	}
 
@@ -126,7 +126,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			}
 		}
 
-		if block["Section"], err = re.RenderContainerFields([]interface{}{
+		if block["Section"], err = re.PrepareContainerFieldList([]interface{}{
 			map[string]interface{}{
 				"type": "ul",
 				"list": sectionFields,
@@ -136,7 +136,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		}
 	}
 
-	if footer, ok := re.ParseBlockFooter(blockDataContent); ok {
+	if footer, ok := re.PrepareBlockFooter(blockDataContent); ok {
 		block["Footer"] = footer
 	}
 

@@ -144,19 +144,21 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	_, _, toc := walkTableOfContents(re, 0, 0, re.GetData())
 	items := sortTableOfContents(toc)
 
-	if heading, ok := re.ParseBlockHeader(blockDataContent); ok {
-		block["TocHeading"] = heading
+	if heading, ok := re.PrepareBlockHeader(blockDataContent); ok {
+		block["Heading"] = heading
+		headingRendered, _ := re.ParseBlockHeader(blockDataContent)
+		block["TocHeading"] = headingRendered
 		if withSelf {
 			items = append([]*tocItem{
 				{
 					Tag:   blockTag,
-					Title: heading,
+					Title: headingRendered,
 				},
 			}, items...)
 		}
 	}
 
-	if footer, ok := re.ParseBlockFooter(blockDataContent); ok {
+	if footer, ok := re.PrepareBlockFooter(blockDataContent); ok {
 		block["Footer"] = footer
 	}
 

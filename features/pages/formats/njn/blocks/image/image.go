@@ -141,19 +141,15 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		block["Size"] = "normal"
 	}
 
-	if heading, ok := re.ParseBlockHeader(blockDataContent); ok {
+	if heading, ok := re.PrepareBlockHeader(blockDataContent); ok {
 		block["Heading"] = heading
 	}
 
 	if picture, ok := blockDataContent["picture"].(map[string]interface{}); ok {
-		var combine []template.HTML
-		if combine, err = re.RenderContainerFields([]interface{}{picture}); err != nil {
+		if combined, e := re.PrepareContainerFields([]interface{}{picture}); e != nil {
+			err = e
 			return
 		} else {
-			var combined template.HTML
-			for _, comb := range combine {
-				combined += comb
-			}
 			block["Picture"] = combined
 		}
 	} else {
@@ -161,7 +157,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		return
 	}
 
-	if footer, ok := re.ParseBlockFooter(blockDataContent); ok {
+	if footer, ok := re.PrepareBlockFooter(blockDataContent); ok {
 		block["Footer"] = footer
 	}
 
