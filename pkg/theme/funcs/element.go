@@ -23,6 +23,28 @@ import (
 	"github.com/go-enjin/be/pkg/menu"
 )
 
+func elementTextWork(v interface{}) (html template.HTML, err error) {
+	switch t := v.(type) {
+	case string:
+		html += template.HTML(t)
+	case template.HTML:
+		html += t
+	case []interface{}:
+		for _, tt := range t {
+			if h, e := elementTextWork(tt); e != nil {
+				err = e
+				return
+			} else {
+				html += h
+			}
+		}
+	default:
+		err = fmt.Errorf("unknown element text type: %T %+v", t, t)
+		return
+	}
+	return
+}
+
 func Element(data map[string]interface{}) (html template.HTML, err error) {
 	if eo, e := ElementOpen(data); e != nil {
 		err = e
@@ -31,14 +53,11 @@ func Element(data map[string]interface{}) (html template.HTML, err error) {
 		html += eo
 	}
 	if v, ok := data["Text"]; ok {
-		switch t := v.(type) {
-		case string:
-			html += template.HTML(t)
-		case template.HTML:
-			html += t
-		default:
-			err = fmt.Errorf("unknown element text type: %T %+v", t, t)
+		if h, e := elementTextWork(v); e != nil {
+			err = e
 			return
+		} else {
+			html += h
 		}
 	} else {
 		err = fmt.Errorf("element data missing Text property: %+v", data)
@@ -107,35 +126,52 @@ func ElementAttributes(value interface{}) (html template.HTMLAttr) {
 	return
 }
 
+func elementOpenWork(data map[string]interface{}, dataType interface{}) (html template.HTML, err error) {
+	switch dt := dataType.(type) {
+	case string:
+		html = "<"
+		html += template.HTML(dt)
+		if attrs := ElementAttributes(data); len(attrs) > 0 {
+			html += " "
+			html += template.HTML(attrs)
+		}
+		html += ">"
+	case template.HTML:
+		html = "<"
+		html += dt
+		if attrs := ElementAttributes(data); len(attrs) > 0 {
+			html += " "
+			html += template.HTML(attrs)
+		}
+		html += ">"
+	case template.HTMLAttr:
+		html = "<"
+		html += template.HTML(dt)
+		if attrs := ElementAttributes(data); len(attrs) > 0 {
+			html += " "
+			html += template.HTML(attrs)
+		}
+		html += ">"
+	default:
+		err = fmt.Errorf("element open invalid type property: %T %+v", dt, dt)
+	}
+	return
+}
+
 func ElementOpen(data map[string]interface{}) (html template.HTML, err error) {
 	if dataType, ok := data["Type"]; ok {
-		switch dt := dataType.(type) {
-		case string:
-			html = "<"
-			html += template.HTML(dt)
-			if attrs := ElementAttributes(data); len(attrs) > 0 {
-				html += " "
-				html += template.HTML(attrs)
+		switch typedData := dataType.(type) {
+		case []interface{}:
+			for _, item := range typedData {
+				if h, e := elementOpenWork(data, item); e != nil {
+					err = e
+					return
+				} else {
+					html += h
+				}
 			}
-			html += ">"
-		case template.HTML:
-			html = "<"
-			html += dt
-			if attrs := ElementAttributes(data); len(attrs) > 0 {
-				html += " "
-				html += template.HTML(attrs)
-			}
-			html += ">"
-		case template.HTMLAttr:
-			html = "<"
-			html += template.HTML(dt)
-			if attrs := ElementAttributes(data); len(attrs) > 0 {
-				html += " "
-				html += template.HTML(attrs)
-			}
-			html += ">"
 		default:
-			err = fmt.Errorf("element open invalid type property: %T %+v", dt, dt)
+			html, err = elementOpenWork(data, typedData)
 		}
 	} else {
 		err = fmt.Errorf("element open missing type property: %+v", data)
@@ -143,22 +179,41 @@ func ElementOpen(data map[string]interface{}) (html template.HTML, err error) {
 	return
 }
 
+func elementCloseWork(dataType interface{}) (html template.HTML, err error) {
+	switch dt := dataType.(type) {
+	case string:
+		html = "</"
+		html += template.HTML(dt)
+		html += ">"
+	case template.HTML:
+		html = "</" + dt + ">"
+	case template.HTMLAttr:
+		html = "</"
+		html += template.HTML(dt)
+		html += ">"
+	default:
+		err = fmt.Errorf("element close unsupported dataType structure: %T", dt)
+	}
+	return
+}
+
 func ElementClose(data map[string]interface{}) (html template.HTML, err error) {
 	if dataType, ok := data["Type"]; ok {
-		switch dt := dataType.(type) {
-		case string:
-			html = "</"
-			html += template.HTML(dt)
-			html += ">"
-		case template.HTML:
-			html = "</" + dt + ">"
-		case template.HTMLAttr:
-			html = "</"
-			html += template.HTML(dt)
-			html += ">"
+		switch typedData := dataType.(type) {
+		case []interface{}:
+			for _, item := range typedData {
+				if h, e := elementCloseWork(item); e != nil {
+					err = e
+					return
+				} else {
+					html += h
+				}
+			}
+		default:
+			html, err = elementCloseWork(typedData)
 		}
 	} else {
-		err = fmt.Errorf("element close missing type property: %+v", data)
+		err = fmt.Errorf("element open missing type property: %+v", data)
 	}
 	return
 }
