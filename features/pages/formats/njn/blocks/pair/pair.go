@@ -108,6 +108,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 				} else {
 					sectionBlock = beStrings.AddClassNamesToNjnBlock(sectionBlock, "second", sectionBlockType)
 				}
+				// TODO: restrict pair block contents to only inline blocks
 				if prepared, e := re.PrepareBlock(sectionBlock); e != nil {
 					err = e
 					return
