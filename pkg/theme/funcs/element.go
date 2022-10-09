@@ -81,11 +81,8 @@ func ElementAttributes(value interface{}) (html template.HTMLAttr) {
 			}
 		}
 	case []template.HTMLAttr:
-		for idx, v := range data {
-			if idx > 0 {
-				html += " "
-			}
-			html += v
+		for _, v := range data {
+			parts = append(parts, string(v))
 		}
 	case map[string]interface{}:
 		if ai, found := data["Attributes"]; found && ai != nil {
