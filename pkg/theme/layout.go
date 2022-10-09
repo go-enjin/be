@@ -95,7 +95,7 @@ func (l *Layout) Reload() (err error) {
 					}
 					continue
 				}
-				log.TraceF("overwriting known entry: %v", entryName)
+				log.TraceF("updating known entry: %v", entryName)
 				delete(l.lastMods, entryName)
 				delete(l.cache, entryName)
 			} else {
@@ -120,7 +120,7 @@ func (l *Layout) Reload() (err error) {
 				l.Keys = append(l.Keys, entryName)
 			}
 
-			log.TraceF("layout %v entry set: %v", entryName, entryPath)
+			// log.TraceF("layout %v entry set: %v", entryName, entryPath)
 		}
 		return
 	}

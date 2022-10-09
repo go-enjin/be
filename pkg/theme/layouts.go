@@ -79,6 +79,8 @@ func (l *Layouts) Reload() (err error) {
 			}
 		}
 		l.RUnlock()
+	} else {
+		log.WarnF("partials layout not found")
 	}
 
 	if defaultLayout := l.getLayout("_default"); defaultLayout != nil {
@@ -119,9 +121,13 @@ func (l *Layouts) setLayout(name string, layout *Layout) {
 func (l *Layouts) AddPartialsToTemplate(tt *template.Template) {
 	l.RLock()
 	defer l.RUnlock()
-	if partials, ok := l.m["partials"]; ok {
+	if partials := l.getLayout("partials"); partials != nil {
 		for _, tmpl := range partials.Tmpl.Templates() {
-			_, _ = tt.AddParseTree(tmpl.Name(), tmpl.Tree)
+			if _, err := tt.AddParseTree(tmpl.Name(), tmpl.Tree); err != nil {
+				log.ErrorF("error adding partials to template: %v", err)
+			}
 		}
+	} else {
+		log.ErrorF("partials layout not found")
 	}
 }
