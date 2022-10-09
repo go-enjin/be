@@ -81,7 +81,13 @@ func (re *RenderEnjin) WalkStringTags(doc *html.Node) (prepared []interface{}) {
 					res, childData := traverse(depth+" ", c)
 					childText := "<" + c.Data + ">"
 					for _, childDatum := range childData {
-						childText += fmt.Sprintf("%v", childDatum)
+						switch typedDatum := childDatum.(type) {
+						case string:
+							childText += typedDatum
+						default:
+							// TODO: parse content within StringTags for fields and other oddities
+							childText += fmt.Sprintf("(stringtags error: %T)", typedDatum)
+						}
 					}
 					childText += "</" + c.Data + ">"
 
