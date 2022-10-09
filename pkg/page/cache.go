@@ -119,7 +119,7 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 							updateCache(mount, file, path, shasum)
 						} else {
 							// valid cache
-							log.TraceF("validated %v mount file: %v (%v)", mount, path, pg.Url)
+							// log.TraceF("validated %v mount file: %v (%v)", mount, path, pg.Url)
 						}
 					} else {
 						// new

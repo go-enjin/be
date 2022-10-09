@@ -83,7 +83,7 @@ func (l *Layout) Reload() (err error) {
 				continue
 			} else if v, ok := l.lastMods[entryName]; ok {
 				if v == lastMod {
-					log.TraceF("validated known entry: %v (%v == %v)", entryName, v, lastMod)
+					// log.TraceF("validated known entry: %v (%v == %v)", entryName, v, lastMod)
 					if _, eee := l.Tmpl.AddParseTree(entryName, l.cache[entryName].Tree); eee != nil {
 						log.ErrorF("error adding %v parse tree: %v", entryName, eee)
 						delete(l.lastMods, entryName)
@@ -99,7 +99,7 @@ func (l *Layout) Reload() (err error) {
 				delete(l.lastMods, entryName)
 				delete(l.cache, entryName)
 			} else {
-				log.TraceF("caching new entry: %v (%v)", entryName, lastMod)
+				// log.TraceF("caching new entry: %v (%v)", entryName, lastMod)
 			}
 
 			var data []byte
