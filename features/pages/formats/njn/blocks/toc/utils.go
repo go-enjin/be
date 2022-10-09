@@ -27,6 +27,7 @@ func parseNameTagTitle(dt map[string]interface{}) (name, tag, title string, vali
 		if tag, ok = dt["tag"].(string); ok {
 			if c, ok := dt["content"].(map[string]interface{}); ok {
 				if hi, ok := c["header"]; ok {
+					// TODO: find a better way of determining a block's "title" heading
 					switch ht := hi.(type) {
 					case []interface{}:
 						for _, hti := range ht {
@@ -73,18 +74,28 @@ func walkTableOfContents(re feature.EnjinRenderer, count, level int, data interf
 				// nop
 
 			case "sidebar":
-				if b, ok := dt["blocks"].([]interface{}); ok {
-					var children []*tocItem
-					if count, level, children = walkTableOfContents(re, count, level, b); children != nil {
-						log.TraceF("sidebar found: %v, %v, %v, %v", count, level, tag, title)
-						list = append(list, children...)
+				if title != "" {
+					list = append(list, &tocItem{
+						Tag:   tag,
+						Title: template.HTML(title),
+						Level: level,
+					})
+					log.TraceF("sidebar found: %v, %v, %v, %v", count, level, tag, title)
+				}
+				if c, ok := dt["content"].(map[string]interface{}); ok {
+					if b, ok := c["blocks"].([]interface{}); ok {
+						var children []*tocItem
+						if count, level, children = walkTableOfContents(re, count, level, b); len(children) > 0 {
+							log.TraceF("sidebar children: %v, %v, %v, %v", count, level, tag, children)
+							list = append(list, children...)
+						}
 					}
 				}
 
 			case "header":
 				var hr, hl int
 				level, hr, hl = re.ParseBlockHeadingLevel(count, level, dt)
-				log.TraceF("header found: count=%v, level=%v, tag=%v, title=%v", count, level, tag, title)
+				log.TraceF("header found: count=%v, level=%v, tag=%v, title=%v (hr=%v,hl=%v)", count, level, tag, title, hr, hl)
 				if level > 1 { // skip h1
 					list = append(list, &tocItem{
 						Tag:   tag,
@@ -104,6 +115,7 @@ func walkTableOfContents(re feature.EnjinRenderer, count, level int, data interf
 						Title: template.HTML(title),
 						Level: level,
 					})
+					log.TraceF("default found: %v, %v, %v, %v", count, level, tag, title)
 				}
 
 			}
@@ -117,19 +129,22 @@ func walkTableOfContents(re feature.EnjinRenderer, count, level int, data interf
 }
 
 func sortTableOfContents(toc []*tocItem) (items []*tocItem) {
-	items = make([]*tocItem, 0)
 	level := 1
-	var last *tocItem
-	for _, ti := range toc {
-		if ti.Level <= level {
-			items = append(items, ti)
-		} else /*if ti.level > level*/ {
-			if last != nil {
-				last.Children = append(last.Children, ti)
+	var parent *tocItem
+	for _, item := range toc {
+		if item.Level <= level {
+			level = item.Level
+			items = append(items, item)
+			parent = item
+		} else {
+			if parent != nil {
+				parent.Children = append(parent.Children, item)
+			} else {
+				level = item.Level
+				items = append(items, item)
+				parent = item
 			}
 		}
-		level = ti.Level
-		last = ti
 	}
 	return
 }
