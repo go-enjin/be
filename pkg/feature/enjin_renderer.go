@@ -14,7 +14,11 @@
 
 package feature
 
-import "html/template"
+import (
+	"html/template"
+
+	"golang.org/x/net/html"
+)
 
 type EnjinRenderer interface {
 	RenderNjnTemplate(tag string, data map[string]interface{}) (html template.HTML, err error)
@@ -48,6 +52,9 @@ type EnjinRenderer interface {
 
 	ParseTypeName(data map[string]interface{}) (name string, ok bool)
 	ParseFieldAndTypeName(data interface{}) (field map[string]interface{}, name string, ok bool)
+
+	PrepareStringTags(text string) (data []interface{}, err error)
+	WalkStringTags(doc *html.Node) (prepared []interface{})
 
 	ParseBlockHeadingLevel(count, current int, blockData map[string]interface{}) (level, headingReset, headingLevel int)
 	ParseBlockHeader(content map[string]interface{}) (html template.HTML, ok bool)
