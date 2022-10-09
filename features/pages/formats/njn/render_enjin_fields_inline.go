@@ -85,7 +85,31 @@ func (re *RenderEnjin) PrepareInlineFieldList(list []interface{}) (combined []in
 	for _, item := range list {
 		switch typedItem := item.(type) {
 		case string:
-			combined = append(combined, template.HTML(typedItem))
+
+			// TODO: explore how to cross field list string boundaries
+			if parsed, e := re.PrepareStringTags(typedItem); e != nil {
+				err = fmt.Errorf("error parsing shortcodes: %v", e)
+				return
+			} else {
+				combined = append(combined, parsed...)
+			}
+
+			// if idx > 0 {
+			// 	if _, ok := list[idx-1].(string); ok {
+			// 		if lastIndex := len(combined) - 1; lastIndex >= 0 {
+			// 			if v, ok := combined[lastIndex].(string); ok {
+			// 				combined[lastIndex] = v + " " + typedItem
+			// 			} else {
+			// 				combined = append(combined, typedItem)
+			// 			}
+			// 		} else {
+			// 			combined = append(combined, typedItem)
+			// 		}
+			// 		continue
+			// 	}
+			// }
+			// // combined = append(combined, template.HTML(typedItem))
+			// combined = append(combined, typedItem)
 
 		case []interface{}:
 			if prepared, e := re.PrepareInlineFieldList(typedItem); e != nil {
@@ -115,7 +139,13 @@ func (re *RenderEnjin) PrepareInlineFields(fields []interface{}) (combined []int
 	for _, field := range fields {
 		switch fieldTyped := field.(type) {
 		case string:
-			combined = append(combined, template.HTML(fieldTyped))
+			// combined = append(combined, fieldTyped)
+			if parsed, e := re.PrepareStringTags(fieldTyped); e != nil {
+				err = fmt.Errorf("error parsing shortcodes: %v", e)
+				return
+			} else {
+				combined = append(combined, parsed...)
+			}
 		case map[string]interface{}:
 			if c, e := re.PrepareInlineField(fieldTyped); e != nil {
 				err = e
@@ -180,7 +210,18 @@ func (re *RenderEnjin) RenderInlineFields(fields []interface{}) (combined []temp
 	for _, field := range fields {
 		switch fieldTyped := field.(type) {
 		case string:
-			combined = append(combined, template.HTML(fieldTyped))
+			// combined = append(combined, template.HTML(fieldTyped))
+			if parsed, e := re.PrepareStringTags(fieldTyped); e != nil {
+				err = fmt.Errorf("error parsing shortcodes: %v", e)
+				return
+			} else {
+				if c, e := re.RenderInlineFields(parsed); e != nil {
+					err = e
+					return
+				} else {
+					combined = append(combined, c...)
+				}
+			}
 		case map[string]interface{}:
 			if c, e := re.RenderInlineField(fieldTyped); e != nil {
 				err = e

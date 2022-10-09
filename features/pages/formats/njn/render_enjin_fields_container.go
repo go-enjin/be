@@ -43,7 +43,12 @@ func (re *RenderEnjin) PrepareContainerFieldList(list []interface{}) (fields []i
 	for _, listItem := range list {
 		switch typedItem := listItem.(type) {
 		case string:
-			fields = append(fields, template.HTML(typedItem))
+			if parsed, e := re.PrepareStringTags(typedItem); e != nil {
+				err = fmt.Errorf("error parsing stringtags: %v", e)
+				return
+			} else {
+				fields = append(fields, parsed...)
+			}
 		case map[string]interface{}:
 			if prepared, e := re.PrepareContainerField(typedItem); e != nil {
 				err = e
