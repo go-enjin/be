@@ -34,6 +34,9 @@ type EnjinRenderer interface {
 	GetData() (data interface{})
 	GetBlockIndex() (index int)
 
+	GetWithinAside() (within bool)
+	SetWithinAside(within bool)
+
 	GetCurrentDepth() (depth int)
 	IncCurrentDepth() (depth int)
 	DecCurrentDepth() (depth int)
