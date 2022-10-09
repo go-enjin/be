@@ -94,11 +94,6 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 
 	block = re.PrepareGenericBlock("toc", data)
 
-	var blockTag string
-	if v, ok := block["Tag"]; ok {
-		blockTag, _ = v.(string)
-	}
-
 	pageTitle := false
 	if v, ok := data["page-title"]; ok {
 		switch t := v.(type) {
@@ -144,6 +139,14 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	_, _, toc := walkTableOfContents(re, 0, 0, re.GetData())
 	items := sortTableOfContents(toc)
 
+	blockTag, _ := block["Tag"].(string)
+	var tmp []*tocItem
+	for _, item := range items {
+		if item.Tag != blockTag {
+			tmp = append(tmp, item)
+		}
+	}
+	items = tmp
 	if heading, ok := re.PrepareBlockHeader(blockDataContent); ok {
 		block["Heading"] = heading
 		headingRendered, _ := re.RenderBlockHeader(blockDataContent)
