@@ -102,9 +102,8 @@ func (re *RenderEnjin) PreparePageData(data interface{}) (blocks []interface{}, 
 
 	case map[string]interface{}:
 		if prepared, e := re.PrepareBlock(typedData); e != nil {
-			content, _ := json.MarshalIndent(typedData, "", "    ")
-			blockType, _ := re.ParseTypeName(typedData)
-			err = types.NewEnjinError(fmt.Sprintf("error processing njn %v block", blockType), e.Error(), string(content))
+			preparedBlock, _ := re.PrepareErrorBlock(e.Error(), typedData)
+			blocks = append(blocks, preparedBlock)
 		} else {
 			blocks = append(blocks, prepared)
 		}

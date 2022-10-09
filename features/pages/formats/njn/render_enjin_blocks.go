@@ -27,9 +27,9 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
-func (re *RenderEnjin) RenderErrorBlock(summary string, data ...interface{}) (html template.HTML, err error) {
+func (re *RenderEnjin) PrepareErrorBlock(summary string, data ...interface{}) (block map[string]interface{}, err error) {
 	b, _ := json.MarshalIndent(data, "", "  ")
-	html, err = re.ProcessBlock(map[string]interface{}{
+	block, err = re.PrepareBlock(map[string]interface{}{
 		"type": "content",
 		"content": map[string]interface{}{
 			"section": []interface{}{
@@ -46,6 +46,16 @@ func (re *RenderEnjin) RenderErrorBlock(summary string, data ...interface{}) (ht
 			},
 		},
 	})
+	return
+}
+
+func (re *RenderEnjin) RenderErrorBlock(summary string, data ...interface{}) (html template.HTML, err error) {
+	if prepared, e := re.PrepareErrorBlock(summary, data...); e != nil {
+		err = e
+		return
+	} else {
+		html, err = re.RenderPreparedBlock(prepared)
+	}
 	return
 }
 
