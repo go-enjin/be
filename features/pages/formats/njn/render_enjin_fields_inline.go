@@ -32,13 +32,23 @@ func (re *RenderEnjin) PrepareInlineFieldText(field map[string]interface{}) (com
 				case []interface{}:
 					for _, item := range t {
 						if childText, ok := item.(string); ok {
-							combined = append(combined, childText)
+							if prepared, e := re.PrepareInlineFieldList([]interface{}{childText}); e != nil {
+								err = e
+								return
+							} else {
+								combined = append(combined, prepared...)
+							}
 						} else {
 							if _, child, _, e := re.CheckInlineFieldText(njnField, typeName, item); e != nil {
 								err = e
 								return
 							} else {
-								combined = append(combined, child)
+								if prepared, ee := re.PrepareInlineFieldList([]interface{}{child}); ee != nil {
+									err = ee
+									return
+								} else {
+									combined = append(combined, prepared...)
+								}
 							}
 						}
 					}
@@ -49,7 +59,7 @@ func (re *RenderEnjin) PrepareInlineFieldText(field map[string]interface{}) (com
 							err = e
 							return
 						} else {
-							combined = append(combined, prepared)
+							combined = append(combined, prepared...)
 						}
 					} else {
 						if _, child, _, e := re.CheckInlineFieldText(njnField, typeName, t); e != nil {
@@ -60,7 +70,7 @@ func (re *RenderEnjin) PrepareInlineFieldText(field map[string]interface{}) (com
 								err = ee
 								return
 							} else {
-								combined = append(combined, prepared)
+								combined = append(combined, prepared...)
 							}
 						}
 					}
