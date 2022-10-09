@@ -230,6 +230,10 @@ func (t *Theme) initFuncMap() {
 		"elementOpen":       funcs.ElementOpen,
 		"elementClose":      funcs.ElementClose,
 		"elementAttributes": funcs.ElementAttributes,
+
+		"DebugF": funcs.LogDebug,
+		"WarnF":  funcs.LogWarn,
+		"ErrorF": funcs.LogError,
 	}
 	for k, v := range gtf.GtfFuncMap {
 		t.FuncMap[k] = v
