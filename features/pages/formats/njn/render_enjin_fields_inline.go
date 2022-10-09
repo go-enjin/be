@@ -225,11 +225,11 @@ func (re *RenderEnjin) RenderInlineFields(fields []interface{}) (combined []temp
 				err = fmt.Errorf("error parsing shortcodes: %v", e)
 				return
 			} else {
-				if c, e := re.RenderInlineFields(parsed); e != nil {
+				if c, e := re.RenderInlineFieldList(parsed); e != nil {
 					err = e
 					return
 				} else {
-					combined = append(combined, c...)
+					combined = append(combined, c)
 				}
 			}
 		case map[string]interface{}:
