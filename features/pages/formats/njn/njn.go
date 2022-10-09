@@ -52,7 +52,16 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme/types"
+)
+
+var (
+	DefaultStringTags = []string{
+		"b", "del", "em", "i", "ins", "kbd", "mark",
+		"q", "s", "small", "strong", "sub", "sup", "u",
+		"var", "code",
+	}
 )
 
 var (
@@ -71,6 +80,7 @@ type Feature interface {
 type MakeFeature interface {
 	AddField(field feature.EnjinField) MakeFeature
 	AddBlock(block feature.EnjinBlock) MakeFeature
+	AddStringTags(names ...string) MakeFeature
 
 	Defaults() MakeFeature
 
@@ -82,6 +92,8 @@ type CFeature struct {
 
 	fields map[feature.NjnClass]map[string]feature.EnjinField
 	blocks map[feature.NjnClass]map[string]feature.EnjinBlock
+
+	stringtags []string
 }
 
 func New() MakeFeature {
@@ -97,6 +109,7 @@ func (f *CFeature) Init(this interface{}) {
 
 	f.fields = make(map[feature.NjnClass]map[string]feature.EnjinField)
 	f.blocks = make(map[feature.NjnClass]map[string]feature.EnjinBlock)
+	f.stringtags = make([]string, 0)
 }
 
 func (f *CFeature) AddField(field feature.EnjinField) MakeFeature {
@@ -152,6 +165,16 @@ func (f *CFeature) AddBlock(block feature.EnjinBlock) MakeFeature {
 	return f
 }
 
+func (f *CFeature) AddStringTags(names ...string) MakeFeature {
+	for _, name := range names {
+		if !beStrings.StringInStrings(name, f.stringtags...) {
+			f.stringtags = append(f.stringtags, name)
+			log.TraceF("added %v shortcode", name)
+		}
+	}
+	return f
+}
+
 func (f *CFeature) Defaults() MakeFeature {
 	// all inline fields
 	f.AddField(anchor.New().Make())
@@ -187,6 +210,8 @@ func (f *CFeature) Defaults() MakeFeature {
 	f.AddBlock(content.New().Make())
 	f.AddBlock(carousel.New().Make())
 	f.AddBlock(pair.New().Make())
+	// stringtags (text-level tags such as `<u>` and `<i>`)
+	f.AddStringTags(DefaultStringTags...)
 	return f
 }
 
@@ -227,6 +252,10 @@ func (f *CFeature) InlineBlocks() (blocks map[string]feature.EnjinBlock) {
 func (f *CFeature) ContainerBlocks() (blocks map[string]feature.EnjinBlock) {
 	blocks, _ = f.blocks[feature.ContainerNjnClass]
 	return
+}
+
+func (f *CFeature) StringTags() (names []string) {
+	return f.stringtags
 }
 
 func (f *CFeature) FindField(tagClass feature.NjnClass, fieldType string) (field feature.EnjinField, ok bool) {
