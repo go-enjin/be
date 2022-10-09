@@ -146,7 +146,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 
 	if heading, ok := re.PrepareBlockHeader(blockDataContent); ok {
 		block["Heading"] = heading
-		headingRendered, _ := re.ParseBlockHeader(blockDataContent)
+		headingRendered, _ := re.RenderBlockHeader(blockDataContent)
 		block["TocHeading"] = headingRendered
 		if withSelf {
 			items = append([]*tocItem{

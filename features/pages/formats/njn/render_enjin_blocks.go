@@ -287,7 +287,7 @@ func (re *RenderEnjin) PrepareBlockFooter(content map[string]interface{}) (combi
 	return
 }
 
-func (re *RenderEnjin) ParseBlockHeader(content map[string]interface{}) (html template.HTML, ok bool) {
+func (re *RenderEnjin) RenderBlockHeader(content map[string]interface{}) (html template.HTML, ok bool) {
 	var v []interface{}
 	if v, ok = content["header"].([]interface{}); ok {
 		if headings, err := re.RenderInlineFields(v); err != nil {
@@ -303,7 +303,7 @@ func (re *RenderEnjin) ParseBlockHeader(content map[string]interface{}) (html te
 	return
 }
 
-func (re *RenderEnjin) ParseBlockFooter(content map[string]interface{}) (html template.HTML, ok bool) {
+func (re *RenderEnjin) RenderBlockFooter(content map[string]interface{}) (html template.HTML, ok bool) {
 	var v []interface{}
 	if v, ok = content["footer"].([]interface{}); ok {
 		if footers, err := re.RenderContainerFields(v); err != nil {

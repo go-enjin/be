@@ -63,8 +63,8 @@ type EnjinRenderer interface {
 	PrepareBlockFooter(content map[string]interface{}) (combined []interface{}, ok bool)
 
 	ParseBlockHeadingLevel(count, current int, blockData map[string]interface{}) (level, headingReset, headingLevel int)
-	ParseBlockHeader(content map[string]interface{}) (html template.HTML, ok bool)
-	ParseBlockFooter(content map[string]interface{}) (html template.HTML, ok bool)
+	RenderBlockHeader(content map[string]interface{}) (html template.HTML, ok bool)
+	RenderBlockFooter(content map[string]interface{}) (html template.HTML, ok bool)
 
 	PrepareInlineFieldText(field map[string]interface{}) (combined []interface{}, err error)
 	PrepareInlineFieldList(list []interface{}) (combined []interface{}, err error)
