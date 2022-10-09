@@ -41,6 +41,7 @@ type RenderEnjin struct {
 	headingLevel int
 	headingCount int
 	currentDepth int
+	withinAside  bool
 
 	cache map[string]string
 	data  interface{}
@@ -249,6 +250,16 @@ func (re *RenderEnjin) ParseFieldAndTypeName(data interface{}) (field map[string
 	if field, ok = data.(map[string]interface{}); ok {
 		name, ok = re.ParseTypeName(field)
 	}
+	return
+}
+
+func (re *RenderEnjin) GetWithinAside() (within bool) {
+	within = re.withinAside
+	return
+}
+
+func (re *RenderEnjin) SetWithinAside(within bool) {
+	re.withinAside = within
 	return
 }
 

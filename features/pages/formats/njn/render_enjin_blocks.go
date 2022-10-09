@@ -116,6 +116,9 @@ func (re *RenderEnjin) PrepareGenericBlock(typeName string, data map[string]inte
 	preparedData["Type"] = typeName
 	preparedData["Depth"] = re.GetCurrentDepth()
 	preparedData["BlockIndex"] = re.blockCount
+	if re.GetWithinAside() {
+		preparedData["WithinAside"] = "true"
+	}
 	if preparedData["Tag"], ok = data["tag"]; !ok {
 		preparedData["Tag"] = fmt.Sprintf("%v-%d", typeName, re.blockCount)
 	}
