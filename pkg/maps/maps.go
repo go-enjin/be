@@ -103,13 +103,11 @@ func ParseNjnFieldAttributes(field map[string]interface{}) (attributes map[strin
 			}
 
 		case []template.HTMLAttr:
-			log.DebugF("paring attrs: (%T) %+v", attrs, attrs)
 			if a, e := beStrings.ParseHtmlTagAttributes(attrs); e != nil {
 				err = fmt.Errorf("error parsing html tag attributes: %v", e)
-				log.DebugF("%v", err)
+				log.ErrorF("%v", err)
 				return
 			} else {
-				log.DebugF("parsed html attrs: %+v", a)
 				for k, v := range a {
 					attributes[k] = v
 				}
