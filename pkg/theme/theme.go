@@ -29,6 +29,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/theme/funcs"
+	"github.com/go-enjin/be/pkg/theme/types"
 )
 
 type Author struct {
@@ -38,6 +39,7 @@ type Author struct {
 
 type Config struct {
 	Name        string
+	Parent      string
 	License     string
 	LicenseLink string
 	Description string
@@ -52,6 +54,8 @@ type Config struct {
 
 type Archetype struct {
 }
+
+var _ types.Theme = (*Theme)(nil)
 
 type Theme struct {
 	Name   string
@@ -114,6 +118,8 @@ func (t *Theme) init() (err error) {
 		return
 	}
 	t.initArchetypes()
+
+	addThemeInstance(t)
 	return
 }
 
@@ -124,6 +130,7 @@ func (t *Theme) FS() fs.FileSystem {
 func (t *Theme) initConfig(ctx context.Context) {
 	t.Config = Config{
 		Name:        ctx.String("name", t.Name),
+		Parent:      ctx.String("parent", ""),
 		Extends:     ctx.String("extends", ""),
 		License:     ctx.String("license", ""),
 		LicenseLink: ctx.String("licenselink", ""),
@@ -143,62 +150,6 @@ func (t *Theme) initConfig(ctx context.Context) {
 			t.Config.Authors = append(t.Config.Authors, author)
 		}
 	}
-
-	// if v := ctx.Get("styles"); v != nil {
-	// 	rootStyles := make([]string, 0)
-	// 	switch vt := v.(type) {
-	// 	case map[string]interface{}:
-	// 		for section, values := range vt {
-	// 			switch section {
-	//
-	// 			case "color", "primary", "secondary", "accent", "highlight", "alternate", "overlay", "style", "page":
-	// 				if subSections, ok := values.(map[string]interface{}); ok {
-	// 					for subSection, subSectionValue := range subSections {
-	// 						if valueString, ok := subSectionValue.(string); ok {
-	// 							key := "--" + section + "--" + subSection
-	// 							rootStyles = append(rootStyles, key+": "+valueString+";")
-	// 							log.DebugF("%v theme: root style: %v => %v", t.Config.Name, key, valueString)
-	// 						} else if subValues, ok := subSectionValue.(map[string]interface{}); ok {
-	// 							for subKey, subValue := range subValues {
-	// 								if valueString, ok := subValue.(string); ok {
-	// 									key := "--" + section + "--" + subSection + "--" + subKey
-	// 									rootStyles = append(rootStyles, key+": "+valueString+";")
-	// 									log.DebugF("%v theme: root style: %v => %v", t.Config.Name, key, valueString)
-	// 								} else {
-	// 									log.DebugF("%v theme: unknown root style value type: (%T) %+v", t.Config.Name, subValue, subValue)
-	// 								}
-	// 							}
-	// 						} else {
-	// 							log.DebugF("%v theme: unknown root style type: (%T) %+v", t.Config.Name, values, values)
-	// 						}
-	// 					}
-	// 				} else {
-	// 					log.DebugF("%v theme: unknown root type: (%T) %+v", t.Config.Name, values, values)
-	// 				}
-	//
-	// 			default:
-	// 				log.DebugF("%v theme: unknown root key: %v", t.Config.Name, section)
-	//
-	// 			}
-	// 		}
-	// 	default:
-	// 		log.ErrorF("%v theme: invalid styles type: (%T) %+v", t.Config.Name, vt, vt)
-	// 	}
-	// 	sort.Sort(sortorder.Natural(rootStyles))
-	// 	t.Config.RootStyles = make([]template.CSS, len(rootStyles))
-	// 	for idx, rootStyle := range rootStyles {
-	// 		t.Config.RootStyles[idx] = template.CSS(rootStyle)
-	// 	}
-	// }
-
-	/*
-		semantic
-			|- styles
-			|	|- root:  --*
-			|	`- icons: --icon--*--content
-			`- themes
-				|- primary:  --theme--primary--*
-	*/
 
 	if v := ctx.Get("semantic"); v != nil {
 		if semantic, ok := v.(map[string]interface{}); ok {
@@ -258,13 +209,10 @@ func (t *Theme) initConfig(ctx context.Context) {
 						}
 					}
 				}
-
 				t.Config.RootStyles = make([]template.CSS, len(rootStyles))
-
 				for idx, rootStyle := range rootStyles {
 					t.Config.RootStyles[idx] = template.CSS(rootStyle)
 				}
-
 			}
 
 			if block, ok := semantic["block"].(map[string]interface{}); ok {
@@ -305,6 +253,68 @@ func (t *Theme) initConfig(ctx context.Context) {
 		}
 	}
 	t.Config.Context.CamelizeKeys()
+}
+
+func (t *Theme) GetConfig() (config Config) {
+	config = Config{
+		Name:        t.Config.Name,
+		Parent:      t.Config.Parent,
+		License:     t.Config.License,
+		LicenseLink: t.Config.LicenseLink,
+		Description: t.Config.Description,
+		Homepage:    t.Config.Homepage,
+		Authors:     t.Config.Authors,
+		Extends:     t.Config.Extends,
+	}
+
+	config.BlockStyles = make(map[string][]template.CSS)
+	config.BlockThemes = make(map[string]map[string]interface{})
+
+	if parent := t.GetParent(); parent != nil {
+
+		config.RootStyles = append(
+			parent.Config.RootStyles,
+			t.Config.RootStyles...,
+		)
+
+		for k, v := range parent.Config.BlockStyles {
+			config.BlockStyles[k] = append([]template.CSS{}, v...)
+		}
+
+		for k, v := range parent.Config.BlockThemes {
+			config.BlockThemes[k] = make(map[string]interface{})
+			for j, vv := range v {
+				config.BlockThemes[k][j] = vv
+			}
+		}
+
+		config.Context = parent.Config.Context.Copy()
+	} else {
+		config.RootStyles = t.Config.RootStyles
+		config.Context = context.New()
+	}
+
+	config.Context.Apply(t.Config.Context)
+
+	for k, v := range t.Config.BlockStyles {
+		config.BlockStyles[k] = append([]template.CSS{}, v...)
+	}
+	for k, v := range t.Config.BlockThemes {
+		config.BlockThemes[k] = make(map[string]interface{})
+		for j, vv := range v {
+			config.BlockThemes[k][j] = vv
+		}
+	}
+
+	return
+}
+
+func (t *Theme) GetBlockThemeNames() (names []string) {
+	names = append(names, "primary", "secondary")
+	for k, _ := range t.GetConfig().BlockThemes {
+		names = append(names, k)
+	}
+	return
 }
 
 func (t *Theme) initFuncMap() {
