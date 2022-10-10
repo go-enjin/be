@@ -111,7 +111,7 @@ func (l *Layout) Reload() (err error) {
 				return
 			}
 
-			l.lastMods[entryName] = lastMod
+			l.lastMods[entryName] = 0 // lastMod
 			if l.cache[entryName], ee = l.Tmpl.New(entryName).Parse(string(data)); ee != nil {
 				e = ee
 				delete(l.lastMods, entryName)

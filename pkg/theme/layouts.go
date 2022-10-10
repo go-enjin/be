@@ -17,6 +17,7 @@ package theme
 import (
 	"fmt"
 	"html/template"
+	"strings"
 	"sync"
 
 	"github.com/go-enjin/be/pkg/log"
@@ -42,7 +43,12 @@ func NewLayouts(t *Theme) (layouts *Layouts, err error) {
 func (l *Layouts) Reload() (err error) {
 	var paths []string
 	if paths, err = l.t.FileSystem.ListDirs("layouts"); err != nil {
-		err = fmt.Errorf("error listing layouts: %v", err)
+		if strings.Contains(err.Error(), "no such file or directory") {
+			err = nil
+			return
+		} else {
+			err = fmt.Errorf("error listing layouts: %v", err)
+		}
 		return
 	}
 
