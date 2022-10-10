@@ -97,6 +97,14 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	if iconMap, ok := blockDataContent["icon"].(map[string]interface{}); ok {
 		icon := make(map[string]interface{})
 
+		if v, ok := iconMap["style"].(string); ok {
+			icon["Style"] = v
+		}
+
+		if v, ok := iconMap["float"].(string); ok {
+			icon["Float"] = v
+		}
+
 		if v, ok := iconMap["align"].(string); ok {
 			v = strings.ToLower(v)
 			switch v {
