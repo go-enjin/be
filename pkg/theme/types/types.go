@@ -101,5 +101,7 @@ type Format interface {
 
 type Theme interface {
 	FS() fs.FileSystem
+	GetParentTheme() (parent Theme)
+	GetBlockThemeNames() (names []string)
 	NewHtmlTemplate(name string) *template.Template
 }
