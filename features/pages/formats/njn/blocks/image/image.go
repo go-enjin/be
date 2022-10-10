@@ -98,8 +98,6 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			err = fmt.Errorf("invalid image block constraint: %v", v)
 			return
 		}
-	} else {
-		block["Constraint"] = "width"
 	}
 
 	if v, ok := data["fitting"].(string); ok {
