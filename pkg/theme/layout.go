@@ -68,6 +68,9 @@ func (l *Layout) Reload() (err error) {
 	walker = func(p string) (e error) {
 		var entries []string
 		if entries, e = l.fileSystem.ListAllFiles(p); e != nil {
+			if strings.Contains(e.Error(), "no such file or directory") {
+				e = nil
+			}
 			return
 		}
 		for _, entry := range entries {
