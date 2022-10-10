@@ -1,0 +1,58 @@
+<!-- carousel block -->
+{{ if eq .Depth 0 }}
+<article {{ template "partials/njn/block/carousel-attributes.tmpl" . }}>
+{{ else }}
+<section {{ template "partials/njn/block/carousel-attributes.tmpl" . }}>
+{{ end }}
+    <div class="content">
+        {{ template "partials/njn/block-header.tmpl" . }}
+        <section>
+            {{ range $idx, $card := .Cards }}
+                <div class="anchor" data-card="{{ $idx }}" id="{{ $.Tag }}--{{ $card.Tag  }}"></div>
+            {{ end }}
+            <div class="carousel">
+                <ol class="cards">
+                    {{ range $idx, $card := .Cards }}
+                        <li data-card="{{ $idx }}">
+                            {{ template "partials/njn/block-switch.tmpl" $card }}
+                        </li>
+                    {{ end }}
+                </ol>
+                <nav>
+                    <ol>
+                        {{ range $idx, $card := .Cards }}
+                            <li>
+                                <a data-card="{{ $idx }}" class="previous" href="#{{ $.Tag }}--{{ $card.PreviousCard.Tag }}">
+                                    Go to previous card
+                                </a>
+                                <a data-card="{{ $idx }}" class="next" href="#{{ $.Tag }}--{{ $card.NextCard.Tag }}">
+                                    Go to next card
+                                </a>
+                            </li>
+                        {{ end }}
+                    </ol>
+                </nav>
+            </div>
+            <nav class="dots">
+                <ol>
+                    {{ range $idx, $card := .Cards }}
+                    <li>
+                        <a href="#{{ $.Tag }}--{{ $card.Tag}}">
+                            <span class="sr-only">Go to card number {{ add $idx 1 }}</span>
+                            <i class="fa-solid fa-circle"></i>
+                        </a>
+                    </li>
+                    {{ end }}
+                </ol>
+            </nav>
+        </section>
+        {{ template "partials/njn/block-footer.tmpl" . }}
+        {{ if .JumpTop }}
+            <a class="jump-top" href="#top">top</a>
+        {{ end }}
+    </div>
+{{ if ne .Depth 0 }}
+</section>
+{{ else }}
+</article>
+{{ end }}

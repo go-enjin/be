@@ -1,0 +1,8 @@
+<meter
+        {{- elementAttributes . -}}
+        {{- if .Min   }} min="{{ .Min }}"{{- end -}}
+        {{- if .Max   }} max="{{ .Max }}"{{- end -}}
+        {{- if .Value }} value="{{ .Value }}"{{- end -}}
+>
+    {{- template "partials/njn/field-list.tmpl" .Text -}}
+</meter>

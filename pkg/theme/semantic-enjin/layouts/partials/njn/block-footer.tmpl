@@ -1,0 +1,18 @@
+        {{ if or .Footer .Footnotes .LinkHref }}
+            <footer>
+                {{ if .Footer }}{{ template "partials/njn/field-list.tmpl" .Footer }}{{ end }}
+                {{ if .Footnotes }}
+                    <div class="footnotes">
+                        {{ range $v := .Footnotes }}
+                            <p id="footnote--{{ $v.BlockIndex }}--{{ $v.Index }}">
+                                <a class="footnote" href="#mention--{{ $v.BlockIndex }}--{{ $v.Index }}">[{{ $v.Index }}]</a>
+                                <q>{{ .Text }}</q>: {{ range $note := .Note }}{{ $note }}{{ end }}
+                            </p>
+                        {{ end }}
+                    </div>
+                {{ end }}
+                {{ if .LinkHref }}
+                    <a class="decorated" href="{{ .LinkHref }}"{{- if .LinkTarget }} target="{{ .LinkTarget }}"{{ end -}}>{{ .LinkText }}</a>
+                {{ end }}
+            </footer>
+        {{ end }}

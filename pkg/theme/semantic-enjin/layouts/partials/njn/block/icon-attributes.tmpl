@@ -1,0 +1,3 @@
+{{- template "partials/njn/block-attributes.tmpl" . -}}
+{{- if .Icon.Style }}{{- printf " data-icon-style=\"%v\"" .Icon.Style | asHTMLAttr -}}{{- end }}
+{{- if .Icon.Float }}{{- printf " data-icon-float=\"%v\"" .Icon.Float | asHTMLAttr -}}{{- end }}

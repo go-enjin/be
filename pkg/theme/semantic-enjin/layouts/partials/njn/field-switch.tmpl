@@ -1,0 +1,103 @@
+{{ if eq (printf "%T" .) "template.HTML" }}
+    {{- . -}}
+{{ else if eq (printf "%T" .) "string" }}
+    {{- . -}}
+{{ else if ne (printf "%T" .) "map[string]interface {}" }}
+    {{ ErrorF "field structure: %T not supported in field-switch.tmpl" . }}
+{{ else if eq .Type "a" }}
+    {{- template "partials/njn/field/a.tmpl" . -}}
+{{ else if eq .Type "abbr" }}
+    {{- template "partials/njn/field/abbr.tmpl" . -}}
+{{ else if eq .Type "b" }}
+    {{- template "partials/njn/field/b.tmpl" . -}}
+{{ else if eq .Type "blockquote" }}
+    {{- template "partials/njn/field/blockquote.tmpl" . -}}
+{{ else if eq .Type "br" }}
+    {{- template "partials/njn/field/br.tmpl" . -}}
+{{ else if eq .Type "button" }}
+    {{- template "partials/njn/field/button.tmpl" . -}}
+{{ else if eq .Type "cite" }}
+    {{- template "partials/njn/field/cite.tmpl" . -}}
+{{ else if eq .Type "code" }}
+    {{- template "partials/njn/field/code.tmpl" . -}}
+{{ else if eq .Type "dd" }}
+    {{- template "partials/njn/field/dd.tmpl" . -}}
+{{ else if eq .Type "del" }}
+    {{- template "partials/njn/field/del.tmpl" . -}}
+{{ else if eq .Type "details" }}
+    {{- template "partials/njn/field/details.tmpl" . -}}
+{{ else if eq .Type "dfn" }}
+    {{- template "partials/njn/field/dfn.tmpl" . -}}
+{{ else if eq .Type "dl" }}
+    {{- template "partials/njn/field/dl.tmpl" . -}}
+{{ else if eq .Type "dt" }}
+    {{- template "partials/njn/field/dt.tmpl" . -}}
+{{ else if eq .Type "em" }}
+    {{- template "partials/njn/field/em.tmpl" . -}}
+{{ else if eq .Type "fa-icon" }}
+    {{- template "partials/njn/field/fa-icon.tmpl" . -}}
+{{ else if eq .Type "fieldset" }}
+    {{- template "partials/njn/field/fieldset.tmpl" . -}}
+{{ else if eq .Type "figure" }}
+    {{- template "partials/njn/field/figure.tmpl" . -}}
+{{ else if eq .Type "footnote" }}
+    {{- template "partials/njn/field/footnote.tmpl" . -}}
+{{ else if eq .Type "hr" }}
+    {{- template "partials/njn/field/hr.tmpl" . -}}
+{{ else if eq .Type "i" }}
+    {{- template "partials/njn/field/i.tmpl" . -}}
+{{ else if eq .Type "img" }}
+    {{- template "partials/njn/field/img.tmpl" . -}}
+{{ else if eq .Type "input" }}
+    {{- template "partials/njn/field/input.tmpl" . -}}
+{{ else if eq .Type "ins" }}
+    {{- template "partials/njn/field/ins.tmpl" . -}}
+{{ else if eq .Type "kbd" }}
+    {{- template "partials/njn/field/kbd.tmpl" . -}}
+{{ else if eq .Type "mark" }}
+    {{- template "partials/njn/field/mark.tmpl" . -}}
+{{ else if eq .Type "meter" }}
+    {{- template "partials/njn/field/meter.tmpl" . -}}
+{{ else if eq .Type "ol" }}
+    {{- template "partials/njn/field/ol.tmpl" . -}}
+{{ else if eq .Type "optgroup" }}
+    {{- template "partials/njn/field/optgroup.tmpl" . -}}
+{{ else if eq .Type "option" }}
+    {{- template "partials/njn/field/option.tmpl" . -}}
+{{ else if eq .Type "p" }}
+    {{- template "partials/njn/field/p.tmpl" . -}}
+{{ else if eq .Type "picture" }}
+    {{- template "partials/njn/field/picture.tmpl" . -}}
+{{ else if eq .Type "pre" }}
+    {{- template "partials/njn/field/pre.tmpl" . -}}
+{{ else if eq .Type "progress" }}
+    {{- template "partials/njn/field/progress.tmpl" . -}}
+{{ else if eq .Type "q" }}
+    {{- template "partials/njn/field/q.tmpl" . -}}
+{{ else if eq .Type "s" }}
+    {{- template "partials/njn/field/s.tmpl" . -}}
+{{ else if eq .Type "samp" }}
+    {{- template "partials/njn/field/samp.tmpl" . -}}
+{{ else if eq .Type "select" }}
+    {{- template "partials/njn/field/select.tmpl" . -}}
+{{ else if eq .Type "small" }}
+    {{- template "partials/njn/field/small.tmpl" . -}}
+{{ else if eq .Type "span" }}
+    {{- template "partials/njn/field/span.tmpl" . -}}
+{{ else if eq .Type "strong" }}
+    {{- template "partials/njn/field/strong.tmpl" . -}}
+{{ else if eq .Type "sub" }}
+    {{- template "partials/njn/field/sub.tmpl" . -}}
+{{ else if eq .Type "sup" }}
+    {{- template "partials/njn/field/sup.tmpl" . -}}
+{{ else if eq .Type "table" }}
+    {{- template "partials/njn/field/table.tmpl" . -}}
+{{ else if eq .Type "td" }}
+    {{- template "partials/njn/field/table.tmpl" . -}}
+{{ else if eq .Type "u" }}
+    {{- template "partials/njn/field/u.tmpl" . -}}
+{{ else if eq .Type "ul" }}
+    {{- template "partials/njn/field/ul.tmpl" . -}}
+{{ else if eq .Type "var" }}
+    {{- template "partials/njn/field/var.tmpl" . -}}
+{{ end }}

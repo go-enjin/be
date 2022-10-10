@@ -1,0 +1,6 @@
+{{ elementOpen . }}
+{{ template "partials/njn/field-list.tmpl" .Text }}
+{{ if .Caption -}}
+    <figcaption>{{ template "partials/njn/field-list.tmpl" .Caption }}</figcaption>
+{{- end -}}
+{{ elementClose . }}

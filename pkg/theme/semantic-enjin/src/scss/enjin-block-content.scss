@@ -1,0 +1,40 @@
+:root {
+  --block--content--monospace--font-family: var(--page--monospace--font-family);
+  --block--content--footnote--font-family: var(--page--content--font-family);
+  --block--content--footnote--font-size:   11px;
+}
+
+
+[data-block-type='content'] > .content > section a:is(:focus,:visited,:active,:hover),
+[data-block-type='content'] > .content > section a {
+  color: var(--style--fg);
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+}
+
+[data-block-type='content'] > .content > section a:hover {
+  opacity: 0.8;
+}
+
+[data-block-type='content'] > .content > :is(section,footer) a.footnote:focus,
+[data-block-type='content'] > .content > :is(section,footer) a.footnote:visited,
+[data-block-type='content'] > .content > :is(section,footer) a.footnote:active,
+[data-block-type='content'] > .content > :is(section,footer) a.footnote:hover,
+[data-block-type='content'] > .content > :is(section,footer) a.footnote {
+  color:            var(--style--accent--fg);
+  background-color: var(--style--accent--bg);
+  font-family:      var(--block--content--monospace--font-family);
+}
+
+[data-block-type='content'] > .content > footer .footnotes {
+  padding:     var(--page--flex--gap);
+  font-size:   var(--block--content--footnote--font-size);
+  font-family: var(--block--content--footnote--font-family);
+}
+
+[data-block-type='content'] > .content > footer .footnotes > q:first-of-type {
+  font-weight: bold;
+  font-family: var(--block--content--monospace--font-family);
+}

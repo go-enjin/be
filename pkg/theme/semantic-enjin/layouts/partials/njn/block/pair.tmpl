@@ -1,0 +1,23 @@
+<!-- pair block -->
+{{ if eq .Depth 0 }}
+<article {{- template "partials/njn/block/pair-attributes.tmpl" . -}}>
+{{ else }}
+<section {{- template "partials/njn/block/pair-attributes.tmpl" . -}}>
+{{ end }}
+    <div class="content">
+        {{ template "partials/njn/block-header.tmpl" . }}
+        {{ if .Section }}
+            <section>
+                {{ template "partials/njn/block-list.tmpl" .Section }}
+            </section>
+        {{ end }}
+        {{ template "partials/njn/block-footer.tmpl" . }}
+        {{ if .JumpTop }}
+            <a class="jump-top" href="#top">top</a>
+        {{ end }}
+    </div>
+{{ if ne .Depth 0 }}
+</section>
+{{ else }}
+</article>
+{{ end }}

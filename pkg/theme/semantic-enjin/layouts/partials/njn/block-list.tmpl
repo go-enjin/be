@@ -1,0 +1,7 @@
+{{- if eq (printf "%T" .) "map[string]interface {}" -}}
+    {{- template "partials/njn/block-switch.tmpl" . -}}
+{{- else -}}
+    {{- range $block := . -}}
+        {{- template "partials/njn/block-switch.tmpl" $block -}}
+    {{- end -}}
+{{- end -}}

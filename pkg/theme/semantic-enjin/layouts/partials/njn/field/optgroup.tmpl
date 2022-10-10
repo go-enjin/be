@@ -1,0 +1,6 @@
+<optgroup
+{{- if .Label }} label="{{ .Label }}"{{- end -}}
+{{- elementAttributes . -}}
+>
+{{- template "partials/njn/field-list.tmpl" .Options -}}
+</optgroup>

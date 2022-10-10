@@ -1,0 +1,22 @@
+<!-- card block -->
+{{ if eq .Depth 0 }}
+<article {{ template "partials/njn/block/card-attributes.tmpl" . }}>
+{{ else }}
+<section {{ template "partials/njn/block/card-attributes.tmpl" . }}>
+{{ end }}
+    <!-- This anchor thing is broken, need better way of making links from within templates,
+        or prepare the correct field structure and use field-switch.tmpl to do the work -->
+    {{ if .LinkHref -}}
+    <a class="content context" href="{{ .LinkHref }}"{{- if .LinkTarget }} target="{{ .LinkTarget }}"{{- end -}}>
+        {{ template "partials/njn/block/card-content.tmpl" . }}
+    </a>
+    {{- else -}}
+    <div class="content context">
+        {{ template "partials/njn/block/card-content.tmpl" . }}
+    </div>
+{{- end }}
+{{ if ne .Depth 0 }}
+</section>
+{{ else }}
+</article>
+{{ end }}

@@ -1,0 +1,57 @@
+<!-- toc block -->
+{{ if eq .Depth 0 }}
+<article {{- template "partials/njn/block/sidebar-attributes.tmpl" . -}}>
+{{ else }}
+<section {{- template "partials/njn/block/sidebar-attributes.tmpl" . -}}>
+{{ end }}
+    <div class="content">
+        {{ template "partials/njn/block-header.tmpl" . }}
+        <section>
+            {{- if eq .PageTitle "true" }}
+                <a href="#top">{{ .Context.Title }}</a>
+            {{ end -}}
+            <ol>
+                {{ range $item := .Items }}
+                    <li{{- if eq $item.Title $.TocHeading }} class="toc"{{ end -}}>
+                        {{ $item | asHTML }}
+                        {{ if $item.Children }}
+                            <ol>
+                                {{ range $child := $item.Children }}
+                                    <li>
+                                        {{ $child | asHTML }}
+                                        {{ if $child.Children }}
+                                            <ol>
+                                                {{ range $grandchild := $child.Children }}
+                                                    <li>
+                                                        {{ $grandchild | asHTML }}
+                                                        {{ if $grandchild.Children }}
+                                                            <ol>
+                                                                {{ range $greatgrandchild := $grandchild.Children }}
+                                                                    <li>
+                                                                        {{ $greatgrandchild | asHTML }}
+                                                                    </li>
+                                                                {{ end }}
+                                                            </ol>
+                                                        {{ end }}
+                                                    </li>
+                                                {{ end }}
+                                            </ol>
+                                        {{ end }}
+                                    </li>
+                                {{ end }}
+                            </ol>
+                        {{ end }}
+                    </li>
+                {{ end }}
+            </ol>
+        </section>
+        {{ template "partials/njn/block-footer.tmpl" . }}
+        {{ if .JumpTop }}
+            <a class="jump-top" href="#top">top</a>
+        {{ end }}
+    </div>
+{{ if ne .Depth 0 }}
+</section>
+{{ else }}
+</article>
+{{ end }}

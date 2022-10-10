@@ -1,0 +1,2 @@
+{{- template "partials/njn/block-attributes.tmpl" . -}}
+{{- if .PairOrder }}{{- printf " data-pair-order=\"%v\"" .PairOrder | asHTMLAttr -}}{{- end }}

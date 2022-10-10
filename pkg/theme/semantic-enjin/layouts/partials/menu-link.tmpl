@@ -1,0 +1,9 @@
+{{- if .Href -}}
+    <a href="{{- .Href -}}" {{- elementAttributes . -}}>
+        {{- .Text -}}
+    </a>
+{{- else -}}
+    <span {{- elementAttributes . -}}>
+        {{- .Text -}}
+    </span>
+{{- end -}}

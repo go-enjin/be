@@ -1,0 +1,11 @@
+{{- elementOpen . -}}
+{{- if .Lines }}
+    <ol>
+        {{- range $line := .Lines }}
+            <li>{{ $line }}</li>
+        {{- end -}}
+    </ol>
+{{- else -}}
+    {{- template "partials/njn/field-list.tmpl" .Text -}}
+{{- end -}}
+{{- elementClose . -}}

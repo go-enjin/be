@@ -1,0 +1,149 @@
+/* cosmetic icon blocks */
+
+:root {
+  --block--icon--dark--bg:         rgba(255,255,255,0.54);
+  --block--icon--dark--fg:         rgba(0,0,0,0.34);
+  --block--icon--dark--accent--bg: #a1a1a1;
+  --block--icon--dark--text--fg:   #ffffff;
+
+  --block--icon--light--bg:         rgba(0,0,0,0.77);
+  --block--icon--light--fg:         rgba(0,0,0,0.34);
+  --block--icon--light--accent--bg: #a1a1a1;
+  --block--icon--light--text--fg:   #000000;
+
+  --block--icon--small--font-size:  16px;
+  --block--icon--small--size:       25px;
+  --block--icon--medium--font-size: 25px;
+  --block--icon--medium--size:      34px;
+  --block--icon--large--font-size:  34px;
+  --block--icon--large--size:       50px;
+
+  --block--icon--fg:         var(--block--icon--light--fg);
+  --block--icon--bg:         var(--block--icon--light--bg);
+  --block--icon--accent--bg: var(--block--icon--light--accent--bg);
+  --block--icon--size:       var(--block--icon--medium--size);
+  --block--icon--font-size:  var(--block--icon--medium--font-size);
+}
+
+[data-block-type='icon'] {
+  width: 100%;
+}
+
+[data-block-type='icon'][data-icon-background='clear']:is(
+  :not([data-block-profile]),
+  [data-block-profile='full--full'],
+  [data-block-profile='full--outer'],
+  [data-block-profile='full--inner'],
+  [data-block-profile='outer--outer'],
+  [data-block-profile='outer--inner']
+) {
+  --style--bg: transparent;
+}
+
+[data-block-type='icon'] > .content.content {
+  display: flex;
+}
+
+[data-block-type='icon'][data-icon-float] > .content {
+  width: 100%;
+  height: auto;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  z-index: var(--z--page--underlay);
+}
+
+[data-block-type='icon'][data-icon-float='above'] > .content {
+ transform: translate(-50%,-54%);
+}
+
+[data-block-type='icon'][data-icon-float='up'] > .content {
+  transform: translate(-50%,10%);
+}
+
+[data-block-type='icon'][data-icon-float='down'] > .content {
+  transform: translate(-50%,54%);
+}
+
+[data-block-type='icon']:not([data-icon-wrap])   > .content,
+[data-block-type='icon'][data-icon-wrap='false'] > .content {
+  flex-wrap: nowrap;
+}
+
+[data-block-type='icon'][data-icon-wrap='true'] > .content {
+  flex-wrap: wrap;
+}
+
+[data-block-type='icon']:not([data-icon-direction]) > .content,
+[data-block-type='icon'][data-icon-direction='row'] > .content {
+  flex-direction: row;
+}
+
+[data-block-type='icon'][data-icon-direction='column'] > .content {
+  flex-direction: column;
+}
+
+[data-block-type='icon'][data-icon-align='start'] > .content {
+  align-content: start;
+  justify-content: start;
+  align-items: start;
+}
+
+[data-block-type='icon']:not([data-icon-align]) > .content,
+[data-block-type='icon'][data-icon-align='center'] > .content {
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+}
+
+[data-block-type='icon'][data-icon-align='end'] > .content {
+  align-content: end;
+  justify-content: end;
+  align-items: end;
+}
+
+[data-block-type='icon']:not([data-icon-style]),
+[data-block-type='icon'][data-icon-style='light'] {
+  --block--icon--fg:         var(--block--icon--light--fg);
+  --block--icon--bg:         var(--block--icon--light--bg);
+  --block--icon--accent--bg: var(--block--icon--light--accent--bg);
+  --style--fg:               var(--block--icon--light--text--fg);
+}
+
+[data-block-type='icon'][data-icon-style='dark'] {
+  --block--icon--fg:         var(--block--icon--dark--fg);
+  --block--icon--bg:         var(--block--icon--dark--bg);
+  --block--icon--accent--bg: var(--block--icon--dark--accent--bg);
+  --style--fg:               var(--block--icon--dark--text--fg);
+}
+
+[data-block-type='icon'] > .content :is(i,.icon) {
+  display: inline-block;
+  width:     var(--block--icon--size);
+  height:    var(--block--icon--size);
+  font-size: var(--block--icon--font-size);
+  color:     var(--block--icon--fg);
+}
+
+/* small */
+
+[data-block-type='icon'][data-fa-size='small'] {
+  --block--icon--size:  var(--block--icon--small--size);
+}
+
+/* default, medium */
+
+[data-block-type='icon']:not([data-fa-size]),
+[data-block-type='icon'][data-fa-size='medium'] {
+  --block--icon--size:  var(--block--icon--medium--size);
+}
+
+/* large */
+
+[data-block-type='icon'][data-fa-size='large'] {
+  --block--icon--size:  var(--block--icon--large--size);
+}
+
+/* custom icons */
+
+@import "enjin-block-icon--scrolling-mouse";

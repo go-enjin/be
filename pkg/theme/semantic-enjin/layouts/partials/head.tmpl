@@ -1,0 +1,86 @@
+<head>
+    <title>{{ if .SiteTag }}{{ .SiteTag }}: {{ end }}{{ .Title }}</title>
+    <meta charset="utf-8"/>
+    <meta name="robots" content="noindex"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+    <meta name="title" content="{{ .Title }}"/>
+    <meta property="og:title" content="{{ .Title }}"/>
+    <meta property="og:site_name" content="{{ .SiteName }}"/>
+    <meta property="og:image" content="/media/logo-000.png"/>
+    <meta property="og:property" content="website"/>
+    <meta property='og:url' content='{{ .BaseUrl }}'/>
+    <meta property='og:website' content='{{ .BaseUrl }}'/>
+    <!-- TODO: og:locale and og:locale:alternate, see: https://developers.facebook.com/docs/sharing/webmasters -->
+    <meta name="description" content="{{ .Description }}"/>
+    {{- if .Canonical }}
+        <meta rel="canonical" content="{{ .Canonical }}"/>
+    {{ end -}}
+    <meta property='twitter:card' content='{{ .Description }}'/>
+    {{- if .TwitterSite }}
+        <meta property='twitter:site' content='{{ .TwitterSite }}'/>
+    {{ end -}}
+    {{- if .TwitterCreator }}
+        <meta property='twitter:creator' content='{{ .TwitterCreator }}'/>
+    {{ end -}}
+    {{- if .SiteLoadingEffect }}
+        <style>
+            @keyframes loading {
+                from {
+                    opacity: 1;
+                    visibility: visible;
+                }
+                50% {
+                    opacity: 0.5;
+                }
+                to {
+                    opacity: 0;
+                    visibility: hidden;
+                    display: none;
+                }
+            }
+
+            body::after {
+                content: '';
+                display: flex;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: #ffffff;
+                z-index: 1000;
+                animation: loading 0.34s 0.54s;
+                animation-fill-mode: forwards;
+            }
+        </style>
+    {{ end -}}
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Source%20Sans%20Pro&amp;family=Source%20Serif%20Pro"/>
+    <link rel="stylesheet" href="/fontawesome-free-6.2.0-web/css/all.css"/>
+
+    <link rel="stylesheet" href="{{ fsUrl "/css/semantic-enjin.css" }}"/>
+    {{ if gt (len .Theme.RootStyles) 0 }}
+        <style>
+            :root {
+            {{- range $v := .Theme.RootStyles }}
+            {{ $v -}}
+            {{- end }}
+            }
+        </style>
+    {{ end }}
+    {{ if gt (len .Theme.BlockStyles) 0 }}
+        <style>
+            {{- range $k, $styles := .Theme.BlockStyles }}
+            [data-block-theme="{{ $k }}"] {
+                {{- range $style := $styles }}
+                {{ $style }}
+                {{- end }}
+            }
+            {{- end }}
+        </style>
+    {{ end }}
+
+
+</head>

@@ -1,0 +1,4 @@
+{{- template "partials/njn/block-attributes.tmpl" . -}}
+{{- if .PageTitle }}{{- printf " data-toc-page-title=\"%v\"" .PageTitle | asHTMLAttr -}}{{- end }}
+{{- if .WithSelf }}{{- printf " data-toc-with-self=\"%v\"" .WithSelf | asHTMLAttr -}}{{- end }}
+{{- if .Counter }}{{- printf " data-toc-counter=\"%v\"" .Counter | asHTMLAttr -}}{{- end }}

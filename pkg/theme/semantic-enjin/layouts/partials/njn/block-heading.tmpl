@@ -1,0 +1,7 @@
+        {{ if .Heading }}
+            {{ if .WithinAside }}
+                <div class="h{{ .HeadingLevel }}">{{ template "partials/njn/field-list.tmpl" .Heading }}</div>
+            {{ else }}
+                <h{{ .HeadingLevel }}>{{ template "partials/njn/field-list.tmpl" .Heading }}</h{{ .HeadingLevel }}>
+            {{ end }}
+        {{ end }}

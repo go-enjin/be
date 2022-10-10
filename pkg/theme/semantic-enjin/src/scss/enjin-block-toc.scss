@@ -1,0 +1,31 @@
+
+[data-block-type='toc'] > .content.content > section ol {
+  counter-reset: toc-item;
+}
+
+[data-block-type='toc'] > .content.content > section ol > li {
+  counter-increment: toc-item;
+}
+
+[data-block-type='toc'] > .content.content > section ol > li.toc {
+  counter-set: toc-item 0;
+}
+
+[data-block-type='toc'] > .content.content > section ol > li::marker {
+  font-size: 12px;
+}
+
+/* single item counters, ie: 1. */
+
+:is(
+  [data-block-type='toc']:not([data-toc-counter]),
+  [data-block-type='toc'][data-toc-counter='single']
+) > .content > section ol > li::marker {
+  content: counter(toc-item) '. ';
+}
+
+/* nested item counters, ie: 1.2.1. */
+
+[data-block-type='toc'][data-toc-counter='nested'] > .content > section ol > li::marker {
+  content: counters(toc-item, '.') '. ';
+}

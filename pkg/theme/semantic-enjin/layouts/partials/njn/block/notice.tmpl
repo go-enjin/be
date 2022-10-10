@@ -1,0 +1,37 @@
+<!-- notice block -->
+{{ if eq .Depth 0 }}
+<article {{- template "partials/njn/block/notice-attributes.tmpl" . -}}>
+{{ else }}
+<section {{- template "partials/njn/block/notice-attributes.tmpl" . -}}>
+{{ end }}
+    <div class="content">
+        {{- if eq .Dismiss "true" }}
+            <input type="checkbox" name="dismiss-notice"/>
+        {{- end -}}
+        <details{{- if eq .Open "true" }} open{{- end -}}>
+            {{- if .Summary }}
+                <summary>
+                    {{ template "partials/njn/field-list.tmpl" .Summary }}
+                    {{- if eq .JumpLink "true" }}
+                        <a class="jump-link" href="#{{ .Tag }}">
+                            <span class="sr-only">permalink</span>
+                        </a>
+                    {{- end -}}
+                </summary>
+            {{ end -}}
+            {{- if .Section }}
+                <section>
+                    {{ template "partials/njn/field-list.tmpl" .Section }}
+                </section>
+            {{- end -}}
+            {{ template "partials/njn/block-footer.tmpl" . }}
+            {{ if eq .JumpTop "true" }}
+                <a class="jump-top" href="#top">top</a>
+            {{ end }}
+        </details>
+    </div>
+{{ if ne .Depth 0 }}
+</section>
+{{ else }}
+</article>
+{{ end }}
