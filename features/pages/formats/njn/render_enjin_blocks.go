@@ -126,7 +126,14 @@ func (re *RenderEnjin) PrepareGenericBlock(typeName string, data map[string]inte
 	preparedData["Type"] = typeName
 	preparedData["Depth"] = re.GetCurrentDepth()
 	preparedData["BlockIndex"] = re.blockCount
-	preparedData["Theme"], _ = data["theme"]
+	if bt, ok := data["theme"].(string); ok {
+		if beStrings.StringInStrings(bt, re.Theme.GetBlockThemeNames()...) {
+			preparedData["Theme"] = bt
+		} else {
+			log.ErrorF("unknown njn block theme: %v", bt)
+		}
+	}
+
 	preparedData["BlockBackground"], _ = data["block-background"]
 	preparedData["ParallaxImage"], _ = data["parallax-image"]
 	preparedData["ParallaxTheme"], _ = data["parallax-theme"]
