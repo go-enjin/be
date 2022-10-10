@@ -68,44 +68,10 @@ func (l *Layouts) Reload() (err error) {
 			return
 		} else {
 			l.setLayout(name, layout)
-			log.DebugF("%v theme: loaded %v layout", l.t.Config.Name, layout.Name)
+			log.TraceF("%v theme: loaded %v layout", l.t.Config.Name, layout.Name)
 		}
 	}
 
-	if partials := l.getLayout("partials"); partials != nil {
-		l.RLock()
-		for k, layout := range l.m {
-			if k == "partials" {
-				continue
-			}
-			// add partials to other layouts
-			for _, tmpl := range partials.Tmpl.Templates() {
-				if _, err = layout.Tmpl.AddParseTree(tmpl.Name(), tmpl.Tree); err != nil {
-					return
-				}
-			}
-		}
-		l.RUnlock()
-	} else {
-		log.WarnF("partials layout not found")
-	}
-
-	if defaultLayout := l.getLayout("_default"); defaultLayout != nil {
-		l.RLock()
-		for k, layout := range l.m {
-			switch k {
-			case "partials", "_default":
-				continue
-			}
-			// add defaults to other layouts
-			for _, tmpl := range defaultLayout.Tmpl.Templates() {
-				if _, err = layout.Tmpl.AddParseTree(tmpl.Name(), tmpl.Tree); err != nil {
-					return
-				}
-			}
-		}
-		l.RUnlock()
-	}
 	return
 }
 
@@ -134,7 +100,57 @@ func (l *Layouts) AddPartialsToTemplate(tt *template.Template) {
 				log.ErrorF("error adding partials to template: %v", err)
 			}
 		}
-	} else {
-		log.ErrorF("partials layout not found")
+	}
+}
+
+func (l *Layouts) AddLayoutsToTemplate(tt *template.Template) {
+	l.RLock()
+	defer l.RUnlock()
+
+	partials := l.getLayout("partials")
+	defaultLayout := l.getLayout("_default")
+
+	if defaultLayout != nil {
+		if partials != nil {
+			for _, tmpl := range partials.Tmpl.Templates() {
+				if _, err := defaultLayout.Tmpl.AddParseTree(tmpl.Name(), tmpl.Tree); err != nil {
+					log.ErrorF("error adding %v to template: %v", tmpl.Name(), err)
+				} else {
+					// log.DebugF("adding %v template to _default layout", tmpl.Name())
+				}
+			}
+		}
+	}
+
+	for name, layout := range l.m {
+		switch name {
+		case "partials", "_default":
+			continue
+		}
+		if partials != nil {
+			for _, tmpl := range partials.Tmpl.Templates() {
+				if _, err := tt.AddParseTree(tmpl.Name(), tmpl.Tree); err != nil {
+					log.ErrorF("error adding %v to template: %v", tmpl.Name(), err)
+				} else {
+					// log.DebugF("adding %v template to %v layout", tmpl.Name(), name)
+				}
+			}
+		}
+		if defaultLayout != nil {
+			for _, tmpl := range defaultLayout.Tmpl.Templates() {
+				if _, err := tt.AddParseTree(tmpl.Name(), tmpl.Tree); err != nil {
+					log.ErrorF("error adding %v to template: %v", tmpl.Name(), err)
+				} else {
+					// log.DebugF("adding %v template to %v layout", tmpl.Name(), name)
+				}
+			}
+		}
+		for _, tmpl := range layout.Tmpl.Templates() {
+			if _, err := tt.AddParseTree(tmpl.Name(), tmpl.Tree); err != nil {
+				log.ErrorF("error adding %v template to %v layout: %v", tmpl.Name(), name, err)
+			} else {
+				// log.DebugF("adding %v template to %v layout", tmpl.Name(), name)
+			}
+		}
 	}
 }
