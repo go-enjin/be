@@ -126,6 +126,11 @@ func (re *RenderEnjin) PrepareGenericBlock(typeName string, data map[string]inte
 	preparedData["Type"] = typeName
 	preparedData["Depth"] = re.GetCurrentDepth()
 	preparedData["BlockIndex"] = re.blockCount
+	preparedData["Theme"], _ = data["theme"]
+	preparedData["BlockBackground"], _ = data["block-background"]
+	preparedData["ParallaxImage"], _ = data["parallax-image"]
+	preparedData["ParallaxTheme"], _ = data["parallax-theme"]
+	preparedData["ParallaxSize"], _ = data["parallax-size"]
 	if re.GetWithinAside() {
 		preparedData["WithinAside"] = "true"
 	}
