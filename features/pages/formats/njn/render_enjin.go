@@ -132,6 +132,14 @@ func (re *RenderEnjin) GetNjnTemplateContent(name string) (contents string, err 
 		contents = string(data)
 		re.cache[name] = contents
 		log.TraceF("caching new njn template: %v - %v", name, path)
+	} else if parent := re.Theme.GetParentTheme(); parent != nil {
+		if data, err = parent.FS().ReadFile(path); err == nil {
+			contents = string(data)
+			re.cache[name] = contents
+			log.TraceF("caching new parent njn template: %v - %v", name, path)
+		} else {
+			err = fmt.Errorf("parent njn template not found: %v, expected path: %v", name, path)
+		}
 	} else {
 		err = fmt.Errorf("njn template not found: %v, expected path: %v", name, path)
 	}
