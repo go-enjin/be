@@ -33,17 +33,16 @@ func DefaultTheme() *Theme {
 	if defaultThemeInstance != nil {
 		return defaultThemeInstance
 	}
-	dt := new(Theme)
-	dt.Path = "default"
-	dt.Name = "default"
-	var err error
-	if dt.FileSystem, err = beFsEmbed.New(dt.Path, defaultThemeEmbedFS); err != nil {
-		log.FatalF("error including defaultThemeFS: %v", err)
+	if f, err := beFsEmbed.New("default", defaultThemeEmbedFS); err != nil {
+		log.FatalF("error including semanticEnjinThemeFS: %v", err)
+	} else {
+		if dt, err := New("default", f); err != nil {
+			log.FatalF("error loading default theme: %v", err)
+		} else {
+			log.DebugF("included default theme")
+			defaultThemeInstance = dt
+			return dt
+		}
 	}
-	if err = dt.init(); err != nil {
-		log.FatalF("error initializing defaultThemeInstance: %v", err)
-	}
-	log.DebugF("included default theme")
-	defaultThemeInstance = dt
-	return dt
+	return nil
 }
