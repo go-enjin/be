@@ -1,4 +1,4 @@
-//go:build all || !excludeDefaultTheme
+//go:build all || semanticEnjinTheme
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //
@@ -33,7 +33,6 @@ func SemanticEnjinTheme() *Theme {
 	if semanticEnjinThemeInstance != nil {
 		return semanticEnjinThemeInstance
 	}
-
 	if f, err := beFsEmbed.New("semantic-enjin", semanticEnjinThemeFS); err != nil {
 		log.FatalF("error including semanticEnjinThemeFS: %v", err)
 	} else {
