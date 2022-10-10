@@ -150,7 +150,7 @@ func (t *Theme) renderErrorPage(title, summary, output string) (html template.HT
 
 func (t *Theme) RenderPage(ctx context.Context, p *page.Page) (data []byte, err error) {
 	ctx.Apply(p.Context.Copy())
-	ctx.Set("Theme", t.Config)
+	ctx.Set("Theme", t.GetConfig())
 
 	if output, e := t.RenderTemplateContent(ctx, p.Content); e == nil {
 		if format := page.GetFormat(p.Format); format != nil {
