@@ -164,3 +164,20 @@ func FinalizeNjnFieldAttributes(attrs map[string]interface{}) (attributes []temp
 	}
 	return
 }
+
+func DebugWalk(thing map[string]interface{}) (results string) {
+	var walk func(depth string, tgt map[string]interface{}) (out string)
+	walk = func(depth string, tgt map[string]interface{}) (out string) {
+		for k, v := range tgt {
+			switch t := v.(type) {
+			case map[string]interface{}:
+				out += walk(fmt.Sprintf("%v%v.", depth, k), t)
+			default:
+				out += fmt.Sprintf("%v%v\n", depth, k)
+			}
+		}
+		return
+	}
+	results = walk("| ", thing)
+	return
+}
