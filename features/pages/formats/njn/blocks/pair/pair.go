@@ -17,6 +17,7 @@ package pair
 import (
 	"fmt"
 	"html/template"
+	"strings"
 
 	"github.com/go-enjin/be/pkg/feature"
 	beStrings "github.com/go-enjin/be/pkg/strings"
@@ -89,6 +90,19 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 
 	block = re.PrepareGenericBlock("pair", data)
 
+	pairOrderReversed := false
+	if v, ok := data["pair-order"].(string); ok {
+		v = strings.ToLower(v)
+		switch v {
+		case "normal":
+		case "reverse":
+			pairOrderReversed = true
+		default:
+			err = fmt.Errorf("unknown pair block order requested: %v", v)
+			return
+		}
+		block["PairOrder"] = v
+	}
 	if heading, ok := re.PrepareBlockHeader(blockDataContent); ok {
 		block["Heading"] = heading
 	}
@@ -118,6 +132,16 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			}
 		}
 		re.DecCurrentDepth()
+
+		if pairOrderReversed {
+			combined = append(
+				[]map[string]interface{}{
+					combined[1],
+				},
+				combined[0],
+			)
+		}
+
 		block["Section"] = combined
 	}
 
