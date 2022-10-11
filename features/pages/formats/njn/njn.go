@@ -66,9 +66,10 @@ var (
 )
 
 var (
-	_ Feature      = (*CFeature)(nil)
-	_ MakeFeature  = (*CFeature)(nil)
-	_ types.Format = (*CFeature)(nil)
+	_ Feature             = (*CFeature)(nil)
+	_ MakeFeature         = (*CFeature)(nil)
+	_ types.Format        = (*CFeature)(nil)
+	_ feature.EnjinSystem = (*CFeature)(nil)
 )
 
 var _instance *CFeature
