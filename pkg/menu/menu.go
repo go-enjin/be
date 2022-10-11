@@ -14,6 +14,10 @@
 
 package menu
 
+import (
+	"encoding/json"
+)
+
 type Item struct {
 	Text string `json:"text"`
 	Href string `json:"href"`
@@ -24,3 +28,10 @@ type Item struct {
 }
 
 type Menu []Item
+
+func NewMenuFromJson(data []byte) (menu Menu, err error) {
+	if err = json.Unmarshal(data, &menu); err != nil {
+		return
+	}
+	return
+}
