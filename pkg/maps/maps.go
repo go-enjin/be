@@ -17,9 +17,11 @@ package maps
 import (
 	"fmt"
 	"html/template"
+	"sort"
 	"strconv"
 	"strings"
 
+	"github.com/fvbommel/sortorder"
 	"github.com/iancoleman/strcase"
 
 	"github.com/go-enjin/be/pkg/log"
@@ -179,5 +181,13 @@ func DebugWalk(thing map[string]interface{}) (results string) {
 		return
 	}
 	results = walk("| ", thing)
+	return
+}
+
+func SortedKeys[V interface{}](data map[string]V) (keys []string) {
+	for key, _ := range data {
+		keys = append(keys, key)
+	}
+	sort.Sort(sortorder.Natural(keys))
 	return
 }
