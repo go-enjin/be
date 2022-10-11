@@ -1,9 +1,9 @@
 <footer>
     <div class="page-column">
-        {{- if .PrimaryFooterMenu -}}
+        {{- if .SiteMenu.PrimaryFooterMenu -}}
             <nav id="primary--footer">
                 <ul>
-                    {{- range $item := .PrimaryFooterMenu -}}
+                    {{- range $item := .SiteMenu.PrimaryFooterMenu -}}
                         <li>
                             {{- template "partials/menu-link.tmpl" $item -}}
                             {{- if $item.SubMenu -}}
@@ -21,9 +21,9 @@
             </nav>
         {{- end -}}
         <nav id="secondary--footer">
-            {{- if .SecondaryFooterMenu -}}
+            {{- if .SiteMenu.SecondaryFooterMenu -}}
                 <ul>
-                    {{- range $item := .SecondaryFooterMenu -}}
+                    {{- range $item := .SiteMenu.SecondaryFooterMenu -}}
                         <li>
                             {{- template "partials/menu-link.tmpl" $item -}}
                             {{- if $item.SubMenu -}}
