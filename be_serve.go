@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/iancoleman/strcase"
+
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net"
@@ -159,6 +161,20 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 				return
 			}
 		}
+	}
+
+	allMenus := make(map[string]interface{})
+	for _, f := range e.eb.features {
+		if mp, ok := f.(feature.MenuProvider); ok {
+			for name, m := range mp.GetMenus() {
+				camel := strcase.ToCamel(name)
+				allMenus[camel] = m
+				log.DebugF("providing menu: %v (.SiteMenu.%v)", name, camel)
+			}
+		}
+	}
+	if len(allMenus) > 0 {
+		ctx.SetSpecific("SiteMenu", allMenus)
 	}
 
 	var data []byte
