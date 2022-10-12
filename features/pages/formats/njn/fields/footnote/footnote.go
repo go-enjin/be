@@ -88,19 +88,41 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 	data["BlockIndex"] = re.GetBlockIndex()
 	data["Index"] = re.AddFootnote(re.GetBlockIndex(), data)
 
-	if text, ok := field["text"].(string); ok {
-		data["Text"] = text
-	} else {
-		err = fmt.Errorf("footnote %v missing text (string only)", data["Index"])
+	var ok bool
+	var textValue interface{}
+	if textValue, ok = field["text"]; !ok {
+		err = fmt.Errorf("footnote %v missing text: %+v", data["Index"], field)
+	}
+	switch typedText := textValue.(type) {
+	case string:
+		if data["Text"], err = re.PrepareStringTags(typedText); err != nil {
+			return
+		}
+	case []interface{}:
+		if data["Text"], err = re.PrepareInlineFieldList(typedText); err != nil {
+			return
+		}
+	default:
+		err = fmt.Errorf("footnote %v unsupported text structure: %T", data["Index"], typedText)
 		return
 	}
 
-	if note, ok := field["note"].([]interface{}); ok {
-		if data["Note"], err = re.PrepareInlineFields(note); err != nil {
+	var noteValue interface{}
+	if noteValue, ok = field["note"]; !ok {
+		err = fmt.Errorf("footnote %v missing note", data["Index"])
+	}
+
+	switch typedNote := noteValue.(type) {
+	case string:
+		if data["Note"], err = re.PrepareStringTags(typedNote); err != nil {
 			return
 		}
-	} else {
-		err = fmt.Errorf("footnote %v missing note", data["Index"])
+	case []interface{}:
+		if data["Note"], err = re.PrepareInlineFields(typedNote); err != nil {
+			return
+		}
+	default:
+		err = fmt.Errorf("footnote %v unsupported note structure: %T", data["Index"], typedNote)
 		return
 	}
 

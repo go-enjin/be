@@ -238,7 +238,7 @@ func (re *RenderEnjin) AddFootnote(blockIndex int, field map[string]interface{})
 	return
 }
 
-func (re *RenderEnjin) GetFootnotes(blockIndex int) (footnotes []map[string]interface{}) {
+func (re *RenderEnjin) PrepareFootnotes(blockIndex int) (footnotes []map[string]interface{}, err error) {
 	footnotes, _ = re.footnotes[blockIndex]
 	return
 }

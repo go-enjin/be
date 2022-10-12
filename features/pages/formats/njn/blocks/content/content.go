@@ -98,7 +98,9 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		}
 	}
 
-	block["Footnotes"] = re.GetFootnotes(re.GetBlockIndex())
+	if block["Footnotes"], err = re.PrepareFootnotes(re.GetBlockIndex()); err != nil {
+		return
+	}
 
 	if footer, ok := re.PrepareBlockFooter(blockDataContent); ok {
 		block["Footer"] = footer

@@ -51,7 +51,7 @@ type EnjinRenderer interface {
 	DecHeadingLevel()
 
 	AddFootnote(blockIndex int, field map[string]interface{}) (index int)
-	GetFootnotes(blockIndex int) (footnotes []map[string]interface{})
+	PrepareFootnotes(blockIndex int) (footnotes []map[string]interface{}, err error)
 
 	ParseTypeName(data map[string]interface{}) (name string, ok bool)
 	ParseFieldAndTypeName(data interface{}) (field map[string]interface{}, name string, ok bool)

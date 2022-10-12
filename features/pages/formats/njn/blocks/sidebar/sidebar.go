@@ -130,7 +130,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		block["Aside"] = combined
 	}
 
-	// block["Footnotes"] = re.GetFootnotes(re.GetBlockIndex())
+	// block["Footnotes"] = re.PrepareFootnotes(re.GetBlockIndex())
 
 	if footer, ok := re.PrepareBlockFooter(blockDataContent); ok {
 		block["Footer"] = footer
