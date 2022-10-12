@@ -1,5 +1,5 @@
 {{- template "partials/njn/block-attributes.tmpl" . -}}
 {{- if .Constraint }}{{- printf " data-image-constraint=\"%v\"" .Constraint | asHTMLAttr -}}{{- end }}
-{{- if .Fit }}{{- printf " data-image-fit=\"%v\"" .Fit | asHTMLAttr -}}{{- end }}
+{{- if .Fitting }}{{- printf " data-image-fit=\"%v\"" .Fitting | asHTMLAttr -}}{{- end }}
 {{- if .Position }}{{- printf " data-image-position=\"%v\"" .Position | asHTMLAttr -}}{{- end }}
 {{- if .Size }}{{- printf " data-image-size=\"%v\"" .Size | asHTMLAttr -}}{{- end }}
