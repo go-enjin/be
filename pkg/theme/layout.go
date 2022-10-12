@@ -129,6 +129,17 @@ func (l *Layout) NewTemplate() (tmpl *template.Template, err error) {
 	return
 }
 
+func (l *Layout) NewTemplateFrom(parent *Layout) (tmpl *template.Template, err error) {
+	if parent != nil {
+		if tmpl, err = parent.NewTemplate(); err == nil {
+			err = l.Apply(tmpl)
+		}
+	} else {
+		tmpl, err = l.NewTemplate()
+	}
+	return
+}
+
 func (l *Layout) Apply(tt *template.Template) (err error) {
 	tt.Funcs(l.funcMap)
 	for _, name := range maps.SortedKeys(l.cache) {
