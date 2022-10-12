@@ -191,3 +191,21 @@ func SortedKeys[V interface{}](data map[string]V) (keys []string) {
 	sort.Sort(sortorder.Natural(keys))
 	return
 }
+
+func CamelizeKeys[V interface{}](data map[string]V) (camelized map[string]V) {
+	camelized = make(map[string]V)
+	for k, v := range data {
+		camel := strcase.ToCamel(k)
+		camelized[camel] = v
+	}
+	return
+}
+
+func KebabKeys[V interface{}](data map[string]V) (kebabed map[string]V) {
+	kebabed = make(map[string]V)
+	for k, v := range data {
+		kebab := strcase.ToKebab(k)
+		kebabed[kebab] = v
+	}
+	return
+}
