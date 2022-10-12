@@ -36,7 +36,7 @@
             <nav class="dots">
                 <ol>
                     {{ range $idx, $card := .Cards }}
-                    <li>
+                    <li data-card="{{ $idx }}">
                         <a href="#{{ $.Tag }}--{{ $card.Tag}}">
                             <span class="sr-only">Go to card number {{ add $idx 1 }}</span>
                             <i class="fa-solid fa-circle"></i>
