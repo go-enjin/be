@@ -51,9 +51,10 @@ func (t *Theme) NewHtmlTemplate(name string) (tmpl *template.Template, err error
 		if tmpl, err = parent.NewHtmlTemplate(name); err != nil {
 			return
 		}
+		// log.DebugF("starting %v template from theme %v", name, t.Config.Name)
 	} else {
 		tmpl = template.New(name).Funcs(t.FuncMap)
-		// log.DebugF("starting %v template from theme %v", name, t.Config.Name)
+		log.DebugF("starting %v template from theme %v", name, t.Config.Name)
 	}
 
 	var layoutsTmpl *template.Template
@@ -64,32 +65,37 @@ func (t *Theme) NewHtmlTemplate(name string) (tmpl *template.Template, err error
 	return
 }
 
-func (t *Theme) FindLayout(named string) (layout *Layout, name string, err error) {
+func (t *Theme) FindLayout(named string) (layout *Layout, name string, ok bool) {
 	if named == "" {
 		named = "_default"
 	}
 	name = named
-	if layout = t.Layouts.GetLayout(name); layout == nil {
-		if parent := t.GetParent(); parent != nil {
-			if layout = parent.Layouts.GetLayout(name); layout == nil {
-				err = fmt.Errorf("%v (%v) theme layout not found, expected: \"%v\"", t.Config.Name, parent.Config.Name, name)
-			} else {
-				log.DebugF("found layout in %v (%v) context: %v", t.Config.Name, parent.Config.Name, name)
-			}
-		} else {
-			err = fmt.Errorf("%v theme layout not found, expected: \"%v\"", t.Config.Name, name)
-		}
-	} else {
+
+	layout = t.Layouts.GetLayout(name)
+	if ok = layout != nil; ok {
 		log.DebugF("found layout in %v (%v) context: %v", t.Config.Name, t.Config.Parent, name)
 	}
 	return
 }
 
 func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *template.Template, err error) {
-	var ctxLayout *Layout
-	var layoutName string
-	if ctxLayout, layoutName, err = t.FindLayout(ctx.String("Layout", "_default")); err != nil {
-		return
+	var ok bool
+	var ctxLayout, parentLayout *Layout
+	layoutName := ctx.String("Layout", "_default")
+	if ctxLayout, layoutName, ok = t.FindLayout(layoutName); !ok {
+		if parent := t.GetParent(); parent != nil {
+			if ctxLayout, _, ok = parent.FindLayout(layoutName); !ok {
+				err = fmt.Errorf("%v layout not found in %v (%v)", layoutName, t.Name, parent.Name)
+				return
+			}
+		} else {
+			err = fmt.Errorf("%v layout not found in %v", layoutName, t.Name)
+			return
+		}
+	} else {
+		if parent := t.GetParent(); parent != nil {
+			parentLayout, _, _ = parent.FindLayout(layoutName)
+		}
 	}
 
 	var baseLookups []string
@@ -114,14 +120,15 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *templ
 		fmt.Sprintf("%s/%s-baseof", layoutName, view),
 		fmt.Sprintf("%s/baseof", layoutName),
 	)
+
 	if layoutName != "_default" {
 		if ctxLayout != nil {
 			if section != "" {
-				baseLookups = append(baseLookups, fmt.Sprintf("_default/%s-baseof", section))
+				baseLookups = append(baseLookups, fmt.Sprintf("%v/%s-baseof", layoutName, section))
 			}
 			baseLookups = append(
 				baseLookups,
-				fmt.Sprintf("_default/%s-baseof", view),
+				fmt.Sprintf("%v/%s-baseof", layoutName, view),
 				"_default/baseof",
 			)
 		}
@@ -135,23 +142,36 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *templ
 		}
 	}
 
-	if tmpl, e := ctxLayout.NewTemplate(); e == nil {
-		if partials, _, ee := t.FindLayout("partials"); ee == nil {
-			if ee = partials.Apply(tmpl); ee != nil {
-				err = fmt.Errorf("error applying partials to %v", layoutName)
+	var tmpl *template.Template
+	if ctxTmpl, e := ctxLayout.NewTemplateFrom(parentLayout); e != nil {
+		err = fmt.Errorf("error creating new %v layout template: %v", layoutName, e)
+		return
+	} else {
+		tmpl = ctxTmpl
+	}
+
+	if parent := t.GetParent(); parent != nil {
+		if partials, _, ok := parent.FindLayout("partials"); ok {
+			if ee := partials.Apply(tmpl); ee != nil {
+				err = fmt.Errorf("error applying parent partials to %v: %v", layoutName, ee)
 				return
 			}
 		}
-		if tt = LookupTemplate(tmpl, lookups...); tt == nil {
-			e = fmt.Errorf("%v theme template not found for: archetype=%v, section=%v, layout=%v, pageFormat=%v, lookups=%v", t.Config.Name, archetype, section, layoutName, pageFormat, lookups)
-			log.ErrorF("checked %d templates", len(tmpl.Templates()))
-			for _, ttt := range tmpl.Templates() {
-				log.ErrorF("checked: %v", ttt.Name())
-			}
-		} else {
-			log.DebugF("lookup success: %v", tt.Name())
+	}
+
+	if partials, _, ok := t.FindLayout("partials"); ok {
+		if ee := partials.Apply(tmpl); ee != nil {
+			err = fmt.Errorf("error applying partials to %v: %v", layoutName, ee)
+			return
 		}
 	}
+
+	if tt = LookupTemplate(tmpl, lookups...); tt == nil {
+		err = fmt.Errorf("%v theme template not found for: archetype=%v, section=%v, layout=%v, pageFormat=%v, lookups=%v", t.Config.Name, archetype, section, layoutName, pageFormat, lookups)
+	} else {
+		log.DebugF("lookup success: %v", tt.Name())
+	}
+
 	return
 }
 
