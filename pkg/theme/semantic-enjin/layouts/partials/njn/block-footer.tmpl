@@ -6,7 +6,7 @@
                         {{ range $v := .Footnotes }}
                             <p id="footnote--{{ $v.BlockIndex }}--{{ $v.Index }}">
                                 <a class="footnote" href="#mention--{{ $v.BlockIndex }}--{{ $v.Index }}">[{{ $v.Index }}]</a>
-                                <q>{{ .Text }}</q>: {{ range $note := .Note }}{{ $note }}{{ end }}
+                                <q>{{ template "partials/njn/field-list.tmpl" .Text }}</q>: {{ template "partials/njn/field-list.tmpl" .Note }}
                             </p>
                         {{ end }}
                     </div>
