@@ -103,5 +103,5 @@ type Theme interface {
 	FS() fs.FileSystem
 	GetParentTheme() (parent Theme)
 	GetBlockThemeNames() (names []string)
-	NewHtmlTemplate(name string) *template.Template
+	NewHtmlTemplate(name string) (tmpl *template.Template, err error)
 }
