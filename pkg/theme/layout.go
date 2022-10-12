@@ -23,6 +23,7 @@ import (
 
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	bePath "github.com/go-enjin/be/pkg/path"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
@@ -31,12 +32,11 @@ type Layout struct {
 	Path string
 	Name string
 	Keys []string
-	Tmpl *template.Template
 
 	fileSystem beFs.FileSystem
 	funcMap    template.FuncMap
 	lastMods   map[string]int64
-	cache      map[string]*template.Template
+	cache      map[string]string
 
 	sync.RWMutex
 }
@@ -48,7 +48,7 @@ func NewLayout(path string, efs beFs.FileSystem, fm template.FuncMap) (layout *L
 	layout.fileSystem = efs
 	layout.funcMap = fm
 	layout.lastMods = make(map[string]int64)
-	layout.cache = make(map[string]*template.Template)
+	layout.cache = make(map[string]string)
 	err = layout.Reload()
 	return
 }
@@ -57,12 +57,7 @@ func (l *Layout) Reload() (err error) {
 	l.Lock()
 	defer l.Unlock()
 
-	var tmpl *template.Template
-	if tmpl, err = template.New("empty").Parse(`{{/* empty */}}`); err != nil {
-		return
-	}
 	l.Keys = make([]string, 0)
-	l.Tmpl = tmpl.Funcs(l.funcMap)
 
 	var walker func(p string) (e error)
 	walker = func(p string) (e error) {
@@ -73,26 +68,19 @@ func (l *Layout) Reload() (err error) {
 			}
 			return
 		}
-		for _, entry := range entries {
-			var ee error
 
+		for _, entry := range entries {
 			entryBase := strings.TrimPrefix(entry, p+"/")
 			entryName := l.Name + string(os.PathSeparator) + entryBase
 			entryPath := entry
 
+			var ee error
 			var lastMod int64
 			if lastMod, ee = l.fileSystem.LastModified(entryPath); ee != nil {
 				log.ErrorF("error fileSystem.LastModified: %V", ee)
 				continue
 			} else if v, ok := l.lastMods[entryName]; ok {
 				if v == lastMod {
-					// log.TraceF("validated known entry: %v (%v == %v)", entryName, v, lastMod)
-					if _, eee := l.Tmpl.AddParseTree(entryName, l.cache[entryName].Tree); eee != nil {
-						log.ErrorF("error adding %v parse tree: %v", entryName, eee)
-						delete(l.lastMods, entryName)
-						delete(l.cache, entryName)
-						continue
-					}
 					if !beStrings.StringInStrings(entryName, l.Keys...) {
 						l.Keys = append(l.Keys, entryName)
 					}
@@ -101,8 +89,6 @@ func (l *Layout) Reload() (err error) {
 				log.TraceF("updating known entry: %v", entryName)
 				delete(l.lastMods, entryName)
 				delete(l.cache, entryName)
-			} else {
-				// log.TraceF("caching new entry: %v (%v)", entryName, lastMod)
 			}
 
 			var data []byte
@@ -111,19 +97,14 @@ func (l *Layout) Reload() (err error) {
 				return
 			}
 
-			l.lastMods[entryName] = 0 // lastMod
-			if l.cache[entryName], ee = l.Tmpl.New(entryName).Parse(string(data)); ee != nil {
-				e = ee
-				delete(l.lastMods, entryName)
-				delete(l.cache, entryName)
-				return
-			}
+			l.lastMods[entryName] = lastMod
+			l.cache[entryName] = string(data)
 
 			if !beStrings.StringInStrings(entryName, l.Keys...) {
 				l.Keys = append(l.Keys, entryName)
 			}
 
-			// log.TraceF("layout %v entry set: %v", entryName, entryPath)
+			log.TraceF("cached %v layout %v data: %v", l.Name, entryName, entryPath)
 		}
 		return
 	}
@@ -141,11 +122,21 @@ func (l *Layout) HasKey(key string) bool {
 	return false
 }
 
-func (l *Layout) Lookup(names ...string) (tmpl *template.Template) {
-	for _, name := range names {
-		if tmpl = l.Tmpl.Lookup(name); tmpl != nil {
-			log.DebugF("using %v layout template: %v", l.Name, name)
+func (l *Layout) NewTemplate() (tmpl *template.Template, err error) {
+	if tmpl, err = template.New(l.Name).Parse(`{{/* empty */}}`); err == nil {
+		err = l.Apply(tmpl)
+	}
+	return
+}
+
+func (l *Layout) Apply(tt *template.Template) (err error) {
+	tt.Funcs(l.funcMap)
+	for _, name := range maps.SortedKeys(l.cache) {
+		if _, err = tt.New(name).Parse(l.cache[name]); err != nil {
+			err = fmt.Errorf("error parsing cached template: %v - %v", name, err)
 			return
+		} else {
+			// log.TraceF("parsed %v into %v", name, tt.Name())
 		}
 	}
 	return

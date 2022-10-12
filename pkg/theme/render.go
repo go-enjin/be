@@ -28,28 +28,39 @@ import (
 
 func (t *Theme) RenderTemplateContent(ctx context.Context, tmplContent string) (html string, err error) {
 	var tt *template.Template
-	if tt, err = t.NewHtmlTemplate("content").Parse(tmplContent); err == nil {
-		var w bytes.Buffer
-		if err = tt.Execute(&w, ctx); err == nil {
-			html = string(w.Bytes())
-			return
+	if tt, err = t.NewHtmlTemplate("content.tmpl"); err == nil {
+		if tt, err = tt.Parse(tmplContent); err == nil {
+			var w bytes.Buffer
+			if err = tt.Execute(&w, ctx); err == nil {
+				html = string(w.Bytes())
+				return
+			} else {
+				err = fmt.Errorf("error executing template content: %v", err)
+			}
+		} else {
+			err = fmt.Errorf("error parsing template content: %v", err)
 		}
+	} else {
+		err = fmt.Errorf("error making new theme template: %v", err)
 	}
 	return
 }
 
-func (t *Theme) NewHtmlTemplate(name string) (tt *template.Template) {
+func (t *Theme) NewHtmlTemplate(name string) (tmpl *template.Template, err error) {
 	if parent := t.GetParent(); parent != nil {
-		tt = parent.NewHtmlTemplate(name)
+		if tmpl, err = parent.NewHtmlTemplate(name); err != nil {
+			return
+		}
 	} else {
-		tt = template.New(name).Funcs(t.FuncMap)
+		tmpl = template.New(name).Funcs(t.FuncMap)
 		// log.DebugF("starting %v template from theme %v", name, t.Config.Name)
 	}
-	// must reload templates each time, cannot reuse templates once executed
-	if err := t.Layouts.Reload(); err != nil {
-		log.ErrorF("error reloading layouts: %v", err)
+
+	var layoutsTmpl *template.Template
+	if layoutsTmpl, err = t.Layouts.NewTemplate(""); err != nil {
+		return
 	}
-	t.Layouts.AddLayoutsToTemplate(tt)
+	err = AddParseTree(layoutsTmpl, tmpl)
 	return
 }
 
@@ -58,28 +69,29 @@ func (t *Theme) FindLayout(named string) (layout *Layout, name string, err error
 		named = "_default"
 	}
 	name = named
-	if layout = t.Layouts.getLayout(name); layout == nil {
+	if layout = t.Layouts.GetLayout(name); layout == nil {
 		if parent := t.GetParent(); parent != nil {
-			if layout = parent.Layouts.getLayout(name); layout == nil {
+			if layout = parent.Layouts.GetLayout(name); layout == nil {
 				err = fmt.Errorf("%v (%v) theme layout not found, expected: \"%v\"", t.Config.Name, parent.Config.Name, name)
 			} else {
-				log.DebugF("using layout from %v (%v) context: %v", t.Config.Name, parent.Config.Name, name)
+				log.DebugF("found layout in %v (%v) context: %v", t.Config.Name, parent.Config.Name, name)
 			}
 		} else {
 			err = fmt.Errorf("%v theme layout not found, expected: \"%v\"", t.Config.Name, name)
 		}
 	} else {
-		log.DebugF("using layout from %v context: %v", t.Config.Name, name)
+		log.DebugF("found layout in %v (%v) context: %v", t.Config.Name, t.Config.Parent, name)
 	}
 	return
 }
 
 func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *template.Template, err error) {
-	var layout *Layout
+	var ctxLayout *Layout
 	var layoutName string
-	if layout, layoutName, err = t.FindLayout(ctx.String("Layout", "_default")); err != nil {
+	if ctxLayout, layoutName, err = t.FindLayout(ctx.String("Layout", "_default")); err != nil {
 		return
 	}
+
 	var baseLookups []string
 	section := ctx.String("Section", "")
 	archetype := ctx.String("Archetype", "")
@@ -103,7 +115,7 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *templ
 		fmt.Sprintf("%s/baseof", layoutName),
 	)
 	if layoutName != "_default" {
-		if defaultLayout, _, _ := t.FindLayout("_default"); defaultLayout != nil {
+		if ctxLayout != nil {
 			if section != "" {
 				baseLookups = append(baseLookups, fmt.Sprintf("_default/%s-baseof", section))
 			}
@@ -114,6 +126,7 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *templ
 			)
 		}
 	}
+
 	var lookups []string
 	for _, name := range baseLookups {
 		lookups = append(lookups, name+".tmpl")
@@ -121,9 +134,23 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *templ
 			lookups = append(lookups, name+"."+pageFormat+".tmpl")
 		}
 	}
-	if tt = layout.Lookup(lookups...); tt == nil {
-		err = fmt.Errorf("%v theme template not found for: archetype=%v, section=%v, layout=%v, pageFormat=%v", t.Config.Name, archetype, section, layoutName, pageFormat)
-		return
+
+	if tmpl, e := ctxLayout.NewTemplate(); e == nil {
+		if partials, _, ee := t.FindLayout("partials"); ee == nil {
+			if ee = partials.Apply(tmpl); ee != nil {
+				err = fmt.Errorf("error applying partials to %v", layoutName)
+				return
+			}
+		}
+		if tt = LookupTemplate(tmpl, lookups...); tt == nil {
+			e = fmt.Errorf("%v theme template not found for: archetype=%v, section=%v, layout=%v, pageFormat=%v, lookups=%v", t.Config.Name, archetype, section, layoutName, pageFormat, lookups)
+			log.ErrorF("checked %d templates", len(tmpl.Templates()))
+			for _, ttt := range tmpl.Templates() {
+				log.ErrorF("checked: %v", ttt.Name())
+			}
+		} else {
+			log.DebugF("lookup success: %v", tt.Name())
+		}
 	}
 	return
 }
@@ -159,13 +186,13 @@ func (t *Theme) RenderPage(ctx context.Context, p *page.Page) (data []byte, err 
 				ctx["Content"] = ee.Html()
 			} else {
 				ctx["Content"] = html
+				log.DebugF("page format success: %v", format.Name())
 			}
 		} else {
 			ctx["Content"] = t.renderErrorPage("Unsupported Page Format", fmt.Sprintf(`Unknown page format specified: "%v"`, p.Format), p.String())
 		}
 	} else {
 		ctx["Content"] = t.renderErrorPage("Template Render Error", e.Error(), p.String())
-		return
 	}
 
 	return t.Render("single", ctx)

@@ -21,6 +21,7 @@ import (
 	"sync"
 
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -54,20 +55,19 @@ func (l *Layouts) Reload() (err error) {
 
 	for _, path := range paths {
 		name := bePath.Base(path)
-		// TODO: figure out better means of hot-reloading, for now, new layouts each time
-		// if exists := l.getLayout(name); exists != nil {
-		// 	if err = exists.Reload(); err != nil {
-		// 		err = fmt.Errorf("%v theme: error reloading %v layout: %v", l.t.Config.Name, name, err)
-		// 		return
-		// 	}
-		// 	log.DebugF("%v theme: reloaded %v layout", l.t.Config.Name, exists.Name)
-		// 	continue
-		// }
+		if exists := l.GetLayout(name); exists != nil {
+			if err = exists.Reload(); err != nil {
+				err = fmt.Errorf("%v theme: error reloading %v layout: %v", l.t.Config.Name, name, err)
+				return
+			}
+			log.DebugF("%v theme: reloaded %v layout", l.t.Config.Name, exists.Name)
+			continue
+		}
 		if layout, e := NewLayout(path, l.t.FileSystem, l.t.FuncMap); e != nil {
 			err = fmt.Errorf("error creating new layout: %v - %v", path, e)
 			return
 		} else {
-			l.setLayout(name, layout)
+			l.SetLayout(name, layout)
 			log.TraceF("%v theme: loaded %v layout", l.t.Config.Name, layout.Name)
 		}
 	}
@@ -75,7 +75,7 @@ func (l *Layouts) Reload() (err error) {
 	return
 }
 
-func (l *Layouts) getLayout(name string) (layout *Layout) {
+func (l *Layouts) GetLayout(name string) (layout *Layout) {
 	l.RLock()
 	defer l.RUnlock()
 	if v, ok := l.m[name]; ok {
@@ -84,73 +84,43 @@ func (l *Layouts) getLayout(name string) (layout *Layout) {
 	return
 }
 
-func (l *Layouts) setLayout(name string, layout *Layout) {
+func (l *Layouts) SetLayout(name string, layout *Layout) {
 	l.Lock()
 	defer l.Unlock()
 	l.m[name] = layout
 	return
 }
 
-func (l *Layouts) AddPartialsToTemplate(tt *template.Template) {
-	l.RLock()
-	defer l.RUnlock()
-	if partials := l.getLayout("partials"); partials != nil {
-		for _, tmpl := range partials.Tmpl.Templates() {
-			if _, err := tt.AddParseTree(tmpl.Name(), tmpl.Tree); err != nil {
-				log.ErrorF("error adding partials to template: %v", err)
+func (l *Layouts) NewTemplate(name string) (tmpl *template.Template, err error) {
+	if tmpl, err = template.New(name).Parse(`{{/* empty */}}`); err == nil {
+
+		if partials := l.GetLayout("partials"); partials != nil {
+			if err = partials.Apply(tmpl); err != nil {
+				return
 			}
 		}
-	}
-}
 
-func (l *Layouts) AddLayoutsToTemplate(tt *template.Template) {
-	l.RLock()
-	defer l.RUnlock()
+		if _default := l.GetLayout("_default"); _default != nil {
+			if err = _default.Apply(tmpl); err != nil {
+				return
+			}
+		}
 
-	partials := l.getLayout("partials")
-	defaultLayout := l.getLayout("_default")
+		for _, layoutName := range maps.SortedKeys(l.m) {
+			switch layoutName {
+			case "partials", "_default":
+				continue
+			}
 
-	if defaultLayout != nil {
-		if partials != nil {
-			for _, tmpl := range partials.Tmpl.Templates() {
-				if _, err := defaultLayout.Tmpl.AddParseTree(tmpl.Name(), tmpl.Tree); err != nil {
-					log.ErrorF("error adding %v to template: %v", tmpl.Name(), err)
-				} else {
-					// log.DebugF("adding %v template to _default layout", tmpl.Name())
+			if layout, ok := l.m[layoutName]; ok {
+				if err = layout.Apply(tmpl); err != nil {
+					return
 				}
-			}
-		}
-	}
-
-	for name, layout := range l.m {
-		switch name {
-		case "partials", "_default":
-			continue
-		}
-		if partials != nil {
-			for _, tmpl := range partials.Tmpl.Templates() {
-				if _, err := tt.AddParseTree(tmpl.Name(), tmpl.Tree); err != nil {
-					log.ErrorF("error adding %v to template: %v", tmpl.Name(), err)
-				} else {
-					// log.DebugF("adding %v template to %v layout", tmpl.Name(), name)
-				}
-			}
-		}
-		if defaultLayout != nil {
-			for _, tmpl := range defaultLayout.Tmpl.Templates() {
-				if _, err := tt.AddParseTree(tmpl.Name(), tmpl.Tree); err != nil {
-					log.ErrorF("error adding %v to template: %v", tmpl.Name(), err)
-				} else {
-					// log.DebugF("adding %v template to %v layout", tmpl.Name(), name)
-				}
-			}
-		}
-		for _, tmpl := range layout.Tmpl.Templates() {
-			if _, err := tt.AddParseTree(tmpl.Name(), tmpl.Tree); err != nil {
-				log.ErrorF("error adding %v template to %v layout: %v", tmpl.Name(), name, err)
 			} else {
-				// log.DebugF("adding %v template to %v layout", tmpl.Name(), name)
+				log.ErrorF("inconsistent cache key: %v", layoutName)
 			}
 		}
+
 	}
+	return
 }
