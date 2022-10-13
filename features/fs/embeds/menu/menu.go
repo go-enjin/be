@@ -45,7 +45,7 @@ type Feature struct {
 
 	paths   map[string]string
 	setup   map[string]embed.FS
-	mounted map[string]beFs.FileSystem
+	mounted map[string]beFsEmbed.FileSystem
 	menus   map[string]menu.Menu
 }
 
@@ -73,7 +73,7 @@ func (f *Feature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.paths = make(map[string]string)
 	f.setup = make(map[string]embed.FS)
-	f.mounted = make(map[string]beFs.FileSystem)
+	f.mounted = make(map[string]beFsEmbed.FileSystem)
 }
 
 func (f *Feature) Tag() (tag feature.Tag) {
@@ -103,7 +103,7 @@ func (f *Feature) Startup(ctx *cli.Context) (err error) {
 
 func (f *Feature) Reload() (err error) {
 	f.menus = make(map[string]menu.Menu)
-	for _, mount := range maps.SortedKeys[beFs.FileSystem](f.mounted) {
+	for _, mount := range maps.SortedKeys(f.mounted) {
 		var filenames []string
 		if filenames, err = f.mounted[mount].ListAllFiles("/"); err != nil {
 			err = fmt.Errorf("error listing filesystem: %v - %v", mount, err)
