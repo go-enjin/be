@@ -34,7 +34,7 @@ func (eb *EnjinBuilder) SetTheme(name string) feature.Builder {
 }
 
 func (eb *EnjinBuilder) AddTheme(t *theme.Theme) feature.Builder {
-	eb.theming[t.Config.Name] = t
+	eb.theming[t.Name] = t
 	return eb
 }
 
