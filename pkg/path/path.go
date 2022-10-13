@@ -185,7 +185,7 @@ func ListAllFiles(path string) (paths []string, err error) {
 	var entries []os.DirEntry
 	if entries, err = os.ReadDir(path); err == nil {
 		for _, info := range entries {
-			thisPath := TrimSlashes(Join(path, info.Name()))
+			thisPath := filepath.Clean(Join(path, info.Name()))
 			if !info.IsDir() {
 				paths = append(paths, thisPath)
 				continue
