@@ -17,9 +17,6 @@ package types
 import (
 	"encoding/json"
 	"html/template"
-
-	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/fs"
 )
 
 type EnjinError struct {
@@ -91,17 +88,4 @@ func (e *EnjinError) Html() (html template.HTML) {
 </article>
 `
 	return
-}
-
-type Format interface {
-	Name() (name string)
-	Label() (label string)
-	Process(ctx context.Context, t Theme, content string) (html template.HTML, err *EnjinError)
-}
-
-type Theme interface {
-	FS() fs.FileSystem
-	GetParentTheme() (parent Theme)
-	GetBlockThemeNames() (names []string)
-	NewHtmlTemplate(name string) (tmpl *template.Template, err error)
 }
