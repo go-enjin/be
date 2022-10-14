@@ -88,6 +88,13 @@ func newEnjin(eb *EnjinBuilder) *Enjin {
 	return be
 }
 
+func (e *Enjin) setupFeatures() {
+	for _, f := range e.eb.features {
+		f.Setup(e)
+	}
+	return
+}
+
 func (e *Enjin) startupFeatures(ctx *cli.Context) (err error) {
 	for _, f := range e.eb.features {
 		if err = f.Startup(ctx); err != nil {

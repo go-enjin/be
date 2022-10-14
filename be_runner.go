@@ -36,5 +36,6 @@ func (e *Enjin) String() string {
 }
 
 func (e *Enjin) Run(argv []string) (err error) {
+	e.setupFeatures()
 	return e.cli.Run(argv)
 }
