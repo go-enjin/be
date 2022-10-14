@@ -22,6 +22,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/blevesearch/bleve/v2"
 	"github.com/fvbommel/sortorder"
 	"github.com/urfave/cli/v2"
 
@@ -137,5 +138,21 @@ func (f *Feature) ServePath(path string, s feature.System, w http.ResponseWriter
 		return
 	}
 	err = fmt.Errorf("path not found")
+	return
+}
+
+func (f *Feature) UpdateSearch(index bleve.Index) (err error) {
+	f.cache.Rebuild()
+	allPages := f.cache.ListAll()
+	log.DebugF("locals content search updating %d documents", len(allPages))
+	for _, pg := range allPages {
+		if doc, e := pg.SearchDocument(); e != nil {
+			err = fmt.Errorf("error preparing locals search document: %v", e)
+		} else if ee := index.Index(pg.Url, doc); ee != nil {
+			err = fmt.Errorf("error indexing locals search document: %v", ee)
+		} else {
+			log.DebugF("updated locals search index with document: %v", doc.GetUrl())
+		}
+	}
 	return
 }
