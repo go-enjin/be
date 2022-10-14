@@ -15,10 +15,18 @@
 package html
 
 import (
+	"fmt"
 	"html/template"
+	"strings"
+
+	"github.com/blevesearch/bleve/v2/mapping"
+	"golang.org/x/net/html"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/search"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme/types"
 )
 
@@ -76,5 +84,96 @@ func (f *CFeature) Label() (label string) {
 
 func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, err *types.EnjinError) {
 	html = template.HTML(content)
+	return
+}
+
+func (f *CFeature) AddSearchDocumentMapping(indexMapping *mapping.IndexMappingImpl) {
+	indexMapping.AddDocumentMapping("html", NewHtmlDocumentMapping())
+}
+
+func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc search.Document, err error) {
+	var url, title string
+	if url = ctx.String("Url", ""); url == "" {
+		err = fmt.Errorf("index document missing Url")
+		return
+	}
+	if title = ctx.String("Title", ""); url == "" {
+		err = fmt.Errorf("index document missing Title")
+		return
+	}
+
+	d := NewHtmlDocument(url, title)
+	var parsed *html.Node
+	if parsed, err = html.Parse(strings.NewReader(content)); err != nil {
+		return
+	}
+
+	skipNext := false
+	addHeadingNext := false
+
+	contents := ""
+
+	var walk func(node *html.Node)
+	walk = func(node *html.Node) {
+
+		if node.Type == html.ElementNode {
+			switch node.Data {
+			case "h1", "h2", "h3", "h4", "h5", "h6":
+				addHeadingNext = true
+			case "div":
+				for _, attr := range node.Attr {
+					if attr.Key == "class" {
+						switch attr.Val {
+						case "h1", "h2", "h3", "h4", "h5", "h6":
+							addHeadingNext = true
+							break
+						}
+					}
+					if addHeadingNext {
+						break
+					}
+				}
+			case "style":
+				skipNext = true
+			}
+		} else if node.Type == html.TextNode {
+			if skipNext {
+				skipNext = false
+				log.DebugF("skipping text: %v - %v", node.Type, node.Data)
+			} else {
+				data := beStrings.StripTmplTags(node.Data)
+				data = strings.ReplaceAll(data, "permalink", "")
+				data = strings.ReplaceAll(data, "top", "")
+				if !beStrings.Empty(data) {
+					if addHeadingNext {
+						addHeadingNext = false
+						log.DebugF("adding html headings: %v", data)
+						d.AddHeading(data)
+					} else {
+						if contents != "" {
+							contents += " "
+						}
+						contents += data
+					}
+				} else {
+					addHeadingNext = false
+				}
+			}
+		}
+
+		for c := node.FirstChild; c != nil; c = c.NextSibling {
+			walk(c)
+		}
+	}
+
+	walk(parsed)
+
+	if !beStrings.Empty(contents) {
+		d.AddContent(contents)
+		log.DebugF("adding html contents:\n%v", contents)
+	}
+
+	doc = d
+	err = nil
 	return
 }
