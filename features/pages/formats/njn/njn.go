@@ -53,6 +53,7 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/search"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme/types"
 )
@@ -318,5 +319,21 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 		return
 	}
 	html, err = renderNjnData(f, ctx, t, data)
+	return
+}
+
+func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc search.Document, err error) {
+	var url, title string
+	if url = ctx.String("Url", ""); url == "" {
+		err = fmt.Errorf("index document missing Url")
+		return
+	}
+	if title = ctx.String("Title", ""); url == "" {
+		err = fmt.Errorf("index document missing Title")
+		return
+	}
+
+	doc = search.NewDocument(url, title)
+	doc.AddContent(content)
 	return
 }

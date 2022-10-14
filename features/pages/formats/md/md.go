@@ -15,6 +15,7 @@
 package md
 
 import (
+	"fmt"
 	"html/template"
 
 	"github.com/gomarkdown/markdown"
@@ -24,6 +25,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/search"
 	"github.com/go-enjin/be/pkg/theme/types"
 )
 
@@ -93,5 +95,21 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 	parsedBytes := markdown.ToHTML(normalizedNewlines, pageParser, pageRenderer)
 	sanitizedBytes := bluemonday.UGCPolicy().SanitizeBytes(parsedBytes)
 	html = template.HTML(sanitizedBytes)
+	return
+}
+
+func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc search.Document, err error) {
+	var url, title string
+	if url = ctx.String("Url", ""); url == "" {
+		err = fmt.Errorf("index document missing Url")
+		return
+	}
+	if title = ctx.String("Title", ""); url == "" {
+		err = fmt.Errorf("index document missing Title")
+		return
+	}
+
+	doc = search.NewDocument(url, title)
+	doc.AddContent(content)
 	return
 }
