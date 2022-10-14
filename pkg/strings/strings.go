@@ -253,3 +253,17 @@ func AddClassNamesToNjnBlock(data map[string]interface{}, classes ...string) map
 	}
 	return data
 }
+
+var RxEmpty = regexp.MustCompile(`(?ms)\A\s*\z`)
+
+func Empty(value string) (empty bool) {
+	empty = RxEmpty.MatchString(value)
+	return
+}
+
+var RxTmplTags = regexp.MustCompile(`\{\{.+?}}`)
+
+func StripTmplTags(value string) (clean string) {
+	clean = RxTmplTags.ReplaceAllString(value, "")
+	return
+}
