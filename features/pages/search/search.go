@@ -1,0 +1,114 @@
+//go:build page_search || pages || all
+
+// Copyright (c) 2022  The Go-Enjin Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package search
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/blevesearch/bleve/v2"
+	"github.com/urfave/cli/v2"
+
+	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/forms"
+	"github.com/go-enjin/be/pkg/globals"
+	beSearch "github.com/go-enjin/be/pkg/search/indexes"
+)
+
+var _ MakeFeature = (*CFeature)(nil)
+var _ feature.Feature = (*CFeature)(nil)
+
+const Tag feature.Tag = "PagesSearch"
+
+type Feature interface {
+	feature.Feature
+}
+
+type CFeature struct {
+	feature.CFeature
+
+	cli   *cli.Context
+	enjin feature.Internals
+}
+
+type MakeFeature interface {
+	Make() Feature
+}
+
+func New() MakeFeature {
+	f := new(CFeature)
+	f.Init(f)
+	return f
+}
+
+func (f *CFeature) Make() Feature {
+	return f
+}
+
+func (f *CFeature) Init(this interface{}) {
+	f.CFeature.Init(this)
+}
+
+func (f *CFeature) Tag() (tag feature.Tag) {
+	tag = Tag
+	return
+}
+
+func (f *CFeature) Build(b feature.Buildable) (err error) {
+	b.AddCommands(&cli.Command{
+		Name:      "search",
+		Usage:     "search through searchable content",
+		Action:    f.SearchAction,
+		UsageText: globals.BinName + " search -- query string",
+		Description: "All features that are feature.Searchable are indexed" +
+			" and queried using the Bleve text indexing package." +
+			" See: http://blevesearch.com/docs/Query-String-Query/ for more" +
+			"details on how to use the query string.",
+	})
+	return
+}
+
+func (f *CFeature) Setup(enjin feature.Internals) {
+	f.enjin = enjin
+}
+
+func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	f.cli = ctx
+	return
+}
+
+func (f *CFeature) SearchAction(ctx *cli.Context) (err error) {
+	if index, e := beSearch.NewFeaturesIndex(f.enjin); e != nil {
+		err = e
+		return
+	} else {
+		var input string
+		if argv := ctx.Args().Slice(); len(argv) > 0 {
+			input = strings.Join(argv, " ")
+		}
+		input = forms.StripTags(input)
+		query := bleve.NewQueryStringQuery(input)
+		req := bleve.NewSearchRequest(query)
+		if results, ee := index.Search(req); ee != nil {
+			err = ee
+			return
+		} else {
+			fmt.Printf("results:\n%v\n", results)
+		}
+	}
+	return
+}
