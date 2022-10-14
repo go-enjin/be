@@ -32,6 +32,7 @@ type Feature interface {
 	Depends() (deps Tags)
 	Context() (ctx context.Context)
 	Build(c Buildable) (err error)
+	Setup(enjin Internals)
 	Startup(ctx *cli.Context) (err error)
 	Shutdown()
 }
@@ -84,6 +85,9 @@ func (f *CFeature) Context() (ctx context.Context) {
 
 func (f *CFeature) Build(c Buildable) (err error) {
 	return
+}
+
+func (f *CFeature) Setup(enjin Internals) {
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
