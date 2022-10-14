@@ -17,6 +17,7 @@ package page
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
@@ -31,6 +32,8 @@ type Mount struct {
 type Cache struct {
 	mount map[string]*Mount
 	cache map[string]map[string]*Page
+
+	sync.RWMutex
 }
 
 func NewCache() (c *Cache) {
@@ -41,11 +44,15 @@ func NewCache() (c *Cache) {
 }
 
 func (c *Cache) Mounted(mount string) (ok bool) {
+	c.RLock()
+	defer c.RUnlock()
 	_, ok = c.mount[mount]
 	return
 }
 
 func (c *Cache) Mount(mount, path string, mfs fs.FileSystem) {
+	c.Lock()
+	defer c.Unlock()
 	c.mount[mount] = &Mount{
 		Point: mount,
 		Path:  path,
@@ -54,6 +61,8 @@ func (c *Cache) Mount(mount, path string, mfs fs.FileSystem) {
 }
 
 func (c *Cache) Lookup(url string) (mount, path string, p *Page, err error) {
+	c.RLock()
+	defer c.RUnlock()
 	for m, cache := range c.cache {
 		for mp, pg := range cache {
 			if pg.Url == url {
@@ -70,7 +79,21 @@ func (c *Cache) Lookup(url string) (mount, path string, p *Page, err error) {
 	return
 }
 
+func (c *Cache) ListAll() (found []*Page) {
+	c.RLock()
+	defer c.RUnlock()
+	for _, cache := range c.cache {
+		for _, pg := range cache {
+			found = append(found, pg)
+		}
+	}
+	return
+}
+
 func (c *Cache) Rebuild() (ok bool, errs []error) {
+	c.Lock()
+	defer c.Unlock()
+
 	// prune existing cache
 	for mount, mc := range c.cache {
 		for path, _ := range mc {
