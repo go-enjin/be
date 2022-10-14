@@ -26,7 +26,7 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	path2 "github.com/go-enjin/be/pkg/path"
+	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/theme/types"
 )
 
@@ -125,7 +125,7 @@ func (re *RenderEnjin) GetNjnTemplateContent(name string) (contents string, err 
 		contents = v
 		return
 	}
-	path := path2.JoinWithSlashes("layouts", "partials", "njn", name)
+	path := bePath.JoinWithSlashes("layouts", "partials", "njn", name)
 	log.TraceF("looking for njn template: %v - %v", name, path)
 	var data []byte
 	if data, err = re.Theme.FS().ReadFile(path); err == nil {
