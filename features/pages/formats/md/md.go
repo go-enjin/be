@@ -19,6 +19,7 @@ import (
 	"html/template"
 	"strings"
 
+	"github.com/blevesearch/bleve/v2/mapping"
 	"golang.org/x/net/html"
 
 	"github.com/go-enjin/be/pkg/context"
@@ -84,6 +85,10 @@ func (f *CFeature) Label() (label string) {
 func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, err *types.EnjinError) {
 	html = template.HTML(RenderMarkdown(content))
 	return
+}
+
+func (f *CFeature) AddSearchDocumentMapping(indexMapping *mapping.IndexMappingImpl) {
+	indexMapping.AddDocumentMapping("md", NewMarkdownDocumentMapping())
 }
 
 func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc search.Document, err error) {
