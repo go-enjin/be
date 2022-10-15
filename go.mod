@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/BurntSushi/toml v1.2.0
 	github.com/abbot/go-http-auth v0.4.0
+	github.com/blevesearch/bleve/v2 v2.3.4
 	github.com/felixge/httpsnoop v1.0.3
 	github.com/fvbommel/sortorder v1.0.2
 	github.com/gabriel-vasile/mimetype v1.4.1
@@ -35,8 +36,25 @@ require (
 
 require (
 	github.com/GehirnInc/crypt v0.0.0-20200316065508-bb7000b8a962 // indirect
+	github.com/RoaringBitmap/roaring v0.9.4 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
+	github.com/bits-and-blooms/bitset v1.2.0 // indirect
+	github.com/blevesearch/bleve_index_api v1.0.3 // indirect
+	github.com/blevesearch/geo v0.1.13 // indirect
+	github.com/blevesearch/go-porterstemmer v1.0.3 // indirect
+	github.com/blevesearch/gtreap v0.1.1 // indirect
+	github.com/blevesearch/mmap-go v1.0.4 // indirect
+	github.com/blevesearch/scorch_segment_api/v2 v2.1.2 // indirect
+	github.com/blevesearch/segment v0.9.0 // indirect
+	github.com/blevesearch/snowballstem v0.9.0 // indirect
+	github.com/blevesearch/upsidedown_store_api v1.0.1 // indirect
+	github.com/blevesearch/vellum v1.0.8 // indirect
+	github.com/blevesearch/zapx/v11 v11.3.5 // indirect
+	github.com/blevesearch/zapx/v12 v12.3.5 // indirect
+	github.com/blevesearch/zapx/v13 v13.3.5 // indirect
+	github.com/blevesearch/zapx/v14 v14.3.5 // indirect
+	github.com/blevesearch/zapx/v15 v15.3.5 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/creack/pty v1.1.18 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
@@ -48,6 +66,9 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/gofrs/uuid v4.3.0+incompatible // indirect
+	github.com/golang/geo v0.0.0-20210211234256-740aa86cb551 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
@@ -71,6 +92,7 @@ require (
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/mschoch/smat v0.2.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
 	github.com/pkg/profile v1.6.0 // indirect
 	github.com/rivo/uniseg v0.4.2 // indirect
@@ -79,6 +101,7 @@ require (
 	github.com/tdewolff/parse/v2 v2.6.4 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
+	go.etcd.io/bbolt v1.3.5 // indirect
 	golang.org/x/sys v0.0.0-20221010170243-090e33056c14 // indirect
 	golang.org/x/term v0.0.0-20220919170432-7a66f970e087 // indirect
 	golang.org/x/text v0.3.8 // indirect
