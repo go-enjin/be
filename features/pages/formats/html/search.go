@@ -32,6 +32,7 @@ type CDocument struct {
 	search.CDocument
 
 	Headings []string `json:"headings"`
+	Links    []string `json:"links"`
 }
 
 func NewHtmlDocument(url, title string) (doc *CDocument) {
@@ -42,12 +43,17 @@ func NewHtmlDocument(url, title string) (doc *CDocument) {
 	return
 }
 
+func (d *CDocument) AddLink(text string) {
+	d.Links = append(d.Links, text)
+}
+
 func (d *CDocument) AddHeading(text string) {
 	d.Headings = append(d.Headings, text)
 }
 
 func NewHtmlDocumentMapping() (dm *mapping.DocumentMapping) {
 	dm = search.NewDocumentMapping()
-	dm.AddFieldMappingsAt("Headings", search.NewDefaultTextFieldMapping(simple.Name))
+	dm.AddFieldMappingsAt("headings", search.NewDefaultTextFieldMapping(simple.Name))
+	dm.AddFieldMappingsAt("links", search.NewDefaultTextFieldMapping(simple.Name))
 	return
 }

@@ -109,6 +109,7 @@ func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc searc
 	}
 
 	skipNext := false
+	addLinkNext := false
 	addHeadingNext := false
 
 	contents := ""
@@ -118,6 +119,8 @@ func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc searc
 
 		if node.Type == html.ElementNode {
 			switch node.Data {
+			case "a":
+				addLinkNext = true
 			case "h1", "h2", "h3", "h4", "h5", "h6":
 				addHeadingNext = true
 			case "div":
@@ -145,17 +148,20 @@ func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc searc
 				data = strings.ReplaceAll(data, "permalink", "")
 				data = strings.ReplaceAll(data, "top", "")
 				if !beStrings.Empty(data) {
-					if addHeadingNext {
+					if addLinkNext {
+						addLinkNext = false
+						log.DebugF("adding html link: %v", data)
+						d.AddLink(data)
+						contents = beStrings.AppendWithSpace(contents, data)
+					} else if addHeadingNext {
 						addHeadingNext = false
-						log.DebugF("adding html headings: %v", data)
+						log.DebugF("adding html heading: %v", data)
 						d.AddHeading(data)
 					} else {
-						if contents != "" {
-							contents += " "
-						}
-						contents += data
+						contents = beStrings.AppendWithSpace(contents, data)
 					}
 				} else {
+					addLinkNext = false
 					addHeadingNext = false
 				}
 			}
@@ -170,7 +176,7 @@ func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc searc
 
 	if !beStrings.Empty(contents) {
 		d.AddContent(contents)
-		log.DebugF("adding html contents:\n%v", contents)
+		// log.DebugF("adding html contents:\n%v", contents)
 	}
 
 	doc = d
