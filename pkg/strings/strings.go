@@ -19,6 +19,7 @@ import (
 	"html/template"
 	"regexp"
 	"strings"
+	"unicode"
 
 	"github.com/iancoleman/strcase"
 )
@@ -265,5 +266,24 @@ var RxTmplTags = regexp.MustCompile(`\{\{.+?}}`)
 
 func StripTmplTags(value string) (clean string) {
 	clean = RxTmplTags.ReplaceAllString(value, "")
+	return
+}
+
+func AppendWithSpace(src, add string) (combined string) {
+	combined = src
+	if add == "" {
+		return
+	}
+	srcLen := len(src)
+	if srcLen > 0 {
+		switch {
+		case unicode.IsPunct(rune(add[0])):
+		case unicode.IsSpace(rune(add[0])):
+		case unicode.IsSpace(rune(src[srcLen-1])):
+		default:
+			combined += " "
+		}
+	}
+	combined += add
 	return
 }
