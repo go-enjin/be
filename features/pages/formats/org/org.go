@@ -19,12 +19,14 @@ import (
 	"html/template"
 	"strings"
 
-	"github.com/niklasfasching/go-org/org"
+	"github.com/blevesearch/bleve/v2/mapping"
+	"golang.org/x/net/html"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/search"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme/types"
 )
 
@@ -101,17 +103,7 @@ func (f *CFeature) Label() (label string) {
 }
 
 func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, err *types.EnjinError) {
-	input := strings.NewReader(content)
-	orgConfig := org.New()
-	if f.replaced != nil {
-		orgConfig.DefaultSettings = f.replaced
-	} else if len(f.settings) > 0 {
-		for k, v := range f.settings {
-			orgConfig.DefaultSettings[k] = v
-			log.DebugF(`setting default: %v = "%v"`, k, v)
-		}
-	}
-	if text, e := orgConfig.Parse(input, "./").Write(org.NewHTMLWriter()); e != nil {
+	if text, e := f.RenderOrgMode(content); e != nil {
 		err = types.NewEnjinError(
 			"org-mode parse error",
 			e.Error(),
@@ -122,6 +114,10 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 		html = template.HTML(text)
 	}
 	return
+}
+
+func (f *CFeature) AddSearchDocumentMapping(indexMapping *mapping.IndexMappingImpl) {
+	indexMapping.AddDocumentMapping("org", NewOrgModeDocumentMapping())
 }
 
 func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc search.Document, err error) {
@@ -135,7 +131,114 @@ func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc searc
 		return
 	}
 
-	doc = search.NewDocument(url, title)
-	doc.AddContent(content)
+	var rendered string
+	if rendered, err = f.RenderOrgMode(content); err != nil {
+		return
+	}
+
+	d := NewOrgModeDocument(url, title)
+	var parsed *html.Node
+	if parsed, err = html.Parse(strings.NewReader(rendered)); err != nil {
+		return
+	}
+
+	skipNext := false
+	addLinkNext := false
+	addHeadingNext := false
+
+	contents := ""
+
+	var slurp func(node *html.Node) (slurped string)
+	slurp = func(node *html.Node) (slurped string) {
+		for c := node.FirstChild; c != nil; c = c.NextSibling {
+			if c.Type == html.TextNode {
+				slurped = beStrings.AppendWithSpace(slurped, c.Data)
+			} else {
+				slurped = beStrings.AppendWithSpace(slurped, slurp(c))
+			}
+		}
+		return
+	}
+
+	var walk func(node *html.Node)
+	walk = func(node *html.Node) {
+
+		if node.Type == html.ElementNode {
+			switch node.Data {
+			case "a":
+				addLinkNext = true
+				for _, attr := range node.Attr {
+					if attr.Key == "href" {
+						if strings.HasPrefix(attr.Val, "#footnote-reference") {
+							addLinkNext = false
+							break
+						}
+					}
+				}
+			case "h1", "h2", "h3", "h4", "h5", "h6":
+				addHeadingNext = true
+			case "div":
+				for _, attr := range node.Attr {
+					if attr.Key == "class" {
+						switch attr.Val {
+						case "h1", "h2", "h3", "h4", "h5", "h6":
+							addHeadingNext = true
+						case "footnote-body":
+							footnote := slurp(node)
+							if !beStrings.Empty(footnote) {
+								log.DebugF("adding org-mode footnote: %v", footnote)
+								d.AddFootnote(footnote)
+							}
+						}
+					}
+					if addHeadingNext {
+						break
+					}
+				}
+			case "style", "sup", "sub":
+				skipNext = true
+			}
+		} else if node.Type == html.TextNode {
+			if skipNext {
+				skipNext = false
+				log.DebugF("skipping text: %v - %v", node.Type, node.Data)
+			} else {
+				data := beStrings.StripTmplTags(node.Data)
+				data = strings.ReplaceAll(data, "permalink", "")
+				data = strings.ReplaceAll(data, "top", "")
+				if !beStrings.Empty(data) {
+					if addLinkNext {
+						addLinkNext = false
+						log.DebugF("adding org-mode link: %v", data)
+						d.AddLink(data)
+						contents = beStrings.AppendWithSpace(contents, data)
+					} else if addHeadingNext {
+						addHeadingNext = false
+						log.DebugF("adding org-mode heading: %v", data)
+						d.AddHeading(data)
+					} else {
+						contents = beStrings.AppendWithSpace(contents, data)
+					}
+				} else {
+					addLinkNext = false
+					addHeadingNext = false
+				}
+			}
+		}
+
+		for c := node.FirstChild; c != nil; c = c.NextSibling {
+			walk(c)
+		}
+	}
+
+	walk(parsed)
+
+	if !beStrings.Empty(contents) {
+		d.AddContent(contents)
+		// log.DebugF("adding org-mode contents:\n%v", contents)
+	}
+
+	doc = d
+	err = nil
 	return
 }
