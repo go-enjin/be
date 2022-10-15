@@ -17,15 +17,15 @@ package md
 import (
 	"fmt"
 	"html/template"
+	"strings"
 
-	"github.com/gomarkdown/markdown"
-	mdHtml "github.com/gomarkdown/markdown/html"
-	mdParser "github.com/gomarkdown/markdown/parser"
-	"github.com/microcosm-cc/bluemonday"
+	"golang.org/x/net/html"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/search"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme/types"
 )
 
@@ -82,19 +82,7 @@ func (f *CFeature) Label() (label string) {
 }
 
 func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, err *types.EnjinError) {
-	normalizedNewlines := markdown.NormalizeNewlines([]byte(content))
-	extensions := mdParser.CommonExtensions |
-		mdParser.AutoHeadingIDs |
-		mdParser.NoIntraEmphasis |
-		mdParser.Strikethrough |
-		mdParser.Attributes
-	pageParser := mdParser.NewWithExtensions(extensions)
-	mdHtmlFlags := mdHtml.CommonFlags | mdHtml.HrefTargetBlank | mdHtml.FootnoteReturnLinks
-	opts := mdHtml.RendererOptions{Flags: mdHtmlFlags}
-	pageRenderer := mdHtml.NewRenderer(opts)
-	parsedBytes := markdown.ToHTML(normalizedNewlines, pageParser, pageRenderer)
-	sanitizedBytes := bluemonday.UGCPolicy().SanitizeBytes(parsedBytes)
-	html = template.HTML(sanitizedBytes)
+	html = template.HTML(RenderMarkdown(content))
 	return
 }
 
@@ -109,7 +97,109 @@ func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc searc
 		return
 	}
 
-	doc = search.NewDocument(url, title)
-	doc.AddContent(content)
+	rendered := RenderMarkdown(content)
+
+	d := NewMarkdownDocument(url, title)
+	var parsed *html.Node
+	if parsed, err = html.Parse(strings.NewReader(rendered)); err != nil {
+		return
+	}
+
+	skipNext := false
+	addLinkNext := false
+	addHeadingNext := false
+	addFootnoteNext := false
+
+	contents := ""
+
+	var walk func(node *html.Node)
+	walk = func(node *html.Node) {
+
+		if node.Type == html.ElementNode {
+			switch node.Data {
+			case "a":
+				addLinkNext = true
+				for _, attr := range node.Attr {
+					if attr.Key == "href" {
+						if strings.HasPrefix(attr.Val, "#fn:") {
+							addLinkNext = false
+							break
+						}
+					}
+				}
+			case "li":
+				for _, attr := range node.Attr {
+					if attr.Key == "id" {
+						if strings.HasPrefix(attr.Val, "fn:") {
+							addFootnoteNext = true
+							break
+						}
+					}
+				}
+			case "h1", "h2", "h3", "h4", "h5", "h6":
+				addHeadingNext = true
+			case "div":
+				for _, attr := range node.Attr {
+					if attr.Key == "class" {
+						switch attr.Val {
+						case "h1", "h2", "h3", "h4", "h5", "h6":
+							addHeadingNext = true
+							break
+						}
+					}
+					if addHeadingNext {
+						break
+					}
+				}
+			case "style", "sup", "sub":
+				skipNext = true
+			}
+		} else if node.Type == html.TextNode {
+			if skipNext {
+				skipNext = false
+				log.DebugF("skipping text: %v - %v", node.Type, node.Data)
+			} else {
+				data := beStrings.StripTmplTags(node.Data)
+				data = strings.ReplaceAll(data, "permalink", "")
+				data = strings.ReplaceAll(data, "top", "")
+				if !beStrings.Empty(data) {
+					if addLinkNext {
+						addLinkNext = false
+						log.DebugF("adding markdown link: %v", data)
+						d.AddLink(data)
+						contents = beStrings.AppendWithSpace(contents, data)
+					} else if addHeadingNext {
+						addHeadingNext = false
+						log.DebugF("adding markdown heading: %v", data)
+						d.AddHeading(data)
+					} else if addFootnoteNext {
+						addFootnoteNext = false
+						log.DebugF("adding markdown footnote: %v", data)
+						d.AddFootnote(data)
+					} else {
+						contents = beStrings.AppendWithSpace(contents, data)
+					}
+				} else {
+					addLinkNext = false
+					addHeadingNext = false
+					addFootnoteNext = false
+				}
+			}
+		}
+
+		for c := node.FirstChild; c != nil; c = c.NextSibling {
+			walk(c)
+		}
+	}
+
+	walk(parsed)
+
+	if !beStrings.Empty(contents) {
+		d.AddContent(contents)
+		// log.DebugF("adding markdown contents:\n%v", contents)
+	}
+
+	doc = d
+	err = nil
 	return
 }
