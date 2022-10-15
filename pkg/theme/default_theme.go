@@ -34,7 +34,7 @@ func DefaultTheme() *Theme {
 		return defaultThemeInstance
 	}
 	if f, err := beFsEmbed.New("default", defaultThemeEmbedFS); err != nil {
-		log.FatalF("error including semanticEnjinThemeFS: %v", err)
+		log.FatalF("error including defaultThemeFS: %v", err)
 	} else {
 		if dt, err := New("default", f); err != nil {
 			log.FatalF("error loading default theme: %v", err)

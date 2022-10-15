@@ -1,6 +1,0 @@
-{{ elementOpen . }}
-{{- if .Legend -}}
-    <legend>{{ template "partials/njn/field-list.tmpl" .Legend }}</legend>
-{{- end -}}
-    {{ template "partials/njn/field-list.tmpl" .Fields }}
-{{ elementClose . }}

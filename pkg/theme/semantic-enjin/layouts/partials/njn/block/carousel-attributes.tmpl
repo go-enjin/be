@@ -1,6 +1,0 @@
-{{- template "partials/njn/block-attributes.tmpl" . -}}
-{{- printf " data-carousel-bookends=\"%v\"" .Bookends | asHTMLAttr -}}
-{{- printf " data-carousel-last-card=\"%v\"" .LastCard | asHTMLAttr -}}
-{{- if .CardGap }}{{- printf " data-carousel-card-gap=\"%v\"" .CardGap | asHTMLAttr -}}{{- end }}
-{{- if .NavCtrlType }}{{- printf " data-carousel-nav-ctrl-type=\"%v\"" .NavCtrlType | asHTMLAttr -}}{{- end }}
-{{- if .NavCtrlStyle }}{{- printf " data-carousel-nav-ctrl-style=\"%v\"" .NavCtrlStyle | asHTMLAttr -}}{{- end }}

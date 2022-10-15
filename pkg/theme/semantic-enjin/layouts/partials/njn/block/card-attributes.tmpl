@@ -1,4 +1,0 @@
-{{- template "partials/njn/block-attributes.tmpl" . -}}
-{{- if .Layout -}}{{- printf " data-card-layout=\"%v\"" .Layout | asHTMLAttr -}}{{- end -}}
-{{- if .NoImage -}}{{- printf " data-card-no-image=\"%v\"" .NoImage | asHTMLAttr -}}{{- end -}}
-{{- if .Image -}}{{- printf " data-image=\"%v\"" .Image | asHTMLAttr -}}{{- end -}}

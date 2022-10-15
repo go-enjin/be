@@ -1,8 +1,0 @@
-        {{ template "partials/njn/field-switch.tmpl" .Background }}
-        <div class="copytext">
-            {{ if .ProfileImgSrc }}<img src="{{ fsUrl .ProfileImgSrc }}" />{{ end }}
-            {{ template "partials/njn/block-heading.tmpl" . }}
-            {{ if .Section }}
-            {{ template "partials/njn/field-list.tmpl" .Section }}
-            {{ end }}
-        </div>
