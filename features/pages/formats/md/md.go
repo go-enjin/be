@@ -24,7 +24,6 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/search"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme/types"
@@ -162,7 +161,7 @@ func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc searc
 		} else if node.Type == html.TextNode {
 			if skipNext {
 				skipNext = false
-				log.DebugF("skipping text: %v - %v", node.Type, node.Data)
+				// log.DebugF("skipping text: %v - %v", node.Type, node.Data)
 			} else {
 				data := beStrings.StripTmplTags(node.Data)
 				data = strings.ReplaceAll(data, "permalink", "")
@@ -170,16 +169,16 @@ func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc searc
 				if !beStrings.Empty(data) {
 					if addLinkNext {
 						addLinkNext = false
-						log.DebugF("adding markdown link: %v", data)
+						// log.DebugF("adding markdown link: %v", data)
 						d.AddLink(data)
 						contents = beStrings.AppendWithSpace(contents, data)
 					} else if addHeadingNext {
 						addHeadingNext = false
-						log.DebugF("adding markdown heading: %v", data)
+						// log.DebugF("adding markdown heading: %v", data)
 						d.AddHeading(data)
 					} else if addFootnoteNext {
 						addFootnoteNext = false
-						log.DebugF("adding markdown footnote: %v", data)
+						// log.DebugF("adding markdown footnote: %v", data)
 						d.AddFootnote(data)
 					} else {
 						contents = beStrings.AppendWithSpace(contents, data)
