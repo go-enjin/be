@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"html/template"
 
+	"github.com/blevesearch/bleve/v2/mapping"
+
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/card"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/carousel"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/content"
@@ -52,7 +54,9 @@ import (
 	"github.com/go-enjin/be/features/pages/formats/njn/fields/table"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	beForms "github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/search"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme/types"
@@ -322,6 +326,10 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 	return
 }
 
+func (f *CFeature) AddSearchDocumentMapping(indexMapping *mapping.IndexMappingImpl) {
+	indexMapping.AddDocumentMapping("njn", NewEnjinDocumentMapping())
+}
+
 func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc search.Document, err error) {
 	var url, title string
 	if url = ctx.String("Url", ""); url == "" {
@@ -333,7 +341,164 @@ func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc searc
 		return
 	}
 
-	doc = search.NewDocument(url, title)
-	doc.AddContent(content)
+	d := NewEnjinDocument(url, title)
+	// d.AddContent(content)
+
+	var pg *page.Page
+	if pg, err = page.NewFromString(url, content); err != nil {
+		return
+	}
+
+	var data []interface{}
+	if err = json.Unmarshal([]byte(pg.Content), &data); err != nil {
+		return
+	}
+
+	var walker func(data []interface{}) (contents string)
+	var parser func(data map[string]interface{}) (contents string)
+
+	parser = func(data map[string]interface{}) (contents string) {
+		if dType, ok := data["type"]; ok {
+			switch dType {
+
+			case "footnote":
+				// looking for text and note
+				if textValue, ok := data["text"]; ok {
+					var text, note string
+					if textList, ok := textValue.([]interface{}); ok {
+						text = walker(textList)
+					} else if textString, ok := textValue.(string); ok {
+						text = textString
+					} else if textThing, ok := textValue.(map[string]interface{}); ok {
+						text = parser(textThing)
+					} else {
+						log.ErrorF("error parsing footnote text structure: %T %+v", textValue, textValue)
+						return
+					}
+					if noteValue, ok := data["note"]; ok {
+						if noteList, ok := noteValue.([]interface{}); ok {
+							note = walker(noteList)
+						} else if noteString, ok := noteValue.(string); ok {
+							note = noteString
+						} else if noteThing, ok := noteValue.(map[string]interface{}); ok {
+							note = parser(noteThing)
+						} else {
+							log.ErrorF("error parsing footnote note structure: %T %+v", noteValue, noteValue)
+							return
+						}
+						d.AddFootnote(text + ": " + note)
+						contents = beStrings.AppendWithSpace(contents, text)
+					}
+				} else {
+					log.ErrorF("error parsing footnote, missing text: %+v", data)
+				}
+
+			case "a":
+				// looking for text
+				if textValue, ok := data["text"]; ok {
+					var text string
+					if textList, ok := textValue.([]interface{}); ok {
+						text = walker(textList)
+					} else if textString, ok := textValue.(string); ok {
+						text = textString
+					} else if textThing, ok := textValue.(map[string]interface{}); ok {
+						text = parser(textThing)
+					} else {
+						log.ErrorF("error parsing anchor text structure: %T %+v", textValue, textValue)
+						return
+					}
+					d.AddLink(text)
+					contents = beStrings.AppendWithSpace(contents, text)
+				} else {
+					log.ErrorF("error parsing anchor, missing text: %+v", data)
+					return
+				}
+
+			default:
+
+				if dataContent, ok := data["content"].(map[string]interface{}); ok {
+
+					if dataHeader, ok := dataContent["header"]; ok {
+						if headerList, ok := dataHeader.([]interface{}); ok {
+							text := walker(headerList)
+							if text != "" {
+								d.AddHeading(text)
+							}
+						} else {
+							log.ErrorF("error parsing header structure: %T %+v", dataHeader, dataHeader)
+							return
+						}
+					}
+
+					if dataSection, ok := dataContent["section"]; ok {
+						if sectionList, ok := dataSection.([]interface{}); ok {
+							section := walker(sectionList)
+							if section != "" {
+								contents = beStrings.AppendWithSpace(contents, section)
+							}
+						} else {
+							log.ErrorF("error parsing section structure: %T %+v", dataSection, dataSection)
+							return
+						}
+					}
+
+					if dataFooter, ok := dataContent["footer"]; ok {
+						if footerList, ok := dataFooter.([]interface{}); ok {
+							footer := walker(footerList)
+							if footer != "" {
+								contents = beStrings.AppendWithSpace(contents, footer)
+							}
+						} else {
+							log.ErrorF("error parsing footer structure: %T %+v", dataFooter, dataFooter)
+							return
+						}
+					}
+
+				} else if dataContentValue, ok := data["content"]; ok {
+					log.ErrorF("error parsing data content structure: %T %+v", dataContentValue, dataContentValue)
+					return
+
+				} else if textValue, ok := data["text"]; ok {
+
+					var text string
+					if textList, ok := textValue.([]interface{}); ok {
+						text = walker(textList)
+					} else if textString, ok := textValue.(string); ok {
+						text = textString
+					} else if textThing, ok := textValue.(map[string]interface{}); ok {
+						text = parser(textThing)
+					} else {
+						log.ErrorF("error parsing text structure: %T %+v", textValue, textValue)
+						return
+					}
+
+					contents = beStrings.AppendWithSpace(contents, text)
+
+				}
+
+			}
+		}
+		return
+	}
+
+	walker = func(data []interface{}) (contents string) {
+		for _, datum := range data {
+			switch dt := datum.(type) {
+			case string:
+				contents += dt
+			case map[string]interface{}:
+				contents += parser(dt)
+			default:
+				log.ErrorF("unexpected data structure: %T %+v", dt, dt)
+			}
+		}
+		return
+	}
+
+	contents := walker(data)
+	d.AddContent(beForms.StripTags(beStrings.StripTmplTags(contents)))
+
+	doc = d
+	err = nil
 	return
 }
