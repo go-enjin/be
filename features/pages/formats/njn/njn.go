@@ -354,10 +354,22 @@ func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc searc
 		return
 	}
 
-	var walker func(data []interface{}) (contents string)
-	var parser func(data map[string]interface{}) (contents string)
+	var walker func(data []interface{}) (contents string, err error)
+	var parser func(data map[string]interface{}) (contents string, err error)
+	switcher := func(value interface{}) (contents string, err error) {
+		if values, ok := value.([]interface{}); ok {
+			contents, err = walker(values)
+		} else if text, ok := value.(string); ok {
+			contents = text
+		} else if thing, ok := value.(map[string]interface{}); ok {
+			contents, err = parser(thing)
+		} else {
+			err = fmt.Errorf("unsupported structure: %T %+v", value, value)
+		}
+		return
+	}
 
-	parser = func(data map[string]interface{}) (contents string) {
+	parser = func(data map[string]interface{}) (contents string, err error) {
 		if dType, ok := data["type"]; ok {
 			switch dType {
 
@@ -365,140 +377,141 @@ func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc searc
 				// looking for text and note
 				if textValue, ok := data["text"]; ok {
 					var text, note string
-					if textList, ok := textValue.([]interface{}); ok {
-						text = walker(textList)
-					} else if textString, ok := textValue.(string); ok {
-						text = textString
-					} else if textThing, ok := textValue.(map[string]interface{}); ok {
-						text = parser(textThing)
-					} else {
-						log.ErrorF("error parsing footnote text structure: %T %+v", textValue, textValue)
+					if text, err = switcher(textValue); err != nil {
+						err = fmt.Errorf("error parsing footnote text: %v", err)
 						return
 					}
 					if noteValue, ok := data["note"]; ok {
-						if noteList, ok := noteValue.([]interface{}); ok {
-							note = walker(noteList)
-						} else if noteString, ok := noteValue.(string); ok {
-							note = noteString
-						} else if noteThing, ok := noteValue.(map[string]interface{}); ok {
-							note = parser(noteThing)
-						} else {
-							log.ErrorF("error parsing footnote note structure: %T %+v", noteValue, noteValue)
+						if note, err = switcher(noteValue); err != nil {
+							err = fmt.Errorf("error parsing footnote note: %v", err)
 							return
 						}
 						d.AddFootnote(text + ": " + note)
 						contents = beStrings.AppendWithSpace(contents, text)
 					}
 				} else {
-					log.ErrorF("error parsing footnote, missing text: %+v", data)
+					err = fmt.Errorf("footnote text not found: %+v", data)
 				}
 
 			case "a":
 				// looking for text
 				if textValue, ok := data["text"]; ok {
 					var text string
-					if textList, ok := textValue.([]interface{}); ok {
-						text = walker(textList)
-					} else if textString, ok := textValue.(string); ok {
-						text = textString
-					} else if textThing, ok := textValue.(map[string]interface{}); ok {
-						text = parser(textThing)
-					} else {
-						log.ErrorF("error parsing anchor text structure: %T %+v", textValue, textValue)
+					if text, err = switcher(textValue); err != nil {
+						err = fmt.Errorf("error parsing anchor text: %v", err)
 						return
 					}
 					d.AddLink(text)
 					contents = beStrings.AppendWithSpace(contents, text)
 				} else {
-					log.ErrorF("error parsing anchor, missing text: %+v", data)
-					return
+					err = fmt.Errorf("anchor text not found: %+v", data)
 				}
 
 			default:
 
 				if dataContent, ok := data["content"].(map[string]interface{}); ok {
 
-					if dataHeader, ok := dataContent["header"]; ok {
-						if headerList, ok := dataHeader.([]interface{}); ok {
-							text := walker(headerList)
-							if text != "" {
+					if headerData, ok := dataContent["header"]; ok {
+						if headerList, ok := headerData.([]interface{}); ok {
+							var text string
+							if text, err = walker(headerList); err != nil {
+								err = fmt.Errorf("error walking header list: %v", err)
+							} else if text != "" {
 								d.AddHeading(text)
 							}
 						} else {
-							log.ErrorF("error parsing header structure: %T %+v", dataHeader, dataHeader)
+							err = fmt.Errorf("invalid header structure: %T %+v", headerData, headerData)
 							return
 						}
 					}
 
-					if dataSection, ok := dataContent["section"]; ok {
-						if sectionList, ok := dataSection.([]interface{}); ok {
-							section := walker(sectionList)
-							if section != "" {
-								contents = beStrings.AppendWithSpace(contents, section)
+					if sectionData, ok := dataContent["section"]; ok {
+						if sectionList, ok := sectionData.([]interface{}); ok {
+							var text string
+							if text, err = walker(sectionList); err != nil {
+								err = fmt.Errorf("error walking section list: %v", err)
+							} else if text != "" {
+								contents = beStrings.AppendWithSpace(contents, text)
 							}
 						} else {
-							log.ErrorF("error parsing section structure: %T %+v", dataSection, dataSection)
+							err = fmt.Errorf("invalid section structure: %T %+v", sectionData, sectionData)
 							return
 						}
 					}
 
-					if dataFooter, ok := dataContent["footer"]; ok {
-						if footerList, ok := dataFooter.([]interface{}); ok {
-							footer := walker(footerList)
-							if footer != "" {
-								contents = beStrings.AppendWithSpace(contents, footer)
+					if footerData, ok := dataContent["footer"]; ok {
+						if footerList, ok := footerData.([]interface{}); ok {
+							var text string
+							if text, err = walker(footerList); err != nil {
+								err = fmt.Errorf("error walking footer list: %v", err)
+							} else if text != "" {
+								contents = beStrings.AppendWithSpace(contents, text)
 							}
 						} else {
-							log.ErrorF("error parsing footer structure: %T %+v", dataFooter, dataFooter)
+							err = fmt.Errorf("invalid footer structure: %T %+v", footerData, footerData)
+							return
+						}
+					}
+
+					if blocksData, ok := dataContent["blocks"]; ok {
+						if blocksList, ok := blocksData.([]interface{}); ok {
+							var text string
+							if text, err = walker(blocksList); err != nil {
+								err = fmt.Errorf("error walking blocks list: %v", err)
+							} else if text != "" {
+								contents = beStrings.AppendWithSpace(contents, text)
+							}
+						} else {
+							err = fmt.Errorf("invalid blocks structure: %T %+v", blocksData, blocksData)
 							return
 						}
 					}
 
 				} else if dataContentValue, ok := data["content"]; ok {
-					log.ErrorF("error parsing data content structure: %T %+v", dataContentValue, dataContentValue)
+
+					err = fmt.Errorf("invalid content structure: %T %+v", dataContentValue, dataContentValue)
 					return
 
 				} else if textValue, ok := data["text"]; ok {
 
 					var text string
-					if textList, ok := textValue.([]interface{}); ok {
-						text = walker(textList)
-					} else if textString, ok := textValue.(string); ok {
-						text = textString
-					} else if textThing, ok := textValue.(map[string]interface{}); ok {
-						text = parser(textThing)
-					} else {
-						log.ErrorF("error parsing text structure: %T %+v", textValue, textValue)
+					if text, err = switcher(textValue); err != nil {
+						err = fmt.Errorf("error parsing text: %v", err)
 						return
 					}
 
 					contents = beStrings.AppendWithSpace(contents, text)
-
 				}
-
 			}
 		}
 		return
 	}
 
-	walker = func(data []interface{}) (contents string) {
+	walker = func(data []interface{}) (contents string, err error) {
 		for _, datum := range data {
 			switch dt := datum.(type) {
 			case string:
-				contents += dt
+				contents = beStrings.AppendWithSpace(contents, dt)
 			case map[string]interface{}:
-				contents += parser(dt)
+				var text string
+				if text, err = parser(dt); err != nil {
+					return
+				} else if text != "" {
+					contents = beStrings.AppendWithSpace(contents, text)
+				}
 			default:
-				log.ErrorF("unexpected data structure: %T %+v", dt, dt)
+				err = fmt.Errorf("invalid data structure: %T %+v", dt, dt)
 			}
 		}
 		return
 	}
 
-	contents := walker(data)
+	var contents string
+	if contents, err = walker(data); err != nil {
+		return
+	}
 	d.AddContent(beForms.StripTags(beStrings.StripTmplTags(contents)))
 
 	doc = d
-	err = nil
 	return
 }
