@@ -119,3 +119,28 @@ func (p *Page) String() string {
 	ctx, _ := json.MarshalIndent(p.Context, "", "    ")
 	return string(ctx) + "\n" + p.Content
 }
+
+func (p *Page) Copy() (copy *Page) {
+	copy = &Page{
+		Url:         p.Url,
+		Slug:        p.Slug,
+		Path:        p.Path,
+		Title:       p.Title,
+		Format:      p.Format,
+		Summary:     p.Summary,
+		Description: p.Description,
+		Layout:      p.Layout,
+		Section:     p.Section,
+		Archetype:   p.Archetype,
+		FrontMatter: p.FrontMatter,
+		Language:    p.Language,
+		Content:     p.Content,
+	}
+	copy.Model.ID = p.Model.ID
+	copy.Model.CreatedAt = p.Model.CreatedAt
+	copy.Model.UpdatedAt = p.Model.UpdatedAt
+	copy.Model.DeletedAt = p.Model.DeletedAt
+	copy.Initial = p.Initial.Copy()
+	copy.Context = p.Initial.Copy()
+	return
+}
