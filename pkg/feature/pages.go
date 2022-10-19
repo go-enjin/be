@@ -18,6 +18,7 @@ import (
 	"net/http"
 
 	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/page"
 )
 
 type PageContextFilterFn = func(ctx context.Context, r *http.Request) (out context.Context)
@@ -32,4 +33,8 @@ type PageRestrictionHandler interface {
 
 type DataRestrictionHandler interface {
 	RestrictServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request) (out *http.Request, allow bool)
+}
+
+type PageProvider interface {
+	FindPage(url string) (p *page.Page)
 }
