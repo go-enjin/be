@@ -185,6 +185,30 @@ func (t *Theme) initConfig(ctx context.Context) {
 						}
 					}
 				}
+
+				if sitePage, ok := siteInfo["page"].(map[string]interface{}); ok {
+
+					if stylesheets, ok := sitePage["stylesheets"].([]interface{}); ok {
+						var found []string
+						for _, stylesheet := range stylesheets {
+							if href, ok := stylesheet.(string); ok {
+								found = append(found, href)
+							}
+						}
+						t.Config.Context.SetSpecific("PageStyleSheets", found)
+					}
+
+					if stylesheets, ok := sitePage["font-stylesheets"].([]interface{}); ok {
+						var found []string
+						for _, stylesheet := range stylesheets {
+							if href, ok := stylesheet.(string); ok {
+								found = append(found, href)
+							}
+						}
+						t.Config.Context.SetSpecific("PageFontStyleSheets", found)
+					}
+
+				}
 			}
 
 			var walkStyles func(keys []string, src map[string]interface{}) (styles []string)
