@@ -413,6 +413,10 @@ func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error)
 
 			default:
 
+				if linkText, ok := data["link-text"].(string); ok {
+					d.AddLink(linkText)
+				}
+
 				if dataContent, ok := data["content"].(map[string]interface{}); ok {
 
 					if headerData, ok := dataContent["header"]; ok {
