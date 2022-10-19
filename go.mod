@@ -21,16 +21,16 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/tdewolff/minify/v2 v2.12.0
 	github.com/tg123/go-htpasswd v1.2.0
-	github.com/urfave/cli/v2 v2.20.2
+	github.com/urfave/cli/v2 v2.19.2
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	github.com/yookoala/realpath v1.0.0
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
 	golang.org/x/crypto v0.0.0-20221012134737-56aed061732a
-	golang.org/x/net v0.0.0-20221017152216-f25eb7ecb193
+	golang.org/x/net v0.0.0-20221012135044-0b7e1fb9d458
 	gopkg.in/yaml.v3 v3.0.1
-	gorm.io/driver/mysql v1.4.3
+	gorm.io/driver/mysql v1.4.1
 	gorm.io/driver/postgres v1.4.4
-	gorm.io/driver/sqlite v1.4.3
+	gorm.io/driver/sqlite v1.4.2
 	gorm.io/gorm v1.24.0
 )
 
