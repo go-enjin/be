@@ -17,10 +17,15 @@ package page
 import (
 	"fmt"
 
+	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/search"
 )
 
 func (p *Page) SearchDocument() (doc search.Document, err error) {
+	if pgSearchIndex := p.Context.String("Searchable", "true"); pgSearchIndex != "true" {
+		log.DebugF("skipping search index for: %v", p.Url)
+		return
+	}
 	if format := GetFormat(p.Format); format != nil {
 		doc, err = format.IndexDocument(p)
 	} else {
