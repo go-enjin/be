@@ -25,6 +25,7 @@ import (
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/fs/local"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/theme/types"
 )
@@ -188,7 +189,9 @@ func (t *Theme) initConfig(ctx context.Context) {
 
 			var walkStyles func(keys []string, src map[string]interface{}) (styles []string)
 			walkStyles = func(keys []string, src map[string]interface{}) (styles []string) {
-				for k, s := range src {
+				sk := maps.SortedKeys(src)
+				for _, k := range sk {
+					s, _ := src[k]
 					switch typedStyle := s.(type) {
 					case map[string]interface{}:
 						r := walkStyles(append(keys, k), typedStyle)
