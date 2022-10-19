@@ -45,11 +45,13 @@ type Page struct {
 	Language    string `json:"lang"`
 	Content     string `json:"content"`
 
+	Initial context.Context `json:"-" gorm:"-"`
 	Context context.Context `json:"context" gorm:"-"`
 }
 
 func New() *Page {
 	p := new(Page)
+	p.Initial = context.New()
 	p.Context = context.New()
 	return p
 }
@@ -69,9 +71,9 @@ func newPageForPath(path string) (p *Page, err error) {
 		p.Url = "/" + p.Slug
 	}
 	p.Title = beStrings.TitleCase(strings.Join(strings.Split(p.Slug, "-"), " "))
-	p.Context.Set("Url", p.Url)
-	p.Context.Set("Slug", p.Slug)
-	p.Context.Set("Title", p.Title)
+	p.Initial.Set("Url", p.Url)
+	p.Initial.Set("Slug", p.Slug)
+	p.Initial.Set("Title", p.Title)
 	return
 }
 
@@ -89,7 +91,7 @@ func NewFromFile(path, filePath string) (p *Page, err error) {
 		if !p.parseToml(raw) {
 			if !p.parseJson(raw) {
 				p.Content = raw
-				p.parseContext(p.Context)
+				p.parseContext(p.Initial)
 			}
 		}
 	}
@@ -106,7 +108,7 @@ func NewFromString(path, raw string) (p *Page, err error) {
 		if !p.parseToml(raw) {
 			if !p.parseJson(raw) {
 				p.Content = raw
-				p.parseContext(p.Context)
+				p.parseContext(p.Initial)
 			}
 		}
 	}

@@ -67,5 +67,6 @@ func (p *Page) parseContext(ctx context.Context) {
 	// path cannot be set from front-matter
 	ctx.Set("Path", p.Path)
 
-	p.Context.Apply(ctx)
+	p.Initial.Apply(ctx)
+	p.Context.Apply(p.Initial)
 }
