@@ -20,15 +20,12 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/iancoleman/strcase"
-	"github.com/leekchan/gtf"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/fs/local"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
-	"github.com/go-enjin/be/pkg/theme/funcs"
 	"github.com/go-enjin/be/pkg/theme/types"
 )
 
@@ -318,40 +315,7 @@ func (t *Theme) GetBlockThemeNames() (names []string) {
 }
 
 func (t *Theme) initFuncMap() {
-	t.FuncMap = template.FuncMap{
-		"toCamel":              strcase.ToCamel,
-		"toLowerCamel":         strcase.ToLowerCamel,
-		"toDelimited":          strcase.ToDelimited,
-		"toScreamingDelimited": strcase.ToScreamingDelimited,
-		"toKebab":              strcase.ToKebab,
-		"toScreamingKebab":     strcase.ToScreamingKebab,
-		"toSnake":              strcase.ToSnake,
-		"toScreamingSnake":     strcase.ToScreamingSnake,
-
-		"asHTML":     funcs.AsHTML,
-		"asHTMLAttr": funcs.AsHTMLAttr,
-		"asCSS":      funcs.AsCSS,
-		"asJS":       funcs.AsJS,
-		"fsHash":     funcs.FsHash,
-		"fsUrl":      funcs.FsUrl,
-		"fsMime":     funcs.FsMime,
-		"add":        funcs.Add,
-		"sub":        funcs.Sub,
-
-		"mergeClassNames": funcs.MergeClassNames,
-
-		"element":           funcs.Element,
-		"elementOpen":       funcs.ElementOpen,
-		"elementClose":      funcs.ElementClose,
-		"elementAttributes": funcs.ElementAttributes,
-
-		"DebugF": funcs.LogDebug,
-		"WarnF":  funcs.LogWarn,
-		"ErrorF": funcs.LogError,
-	}
-	for k, v := range gtf.GtfFuncMap {
-		t.FuncMap[k] = v
-	}
+	t.FuncMap = DefaultFuncMap()
 }
 
 func (t *Theme) initLayouts() (err error) {
