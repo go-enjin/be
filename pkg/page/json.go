@@ -22,7 +22,7 @@ import (
 )
 
 var (
-	rxPageJson = regexp.MustCompile(`(?ms)\A\s*(\{.+?\})\s*^`)
+	rxPageJson = regexp.MustCompile(`(?ms)\A\s*(\{.+?^})\s*^`)
 )
 
 func (p *Page) parseJson(raw string) bool {
