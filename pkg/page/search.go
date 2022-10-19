@@ -22,7 +22,7 @@ import (
 
 func (p *Page) SearchDocument() (doc search.Document, err error) {
 	if format := GetFormat(p.Format); format != nil {
-		doc, err = format.IndexDocument(p.Context, p.Content)
+		doc, err = format.IndexDocument(p)
 	} else {
 		err = fmt.Errorf("unsupported page format: %v", p.Format)
 	}
