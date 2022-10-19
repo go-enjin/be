@@ -16,23 +16,43 @@ package fs
 
 import (
 	"fmt"
+	"sync"
 
+	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
-var _registered = make(map[string][]FileSystem)
+type registry struct {
+	registered map[string][]FileSystem
+
+	sync.RWMutex
+}
+
+var _registry = &registry{
+	registered: make(map[string][]FileSystem),
+}
+
+func RegisteredFileSystems() (registered map[string][]FileSystem) {
+	_registry.RLock()
+	defer _registry.RUnlock()
+	registered = _registry.registered
+	return
+}
 
 func RegisterFileSystem(mount string, f FileSystem) {
-	if _, ok := _registered[mount]; !ok {
-		_registered[mount] = make([]FileSystem, 0)
-	}
-	_registered[mount] = append(_registered[mount], f)
+	_registry.Lock()
+	defer _registry.Unlock()
+	_registry.registered[mount] = append(_registry.registered[mount], f)
+	// log.DebugDF(1, "registered fs: %v (%d)", mount, len(_registry.registered[mount]))
 }
 
 func FindFileShasum(path string) (shasum string, err error) {
-	for mount, systems := range _registered {
+	_registry.RLock()
+	defer _registry.RUnlock()
+	for mount, systems := range _registry.registered {
 		p := bePath.TrimPrefix(path, mount)
 		for _, f := range systems {
+			log.DebugF("checking for file shasum: %v - %v", f.Name(), p)
 			if shasum, err = f.Shasum(p); err == nil {
 				return
 			}
@@ -43,7 +63,9 @@ func FindFileShasum(path string) (shasum string, err error) {
 }
 
 func FindFileMime(path string) (mime string, err error) {
-	for _, systems := range _registered {
+	_registry.RLock()
+	defer _registry.RUnlock()
+	for _, systems := range _registry.registered {
 		for _, f := range systems {
 			if mime, err = f.MimeType(path); err == nil {
 				return
