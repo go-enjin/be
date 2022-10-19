@@ -24,7 +24,9 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
+	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/theme"
 )
 
@@ -91,5 +93,16 @@ func (e *Enjin) Context() (ctx context.Context) {
 	ctx.Set("Year", now.Year())
 	ctx.Set("Release", globals.BinHash)
 	ctx.Set("Version", globals.Version)
+	return
+}
+
+func (e *Enjin) FindPage(url string) (p *page.Page) {
+	for _, f := range e.Features() {
+		if provider, ok := f.(feature.PageProvider); ok {
+			if p = provider.FindPage(url); p != nil {
+				return
+			}
+		}
+	}
 	return
 }
