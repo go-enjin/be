@@ -36,9 +36,11 @@ import (
 
 var _localContent *Feature
 
-var _ feature.Feature = (*Feature)(nil)
-
-var _ feature.Middleware = (*Feature)(nil)
+var (
+	_ feature.Feature      = (*Feature)(nil)
+	_ feature.Middleware   = (*Feature)(nil)
+	_ feature.PageProvider = (*Feature)(nil)
+)
 
 const Tag feature.Tag = "LocalContent"
 
@@ -129,7 +131,7 @@ func (f *Feature) ServePath(path string, s feature.System, w http.ResponseWriter
 	if path == "" {
 		path = "/"
 	}
-	if mount, mpath, pg, e := f.cache.Lookup(path); e == nil {
+	if mount, mpath, pg, e := f.cache.Lookup(path); e == nil && pg.Context.String("type", "page") == "page" {
 		if err = s.ServePage(pg, w, r); err == nil {
 			log.DebugF("served local %v content: %v", mount, mpath)
 			return
@@ -148,11 +150,28 @@ func (f *Feature) UpdateSearch(index bleve.Index) (err error) {
 	for _, pg := range allPages {
 		if doc, e := pg.SearchDocument(); e != nil {
 			err = fmt.Errorf("error preparing locals search document: %v", e)
-		} else if ee := index.Index(pg.Url, doc); ee != nil {
-			err = fmt.Errorf("error indexing locals search document: %v", ee)
+		} else if doc != nil {
+			if ee := index.Index(pg.Url, doc.Self()); ee != nil {
+				err = fmt.Errorf("error indexing locals search document: %v", ee)
+			} else {
+				log.TraceF("updated locals search index with document: %v", doc.GetUrl())
+			}
 		} else {
-			log.DebugF("updated locals search index with document: %v", doc.GetUrl())
+			log.TraceF("skipped locals search index with document: %v", pg.Url)
 		}
+	}
+	return
+}
+
+func (f *Feature) FindPage(path string) (p *page.Page) {
+	f.cache.Rebuild()
+	path = net.TrimQueryParams(path)
+	path = strings.TrimSuffix(path, "/")
+	if path == "" {
+		path = "/"
+	}
+	if _, _, pg, e := f.cache.Lookup(path); e == nil {
+		p = pg.Copy()
 	}
 	return
 }
