@@ -64,6 +64,12 @@ func DefaultFuncMap() (funcMap template.FuncMap) {
 
 		"Nonce": funcs.Nonce,
 
+		"isUrl":    funcs.IsUrl,
+		"isPath":   funcs.IsPath,
+		"parseUrl": funcs.ParseUrl,
+
+		"sortedKeys": funcs.SortedKeys,
+
 		"DebugF": funcs.LogDebug,
 		"WarnF":  funcs.LogWarn,
 		"ErrorF": funcs.LogError,

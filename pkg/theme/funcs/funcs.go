@@ -19,12 +19,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"net/url"
 	"strings"
 
 	"golang.org/x/net/html"
 
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -144,5 +146,60 @@ func UnescapeHtml(input interface{}) (out template.HTML) {
 	return
 }
 
+func SortedKeys(v interface{}) (keys []string) {
+	if maps.IsMap(v) {
+		switch t := v.(type) {
+		case map[string]interface{}:
+			keys = maps.SortedKeys(t)
 
+		case map[string]string:
+			keys = maps.SortedKeys(t)
+		case map[string]template.HTML:
+			keys = maps.SortedKeys(t)
+		case map[string]template.HTMLAttr:
+			keys = maps.SortedKeys(t)
+		case map[string]template.CSS:
+			keys = maps.SortedKeys(t)
+		case map[string]template.JS:
+			keys = maps.SortedKeys(t)
 
+		case map[string][]string:
+			keys = maps.SortedKeys(t)
+		case map[string][]template.HTML:
+			keys = maps.SortedKeys(t)
+		case map[string][]template.HTMLAttr:
+			keys = maps.SortedKeys(t)
+		case map[string][]template.CSS:
+			keys = maps.SortedKeys(t)
+		case map[string][]template.JS:
+			keys = maps.SortedKeys(t)
+
+		default:
+			log.WarnF("unsupported map type: %T", t)
+		}
+	}
+	return
+}
+
+func ParseUrl(value string) (u *url.URL) {
+	if v, err := url.Parse(value); err != nil {
+		log.ErrorF("error parsing url: %v", err)
+	} else {
+		u = v
+	}
+	return
+}
+
+func IsUrl(value string) (ok bool) {
+	if u, err := url.Parse(value); err == nil {
+		ok = u.Scheme != "" && u.Host != ""
+	}
+	return
+}
+
+func IsPath(value string) (ok bool) {
+	if u, err := url.Parse(value); err == nil {
+		ok = u.Scheme == "" && u.Host == "" && u.Path != ""
+	}
+	return
+}
