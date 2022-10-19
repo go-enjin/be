@@ -31,44 +31,44 @@ import (
 func (e *Enjin) Serve204(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusNoContent)
-	_, _ = w.Write([]byte("204 - No Content"))
+	_, _ = w.Write([]byte("204 - No Content\n"))
 }
 
 func (e *Enjin) Serve401(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusUnauthorized)
-	_, _ = w.Write([]byte("401 - Unauthorized"))
+	_, _ = w.Write([]byte("401 - Unauthorized\n"))
 }
 
 func (e *Enjin) ServeBasic401(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("WWW-Authenticate", "Basic")
 	w.WriteHeader(http.StatusUnauthorized)
-	_, _ = w.Write([]byte("401 - Unauthorized"))
+	_, _ = w.Write([]byte("401 - Unauthorized\n"))
 }
 
 func (e *Enjin) Serve403(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusForbidden)
-	_, _ = w.Write([]byte("403 - Forbidden"))
+	_, _ = w.Write([]byte("403 - Forbidden\n"))
 }
 
 func (e *Enjin) Serve404(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusNotFound)
-	_, _ = w.Write([]byte("404 - Not Found"))
+	_, _ = w.Write([]byte("404 - Not Found\n"))
 }
 
 func (e *Enjin) Serve405(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusMethodNotAllowed)
-	_, _ = w.Write([]byte("405 - Method Not Allowed"))
+	_, _ = w.Write([]byte("405 - Method Not Allowed\n"))
 }
 
 func (e *Enjin) Serve500(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusInternalServerError)
-	_, _ = w.Write([]byte("500 - Internal Server Error"))
+	_, _ = w.Write([]byte("500 - Internal Server Error\n"))
 }
 
 func (e *Enjin) ServeNotFound(w http.ResponseWriter, r *http.Request) {
