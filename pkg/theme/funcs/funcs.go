@@ -144,17 +144,5 @@ func UnescapeHtml(input interface{}) (out template.HTML) {
 	return
 }
 
-func LogDebug(format string, argv ...interface{}) (html template.HTML) {
-	log.DebugDF(2, format, argv...)
-	return
-}
 
-func LogWarn(format string, argv ...interface{}) (html template.HTML) {
-	log.WarnDF(2, format, argv...)
-	return
-}
 
-func LogError(format string, argv ...interface{}) (html template.HTML) {
-	log.ErrorDF(2, format, argv...)
-	return
-}
