@@ -209,3 +209,8 @@ func KebabKeys[V interface{}](data map[string]V) (kebabed map[string]V) {
 	}
 	return
 }
+
+func IsMap(v interface{}) (ok bool) {
+	ok = strings.HasPrefix(fmt.Sprintf("%T", v), "map[")
+	return
+}
