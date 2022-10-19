@@ -19,7 +19,6 @@ import (
 
 	beFs "github.com/go-enjin/be/pkg/fs"
 	beFsEmbed "github.com/go-enjin/be/pkg/fs/embed"
-	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -31,8 +30,11 @@ func NewEmbed(path string, efs embed.FS) (t *Theme, err error) {
 		return
 	}
 	if staticFs, e := beFsEmbed.Wrap(path, "static", efs); e == nil {
+		t.StaticFS = staticFs
 		beFs.RegisterFileSystem("/", staticFs)
-		log.DebugF("wrapping static fs: %v/static", path)
+		// log.DebugF("registered embed static fs: %v/static", path)
+	} else {
+		t.StaticFS = nil
 	}
 	err = t.init()
 	return

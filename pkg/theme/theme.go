@@ -65,6 +65,7 @@ type Theme struct {
 	Archetypes map[string]*Archetype
 
 	FileSystem fs.FileSystem
+	StaticFS   fs.FileSystem
 }
 
 func New(path string, fs fs.FileSystem) (t *Theme, err error) {
@@ -76,20 +77,25 @@ func New(path string, fs fs.FileSystem) (t *Theme, err error) {
 	return
 }
 
-func NewLocal(path string) (theme *Theme, err error) {
+func NewLocal(path string) (t *Theme, err error) {
 	if !bePath.IsDir(path) {
 		err = bePath.ErrorDirNotFound
 		return
 	}
-	theme = new(Theme)
-	theme.Path = bePath.TrimSlashes(path)
-	if theme.FileSystem, err = local.New(path); err != nil {
+	t = new(Theme)
+	t.Path = bePath.TrimSlashes(path)
+	if t.FileSystem, err = local.New(path); err != nil {
 		return
 	}
 	if staticFs, e := local.New(path + "/static"); e == nil {
+		t.StaticFS = staticFs
 		fs.RegisterFileSystem("/", staticFs)
+		// log.DebugF("registered local static fs: %v/static", path)
+	} else {
+		t.StaticFS = nil
 	}
-	err = theme.init()
+
+	err = t.init()
 	return
 }
 
@@ -116,7 +122,14 @@ func (t *Theme) init() (err error) {
 	}
 	t.initArchetypes()
 
-	addThemeInstance(t)
+	if parent := t.GetParent(); parent != nil {
+		if parent.StaticFS != nil {
+			fs.RegisterFileSystem("/", parent.StaticFS)
+			// log.DebugF("made new (parent) theme static: %v", parent.Path+"/static")
+		}
+	}
+
+	err = addThemeInstance(t)
 	return
 }
 
