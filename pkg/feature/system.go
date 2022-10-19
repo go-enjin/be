@@ -45,7 +45,10 @@ type Service interface {
 
 	ServeStatusPage(status int, w http.ResponseWriter, r *http.Request)
 	ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) (err error)
+	ServePath(urlPath string, w http.ResponseWriter, r *http.Request) (err error)
 	ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request)
+
+	FindPage(url string) (p *page.Page)
 
 	Notify(tag string)
 	NotifyF(tag, format string, argv ...interface{})
