@@ -15,10 +15,13 @@
 package funcs
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
-	"strconv"
 	"strings"
+
+	"golang.org/x/net/html"
 
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
@@ -114,6 +117,30 @@ func MergeClassNames(names ...interface{}) (result template.HTML) {
 		}
 	}
 	result = template.HTML(strings.Join(accepted, " "))
+	return
+}
+
+func EscapeJsonString(input interface{}) (value string) {
+	var dst bytes.Buffer
+	switch t := input.(type) {
+	case string:
+		json.HTMLEscape(&dst, []byte(t))
+	default:
+		json.HTMLEscape(&dst, []byte(fmt.Sprintf("%v", t)))
+	}
+	value = dst.String()
+	return
+}
+
+func UnescapeHtml(input interface{}) (out template.HTML) {
+	switch t := input.(type) {
+	case string:
+		out = template.HTML(html.UnescapeString(t))
+	case template.HTML:
+		out = template.HTML(html.UnescapeString(string(t)))
+	default:
+		out = template.HTML(html.UnescapeString(fmt.Sprintf("%v", t)))
+	}
 	return
 }
 
