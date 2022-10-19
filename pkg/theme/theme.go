@@ -146,6 +146,7 @@ func (t *Theme) initConfig(ctx context.Context) {
 		LicenseLink: ctx.String("licenselink", ""),
 		Description: ctx.String("description", ""),
 		Homepage:    ctx.String("homepage", ""),
+		Context:     context.New(),
 	}
 
 	t.Config.Authors = make([]Author, 0)
@@ -161,9 +162,30 @@ func (t *Theme) initConfig(ctx context.Context) {
 		}
 	}
 
+	t.Config.Context.SetSpecific("SiteMenuMobileStyle", "side")
+	t.Config.Context.SetSpecific("SiteMenuDesktopStyle", "menu")
+
 	if v := ctx.Get("semantic"); v != nil {
 		if semantic, ok := v.(map[string]interface{}); ok {
-			// log.DebugF("found semantic configuration: %T %+v", v, maps.DebugWalk(semantic))
+			// log.DebugF("semantic configuration: %T %+v", v, maps.DebugWalk(semantic))
+
+			if siteInfo, ok := semantic["site"].(map[string]interface{}); ok {
+				if siteMenu, ok := siteInfo["menu"].(map[string]interface{}); ok {
+					if siteMenuMobile, ok := siteMenu["mobile"].(map[string]interface{}); ok {
+						if siteMenuMobileStyle, ok := siteMenuMobile["style"].(string); ok {
+							t.Config.Context.SetSpecific("SiteMenuMobileStyle", siteMenuMobileStyle)
+							log.DebugF("site menu mobile style: %v", siteMenuMobileStyle)
+						}
+					}
+					if siteMenuDesktop, ok := siteMenu["desktop"].(map[string]interface{}); ok {
+						if siteMenuDesktopStyle, ok := siteMenuDesktop["style"].(string); ok {
+							t.Config.Context.SetSpecific("SiteMenuDesktopStyle", siteMenuDesktopStyle)
+							log.DebugF("site menu desktop style: %v", siteMenuDesktopStyle)
+						}
+					}
+				}
+			}
+
 			var walkStyles func(keys []string, src map[string]interface{}) (styles []string)
 			walkStyles = func(keys []string, src map[string]interface{}) (styles []string) {
 				for k, s := range src {
@@ -249,17 +271,15 @@ func (t *Theme) initConfig(ctx context.Context) {
 			log.ErrorF("semantic structure is not a map[string]interface{}: %T", v)
 		}
 	} else {
-		log.DebugF("no semantic enjin configuration found")
+		// log.DebugF("no semantic enjin configuration found")
 	}
 
-	// setup context (global variables for use in templates)
-	t.Config.Context = context.New()
 	for k, v := range ctx {
 		switch k {
 		case "author", "styles", "semantic":
 		default:
 			t.Config.Context[k] = v
-			log.DebugF("%v theme: adding context: %v => %+v", t.Config.Name, k, v)
+			// log.DebugF("%v theme: adding context: %v => %+v", t.Config.Name, k, v)
 		}
 	}
 	t.Config.Context.CamelizeKeys()
