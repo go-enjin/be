@@ -87,57 +87,6 @@ func FsMime(path string) (mime string) {
 	return
 }
 
-func Add(values ...interface{}) (result string) {
-	var total int
-	for idx, v := range values {
-		switch value := v.(type) {
-		case int:
-			if idx == 0 {
-				total = value
-			} else {
-				total += value
-			}
-		case string:
-			if i, err := strconv.Atoi(value); err != nil {
-				if idx == 0 {
-					total = i
-				} else {
-					total += i
-				}
-			}
-		}
-	}
-	result = fmt.Sprintf("%v", total)
-	return
-}
-
-func Sub(values ...interface{}) (result string) {
-	if len(values) == 0 {
-		return
-	}
-	var total int
-	for idx, v := range values {
-		switch value := v.(type) {
-		case int:
-			if idx == 0 {
-				total = value
-			} else {
-				total -= value
-			}
-		case string:
-			if i, err := strconv.Atoi(value); err != nil {
-				if idx == 0 {
-					total = i
-				} else {
-					total -= i
-				}
-			}
-		}
-	}
-	result = fmt.Sprintf("%v", total)
-	return
-}
-
 func MergeClassNames(names ...interface{}) (result template.HTML) {
 	var accepted []string
 	for _, name := range names {
