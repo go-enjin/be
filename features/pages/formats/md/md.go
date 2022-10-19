@@ -15,7 +15,6 @@
 package md
 
 import (
-	"fmt"
 	"html/template"
 	"strings"
 
@@ -24,6 +23,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/search"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme/types"
@@ -90,20 +90,12 @@ func (f *CFeature) AddSearchDocumentMapping(indexMapping *mapping.IndexMappingIm
 	indexMapping.AddDocumentMapping("md", NewMarkdownDocumentMapping())
 }
 
-func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc search.Document, err error) {
-	var url, title string
-	if url = ctx.String("Url", ""); url == "" {
-		err = fmt.Errorf("index document missing Url")
-		return
-	}
-	if title = ctx.String("Title", ""); url == "" {
-		err = fmt.Errorf("index document missing Title")
-		return
-	}
+func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error) {
+	pg, _ := p.(*page.Page)
 
-	rendered := RenderMarkdown(content)
+	rendered := RenderMarkdown(pg.Content)
 
-	d := NewMarkdownDocument(url, title)
+	d := NewMarkdownDocument(pg.Url, pg.Title)
 	var parsed *html.Node
 	if parsed, err = html.Parse(strings.NewReader(rendered)); err != nil {
 		return

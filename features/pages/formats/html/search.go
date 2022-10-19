@@ -15,7 +15,7 @@
 package html
 
 import (
-	"github.com/blevesearch/bleve/v2/analysis/analyzer/simple"
+	"github.com/blevesearch/bleve/v2/analysis/analyzer/standard"
 	"github.com/blevesearch/bleve/v2/mapping"
 
 	"github.com/go-enjin/be/pkg/search"
@@ -43,6 +43,10 @@ func NewHtmlDocument(url, title string) (doc *CDocument) {
 	return
 }
 
+func (d *CDocument) Self() interface{} {
+	return d
+}
+
 func (d *CDocument) AddLink(text string) {
 	d.Links = append(d.Links, text)
 }
@@ -53,7 +57,7 @@ func (d *CDocument) AddHeading(text string) {
 
 func NewHtmlDocumentMapping() (dm *mapping.DocumentMapping) {
 	dm = search.NewDocumentMapping()
-	dm.AddFieldMappingsAt("headings", search.NewDefaultTextFieldMapping(simple.Name))
-	dm.AddFieldMappingsAt("links", search.NewDefaultTextFieldMapping(simple.Name))
+	dm.AddFieldMappingsAt("headings", search.NewDefaultTextFieldMapping(standard.Name))
+	dm.AddFieldMappingsAt("links", search.NewDefaultTextFieldMapping(standard.Name))
 	return
 }

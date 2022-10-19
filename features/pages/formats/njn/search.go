@@ -15,7 +15,7 @@
 package njn
 
 import (
-	"github.com/blevesearch/bleve/v2/analysis/analyzer/simple"
+	"github.com/blevesearch/bleve/v2/analysis/analyzer/standard"
 	"github.com/blevesearch/bleve/v2/mapping"
 
 	"github.com/go-enjin/be/pkg/search"
@@ -25,7 +25,9 @@ var _ Document = (*CDocument)(nil)
 
 type Document interface {
 	search.Document
+	AddLink(text string)
 	AddHeading(text string)
+	AddFootnote(text string)
 }
 
 type CDocument struct {
@@ -44,6 +46,10 @@ func NewEnjinDocument(url, title string) (doc *CDocument) {
 	return
 }
 
+func (d *CDocument) Self() interface{} {
+	return d
+}
+
 func (d *CDocument) AddLink(text string) {
 	d.Links = append(d.Links, text)
 }
@@ -58,8 +64,8 @@ func (d *CDocument) AddFootnote(text string) {
 
 func NewEnjinDocumentMapping() (dm *mapping.DocumentMapping) {
 	dm = search.NewDocumentMapping()
-	dm.AddFieldMappingsAt("links", search.NewDefaultTextFieldMapping(simple.Name))
-	dm.AddFieldMappingsAt("headings", search.NewDefaultTextFieldMapping(simple.Name))
-	dm.AddFieldMappingsAt("footnotes", search.NewDefaultTextFieldMapping(simple.Name))
+	dm.AddFieldMappingsAt("links", search.NewDefaultTextFieldMapping(standard.Name))
+	dm.AddFieldMappingsAt("headings", search.NewDefaultTextFieldMapping(standard.Name))
+	dm.AddFieldMappingsAt("footnotes", search.NewDefaultTextFieldMapping(standard.Name))
 	return
 }

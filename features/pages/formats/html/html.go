@@ -15,7 +15,6 @@
 package html
 
 import (
-	"fmt"
 	"html/template"
 	"strings"
 
@@ -24,6 +23,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/search"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme/types"
@@ -90,20 +90,12 @@ func (f *CFeature) AddSearchDocumentMapping(indexMapping *mapping.IndexMappingIm
 	indexMapping.AddDocumentMapping("html", NewHtmlDocumentMapping())
 }
 
-func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc search.Document, err error) {
-	var url, title string
-	if url = ctx.String("Url", ""); url == "" {
-		err = fmt.Errorf("index document missing Url")
-		return
-	}
-	if title = ctx.String("Title", ""); url == "" {
-		err = fmt.Errorf("index document missing Title")
-		return
-	}
+func (f *CFeature) IndexDocument(thing interface{}) (doc search.Document, err error) {
+	pg, _ := thing.(*page.Page)
 
-	d := NewHtmlDocument(url, title)
+	d := NewHtmlDocument(pg.Url, pg.Title)
 	var parsed *html.Node
-	if parsed, err = html.Parse(strings.NewReader(content)); err != nil {
+	if parsed, err = html.Parse(strings.NewReader(pg.Content)); err != nil {
 		return
 	}
 

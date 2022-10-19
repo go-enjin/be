@@ -15,6 +15,7 @@
 package njn
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -59,6 +60,7 @@ import (
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/search"
 	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/theme/types"
 )
 
@@ -330,27 +332,29 @@ func (f *CFeature) AddSearchDocumentMapping(indexMapping *mapping.IndexMappingIm
 	indexMapping.AddDocumentMapping("njn", NewEnjinDocumentMapping())
 }
 
-func (f *CFeature) IndexDocument(ctx context.Context, content string) (doc search.Document, err error) {
-	var url, title string
-	if url = ctx.String("Url", ""); url == "" {
-		err = fmt.Errorf("index document missing Url")
-		return
-	}
-	if title = ctx.String("Title", ""); url == "" {
-		err = fmt.Errorf("index document missing Title")
-		return
-	}
+func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error) {
+	pg, _ := p.(*page.Page)
 
-	d := NewEnjinDocument(url, title)
+	d := NewEnjinDocument(pg.Url, pg.Title)
 	// d.AddContent(content)
 
-	var pg *page.Page
-	if pg, err = page.NewFromString(url, content); err != nil {
+	var data []interface{}
+	// cleaned := beStrings.StripTmplTags(pg.Content)
+	var buf bytes.Buffer
+	var cleaned string
+	if tt, e := template.New("content").Funcs(theme.DefaultFuncMap()).Parse(pg.Content); e != nil {
+		err = fmt.Errorf("error parsing template: %v", e)
 		return
+	} else if e = tt.Execute(&buf, pg.Context); e != nil {
+		err = fmt.Errorf("error executing template: %v", e)
+		return
+	} else {
+		cleaned = buf.String()
 	}
 
-	var data []interface{}
-	if err = json.Unmarshal([]byte(pg.Content), &data); err != nil {
+	if err = json.Unmarshal([]byte(cleaned), &data); err != nil {
+		err = fmt.Errorf("error parsing content: %v", err)
+		log.ErrorF("error parsing content (data):\n%v", cleaned)
 		return
 	}
 
