@@ -175,12 +175,12 @@ func DebugWalk(thing map[string]interface{}) (results string) {
 			case map[string]interface{}:
 				out += walk(fmt.Sprintf("%v%v.", depth, k), t)
 			default:
-				out += fmt.Sprintf("%v%v\n", depth, k)
+				out += fmt.Sprintf("%v%v", depth, k)
 			}
 		}
 		return
 	}
-	results = walk("| ", thing)
+	results = walk("\n * ", thing)
 	return
 }
 
