@@ -117,6 +117,28 @@ func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Reque
 	}
 }
 
+func (e *Enjin) ServePath(urlPath string, w http.ResponseWriter, r *http.Request) (err error) {
+
+	pages := e.Pages()
+	if p, ok := pages[urlPath]; ok {
+		if err = e.ServePage(p, w, r); err == nil {
+			// eb page found
+			return
+		}
+	}
+
+	for _, f := range e.Features() {
+		if mw, ok := f.(feature.Middleware); ok {
+			if err = mw.ServePath(urlPath, e, w, r); err == nil {
+				// middleware found
+				return
+			}
+		}
+	}
+
+	return
+}
+
 func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) (err error) {
 	var t *theme.Theme
 	if t, err = e.GetTheme(); err != nil {
