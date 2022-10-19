@@ -21,7 +21,9 @@ import (
 
 func NewDefaultTextFieldMapping(analyzer string) (f *mapping.FieldMapping) {
 	f = bleve.NewTextFieldMapping()
+	f.Index = true
 	f.Store = true
+	f.DocValues = true
 	f.Analyzer = analyzer
 	f.IncludeInAll = true
 	f.IncludeTermVectors = true
