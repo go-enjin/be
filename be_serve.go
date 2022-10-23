@@ -15,6 +15,7 @@
 package be
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -28,7 +29,10 @@ import (
 	"github.com/go-enjin/be/pkg/theme"
 )
 
-func (e *Enjin) Serve204(w http.ResponseWriter, _ *http.Request) {
+type ContextKey string
+
+const ServeStatusResponseKey ContextKey = "ServeStatusResponse"
+
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusNoContent)
 	_, _ = w.Write([]byte("204 - No Content\n"))
@@ -80,6 +84,8 @@ func (e *Enjin) ServeInternalServerError(w http.ResponseWriter, r *http.Request)
 }
 
 func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Request) {
+	r = r.WithContext(context.WithValue(r.Context(), ServeStatusResponseKey, status))
+
 	if path, ok := e.eb.statusPages[status]; ok {
 		if p, ok := e.eb.pages[path]; ok {
 			if err := e.ServePage(p, w, r); err != nil {
@@ -261,6 +267,10 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 		data = fn(data)
 	}
 
-	w.WriteHeader(http.StatusOK)
+	if v, ok := r.Context().Value(ServeStatusResponseKey).(int); ok {
+		w.WriteHeader(v)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
 	_, _ = w.Write(data)
 }
