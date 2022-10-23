@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"runtime"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
@@ -113,5 +114,21 @@ func (e *Enjin) themeMiddleware(next http.Handler) http.Handler {
 		}
 		// log.DebugF("not a theme static: %v", path)
 		next.ServeHTTP(w, request)
+	})
+}
+
+func (e *Enjin) panicMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				buf := make([]byte, 1<<16)
+				n := runtime.Stack(buf, false)
+				buf = buf[:n]
+
+				log.ErrorF("recovering from panic: %v\n %s", err, buf)
+				e.Serve500(w, r)
+			}
+		}()
+		next.ServeHTTP(w, r)
 	})
 }
