@@ -47,14 +47,16 @@ func (c Context) Keys() (keys []string) {
 	return
 }
 
+// TODO: make context.Copy a deeper Copy() or maybe literal types only
+
 // Copy makes a duplicate of this Context
 func (c Context) Copy() (ctx Context) {
 	ctx = New()
 	for k, v := range c {
 		if sm, ok := v.(map[string]interface{}); ok {
-			ctx.Set(k, Context(sm).Copy())
+			ctx.SetSpecific(k, Context(sm).Copy())
 		} else {
-			ctx.Set(k, v)
+			ctx.SetSpecific(k, v)
 		}
 	}
 	return
