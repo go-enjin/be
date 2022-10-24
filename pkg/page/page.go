@@ -42,7 +42,7 @@ type Page struct {
 	Section     string `json:"section"`
 	Archetype   string `json:"archetype"`
 	FrontMatter string `json:"frontMatter"`
-	Language    string `json:"lang"`
+	Language    string `json:"language"`
 	Content     string `json:"content"`
 
 	Initial context.Context `json:"-" gorm:"-"`
