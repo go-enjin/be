@@ -17,6 +17,8 @@ package page
 import (
 	"strings"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/context"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
@@ -54,7 +56,7 @@ func (p *Page) parseContext(ctx context.Context) {
 	p.Archetype = ctx.String("Archetype", p.Archetype)
 	ctx.Set("Archetype", p.Archetype)
 
-	p.Language = ctx.String("Language", p.Language)
+	p.Language = ctx.String("Language", language.English.String())
 	ctx.Set("Language", p.Language)
 
 	// context content is not "source" content, do not populate "from" context,
