@@ -25,8 +25,8 @@ import (
 
 	"github.com/go-enjin/be/features/database"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/page"
 )
 
@@ -111,7 +111,7 @@ func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
 	log.DebugF("including database content middleware")
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			path := net.TrimQueryParams(r.URL.Path)
+			path := forms.TrimQueryParams(r.URL.Path)
 			if err := f.ServePath(path, s, w, r); err == nil {
 				return
 			} else if err.Error() != "path not found" {
