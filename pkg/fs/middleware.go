@@ -15,7 +15,7 @@
 package fs
 
 import (
-	"github.com/go-enjin/be/pkg/net"
+	"github.com/go-enjin/be/pkg/forms"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -39,7 +39,7 @@ func EnumerateCheckPaths(src string) (checkPaths []string) {
 }
 
 func CheckForFileData(fs FileSystem, url, mount string) (data []byte, mime, path string, ok bool) {
-	p := net.TrimQueryParams(url)
+	p := forms.TrimQueryParams(url)
 	p = bePath.TrimPrefix(p, mount)
 	p = bePath.TrimSlashes(p)
 	checkPaths := EnumerateCheckPaths(p)
