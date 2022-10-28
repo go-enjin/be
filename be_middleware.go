@@ -125,8 +125,15 @@ func (e *Enjin) panicMiddleware(next http.Handler) http.Handler {
 				n := runtime.Stack(buf, false)
 				buf = buf[:n]
 
-				log.ErrorF("recovering from panic: %v\n %s", err, buf)
-				e.Serve500(w, r)
+				log.ErrorF("recovering from panic: %v\n(begin stacktrace)\n%s\n(end stacktrace)", err, buf)
+
+				defer func() {
+					if ee := recover(); ee != nil {
+						log.ErrorF("recovering from secondary panic")
+						e.Serve500(w, r)
+					}
+				}()
+				e.ServeInternalServerError(w, r)
 			}
 		}()
 		next.ServeHTTP(w, r)
