@@ -12,16 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package feature
+package theme
 
 import (
-	"github.com/go-enjin/golang-org-x-text/language"
-
-	"github.com/go-enjin/be/pkg/menu"
+	"github.com/go-enjin/be/pkg/fs"
+	"github.com/go-enjin/be/pkg/fs/local"
+	bePath "github.com/go-enjin/be/pkg/path"
 )
 
-type MenuProvider interface {
-	Feature
+func NewLocal(path string) (t *Theme, err error) {
+	if !bePath.IsDir(path) {
+		err = bePath.ErrorDirNotFound
+		return
+	}
+	t = new(Theme)
+	t.Path = bePath.TrimSlashes(path)
+	if t.FileSystem, err = local.New(path); err != nil {
+		return
+	}
+	if staticFs, e := local.New(path + "/static"); e == nil {
+		t.StaticFS = staticFs
+		fs.RegisterFileSystem("/", staticFs)
+		// log.DebugF("registered local static fs: %v/static", path)
+	} else {
+		t.StaticFS = nil
+	}
 
-	GetMenus(tag language.Tag) (found map[string]menu.Menu)
+	err = t.init()
+	return
 }

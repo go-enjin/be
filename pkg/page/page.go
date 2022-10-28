@@ -16,16 +16,18 @@ package page
 
 import (
 	"encoding/json"
+	"path/filepath"
 	"strings"
 
 	"github.com/iancoleman/strcase"
 	"gorm.io/gorm"
 
-	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/net"
-	bePath "github.com/go-enjin/be/pkg/path"
+	"github.com/go-enjin/be/pkg/forms"
 	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/golang-org-x-text/language"
+
+	"github.com/go-enjin/be/pkg/context"
+	bePath "github.com/go-enjin/be/pkg/path"
 )
 
 type Page struct {
@@ -47,6 +49,8 @@ type Page struct {
 
 	Initial context.Context `json:"-" gorm:"-"`
 	Context context.Context `json:"context" gorm:"-"`
+
+	LanguageTag language.Tag `json:"-"`
 }
 
 func New() *Page {
@@ -56,54 +60,17 @@ func New() *Page {
 	return p
 }
 
-func newPageForPath(path string) (p *Page, err error) {
+func NewFromString(path, raw string) (p *Page, err error) {
+	path = forms.TrimQueryParams(path)
 	p = New()
-	path = bePath.TrimSlashes(path)
-	if extn := bePath.Ext(path); extn != "" {
-		p.Format = strings.ToLower(extn)
-	}
-	p.Slug = strcase.ToKebab(bePath.Base(path))
-	if path == "/" {
-		p.Url = "/"
-	} else if len(strings.Split(path, "/")) >= 2 {
-		p.Url = bePath.Dir(path) + "/" + p.Slug
-	} else {
-		p.Url = "/" + p.Slug
-	}
+	p.SetSlugUrl(path)
+
+	// log.DebugF("new page for path: %v - %v - %v", path, slug, p.Url)
 	p.Title = beStrings.TitleCase(strings.Join(strings.Split(p.Slug, "-"), " "))
 	p.Initial.Set("Url", p.Url)
 	p.Initial.Set("Slug", p.Slug)
 	p.Initial.Set("Title", p.Title)
-	return
-}
 
-func NewFromFile(path, filePath string) (p *Page, err error) {
-	path = net.TrimQueryParams(path)
-	if p, err = newPageForPath(path); err != nil {
-		return
-	}
-	var data []byte
-	if data, err = bePath.ReadFile(filePath); err != nil {
-		return
-	}
-	raw := string(data)
-	if !p.parseYaml(raw) {
-		if !p.parseToml(raw) {
-			if !p.parseJson(raw) {
-				p.Content = raw
-				p.parseContext(p.Initial)
-			}
-		}
-	}
-	log.DebugF("new page from file: %v\n%v", filePath, p.Context)
-	return
-}
-
-func NewFromString(path, raw string) (p *Page, err error) {
-	path = net.TrimQueryParams(path)
-	if p, err = newPageForPath(path); err != nil {
-		return
-	}
 	if !p.parseYaml(raw) {
 		if !p.parseToml(raw) {
 			if !p.parseJson(raw) {
@@ -135,6 +102,7 @@ func (p *Page) Copy() (copy *Page) {
 		FrontMatter: p.FrontMatter,
 		Language:    p.Language,
 		Content:     p.Content,
+		// LanguageTag: p.LanguageTag,
 	}
 	copy.Model.ID = p.Model.ID
 	copy.Model.CreatedAt = p.Model.CreatedAt
@@ -142,5 +110,67 @@ func (p *Page) Copy() (copy *Page) {
 	copy.Model.DeletedAt = p.Model.DeletedAt
 	copy.Initial = p.Initial.Copy()
 	copy.Context = p.Initial.Copy()
+	return
+}
+
+func (p *Page) SetLanguage(tag language.Tag) {
+	p.LanguageTag = tag
+	p.Language = p.LanguageTag.String()
+	p.Context.Set("Language", p.Language)
+}
+
+func (p *Page) SetSlugUrl(path string) {
+	trimmedPath := bePath.TrimSlashes(path)
+
+	var slug, urlPath string
+	if f, e := MatchFormatExtension(trimmedPath); f != nil {
+		p.Format = f.Name()
+		urlPath = strings.TrimSuffix(trimmedPath, "."+e)
+		slug = filepath.Base(urlPath)
+	} else {
+		p.Format = "html"
+		urlPath = trimmedPath
+		slug = filepath.Base(slug)
+	}
+
+	dirPath := bePath.Dir(urlPath)
+	if dirPath != "." {
+		urlPath = strings.ToLower(dirPath)
+	} else {
+		urlPath = ""
+	}
+
+	p.Slug = strcase.ToKebab(slug)
+
+	if urlPath != "" {
+		p.Url = "/" + urlPath + "/" + p.Slug
+	} else {
+		p.Url = "/" + p.Slug
+	}
+}
+
+func (p *Page) LangModeUrl(mode string, targetLang, defaultLang language.Tag) (translated string) {
+	switch mode {
+	case "domain":
+		translated = p.Url
+	case "path":
+		if language.Compare(p.LanguageTag, defaultLang) {
+			translated = p.Url
+		} else if language.Compare(p.LanguageTag, language.Und) {
+			if language.Compare(targetLang, defaultLang) {
+				translated = p.Url
+			} else {
+				translated = "/" + targetLang.String() + p.Url
+			}
+		} else {
+			translated = "/" + p.LanguageTag.String() + p.Url
+		}
+	case "query":
+		if language.Compare(p.LanguageTag, language.Und) {
+			translated = p.Url + "?lang=" + targetLang.String()
+		} else {
+			translated = p.Url + "?lang=" + p.LanguageTag.String()
+		}
+	}
 	return
 }

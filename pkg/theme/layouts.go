@@ -20,6 +20,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -44,7 +45,8 @@ func NewLayouts(t *Theme) (layouts *Layouts, err error) {
 func (l *Layouts) Reload() (err error) {
 	var paths []string
 	if paths, err = l.t.FileSystem.ListDirs("layouts"); err != nil {
-		if strings.Contains(err.Error(), "no such file or directory") {
+		if strings.Contains(err.Error(), "no such file or directory") ||
+			strings.Contains(err.Error(), "file does not exist") {
 			err = nil
 			return
 		} else {
@@ -63,7 +65,7 @@ func (l *Layouts) Reload() (err error) {
 			log.DebugF("%v theme: reloaded %v layout", l.t.Config.Name, exists.Name)
 			continue
 		}
-		if layout, e := NewLayout(path, l.t.FileSystem, l.t.FuncMap); e != nil {
+		if layout, e := NewLayout(path, l.t.FileSystem, l.t); e != nil {
 			err = fmt.Errorf("error creating new layout: %v - %v", path, e)
 			return
 		} else {
@@ -91,17 +93,17 @@ func (l *Layouts) SetLayout(name string, layout *Layout) {
 	return
 }
 
-func (l *Layouts) NewTemplate(name string) (tmpl *template.Template, err error) {
+func (l *Layouts) NewTemplate(name string, ctx context.Context) (tmpl *template.Template, err error) {
 	if tmpl, err = template.New(name).Parse(`{{/* empty */}}`); err == nil {
 
 		if partials := l.GetLayout("partials"); partials != nil {
-			if err = partials.Apply(tmpl); err != nil {
+			if err = partials.Apply(tmpl, ctx); err != nil {
 				return
 			}
 		}
 
 		if _default := l.GetLayout("_default"); _default != nil {
-			if err = _default.Apply(tmpl); err != nil {
+			if err = _default.Apply(tmpl, ctx); err != nil {
 				return
 			}
 		}
@@ -113,7 +115,7 @@ func (l *Layouts) NewTemplate(name string) (tmpl *template.Template, err error) 
 			}
 
 			if layout, ok := l.m[layoutName]; ok {
-				if err = layout.Apply(tmpl); err != nil {
+				if err = layout.Apply(tmpl, ctx); err != nil {
 					return
 				}
 			} else {

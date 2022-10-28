@@ -28,8 +28,15 @@ func (p *Page) parseContext(ctx context.Context) {
 
 	ctx.DeleteKeys("Path", "Content", "Section")
 
+	p.SetLanguage(language.Und)
+	if ctxLang := ctx.String("Language", ""); ctxLang != "" {
+		if tag, err := language.Parse(ctxLang); err == nil {
+			p.SetLanguage(tag)
+		}
+	}
+
 	p.Url = ctx.String("Url", p.Url)
-	if p.Url[0] != '/' {
+	if p.Url == "" || p.Url[0] != '/' {
 		p.Url = "/" + p.Url
 	}
 	p.Path, p.Section, p.Slug = bePath.GetSectionSlug(p.Url)
@@ -56,9 +63,6 @@ func (p *Page) parseContext(ctx context.Context) {
 	p.Archetype = ctx.String("Archetype", p.Archetype)
 	ctx.Set("Archetype", p.Archetype)
 
-	p.Language = ctx.String("Language", language.English.String())
-	ctx.Set("Language", p.Language)
-
 	// context content is not "source" content, do not populate "from" context,
 	// only set it so that it's current
 	ctx.Set("Content", p.Content)
@@ -71,4 +75,5 @@ func (p *Page) parseContext(ctx context.Context) {
 
 	p.Initial.Apply(ctx)
 	p.Context.Apply(p.Initial)
+
 }

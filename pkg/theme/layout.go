@@ -21,6 +21,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/go-enjin/be/pkg/context"
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
@@ -34,19 +35,19 @@ type Layout struct {
 	Keys []string
 
 	fileSystem beFs.FileSystem
-	funcMap    template.FuncMap
+	theme      *Theme
 	lastMods   map[string]int64
 	cache      map[string]string
 
 	sync.RWMutex
 }
 
-func NewLayout(path string, efs beFs.FileSystem, fm template.FuncMap) (layout *Layout, err error) {
+func NewLayout(path string, efs beFs.FileSystem, t *Theme) (layout *Layout, err error) {
 	layout = new(Layout)
 	layout.Path = path
 	layout.Name = bePath.Base(path)
 	layout.fileSystem = efs
-	layout.funcMap = fm
+	layout.theme = t
 	layout.lastMods = make(map[string]int64)
 	layout.cache = make(map[string]string)
 	err = layout.Reload()
@@ -77,7 +78,7 @@ func (l *Layout) Reload() (err error) {
 			var ee error
 			var lastMod int64
 			if lastMod, ee = l.fileSystem.LastModified(entryPath); ee != nil {
-				log.ErrorF("error fileSystem.LastModified: %V", ee)
+				log.ErrorF("error fileSystem.LastModified: %v", ee)
 				continue
 			} else if v, ok := l.lastMods[entryName]; ok {
 				if v == lastMod {
@@ -122,26 +123,26 @@ func (l *Layout) HasKey(key string) bool {
 	return false
 }
 
-func (l *Layout) NewTemplate() (tmpl *template.Template, err error) {
+func (l *Layout) NewTemplate(ctx context.Context) (tmpl *template.Template, err error) {
 	if tmpl, err = template.New(l.Name).Parse(`{{/* empty */}}`); err == nil {
-		err = l.Apply(tmpl)
+		err = l.Apply(tmpl, ctx)
 	}
 	return
 }
 
-func (l *Layout) NewTemplateFrom(parent *Layout) (tmpl *template.Template, err error) {
+func (l *Layout) NewTemplateFrom(parent *Layout, ctx context.Context) (tmpl *template.Template, err error) {
 	if parent != nil {
-		if tmpl, err = parent.NewTemplate(); err == nil {
-			err = l.Apply(tmpl)
+		if tmpl, err = parent.NewTemplate(ctx); err == nil {
+			err = l.Apply(tmpl, ctx)
 		}
 	} else {
-		tmpl, err = l.NewTemplate()
+		tmpl, err = l.NewTemplate(ctx)
 	}
 	return
 }
 
-func (l *Layout) Apply(tt *template.Template) (err error) {
-	tt.Funcs(l.funcMap)
+func (l *Layout) Apply(tt *template.Template, ctx context.Context) (err error) {
+	tt.Funcs(l.theme.NewFuncMapWithContext(ctx))
 	for _, name := range maps.SortedKeys(l.cache) {
 		if _, err = tt.New(name).Parse(l.cache[name]); err != nil {
 			err = fmt.Errorf("error parsing cached template: %v - %v", name, err)

@@ -62,6 +62,7 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/types/theme-types"
+	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 var (
@@ -333,14 +334,14 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 	return
 }
 
-func (f *CFeature) AddSearchDocumentMapping(indexMapping *mapping.IndexMappingImpl) {
-	indexMapping.AddDocumentMapping("njn", NewEnjinDocumentMapping())
+func (f *CFeature) AddSearchDocumentMapping(tag language.Tag, indexMapping *mapping.IndexMappingImpl) {
+	indexMapping.AddDocumentMapping("njn", NewEnjinDocumentMapping(tag))
 }
 
 func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error) {
 	pg, _ := p.(*page.Page)
 
-	d := NewEnjinDocument(pg.Url, pg.Title)
+	d := NewEnjinDocument(pg.Language, pg.Url, pg.Title)
 	// d.AddContent(content)
 
 	var data []interface{}

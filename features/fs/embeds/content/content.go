@@ -28,11 +28,13 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/fs"
 	beFsEmbed "github.com/go-enjin/be/pkg/fs/embed"
+	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 var _embedContent *Feature
@@ -47,6 +49,8 @@ const Tag feature.Tag = "EmbedContent"
 
 type Feature struct {
 	feature.CMiddleware
+
+	enjin feature.Internals
 
 	paths map[string]string
 	setup map[string]embed.FS
@@ -67,9 +71,9 @@ func New() MakeFeature {
 	return _embedContent
 }
 
-func (f *Feature) MountPathFs(mount, path string, fs embed.FS) MakeFeature {
+func (f *Feature) MountPathFs(mount, path string, efs embed.FS) MakeFeature {
 	f.paths[mount] = path
-	f.setup[mount] = fs
+	f.setup[mount] = efs
 	return f
 }
 
@@ -99,12 +103,18 @@ func (f *Feature) Build(_ feature.Buildable) (err error) {
 		var lfs fs.FileSystem
 		if lfs, err = beFsEmbed.New(f.paths[mount], f.setup[mount]); err != nil {
 			log.FatalF(`error mounting filesystem: %v`, err)
-			return nil
 		}
+		// if lfs, err = fs.Wrap(f.paths[mount], lfs); err != nil {
+		// 	log.FatalF("error wrapping filesystem: %v", err)
+		// }
 		f.cache.Mount(mount, f.paths[mount], lfs)
 		log.DebugF("mounted embed content filesystem on %v to %v", mount, f.paths[mount])
 	}
 	return
+}
+
+func (f *Feature) Setup(enjin feature.Internals) {
+	f.enjin = enjin
 }
 
 func (f *Feature) Startup(ctx *cli.Context) (err error) {
@@ -116,25 +126,27 @@ func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
 	log.DebugF("including embed content %v middleware: %v", page.Extensions, f.setup)
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			path := net.TrimQueryParams(r.URL.Path)
+			path := forms.TrimQueryParams(r.URL.Path)
 			if err := f.ServePath(path, s, w, r); err == nil {
 				return
+			} else if err.Error() != "path not found" {
+				log.ErrorF("embed content error: %v", err)
 			}
-			// log.DebugF("not embed content: %v", path)
 			next.ServeHTTP(w, r)
 		})
 	}
 }
 
 func (f *Feature) ServePath(path string, s feature.System, w http.ResponseWriter, r *http.Request) (err error) {
-	path = net.TrimQueryParams(path)
+	reqLangTag := lang.GetTag(r)
+	path = forms.TrimQueryParams(path)
 	path = strings.TrimSuffix(path, "/")
 	if path == "" {
 		path = "/"
 	}
-	if mount, mpath, pg, e := f.cache.Lookup(path); e == nil && pg.Context.String("type", "page") == "page" {
+	if mount, mpath, pg, e := f.cache.Lookup(reqLangTag, path); e == nil && pg.Context.String("type", "page") == "page" {
 		if err = s.ServePage(pg, w, r); err == nil {
-			log.DebugF("served embed %v content: %v", mount, mpath)
+			log.DebugF("served embed %v content: [%v] %v", mount, pg.Language, mpath)
 			return
 		}
 		err = fmt.Errorf("serve embed %v content: %v - error: %v", mount, mpath, err)
@@ -144,34 +156,47 @@ func (f *Feature) ServePath(path string, s feature.System, w http.ResponseWriter
 	return
 }
 
-func (f *Feature) UpdateSearch(index bleve.Index) (err error) {
+func (f *Feature) UpdateSearch(tag language.Tag, index bleve.Index) (err error) {
 	f.cache.Rebuild()
 	allPages := f.cache.ListAll()
 	log.DebugF("embeds content search updating %d documents", len(allPages))
 	for _, pg := range allPages {
-		if doc, e := pg.SearchDocument(); e != nil {
-			err = fmt.Errorf("error preparing embeds search document: %v", e)
-		} else if doc != nil {
-			if ee := index.Index(pg.Url, doc.Self()); ee != nil {
-				err = fmt.Errorf("error indexing embeds search document: %v", ee)
+		if language.Compare(pg.LanguageTag, tag) {
+			if doc, e := pg.SearchDocument(); e != nil {
+				err = fmt.Errorf("error preparing embeds search document: %v", e)
+			} else if doc != nil {
+				pgUrl := pg.Url
+				if !language.Compare(pg.LanguageTag, f.enjin.SiteDefaultLanguage(), language.Und) {
+					switch f.enjin.SiteLanguageMode() {
+					case "query":
+						pgUrl = "?lang=" + pg.Language
+					case "domain": // TODO: implement domain support
+					case "path":
+						pgUrl = "/" + pg.Language + pg.Url
+					}
+				}
+				if ee := index.Index(pgUrl, doc.Self()); ee != nil {
+					err = fmt.Errorf("error indexing embeds search document: %v", ee)
+				} else {
+					log.TraceF("updated embeds search index with document: %v", doc.GetUrl())
+				}
 			} else {
-				log.TraceF("updated embeds search index with document: %v", doc.GetUrl())
+				log.TraceF("skipped embeds search index with document: %v", pg.Url)
 			}
-		} else {
-			log.TraceF("skipped embeds search index with document: %v", pg.Url)
 		}
 	}
 	return
 }
 
-func (f *Feature) FindPage(path string) (p *page.Page) {
+func (f *Feature) FindPage(tag language.Tag, path string) (p *page.Page) {
 	f.cache.Rebuild()
-	path = net.TrimQueryParams(path)
+	path = forms.TrimQueryParams(path)
+	_, path, _ = lang.ParseLangPath(path)
 	path = strings.TrimSuffix(path, "/")
 	if path == "" {
 		path = "/"
 	}
-	if _, _, pg, e := f.cache.Lookup(path); e == nil {
+	if _, _, pg, e := f.cache.Lookup(tag, path); e == nil {
 		p = pg.Copy()
 	}
 	return

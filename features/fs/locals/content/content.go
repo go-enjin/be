@@ -26,11 +26,14 @@ import (
 	"github.com/fvbommel/sortorder"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/be/pkg/forms"
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/fs/local"
+	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/page"
 )
 
@@ -46,6 +49,8 @@ const Tag feature.Tag = "LocalContent"
 
 type Feature struct {
 	feature.CMiddleware
+
+	enjin feature.Internals
 
 	setup map[string]string
 	cache *page.Cache
@@ -104,6 +109,10 @@ func (f *Feature) Build(_ feature.Buildable) (err error) {
 	return
 }
 
+func (f *Feature) Setup(enjin feature.Internals) {
+	f.enjin = enjin
+}
+
 func (f *Feature) Startup(ctx *cli.Context) (err error) {
 	f.cache.Rebuild()
 	return
@@ -113,7 +122,7 @@ func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
 	log.DebugF("including local content %v middleware: %v", page.Extensions, f.setup)
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			path := net.TrimQueryParams(r.URL.Path)
+			path := forms.TrimQueryParams(r.URL.Path)
 			if err := f.ServePath(path, s, w, r); err == nil {
 				return
 			} else if err.Error() != "path not found" {
@@ -126,14 +135,15 @@ func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
 
 func (f *Feature) ServePath(path string, s feature.System, w http.ResponseWriter, r *http.Request) (err error) {
 	f.cache.Rebuild()
-	path = net.TrimQueryParams(path)
+	reqLangTag := lang.GetTag(r)
+	path = forms.TrimQueryParams(path)
 	path = strings.TrimSuffix(path, "/")
 	if path == "" {
 		path = "/"
 	}
-	if mount, mpath, pg, e := f.cache.Lookup(path); e == nil && pg.Context.String("type", "page") == "page" {
+	if mount, mpath, pg, e := f.cache.Lookup(reqLangTag, path); e == nil && pg.Context.String("type", "page") == "page" {
 		if err = s.ServePage(pg, w, r); err == nil {
-			log.DebugF("served local %v content: %v", mount, mpath)
+			log.DebugF("served local %v content: [%v] %v", mount, pg.Language, mpath)
 			return
 		}
 		err = fmt.Errorf("serve local %v content: %v - error: %v", mount, mpath, err)
@@ -143,34 +153,47 @@ func (f *Feature) ServePath(path string, s feature.System, w http.ResponseWriter
 	return
 }
 
-func (f *Feature) UpdateSearch(index bleve.Index) (err error) {
+func (f *Feature) UpdateSearch(tag language.Tag, index bleve.Index) (err error) {
 	f.cache.Rebuild()
 	allPages := f.cache.ListAll()
 	log.DebugF("locals content search updating %d documents", len(allPages))
 	for _, pg := range allPages {
-		if doc, e := pg.SearchDocument(); e != nil {
-			err = fmt.Errorf("error preparing locals search document: %v", e)
-		} else if doc != nil {
-			if ee := index.Index(pg.Url, doc.Self()); ee != nil {
-				err = fmt.Errorf("error indexing locals search document: %v", ee)
+		if language.Compare(pg.LanguageTag, tag) {
+			if doc, e := pg.SearchDocument(); e != nil {
+				err = fmt.Errorf("error preparing locals search document: %v", e)
+			} else if doc != nil {
+				pgUrl := pg.Url
+				if !language.Compare(pg.LanguageTag, f.enjin.SiteDefaultLanguage(), language.Und) {
+					switch f.enjin.SiteLanguageMode() {
+					case "query":
+						pgUrl = "?lang=" + pg.Language
+					case "domain": // TODO: implement domain support
+					case "path":
+						pgUrl = "/" + pg.Language + pg.Url
+					}
+				}
+				if ee := index.Index(pgUrl, doc.Self()); ee != nil {
+					err = fmt.Errorf("error indexing locals search document: %v", ee)
+				} else {
+					log.TraceF("updated locals search index with document: %v", doc.GetUrl())
+				}
 			} else {
-				log.TraceF("updated locals search index with document: %v", doc.GetUrl())
+				log.TraceF("skipped locals search index with document: %v", pg.Url)
 			}
-		} else {
-			log.TraceF("skipped locals search index with document: %v", pg.Url)
 		}
 	}
 	return
 }
 
-func (f *Feature) FindPage(path string) (p *page.Page) {
+func (f *Feature) FindPage(tag language.Tag, path string) (p *page.Page) {
 	f.cache.Rebuild()
-	path = net.TrimQueryParams(path)
+	path = forms.TrimQueryParams(path)
+	_, path, _ = lang.ParseLangPath(path)
 	path = strings.TrimSuffix(path, "/")
 	if path == "" {
 		path = "/"
 	}
-	if _, _, pg, e := f.cache.Lookup(path); e == nil {
+	if _, _, pg, e := f.cache.Lookup(tag, path); e == nil {
 		p = pg.Copy()
 	}
 	return

@@ -1,4 +1,4 @@
-//go:build page_search || pages || all
+// disabled //go:build page_search || pages || all
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //
@@ -18,30 +18,37 @@ package search
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/blevesearch/bleve/v2"
 	bleveHtml "github.com/blevesearch/bleve/v2/search/highlight/format/html"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/net/html"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/forms/nonce"
 	"github.com/go-enjin/be/pkg/globals"
+	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/page"
 	beSearch "github.com/go-enjin/be/pkg/search/indexes"
 )
 
-var _ MakeFeature = (*CFeature)(nil)
-var _ feature.Middleware = (*CFeature)(nil)
+var (
+	_ MakeFeature          = (*CFeature)(nil)
+	_ feature.Middleware   = (*CFeature)(nil)
+	_ feature.PageProvider = (*CFeature)(nil)
+)
 
 const Tag feature.Tag = "PagesSearch"
 
@@ -56,6 +63,9 @@ type CFeature struct {
 	enjin feature.Internals
 
 	path string
+
+	findingSelf bool
+	sync.RWMutex
 }
 
 type MakeFeature interface {
@@ -146,7 +156,7 @@ func (f *CFeature) SearchAction(ctx *cli.Context) (err error) {
 		pg = v - 1
 	}
 
-	if results, e := f.PerformSearch(input, size, pg); e != nil {
+	if results, e := f.PerformSearch(language.Und, input, size, pg); e != nil {
 		err = e
 	} else {
 		fmt.Printf("%v\n", results)
@@ -154,17 +164,57 @@ func (f *CFeature) SearchAction(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) PerformSearch(input string, size, pg int) (results *bleve.SearchResult, err error) {
-	if index, e := beSearch.NewFeaturesIndex(f.enjin); e != nil {
+var RxLanguageKey = regexp.MustCompile(`language:(\*|[a-z][-a-zA-Z]+)\s*`)
+
+func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (results *bleve.SearchResult, err error) {
+	if indexes, all, e := beSearch.NewFeaturesIndex(f.enjin); e != nil {
 		err = e
 		return
 	} else {
+		searchAll := false
+		inputWantsTag := language.Und
 		input = forms.StripTags(input)
+		if i, ee := url.PathUnescape(input); ee != nil {
+			log.ErrorF("error unescaping input: %v - %v", input, ee)
+		} else {
+			input = i
+		}
+		input = html.UnescapeString(input)
+
 		log.DebugF("performing site search: %v", input)
+
+		// handle user input `language:%v`
+		if RxLanguageKey.MatchString(input) {
+			m := RxLanguageKey.FindAllStringSubmatch(input, 1)
+			if m[0][1] == "*" {
+				searchAll = true
+				input = RxLanguageKey.ReplaceAllString(input, "")
+			} else if queryLangTag, eee := language.Parse(m[0][1]); eee != nil {
+				err = fmt.Errorf("invalid language")
+				return
+			} else {
+				var found bool
+				for _, siteLocale := range f.enjin.SiteLocales() {
+					if found = language.Compare(siteLocale, queryLangTag); found {
+						break
+					}
+				}
+				if !found {
+					err = fmt.Errorf("unsupported language")
+					return
+				}
+				inputWantsTag = queryLangTag
+				input = RxLanguageKey.ReplaceAllString(input, "")
+			}
+		}
+
+		// construct a new query from the input
 		query := bleve.NewQueryStringQuery(input)
 		if err = query.Validate(); err != nil {
 			return
 		}
+
+		// construct a new search request from the query
 		req := bleve.NewSearchRequest(query)
 		if size == 0 {
 			size = 10
@@ -173,6 +223,22 @@ func (f *CFeature) PerformSearch(input string, size, pg int) (results *bleve.Sea
 		req.From = pg * size
 		req.Fields = []string{"*"}
 		req.Highlight = bleve.NewHighlightWithStyle(bleveHtml.Name)
+
+		// determine which index to search
+		index := all
+		if !searchAll {
+			if !language.Compare(inputWantsTag, language.Und) {
+				if idx, ok := indexes[inputWantsTag]; ok {
+					index = idx
+				}
+			}
+			if index == all && !language.Compare(tag, language.Und) {
+				if idx, ok := indexes[tag]; ok {
+					index = idx
+				}
+			}
+		}
+
 		if results, e = index.Search(req); e != nil {
 			err = e
 			return
@@ -183,6 +249,7 @@ func (f *CFeature) PerformSearch(input string, size, pg int) (results *bleve.Sea
 
 func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.Request) (out context.Context) {
 	out = themeCtx
+	out.SetSpecific("SiteSearchable", true)
 	out.SetSpecific("SiteSearchPath", f.path)
 	return
 }
@@ -190,68 +257,89 @@ func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.
 var rxQueryPaginationPage = regexp.MustCompile(`(.+)/(\d+)/??$`)
 var rxQueryPaginationSizePage = regexp.MustCompile(`(.+)/(\d+)/(\d+)/??$`)
 
+func (f *CFeature) handleQueryRedirect(w http.ResponseWriter, r *http.Request) (ok bool, err error) {
+	tag := lang.GetTag(r)
+	printer := lang.GetPrinterFromRequest(r)
+	var query string
+	var foundNonce, foundQuery bool
+	for k, v := range r.URL.Query() {
+		switch k {
+		case "nonce":
+			value := forms.StripTags(v[0])
+			if vv, e := url.QueryUnescape(value); e != nil {
+				log.ErrorF("error un-escaping url path: %v", e)
+			} else {
+				value = vv
+			}
+			value = forms.Sanitize(value)
+			if !nonce.Validate("site-search-form", value) {
+				err = fmt.Errorf(printer.Sprintf("search form expired"))
+				return
+			}
+			foundNonce = true
+			if foundQuery {
+				break
+			}
+		case "query":
+			// trap random page ?query= requests?
+			query = forms.StripTags(v[0])
+			query = forms.Sanitize(query)
+			if vv, e := url.QueryUnescape(query); e != nil {
+				log.ErrorF("error un-escaping url path: %v", e)
+			} else {
+				query = vv
+			}
+			query = forms.Sanitize(query)
+			query = html.UnescapeString(query)
+			// query = html.EscapeString(query)
+			// query = url.PathEscape(query)
+			foundQuery = true
+			if foundNonce {
+				break
+			}
+		}
+	}
+	if foundQuery && !foundNonce {
+		err = fmt.Errorf(printer.Sprintf("search form error"))
+		return
+	}
+	if ok = foundQuery && foundNonce; ok {
+		var dst string
+		query = url.PathEscape(query)
+		if !language.Compare(tag, f.enjin.SiteDefaultLanguage()) {
+			dst = "/" + tag.String() + f.path + "/" + query
+		} else {
+			dst = f.path + "/" + query
+		}
+		log.DebugF("search redirecting: %v", dst)
+		http.Redirect(w, r, dst, http.StatusSeeOther)
+	}
+	return
+}
+
 func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 	log.DebugF("including page search middleware")
 
-	handleQueryRedirect := func(w http.ResponseWriter, r *http.Request) (ok bool, err error) {
-		var query string
-		var foundNonce, foundQuery bool
-		for k, v := range r.URL.Query() {
-			switch k {
-			case "nonce":
-				value := forms.StripTags(v[0])
-				if vv, e := url.PathUnescape(value); e != nil {
-					log.ErrorF("error un-escaping url path: %v", e)
-				} else {
-					value = vv
-				}
-				value = html.UnescapeString(value)
-				if !nonce.Validate("site-search-form", value) {
-					err = fmt.Errorf("search form expired")
-					return
-				}
-				foundNonce = true
-				if foundQuery {
-					break
-				}
-			case "query":
-				// trap random page ?query= requests?
-				query = forms.StripTags(v[0])
-				if vv, e := url.PathUnescape(query); e != nil {
-					log.ErrorF("error un-escaping url path: %v", e)
-				} else {
-					query = vv
-				}
-				query = html.EscapeString(query)
-				foundQuery = true
-				if foundNonce {
-					break
-				}
-			}
-		}
-		if foundQuery && !foundNonce {
-			err = fmt.Errorf("search form error")
-		} else {
-			if ok = foundQuery && foundNonce; ok {
-				http.Redirect(w, r, f.path+"/"+query, http.StatusSeeOther)
-			}
-		}
-		return
-	}
-
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			path := net.TrimQueryParams(r.URL.Path)
-
+			path := forms.TrimQueryParams(r.URL.Path)
+			if _, p, ok := lang.ParseLangPath(path); ok {
+				path = p
+			}
 			if strings.HasPrefix(path, f.path) {
 				// this is the search page being requested
 				// POST requests need to redirect to f.path with query appended instead of search
 
 				var searchPage *page.Page
-				if searchPage = s.FindPage(f.path); searchPage == nil {
-					log.ErrorF("search path not found: \"%v\"", f.path)
-					s.Serve500(w, r)
-					return
+				reqLangTag := lang.GetTag(r)
+				if searchPage = s.FindPage(reqLangTag, f.path); searchPage == nil {
+					if searchPage = s.FindPage(f.enjin.SiteDefaultLanguage(), f.path); searchPage == nil {
+						if searchPage = s.FindPage(language.Und, f.path); searchPage == nil {
+							log.ErrorF("search path not found: [%v] \"%v\"", reqLangTag, f.path)
+							s.ServeInternalServerError(w, r)
+							return
+						}
+					}
 				}
 
 				size := 10
@@ -282,7 +370,7 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 
 				var queryError bool
 				if input == "" {
-					if ok, err := handleQueryRedirect(w, r); ok && err == nil {
+					if ok, err := f.handleQueryRedirect(w, r); ok && err == nil {
 						return
 					} else if err != nil {
 						searchPage.Context.SetSpecific("SiteSearchError", err.Error())
@@ -296,17 +384,42 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 					} else {
 						log.ErrorF("error un-escaping path url: %v - %v", input, e)
 					}
-					input = html.UnescapeString(input)
+					// input = html.UnescapeString(input)
+					if i, err := url.QueryUnescape(input); err != nil {
+						log.ErrorF("error un-escaping input query string: %v", err)
+					} else {
+						input = i
+					}
 					input = forms.StripTags(input)
-					if results, err := f.PerformSearch(input, size, pg); err != nil {
+					searchPage.Context.SetSpecific("SiteSearchQuery", input)
+					if results, err := f.PerformSearch(reqLangTag, input, size, pg); err != nil {
 						searchPage.Context.SetSpecific("SiteSearchError", err.Error())
 					} else {
-						searchPage.Context.SetSpecific("SiteSearchQuery", input)
 						searchPage.Context.SetSpecific("SiteSearchResults", results)
 						searchPage.Context.SetSpecific("SiteSearchSize", size)
 						searchPage.Context.SetSpecific("SiteSearchPage", pg)
 						pages := results.Total / uint64(size)
 						searchPage.Context.SetSpecific("SiteSearchPages", pages)
+						numHits := len(results.Hits)
+						idStart := (pg * size) + 1
+						idEnd := idStart + numHits - 1
+						printer := lang.GetPrinterFromRequest(r)
+						var resultSummary, hitsSummary, pageSummary string
+						switch numHits {
+						case 0:
+							resultSummary = printer.Sprintf("No results found for:")
+						case 1:
+							pageSummary = printer.Sprintf("Page %d of %d", pg+1, pages+1)
+							hitsSummary = printer.Sprintf("Showing #%d of %d", idStart, results.Total)
+							resultSummary = printer.Sprintf("%d result found for:", results.Total)
+						default:
+							pageSummary = printer.Sprintf("Page %d of %d", pg+1, pages+1)
+							hitsSummary = printer.Sprintf("Showing %d-%d of %d", idStart, idEnd, results.Total)
+							resultSummary = printer.Sprintf("%d results found for:", results.Total)
+						}
+						searchPage.Context.SetSpecific("SiteSearchPageSummary", template.HTML(pageSummary))
+						searchPage.Context.SetSpecific("SiteSearchHitsSummary", template.HTML(hitsSummary))
+						searchPage.Context.SetSpecific("SiteSearchResultSummary", template.HTML(resultSummary))
 					}
 				}
 
@@ -318,10 +431,31 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 				return
 			}
 
-			if ok, _ := handleQueryRedirect(w, r); ok {
+			if ok, _ := f.handleQueryRedirect(w, r); ok {
 				return
 			}
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func (f *CFeature) FindPage(tag language.Tag, path string) (searchPage *page.Page) {
+	if f.findingSelf == true {
+		return
+	}
+	f.Lock()
+	defer f.Unlock()
+	if strings.HasPrefix(path, f.path) {
+		// using f.path for actual page-finding due to the variability of the search endpoint
+		// actual page begins with the configured search path
+		f.findingSelf = true
+		if searchPage = f.enjin.FindPage(tag, f.path); searchPage == nil {
+			if searchPage = f.enjin.FindPage(language.Und, f.path); searchPage == nil {
+				log.ErrorF("search page not found: [%v] \"%v\"", tag, f.path)
+				return
+			}
+		}
+		f.findingSelf = false
+	}
+	return
 }

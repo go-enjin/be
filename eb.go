@@ -15,13 +15,20 @@
 package be
 
 import (
+	"fmt"
+	"html/template"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/headers"
@@ -61,6 +68,11 @@ type EnjinBuilder struct {
 	copyrightName   string
 	copyrightNotice string
 	tagLine         string
+
+	langMode    string
+	localeTags  []language.Tag
+	localeFiles []fs.FileSystem
+	defaultLang language.Tag
 }
 
 func New() (be *EnjinBuilder) {
@@ -81,6 +93,8 @@ func New() (be *EnjinBuilder) {
 	be.slugsums = true
 	be.statusPages = make(map[int]string)
 	be.hotReload = false
+	be.langMode = "query"
+	be.defaultLang = language.Und
 	return be
 }
 
@@ -120,6 +134,10 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 	if eb.tagLine != "" {
 		eb.Set("SiteTagLine", eb.tagLine)
 	}
+
+	eb.Set("LanguageMode", eb.langMode)
+	eb.Set("DefaultLanguage", eb.defaultLang.String())
+	eb.Set("DefaultLanguageTag", eb.defaultLang)
 
 	if len(eb.htmlHeadTags) > 0 {
 		var tags []template.HTML

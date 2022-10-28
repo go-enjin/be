@@ -22,8 +22,10 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/go-enjin/be/pkg/types/site"
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/page"
@@ -35,46 +37,54 @@ type ContextKey string
 
 const ServeStatusResponseKey ContextKey = "ServeStatusResponse"
 
+func (e *Enjin) Serve204(w http.ResponseWriter, r *http.Request) {
+	printer := lang.GetPrinterFromRequest(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusNoContent)
-	_, _ = w.Write([]byte("204 - No Content\n"))
+	_, _ = w.Write([]byte("204 - " + printer.Sprintf("No Content")))
 }
 
-func (e *Enjin) Serve401(w http.ResponseWriter, _ *http.Request) {
+func (e *Enjin) Serve401(w http.ResponseWriter, r *http.Request) {
+	printer := lang.GetPrinterFromRequest(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusUnauthorized)
-	_, _ = w.Write([]byte("401 - Unauthorized\n"))
+	_, _ = w.Write([]byte("401 - " + printer.Sprintf("Unauthorized")))
 }
 
-func (e *Enjin) ServeBasic401(w http.ResponseWriter, _ *http.Request) {
+func (e *Enjin) ServeBasic401(w http.ResponseWriter, r *http.Request) {
+	printer := lang.GetPrinterFromRequest(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("WWW-Authenticate", "Basic")
 	w.WriteHeader(http.StatusUnauthorized)
-	_, _ = w.Write([]byte("401 - Unauthorized\n"))
+	_, _ = w.Write([]byte("401 - " + printer.Sprintf("Unauthorized")))
 }
 
-func (e *Enjin) Serve403(w http.ResponseWriter, _ *http.Request) {
+func (e *Enjin) Serve403(w http.ResponseWriter, r *http.Request) {
+	printer := lang.GetPrinterFromRequest(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusForbidden)
-	_, _ = w.Write([]byte("403 - Forbidden\n"))
+	_, _ = w.Write([]byte("403 - " + printer.Sprintf("Forbidden")))
 }
 
-func (e *Enjin) Serve404(w http.ResponseWriter, _ *http.Request) {
+func (e *Enjin) Serve404(w http.ResponseWriter, r *http.Request) {
+	printer := lang.GetPrinterFromRequest(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusNotFound)
-	_, _ = w.Write([]byte("404 - Not Found\n"))
+	_, _ = w.Write([]byte("404 - " + printer.Sprintf("Not Found")))
 }
 
-func (e *Enjin) Serve405(w http.ResponseWriter, _ *http.Request) {
+func (e *Enjin) Serve405(w http.ResponseWriter, r *http.Request) {
+	printer := lang.GetPrinterFromRequest(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusMethodNotAllowed)
-	_, _ = w.Write([]byte("405 - Method Not Allowed\n"))
+	_, _ = w.Write([]byte("405 - " + printer.Sprintf("Method Not Allowed")))
 }
 
-func (e *Enjin) Serve500(w http.ResponseWriter, _ *http.Request) {
+func (e *Enjin) Serve500(w http.ResponseWriter, r *http.Request) {
+	printer := lang.GetPrinterFromRequest(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusInternalServerError)
-	_, _ = w.Write([]byte("500 - Internal Server Error\n"))
+	_, _ = w.Write([]byte("500 - " + printer.Sprintf("Internal Server Error")))
 }
 
 func (e *Enjin) ServeNotFound(w http.ResponseWriter, r *http.Request) {
@@ -87,11 +97,12 @@ func (e *Enjin) ServeInternalServerError(w http.ResponseWriter, r *http.Request)
 
 func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Request) {
 	r = r.WithContext(context.WithValue(r.Context(), ServeStatusResponseKey, status))
+	reqLangTag := lang.GetTag(r)
 
 	if path, ok := e.eb.statusPages[status]; ok {
-		if p, ok := e.eb.pages[path]; ok {
-			if err := e.ServePage(p, w, r); err != nil {
-				log.DebugF("error serving %v (pages) page: %v", status, err)
+		if pg := e.FindPage(reqLangTag, path); pg != nil {
+			if err := e.ServePage(pg, w, r); err != nil {
+				log.DebugF("error serving %v (pages) page: %v - %v", status, path, err)
 			} else {
 				log.DebugF("served %v (pages) page: %v", status, path)
 				return
@@ -100,7 +111,7 @@ func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Reque
 		for _, f := range e.eb.features {
 			if mf, ok := f.(feature.Middleware); ok {
 				if err := mf.ServePath(path, e, w, r); err != nil {
-					log.DebugF("error serving %v (middleware) page: %v", status, err)
+					log.DebugF("error serving %v (middleware) page: %v - %v", status, path, err)
 				} else {
 					log.DebugF("served %v (middleware) page: %v", status, path)
 					return
@@ -108,6 +119,7 @@ func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Reque
 			}
 		}
 	}
+
 	switch status {
 	case 401:
 		e.Serve401(w, r)
@@ -165,6 +177,8 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	ctx.SetSpecific("SiteInfo", site.Info(e))
 	ctx.SetSpecific("SiteEnjin", site.Enjin(e))
 
+	reqLangTag := lang.GetTag(r)
+	ctx.SetSpecific("ReqLangTag", reqLangTag)
 	ctx.Set("Request", map[string]string{
 		"URL":        r.URL.String(),
 		"Path":       r.URL.Path,
@@ -174,9 +188,30 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 		"RemoteAddr": r.RemoteAddr,
 		"Referer":    r.Referer(),
 		"UserAgent":  r.UserAgent(),
+		"Language":   reqLangTag.String(),
 	})
+
 	ctx.Set("BaseUrl", net.BaseURL(r))
+	ctx.SetSpecific("LangPrinter", lang.GetPrinterFromRequest(r))
+
 	ctx.Apply(p.Context.Copy())
+
+	parsedTag := e.eb.defaultLang
+	if v := ctx.Get("Language"); v != nil {
+		if pageLang, ok := v.(string); ok {
+			if pageLang != "" {
+				if tag, ee := language.Parse(pageLang); ee == nil {
+					parsedTag = tag
+				} else {
+					log.ErrorF("invalid language tag: %v - %v", pageLang, ee)
+				}
+			}
+		} else {
+			log.ErrorF("page language tag not a string: %T %+v", v, v)
+		}
+	}
+	ctx.SetSpecific("Language", parsedTag.String())
+	ctx.SetSpecific("LanguageTag", parsedTag)
 
 	for _, f := range e.eb.features {
 		if s, ok := f.(feature.PageContextModifier); ok {
@@ -200,13 +235,14 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	allMenus := make(map[string]interface{})
 	for _, f := range e.eb.features {
 		if mp, ok := f.(feature.MenuProvider); ok {
-			for name, m := range mp.GetMenus() {
+			for name, m := range mp.GetMenus(reqLangTag) {
 				camel := strcase.ToCamel(name)
 				allMenus[camel] = m
-				log.DebugF("providing menu: %v (.SiteMenu.%v)", name, camel)
+				log.DebugF("providing [%v] menu: %v (.SiteMenu.%v)", reqLangTag.String(), name, camel)
 			}
 		}
 	}
+
 	if len(allMenus) > 0 {
 		ctx.SetSpecific("SiteMenu", allMenus)
 	}
@@ -273,10 +309,12 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 		data = fn(data)
 	}
 
+	var status int
 	if v, ok := r.Context().Value(ServeStatusResponseKey).(int); ok {
-		w.WriteHeader(v)
+		status = v
 	} else {
-		w.WriteHeader(http.StatusOK)
+		status = http.StatusOK
 	}
+	w.WriteHeader(status)
 	_, _ = w.Write(data)
 }

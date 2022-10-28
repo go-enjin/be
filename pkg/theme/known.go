@@ -17,7 +17,7 @@ package theme
 import (
 	"fmt"
 
-	"github.com/go-enjin/be/pkg/theme/types"
+	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 var (

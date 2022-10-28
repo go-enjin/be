@@ -27,6 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/search"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/types/theme-types"
+	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 var (
@@ -120,8 +121,8 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 	return
 }
 
-func (f *CFeature) AddSearchDocumentMapping(indexMapping *mapping.IndexMappingImpl) {
-	indexMapping.AddDocumentMapping("org", NewOrgModeDocumentMapping())
+func (f *CFeature) AddSearchDocumentMapping(tag language.Tag, indexMapping *mapping.IndexMappingImpl) {
+	indexMapping.AddDocumentMapping("org", NewOrgModeDocumentMapping(tag))
 }
 
 func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error) {
@@ -132,7 +133,7 @@ func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error)
 		return
 	}
 
-	d := NewOrgModeDocument(pg.Url, pg.Title)
+	d := NewOrgModeDocument(pg.Language, pg.Url, pg.Title)
 	var parsed *html.Node
 	if parsed, err = html.Parse(strings.NewReader(rendered)); err != nil {
 		return

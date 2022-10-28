@@ -22,8 +22,12 @@ import (
 )
 
 func (p *Page) SearchDocument() (doc search.Document, err error) {
-	if pgSearchIndex := p.Context.String("Searchable", "true"); pgSearchIndex != "true" {
-		log.DebugF("skipping search index for: %v", p.Url)
+	if pgType := p.Context.String("type", "page"); pgType != "page" {
+		log.TraceF("skipping search index for (not page type): %v", p.Url)
+		return
+	}
+	if pgSearchable := p.Context.String("Searchable", "true"); pgSearchable != "true" {
+		log.TraceF("skipping search index for (not searchable): %v", p.Url)
 		return
 	}
 	if format := GetFormat(p.Format); format != nil {

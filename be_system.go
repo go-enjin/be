@@ -23,6 +23,8 @@ import (
 	"github.com/fvbommel/sortorder"
 	"github.com/go-chi/chi/v5"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
@@ -96,10 +98,10 @@ func (e *Enjin) Context() (ctx context.Context) {
 	return
 }
 
-func (e *Enjin) FindPage(url string) (p *page.Page) {
+func (e *Enjin) FindPage(tag language.Tag, url string) (p *page.Page) {
 	for _, f := range e.Features() {
 		if provider, ok := f.(feature.PageProvider); ok {
-			if p = provider.FindPage(url); p != nil {
+			if p = provider.FindPage(tag, url); p != nil {
 				return
 			}
 		}

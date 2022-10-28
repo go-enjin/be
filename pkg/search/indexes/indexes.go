@@ -17,28 +17,43 @@ package indexes
 import (
 	"github.com/blevesearch/bleve/v2"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/search"
 )
 
-func NewFeaturesIndex(e feature.Internals) (index bleve.Index, err error) {
-	if index, err = NewMemOnlyIndex(e); err != nil {
-		return
+func NewFeaturesIndex(e feature.Internals) (index map[language.Tag]bleve.Index, all bleve.Index, err error) {
+	locales := e.SiteLocales()
+	index = make(map[language.Tag]bleve.Index)
+	for _, tag := range locales {
+		index[tag], err = NewMemOnlyIndex(tag, e)
 	}
+
 	for _, f := range e.Features() {
 		if s, ok := f.(feature.Searchable); ok {
 			log.DebugF("updating searchable feature: %v", f.Tag())
-			if ee := s.UpdateSearch(index); ee != nil {
-				err = ee
-				return
+			for _, tag := range locales {
+				if ee := s.UpdateSearch(tag, index[tag]); ee != nil {
+					err = ee
+					index = nil
+					return
+				}
 			}
 		}
 	}
+
+	var list []bleve.Index
+	for _, idx := range index {
+		list = append(list, idx)
+	}
+	all = bleve.NewIndexAlias(list...)
+
 	return
 }
 
-func NewMemOnlyIndex(e feature.Internals) (index bleve.Index, err error) {
+func NewMemOnlyIndex(tag language.Tag, e feature.Internals) (index bleve.Index, err error) {
 	indexMapping := bleve.NewIndexMapping()
 	indexMapping.DefaultMapping = search.NewDocumentMapping()
 	indexMapping.AddDocumentMapping("document", indexMapping.DefaultMapping)
@@ -46,7 +61,7 @@ func NewMemOnlyIndex(e feature.Internals) (index bleve.Index, err error) {
 	for _, f := range e.Features() {
 		if m, ok := f.(feature.SearchDocumentMapper); ok {
 			log.DebugF("adding %v search document mapping", f.Tag())
-			m.AddSearchDocumentMapping(indexMapping)
+			m.AddSearchDocumentMapping(tag, indexMapping)
 		}
 	}
 

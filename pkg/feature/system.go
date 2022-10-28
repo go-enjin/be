@@ -19,6 +19,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/go-enjin/be/pkg/types/site"
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/page"
@@ -48,7 +51,7 @@ type Service interface {
 	ServePath(urlPath string, w http.ResponseWriter, r *http.Request) (err error)
 	ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request)
 
-	FindPage(url string) (p *page.Page)
+	FindPage(tag language.Tag, url string) (p *page.Page)
 
 	Notify(tag string)
 	NotifyF(tag, format string, argv ...interface{})
@@ -61,6 +64,9 @@ type System interface {
 }
 
 type Internals interface {
+	site.Enjin
+	FindPage(tag language.Tag, url string) (p *page.Page)
+
 	Features() (features []Feature)
 	Pages() (pages map[string]*page.Page)
 	Theme() (theme string)

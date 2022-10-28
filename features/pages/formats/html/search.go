@@ -18,7 +18,9 @@ import (
 	"github.com/blevesearch/bleve/v2/analysis/analyzer/standard"
 	"github.com/blevesearch/bleve/v2/mapping"
 
+	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/search"
+	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 var _ Document = (*CDocument)(nil)
@@ -35,11 +37,12 @@ type CDocument struct {
 	Links    []string `json:"links"`
 }
 
-func NewHtmlDocument(url, title string) (doc *CDocument) {
+func NewHtmlDocument(language, url, title string) (doc *CDocument) {
 	doc = new(CDocument)
 	doc.Type = "html"
-	doc.Title = title
 	doc.Url = url
+	doc.Title = title
+	doc.Language = language
 	return
 }
 
@@ -55,9 +58,13 @@ func (d *CDocument) AddHeading(text string) {
 	d.Headings = append(d.Headings, text)
 }
 
-func NewHtmlDocumentMapping() (dm *mapping.DocumentMapping) {
+func NewHtmlDocumentMapping(tag language.Tag) (dm *mapping.DocumentMapping) {
 	dm = search.NewDocumentMapping()
-	dm.AddFieldMappingsAt("headings", search.NewDefaultTextFieldMapping(standard.Name))
-	dm.AddFieldMappingsAt("links", search.NewDefaultTextFieldMapping(standard.Name))
+	analyzer := standard.Name
+	if lang.BleveSupportedAnalyzer(tag) {
+		analyzer = tag.String()
+	}
+	dm.AddFieldMappingsAt("links", search.NewDefaultTextFieldMapping(analyzer))
+	dm.AddFieldMappingsAt("headings", search.NewDefaultTextFieldMapping(analyzer))
 	return
 }

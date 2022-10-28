@@ -22,14 +22,20 @@ import (
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/theme"
+	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 type Builder interface {
 	SiteTag(key string) Builder
 	SiteName(name string) Builder
 	SiteTagLine(title string) Builder
+	SiteLanguageMode(mode string) Builder
 	SiteCopyrightName(name string) Builder
 	SiteCopyrightNotice(notice string) Builder
+	SiteDefaultLanguage(tag language.Tag) Builder
+
+	AddLocalesLocalFS(path string) Builder
+	AddLocalesEmbedFS(path string, efs embed.FS) Builder
 
 	// Set a custom context key with value
 	Set(key string, value interface{}) Builder

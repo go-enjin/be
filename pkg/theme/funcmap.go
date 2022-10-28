@@ -15,6 +15,7 @@
 package theme
 
 import (
+	"fmt"
 	"html/template"
 
 	"github.com/iancoleman/strcase"
@@ -77,6 +78,10 @@ func DefaultFuncMap() (funcMap template.FuncMap) {
 		"DebugF": funcs.LogDebug,
 		"WarnF":  funcs.LogWarn,
 		"ErrorF": funcs.LogError,
+
+		"_": fmt.Sprintf,
+
+		"CmpLang": funcs.CmpLang,
 	}
 	for k, v := range gtf.GtfFuncMap {
 		funcMap[k] = v

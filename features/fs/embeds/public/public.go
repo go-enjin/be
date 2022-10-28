@@ -26,10 +26,10 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/forms"
 	beFs "github.com/go-enjin/be/pkg/fs"
 	beFsEmbed "github.com/go-enjin/be/pkg/fs/embed"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/net"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -115,7 +115,7 @@ func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
 	return func(next http.Handler) (this http.Handler) {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			path := bePath.TrimSlash(r.URL.Path)
-			path = net.TrimQueryParams(path)
+			path = forms.TrimQueryParams(path)
 			if len(path) > 1 {
 				for _, m := range mounts {
 					if data, path, mime, ok := beFs.CheckForFileData(f.mounted[m], path, m); ok {

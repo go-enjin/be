@@ -21,7 +21,7 @@ import (
 	"github.com/go-enjin/be/features/pages/formats/org"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/theme/types"
+	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 var (

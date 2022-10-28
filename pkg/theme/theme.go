@@ -23,11 +23,10 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/fs"
-	"github.com/go-enjin/be/pkg/fs/local"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	bePath "github.com/go-enjin/be/pkg/path"
-	"github.com/go-enjin/be/pkg/theme/types"
+	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 type Author struct {
@@ -78,28 +77,6 @@ func New(path string, fs fs.FileSystem) (t *Theme, err error) {
 	return
 }
 
-func NewLocal(path string) (t *Theme, err error) {
-	if !bePath.IsDir(path) {
-		err = bePath.ErrorDirNotFound
-		return
-	}
-	t = new(Theme)
-	t.Path = bePath.TrimSlashes(path)
-	if t.FileSystem, err = local.New(path); err != nil {
-		return
-	}
-	if staticFs, e := local.New(path + "/static"); e == nil {
-		t.StaticFS = staticFs
-		fs.RegisterFileSystem("/", staticFs)
-		// log.DebugF("registered local static fs: %v/static", path)
-	} else {
-		t.StaticFS = nil
-	}
-
-	err = t.init()
-	return
-}
-
 func (t *Theme) init() (err error) {
 	t.Name = bePath.Base(t.Path)
 	t.Layouts = nil
@@ -136,6 +113,19 @@ func (t *Theme) init() (err error) {
 
 func (t *Theme) FS() fs.FileSystem {
 	return t.FileSystem
+}
+
+func (t *Theme) Locales() (locales fs.FileSystem, ok bool) {
+	if _, err := t.FileSystem.ReadDir("locales"); err == nil {
+		log.DebugF("found %v theme locales", t.Name)
+		if locales, err = fs.Wrap("locales", t.FileSystem); err == nil {
+			ok = true
+		} else {
+			log.ErrorF("error wrapping %v theme locales: %v", t.Name, err)
+			locales = nil
+		}
+	}
+	return
 }
 
 func (t *Theme) initConfig(ctx context.Context) {

@@ -12,19 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package feature
+package funcs
 
 import (
-	"github.com/blevesearch/bleve/v2"
-	"github.com/blevesearch/bleve/v2/mapping"
+	"fmt"
 
 	"github.com/go-enjin/golang-org-x-text/language"
 )
 
-type Searchable interface {
-	UpdateSearch(tag language.Tag, index bleve.Index) (err error)
-}
+func CmpLang(a interface{}, other ...interface{}) (equal bool, err error) {
+	var aTag language.Tag
+	var oTags []language.Tag
 
-type SearchDocumentMapper interface {
-	AddSearchDocumentMapping(tag language.Tag, indexMapping *mapping.IndexMappingImpl)
+	parse := func(v interface{}) (tag language.Tag, err error) {
+		switch t := v.(type) {
+		case string:
+			tag, err = language.Parse(t)
+		case language.Tag:
+			tag = t
+		default:
+			err = fmt.Errorf("all arguments must be of either string or language.Tag type")
+		}
+		return
+	}
+
+	if aTag, err = parse(a); err != nil {
+		return
+	}
+
+	for _, o := range other {
+		var oTag language.Tag
+		if oTag, err = parse(o); err != nil {
+			return
+		}
+		oTags = append(oTags, oTag)
+	}
+
+	equal = language.Compare(aTag, oTags...)
+	return
 }

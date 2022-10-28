@@ -27,7 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
-	"github.com/go-enjin/be/pkg/theme/types"
+	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 var _ feature.EnjinRenderer = (*RenderEnjin)(nil)
@@ -152,7 +152,7 @@ func (re *RenderEnjin) RenderNjnTemplateList(tag string, data []interface{}) (ht
 		return
 	} else {
 		var tt *template.Template
-		if tt, err = re.Theme.NewHtmlTemplate("render-enjin--" + tag); err == nil {
+		if tt, err = re.Theme.NewHtmlTemplateWithContext("render-enjin--"+tag, re.ctx); err == nil {
 			if tt, err = tt.Parse(tmplContent); err == nil {
 				var w bytes.Buffer
 				if err = tt.Execute(&w, data); err == nil {
@@ -174,7 +174,7 @@ func (re *RenderEnjin) RenderNjnTemplate(tag string, data map[string]interface{}
 		return
 	} else {
 		var tt *template.Template
-		if tt, err = re.Theme.NewHtmlTemplate("render-enjin--" + tag); err == nil {
+		if tt, err = re.Theme.NewHtmlTemplateWithContext("render-enjin--"+tag, re.ctx); err == nil {
 			if tt, err = tt.Parse(tmplContent); err == nil {
 				var w bytes.Buffer
 				if err = tt.Execute(&w, data); err == nil {

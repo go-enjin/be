@@ -20,15 +20,19 @@ import (
 	"html/template"
 	"time"
 
+	"github.com/go-enjin/be/pkg/types/site"
+	"github.com/go-enjin/be/pkg/types/theme-types"
+	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-enjin/golang-org-x-text/message"
+
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/theme/types"
 )
 
 func (t *Theme) RenderTemplateContent(ctx context.Context, tmplContent string) (html string, err error) {
 	var tt *template.Template
-	if tt, err = t.NewHtmlTemplate("content.tmpl"); err == nil {
+	if tt, err = t.NewHtmlTemplateWithContext("content.tmpl", ctx); err == nil {
 		if tt, err = tt.Parse(tmplContent); err == nil {
 			var w bytes.Buffer
 			if err = tt.Execute(&w, ctx); err == nil {
@@ -46,22 +50,108 @@ func (t *Theme) RenderTemplateContent(ctx context.Context, tmplContent string) (
 	return
 }
 
-func (t *Theme) NewHtmlTemplate(name string) (tmpl *template.Template, err error) {
+func (t *Theme) NewFuncMapWithContext(ctx context.Context) (fm template.FuncMap) {
+	enjin, _ := ctx.Get("SiteEnjin").(site.Enjin)
+
+	fm = template.FuncMap{}
+	for k, v := range t.FuncMap {
+		fm[k] = v
+	}
+
+	// translate page paths
+	fm["__"] = func(argv ...string) (translated string, err error) {
+		targetLang, _ := ctx.Get("ReqLangTag").(language.Tag)
+		var targetPath, fallbackPath string
+
+		switch len(argv) {
+		case 0:
+			err = fmt.Errorf("called with no arguments")
+			return
+		case 1:
+			targetPath = argv[0]
+		case 2:
+			if targetLang, err = language.Parse(argv[0]); err != nil {
+				err = fmt.Errorf("called with invalid language: %v", argv[0])
+				return
+			}
+			targetPath = argv[1]
+		case 3:
+			if targetLang, err = language.Parse(argv[0]); err != nil {
+				err = fmt.Errorf("called with invalid language: %v", argv[0])
+				return
+			}
+			fallbackPath = argv[1]
+			targetPath = argv[2]
+		default:
+			err = fmt.Errorf("called with too many arguments")
+			return
+		}
+
+		if targetPath == "" || targetPath[0] != '/' {
+			translated = targetPath
+			return
+		}
+
+		var targetPage *page.Page
+		if targetPage = enjin.FindPage(targetLang, targetPath); targetPage == nil {
+			if targetPage = enjin.FindPage(language.Und, targetPath); targetPage == nil {
+				if fallbackPath != "" {
+					if targetPage = enjin.FindPage(targetLang, fallbackPath); targetPage == nil {
+						if targetPage = enjin.FindPage(language.Und, fallbackPath); targetPage == nil {
+							log.ErrorF("__%v error: page not found, fallback not found, returning fallback", argv)
+							translated = fallbackPath
+							return
+						}
+					}
+				} else {
+					log.ErrorF("__%v error: page not found, fallback not given, returning target", argv)
+					translated = targetPath
+					return
+				}
+			}
+		}
+
+		translated = targetPage.LangModeUrl(enjin.SiteLanguageMode(), targetLang, enjin.SiteDefaultLanguage())
+		log.TraceF("__: [%v] %v - %#v ([%v] %v - %v)", targetLang, translated, argv, targetPage.LanguageTag, targetPage.Url, targetPage.Title)
+		return
+	}
+
+	// translate page content
+	fm["_"] = func(format string, argv ...interface{}) (translated string) {
+		if printer, ok := ctx.Get("LangPrinter").(*message.Printer); ok {
+			translated = printer.Sprintf(format, argv...)
+			if fmt.Sprintf(format, argv...) != translated {
+				log.DebugF("template translated: \"%v\" -> \"%v\"", format, translated)
+			}
+		} else {
+			translated = fmt.Sprintf(format, argv...)
+		}
+		return
+	}
+	return
+}
+
+func (t *Theme) NewHtmlTemplateWithContext(name string, ctx context.Context) (tmpl *template.Template, err error) {
 	if parent := t.GetParent(); parent != nil {
-		if tmpl, err = parent.NewHtmlTemplate(name); err != nil {
+		if tmpl, err = parent.NewHtmlTemplateWithContext(name, ctx); err != nil {
 			return
 		}
 		// log.DebugF("starting %v template from theme %v", name, t.Config.Name)
 	} else {
-		tmpl = template.New(name).Funcs(t.FuncMap)
+		tmpl = template.New(name).Funcs(t.NewFuncMapWithContext(ctx))
 		log.DebugF("starting %v template from theme %v", name, t.Config.Name)
 	}
 
 	var layoutsTmpl *template.Template
-	if layoutsTmpl, err = t.Layouts.NewTemplate(""); err != nil {
+	if layoutsTmpl, err = t.Layouts.NewTemplate("", ctx); err != nil {
 		return
 	}
 	err = AddParseTree(layoutsTmpl, tmpl)
+	return
+}
+
+func (t *Theme) NewHtmlTemplate(name string) (tmpl *template.Template, err error) {
+	tmpl, err = t.NewHtmlTemplateWithContext(name, context.New())
 	return
 }
 
@@ -143,7 +233,7 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *templ
 	}
 
 	var tmpl *template.Template
-	if ctxTmpl, e := ctxLayout.NewTemplateFrom(parentLayout); e != nil {
+	if ctxTmpl, e := ctxLayout.NewTemplateFrom(parentLayout, ctx); e != nil {
 		err = fmt.Errorf("error creating new %v layout template: %v", layoutName, e)
 		return
 	} else {
@@ -152,7 +242,7 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *templ
 
 	if parent := t.GetParent(); parent != nil {
 		if partials, _, ok := parent.FindLayout("partials"); ok {
-			if ee := partials.Apply(tmpl); ee != nil {
+			if ee := partials.Apply(tmpl, ctx); ee != nil {
 				err = fmt.Errorf("error applying parent partials to %v: %v", layoutName, ee)
 				return
 			}
@@ -160,7 +250,7 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *templ
 	}
 
 	if partials, _, ok := t.FindLayout("partials"); ok {
-		if ee := partials.Apply(tmpl); ee != nil {
+		if ee := partials.Apply(tmpl, ctx); ee != nil {
 			err = fmt.Errorf("error applying partials to %v: %v", layoutName, ee)
 			return
 		}

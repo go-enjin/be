@@ -41,6 +41,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/hash/sha"
+	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/gorilla-handlers"
 	"github.com/go-enjin/be/pkg/net/headers"
@@ -63,6 +64,8 @@ type Enjin struct {
 
 	debug bool
 
+	catalog *lang.Catalog
+
 	eb     *EnjinBuilder
 	cli    *cli.App
 	router *chi.Mux
@@ -80,6 +83,7 @@ func newEnjin(eb *EnjinBuilder) *Enjin {
 		},
 		router: chi.NewRouter(),
 	}
+	be.initLocales()
 	be.initConsoles()
 	be.cli.Action = be.webServicesAction
 	cli.VersionPrinter = func(c *cli.Context) {
@@ -256,6 +260,8 @@ func (e *Enjin) startupWebServices() (err error) {
 	log.DebugF(e.String())
 
 	e.router.Use(e.panicMiddleware)
+
+	e.router.Use(langMiddleware(e))
 
 	for _, f := range e.eb.features {
 		if rm, ok := f.(feature.RequestModifier); ok {

@@ -18,7 +18,9 @@ import (
 	"github.com/blevesearch/bleve/v2/analysis/analyzer/standard"
 	"github.com/blevesearch/bleve/v2/mapping"
 
+	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/search"
+	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 var _ Document = (*CDocument)(nil)
@@ -38,11 +40,12 @@ type CDocument struct {
 	Footnotes []string `json:"footnotes"`
 }
 
-func NewOrgModeDocument(url, title string) (doc *CDocument) {
+func NewOrgModeDocument(language, url, title string) (doc *CDocument) {
 	doc = new(CDocument)
 	doc.Type = "org"
-	doc.Title = title
 	doc.Url = url
+	doc.Title = title
+	doc.Language = language
 	return
 }
 
@@ -62,10 +65,14 @@ func (d *CDocument) AddFootnote(text string) {
 	d.Footnotes = append(d.Footnotes, text)
 }
 
-func NewOrgModeDocumentMapping() (dm *mapping.DocumentMapping) {
+func NewOrgModeDocumentMapping(tag language.Tag) (dm *mapping.DocumentMapping) {
 	dm = search.NewDocumentMapping()
-	dm.AddFieldMappingsAt("links", search.NewDefaultTextFieldMapping(standard.Name))
-	dm.AddFieldMappingsAt("headings", search.NewDefaultTextFieldMapping(standard.Name))
-	dm.AddFieldMappingsAt("footnotes", search.NewDefaultTextFieldMapping(standard.Name))
+	analyzer := standard.Name
+	if lang.BleveSupportedAnalyzer(tag) {
+		analyzer = tag.String()
+	}
+	dm.AddFieldMappingsAt("links", search.NewDefaultTextFieldMapping(analyzer))
+	dm.AddFieldMappingsAt("headings", search.NewDefaultTextFieldMapping(analyzer))
+	dm.AddFieldMappingsAt("footnotes", search.NewDefaultTextFieldMapping(analyzer))
 	return
 }

@@ -17,6 +17,8 @@ package feature
 import (
 	"net/http"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/page"
 )
@@ -36,5 +38,5 @@ type DataRestrictionHandler interface {
 }
 
 type PageProvider interface {
-	FindPage(url string) (p *page.Page)
+	FindPage(tag language.Tag, url string) (p *page.Page)
 }

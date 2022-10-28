@@ -35,6 +35,10 @@ func (eb *EnjinBuilder) SetTheme(name string) feature.Builder {
 
 func (eb *EnjinBuilder) AddTheme(t *theme.Theme) feature.Builder {
 	eb.theming[t.Name] = t
+	if lfs, ok := t.Locales(); ok {
+		eb.localeFiles = append(eb.localeFiles, lfs)
+		log.DebugF("including %v theme locales", t.Name)
+	}
 	return eb
 }
 
@@ -53,6 +57,10 @@ func (eb *EnjinBuilder) AddThemes(path string) feature.Builder {
 			log.FatalF("error loading theme: %v", err)
 			return nil
 		}
+		if lfs, ok := eb.theming[name].Locales(); ok {
+			eb.localeFiles = append(eb.localeFiles, lfs)
+			log.DebugF("including %v theme locales", name)
+		}
 	}
 	return eb
 }
@@ -64,6 +72,10 @@ func (eb *EnjinBuilder) EmbedTheme(name, path string, tfs embed.FS) feature.Buil
 		delete(eb.theming, name)
 		log.FatalF("error embedding theme: %v", err)
 		return nil
+	}
+	if lfs, ok := eb.theming[name].Locales(); ok {
+		eb.localeFiles = append(eb.localeFiles, lfs)
+		log.DebugF("including %v theme locales", name)
 	}
 	return eb
 }
