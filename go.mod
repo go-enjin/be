@@ -11,9 +11,12 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.1
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-curses/cdk v0.5.12
+	github.com/go-enjin/golang-org-x-text v0.0.0-20221026190533-d0e9c4fd3b27
+	github.com/goccy/go-json v0.9.11
 	github.com/gomarkdown/markdown v0.0.0-20220905174103-7b278df48cfb
 	github.com/iancoleman/strcase v0.2.0
 	github.com/leekchan/gtf v0.0.0-20190214083521-5fba33c5b00b
+	github.com/maruel/natural v1.1.0
 	github.com/microcosm-cc/bluemonday v1.0.20
 	github.com/nanmu42/gzip v1.2.0
 	github.com/niklasfasching/go-org v1.6.5
@@ -64,7 +67,6 @@ require (
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
-	github.com/goccy/go-json v0.9.11 // indirect
 	github.com/gofrs/uuid v4.3.0+incompatible // indirect
 	github.com/golang/geo v0.0.0-20210211234256-740aa86cb551 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -104,7 +106,7 @@ require (
 	go.etcd.io/bbolt v1.3.5 // indirect
 	golang.org/x/sys v0.0.0-20221010170243-090e33056c14 // indirect
 	golang.org/x/term v0.0.0-20220919170432-7a66f970e087 // indirect
-	golang.org/x/text v0.3.8 // indirect
+	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
