@@ -38,9 +38,11 @@ func DefaultFuncMap() (funcMap template.FuncMap) {
 		"asHTMLAttr": funcs.AsHTMLAttr,
 		"asCSS":      funcs.AsCSS,
 		"asJS":       funcs.AsJS,
-		"fsHash":     funcs.FsHash,
-		"fsUrl":      funcs.FsUrl,
-		"fsMime":     funcs.FsMime,
+
+		"fsHash":   funcs.FsHash,
+		"fsUrl":    funcs.FsUrl,
+		"fsMime":   funcs.FsMime,
+		"fsExists": funcs.FsExists,
 
 		"add":      funcs.Add,
 		"sub":      funcs.Sub,
@@ -56,6 +58,8 @@ func DefaultFuncMap() (funcMap template.FuncMap) {
 
 		"unescapeHTML":     funcs.UnescapeHtml,
 		"escapeJsonString": funcs.EscapeJsonString,
+		"escapeHTML":       funcs.EscapeHtml,
+		"escapeUrlPath":    funcs.EscapeUrlPath,
 
 		"element":           funcs.Element,
 		"elementOpen":       funcs.ElementOpen,

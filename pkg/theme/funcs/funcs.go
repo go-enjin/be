@@ -74,6 +74,22 @@ func AsHTMLAttr(input interface{}) template.HTMLAttr {
 	}
 }
 
+func EscapeUrlPath(input interface{}) (escaped string) {
+	switch t := input.(type) {
+	case string:
+		escaped = url.PathEscape(t)
+	case []byte:
+		escaped = url.PathEscape(string(t))
+	case template.HTML:
+		escaped = url.PathEscape(string(t))
+	case template.HTMLAttr:
+		escaped = url.PathEscape(string(t))
+	default:
+		escaped = fmt.Sprintf("%v", t)
+	}
+	return
+}
+
 func FsHash(path string) (shasum string) {
 	shasum, _ = fs.FindFileShasum(path)
 	return
@@ -89,6 +105,11 @@ func FsUrl(path string) (url string) {
 
 func FsMime(path string) (mime string) {
 	mime, _ = fs.FindFileMime(path)
+	return
+}
+
+func FsExists(path string) (exists bool) {
+	exists = fs.FileExists(path)
 	return
 }
 
@@ -131,6 +152,18 @@ func EscapeJsonString(input interface{}) (value string) {
 		json.HTMLEscape(&dst, []byte(fmt.Sprintf("%v", t)))
 	}
 	value = dst.String()
+	return
+}
+
+func EscapeHtml(input interface{}) (out template.HTML) {
+	switch t := input.(type) {
+	case string:
+		out = template.HTML(html.EscapeString(t))
+	case template.HTML:
+		out = template.HTML(html.EscapeString(string(t)))
+	default:
+		out = template.HTML(html.EscapeString(fmt.Sprintf("%v", t)))
+	}
 	return
 }
 
@@ -203,3 +236,31 @@ func IsPath(value string) (ok bool) {
 	}
 	return
 }
+
+// func MergeData(datasets ...interface{}) (merged map[string]interface{}) {
+// 	merged = make(map[string]interface{})
+// 	for _, data := range datasets {
+// 		switch typed := data.(type) {
+// 		case menu.Item:
+// 			merged["Href"] = typed.Href
+// 			merged["Text"] = typed.Text
+// 			merged["Attributes"] = typed.Attributes
+// 			merged["SubMenu"] = typed.SubMenu
+// 		case map[string]string:
+// 			for k, v := range typed {
+// 				merged[k] = v
+// 			}
+// 		case map[string]template.HTML:
+// 			for k, v := range typed {
+// 				merged[k] = v
+// 			}
+// 		case map[string]interface{}:
+// 			for k, v := range typed {
+// 				merged[k] = v
+// 			}
+// 		default:
+// 			log.ErrorF("merge data - unsupported type: %T", typed)
+// 		}
+// 	}
+// 	return
+// }
