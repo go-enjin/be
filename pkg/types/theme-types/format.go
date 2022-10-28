@@ -24,6 +24,7 @@ import (
 type Format interface {
 	Name() (name string)
 	Label() (label string)
+	Extensions() (extensions []string)
 	Process(ctx context.Context, t Theme, content string) (html template.HTML, err *EnjinError)
 	IndexDocument(pg interface{}) (doc search.Document, err error)
 }

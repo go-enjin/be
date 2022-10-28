@@ -17,6 +17,7 @@ package types
 import (
 	"html/template"
 
+	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/fs"
 )
 
@@ -25,4 +26,6 @@ type Theme interface {
 	GetParentTheme() (parent Theme)
 	GetBlockThemeNames() (names []string)
 	NewHtmlTemplate(name string) (tmpl *template.Template, err error)
+	NewHtmlTemplateWithContext(name string, ctx context.Context) (tmpl *template.Template, err error)
+	NewFuncMapWithContext(ctx context.Context) (fm template.FuncMap)
 }
