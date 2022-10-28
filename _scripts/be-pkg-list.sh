@@ -23,17 +23,30 @@ PKG_PREFIX="github.com/go-enjin/be"
 
 package be
 
-var BePkgList = []string{"
-    echo -e "\t\"${PKG_PREFIX}\","
-    find pkg features -type d | sort -V | while read DIR
+func GoEnjinPackageList() (list []string) {
+	list = append(list,
+		\"${PKG_PREFIX}\","
+
+    find pkg -type d | sort -V | while read DIR
     do
         fileCount=$(ls -1 "${DIR}" | egrep '\.go' | wc -l)
         if [ ${fileCount} -gt 0 ]
         then
-            echo -e "\t\"${PKG_PREFIX}/${DIR}\","
+            echo -e "\t\t\"${PKG_PREFIX}/${DIR}\","
         fi
     done
 
+    find features -type d | sort -V | while read DIR
+    do
+        fileCount=$(ls -1 "${DIR}" | egrep '\.go' | wc -l)
+        if [ ${fileCount} -gt 0 ]
+        then
+            echo -e "\t\t\"${PKG_PREFIX}/${DIR}\","
+        fi
+    done
+
+    echo -e "\t)"
+    echo -e "\treturn"
     echo "}"
 ) > be_pkg_list.go
 
