@@ -25,8 +25,8 @@ import (
 	"golang.org/x/net/html"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/net"
 	bePath "github.com/go-enjin/be/pkg/path"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
@@ -92,7 +92,7 @@ func (f *Feature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *Feature) CanTransform(mime string, r *http.Request) (ok bool) {
-	urlPath := bePath.TrimSlash(net.TrimQueryParams(r.URL.Path))
+	urlPath := bePath.TrimSlash(forms.TrimQueryParams(r.URL.Path))
 	for idx, rx := range f.ignored {
 		ignore := false
 		if rx != nil {
