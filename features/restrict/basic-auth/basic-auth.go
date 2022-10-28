@@ -32,9 +32,9 @@ import (
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/net"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -431,7 +431,7 @@ func (f *Feature) checkRequestIgnored(r *http.Request) (ignore bool) {
 		}
 	}
 	if len(f.ignorePaths) > 0 {
-		urlPath := net.TrimQueryParams(r.URL.Path)
+		urlPath := forms.TrimQueryParams(r.URL.Path)
 		lup := len(urlPath)
 		log.DebugF("check request ignored: %v - %v", urlPath, f.ignorePaths)
 		for path, specific := range f.ignorePaths {
@@ -455,7 +455,7 @@ func (f *Feature) checkRequestIgnored(r *http.Request) (ignore bool) {
 }
 
 func (f *Feature) getRestrictionGroups(r *http.Request, restrictAll bool) (groups []string) {
-	urlPath := net.TrimQueryParams(r.URL.Path)
+	urlPath := forms.TrimQueryParams(r.URL.Path)
 	lup := len(urlPath)
 	var sortPaths []string
 	for path, _ := range f.restrictPaths {
