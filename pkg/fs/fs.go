@@ -30,4 +30,5 @@ type FileSystem interface {
 	MimeType(path string) (mime string, err error)
 	Shasum(path string) (shasum string, err error)
 	LastModified(path string) (dateTime int64, err error)
+	Exists(path string) (exists bool)
 }

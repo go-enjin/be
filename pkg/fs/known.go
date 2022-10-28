@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -46,13 +45,28 @@ func RegisterFileSystem(mount string, f FileSystem) {
 	// log.DebugDF(1, "registered fs: %v (%d)", mount, len(_registry.registered[mount]))
 }
 
+func FileExists(path string) (exists bool) {
+	_registry.RLock()
+	defer _registry.RUnlock()
+	for mount, systems := range _registry.registered {
+		p := bePath.TrimPrefix(path, mount)
+		for _, f := range systems {
+			// log.DebugF("checking for file existence: %v - %v", f.Name(), p)
+			if exists = f.Exists(p); exists {
+				return
+			}
+		}
+	}
+	return
+}
+
 func FindFileShasum(path string) (shasum string, err error) {
 	_registry.RLock()
 	defer _registry.RUnlock()
 	for mount, systems := range _registry.registered {
 		p := bePath.TrimPrefix(path, mount)
 		for _, f := range systems {
-			log.DebugF("checking for file shasum: %v - %v", f.Name(), p)
+			// log.DebugF("checking for file shasum: %v - %v", f.Name(), p)
 			if shasum, err = f.Shasum(p); err == nil {
 				return
 			}

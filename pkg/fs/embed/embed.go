@@ -19,6 +19,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	bePath "github.com/go-enjin/be/pkg/path"
 	bePathEmbed "github.com/go-enjin/be/pkg/path/embed"
@@ -42,22 +43,38 @@ func New(path string, efs embed.FS) (out FileSystem, err error) {
 func Wrap(path, wrap string, efs embed.FS) (out FileSystem, err error) {
 	out = FileSystem{
 		path:  path,
-		wrap:  wrap,
 		embed: efs,
 	}
 	return
 }
 
 func (f FileSystem) Name() (name string) {
-	name = "embed"
+	name = f.path
 	return
 }
 
 func (f FileSystem) realpath(path string) (out string) {
-	if f.wrap != "" {
-		out = bePath.SafeConcatRelPath(f.path, f.wrap, path)
-	} else {
-		out = bePath.SafeConcatRelPath(f.path, path)
+	out = bePath.SafeConcatRelPath(f.path, path)
+	return
+}
+
+func (f FileSystem) pruneEntries(paths []string) (pruned []string) {
+	rp := f.path
+	for _, entry := range paths {
+		if strings.HasPrefix(entry, rp) {
+			if entry = entry[len(rp):]; entry != "" && entry[0] == '/' {
+				entry = entry[1:]
+			}
+		}
+		pruned = append(pruned, entry)
+	}
+	return
+}
+
+func (f FileSystem) Exists(path string) (exists bool) {
+	if fh, err := f.embed.Open(f.realpath(path)); err == nil {
+		_ = fh.Close()
+		exists = true
 	}
 	return
 }
@@ -68,22 +85,30 @@ func (f FileSystem) Open(path string) (file fs.File, err error) {
 }
 
 func (f FileSystem) ListDirs(path string) (paths []string, err error) {
-	paths, err = bePathEmbed.ListDirs(f.realpath(path), f.embed)
+	if paths, err = bePathEmbed.ListDirs(f.realpath(path), f.embed); err == nil {
+		paths = f.pruneEntries(paths)
+	}
 	return
 }
 
 func (f FileSystem) ListFiles(path string) (paths []string, err error) {
-	paths, err = bePathEmbed.ListFiles(f.realpath(path), f.embed)
+	if paths, err = bePathEmbed.ListFiles(f.realpath(path), f.embed); err == nil {
+		paths = f.pruneEntries(paths)
+	}
 	return
 }
 
 func (f FileSystem) ListAllDirs(path string) (paths []string, err error) {
-	paths, err = bePathEmbed.ListAllDirs(f.realpath(path), f.embed)
+	if paths, err = bePathEmbed.ListAllDirs(f.realpath(path), f.embed); err == nil {
+		paths = f.pruneEntries(paths)
+	}
 	return
 }
 
 func (f FileSystem) ListAllFiles(path string) (paths []string, err error) {
-	paths, err = bePathEmbed.ListAllFiles(f.realpath(path), f.embed)
+	if paths, err = bePathEmbed.ListAllFiles(f.realpath(path), f.embed); err == nil {
+		paths = f.pruneEntries(paths)
+	}
 	return
 }
 

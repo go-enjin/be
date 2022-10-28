@@ -17,7 +17,6 @@ package fs
 import (
 	"io/fs"
 
-	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -40,7 +39,12 @@ func (w WrapFileSystem) realpath(path string) (rp string) {
 }
 
 func (w WrapFileSystem) Name() (name string) {
-	name = w.fs.Name()
+	name = bePath.SafeConcatRelPath(w.fs.Name(), w.path)
+	return
+}
+
+func (w WrapFileSystem) Exists(path string) (exists bool) {
+	exists = w.fs.Exists(w.realpath(path))
 	return
 }
 
@@ -75,7 +79,7 @@ func (w WrapFileSystem) ReadDir(path string) (entries []fs.DirEntry, err error) 
 }
 
 func (w WrapFileSystem) ReadFile(path string) (data []byte, err error) {
-	log.WarnF("read file path: %v - %v", w.realpath(path), path)
+	// log.DebugF("read file path: %v - %v", w.realpath(path), path)
 	data, err = w.fs.ReadFile(w.realpath(path))
 	return
 }

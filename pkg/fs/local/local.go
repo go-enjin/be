@@ -17,6 +17,7 @@ package local
 import (
 	"io/fs"
 	"os"
+	"strings"
 
 	"github.com/go-enjin/be/pkg/hash/sha"
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -43,28 +44,55 @@ func (f FileSystem) realpath(path string) (out string) {
 	return
 }
 
+func (f FileSystem) pruneEntries(paths []string) (pruned []string) {
+	rp := string(f)
+	for _, entry := range paths {
+		if strings.HasPrefix(entry, rp) {
+			if entry = entry[len(rp):]; entry != "" && entry[0] == '/' {
+				entry = entry[1:]
+			}
+		}
+		pruned = append(pruned, entry)
+	}
+	return
+}
+
+func (f FileSystem) Exists(path string) (exists bool) {
+	_, err := os.Stat(f.realpath(path))
+	exists = err == nil
+	return
+}
+
 func (f FileSystem) Open(path string) (file fs.File, err error) {
 	file, err = os.Open(f.realpath(path))
 	return
 }
 
 func (f FileSystem) ListDirs(path string) (paths []string, err error) {
-	paths, err = bePath.ListDirs(f.realpath(path))
+	if paths, err = bePath.ListDirs(f.realpath(path)); err == nil {
+		paths = f.pruneEntries(paths)
+	}
 	return
 }
 
 func (f FileSystem) ListFiles(path string) (paths []string, err error) {
-	paths, err = bePath.ListFiles(f.realpath(path))
+	if paths, err = bePath.ListFiles(f.realpath(path)); err == nil {
+		paths = f.pruneEntries(paths)
+	}
 	return
 }
 
 func (f FileSystem) ListAllDirs(path string) (paths []string, err error) {
-	paths, err = bePath.ListAllDirs(f.realpath(path))
+	if paths, err = bePath.ListAllDirs(f.realpath(path)); err == nil {
+		paths = f.pruneEntries(paths)
+	}
 	return
 }
 
 func (f FileSystem) ListAllFiles(path string) (paths []string, err error) {
-	paths, err = bePath.ListAllFiles(f.realpath(path))
+	if paths, err = bePath.ListAllFiles(f.realpath(path)); err == nil {
+		paths = f.pruneEntries(paths)
+	}
 	return
 }
 
@@ -92,7 +120,7 @@ func (f FileSystem) Shasum(path string) (shasum string, err error) {
 
 func (f FileSystem) LastModified(path string) (modTime int64, err error) {
 	var info os.FileInfo
-	if info, err = os.Stat(path); err != nil {
+	if info, err = os.Stat(f.realpath(path)); err != nil {
 		return
 	}
 	modTime = info.ModTime().Unix()
