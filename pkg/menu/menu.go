@@ -21,6 +21,7 @@ import (
 type Item struct {
 	Text string `json:"text"`
 	Href string `json:"href"`
+	Lang string `json:"lang"`
 
 	Attributes map[string]string `json:"attributes"`
 
