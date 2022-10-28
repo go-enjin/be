@@ -12,25 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package net
+package forms
 
-import (
-	"net/http"
-)
+import "regexp"
 
-func BaseURL(r *http.Request) (baseUrl string) {
-	u := r.URL
-	if baseUrl = u.Scheme; baseUrl == "" {
-		baseUrl = "https"
+var RxQueryParams = regexp.MustCompile(`\?(.+?)\s*$`)
+
+func TrimQueryParams(path string) string {
+	if RxQueryParams.MatchString(path) {
+		path = RxQueryParams.ReplaceAllString(path, "")
 	}
-	baseUrl += "://"
-	if u.Host != "" {
-		baseUrl += u.Host
-	} else {
-		baseUrl += r.Host
-	}
-	if portNum := u.Port(); portNum != "" {
-		baseUrl += ":" + portNum
-	}
-	return
+	return path
 }
