@@ -26,6 +26,7 @@ type Document interface {
 	Self() interface{}
 	GetUrl() (url string)
 	GetTitle() (title string)
+	GetLanguage() (language string)
 	GetContents() (contents []string)
 	BleveType() string
 	AddContent(text string)
@@ -35,14 +36,16 @@ type CDocument struct {
 	Type     string   `json:"type"`
 	Url      string   `json:"url"`
 	Title    string   `json:"title"`
+	Language string   `json:"language"`
 	Contents []string `json:"contents"`
 }
 
-func NewDocument(url, title string) (doc *CDocument) {
+func NewDocument(language, url, title string) (doc *CDocument) {
 	doc = new(CDocument)
 	doc.Type = "document"
 	doc.Url = url
 	doc.Title = title
+	doc.Language = language
 	return
 }
 
@@ -56,6 +59,10 @@ func (d *CDocument) GetUrl() (url string) {
 
 func (d *CDocument) GetTitle() (title string) {
 	return d.Title
+}
+
+func (d *CDocument) GetLanguage() (language string) {
+	return d.Language
 }
 
 func (d *CDocument) GetContents() (contents []string) {
@@ -84,7 +91,8 @@ func NewDocumentMapping() (dm *mapping.DocumentMapping) {
 
 	dm.AddFieldMappingsAt("Url", newField(simple.Name))
 	dm.AddFieldMappingsAt("Title", newField(simple.Name))
-	dm.AddFieldMappingsAt("Headings", newField(simple.Name))
 	dm.AddFieldMappingsAt("Content", newField(simple.Name))
+	dm.AddFieldMappingsAt("Headings", newField(simple.Name))
+	dm.AddFieldMappingsAt("Language", newField(simple.Name))
 	return
 }
