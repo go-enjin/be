@@ -21,6 +21,8 @@ import (
 
 	"github.com/iancoleman/strcase"
 
+	"github.com/go-enjin/be/pkg/types/site"
+
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net"
@@ -159,6 +161,10 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	}
 
 	ctx := e.Context()
+
+	ctx.SetSpecific("SiteInfo", site.Info(e))
+	ctx.SetSpecific("SiteEnjin", site.Enjin(e))
+
 	ctx.Set("Request", map[string]string{
 		"URL":        r.URL.String(),
 		"Path":       r.URL.Path,

@@ -55,6 +55,12 @@ type EnjinBuilder struct {
 	slugsums     bool
 	statusPages  map[int]string
 	hotReload    bool
+
+	tag             string
+	name            string
+	copyrightName   string
+	copyrightNotice string
+	tagLine         string
 }
 
 func New() (be *EnjinBuilder) {
@@ -92,6 +98,27 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 	if err := eb.resolveFeatureDeps(); err != nil {
 		log.FatalF("error resolving feature dependencies: %v", err)
 		return nil
+	}
+
+	if eb.tag == "" {
+		log.FatalDF(1, "missing .SiteTag")
+	}
+	eb.Set("SiteTag", eb.tag)
+	if eb.name == "" {
+		log.FatalDF(1, "missing .SiteName")
+	}
+	eb.Set("SiteName", eb.name)
+	if eb.copyrightName != "" {
+		eb.Set("CopyrightName", eb.copyrightName)
+	}
+	if eb.copyrightNotice == "" && eb.copyrightName != "" {
+		eb.copyrightNotice = fmt.Sprintf("© %v", time.Now().Year())
+		eb.Set("CopyrightNotice", eb.copyrightNotice)
+	} else {
+		eb.Set("CopyrightNotice", eb.copyrightNotice)
+	}
+	if eb.tagLine != "" {
+		eb.Set("SiteTagLine", eb.tagLine)
 	}
 
 	if len(eb.htmlHeadTags) > 0 {

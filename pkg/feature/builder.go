@@ -25,6 +25,12 @@ import (
 )
 
 type Builder interface {
+	SiteTag(key string) Builder
+	SiteName(name string) Builder
+	SiteTagLine(title string) Builder
+	SiteCopyrightName(name string) Builder
+	SiteCopyrightNotice(notice string) Builder
+
 	// Set a custom context key with value
 	Set(key string, value interface{}) Builder
 
