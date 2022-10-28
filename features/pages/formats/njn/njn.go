@@ -61,7 +61,7 @@ import (
 	"github.com/go-enjin/be/pkg/search"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme"
-	"github.com/go-enjin/be/pkg/theme/types"
+	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 var (
@@ -237,6 +237,11 @@ func (f *CFeature) Tag() (tag feature.Tag) {
 
 func (f *CFeature) Name() (name string) {
 	name = "njn"
+	return
+}
+
+func (f *CFeature) Extensions() (extensions []string) {
+	extensions = append(extensions, "njn", "njn.tmpl")
 	return
 }
 

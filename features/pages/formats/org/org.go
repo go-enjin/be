@@ -26,7 +26,7 @@ import (
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/search"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/be/pkg/theme/types"
+	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 var (
@@ -93,6 +93,11 @@ func (f *CFeature) Make() Feature {
 
 func (f *CFeature) Name() (name string) {
 	name = "org"
+	return
+}
+
+func (f *CFeature) Extensions() (extensions []string) {
+	extensions = append(extensions, "org", "org.tmpl")
 	return
 }
 
