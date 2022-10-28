@@ -32,6 +32,17 @@ func (eb *EnjinBuilder) Set(key string, value interface{}) feature.Builder {
 	return eb
 }
 
+func (eb *EnjinBuilder) AddHtmlHeadTag(name string, attr map[string]string) feature.Builder {
+	if len(attr) <= 1 {
+		log.FatalDF(1, "AddHtmlHeadTag requires at least two attribute keys")
+	}
+	eb.htmlHeadTags = append(eb.htmlHeadTags, htmlHeadTag{
+		name: name,
+		attr: attr,
+	})
+	return eb
+}
+
 func (eb *EnjinBuilder) AddDomains(domains ...string) feature.Builder {
 	for _, domain := range domains {
 		if !beStrings.StringInStrings(domain, eb.domains...) {

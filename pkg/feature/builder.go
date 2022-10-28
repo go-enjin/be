@@ -28,6 +28,11 @@ type Builder interface {
 	// Set a custom context key with value
 	Set(key string, value interface{}) Builder
 
+	// AddHtmlHeadTag adds a custom (singleton) HTML tag to the <head> section
+	// of the page output, example meta tag:
+	//   AddHtmlHeadTag("meta",map[string]string{"name":"og:thing","content":"stuff"})
+	AddHtmlHeadTag(name string, attr map[string]string) Builder
+
 	// AddDomains restricts inbound requests to only the domain names given
 	AddDomains(domains ...string) Builder
 

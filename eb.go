@@ -32,10 +32,16 @@ import (
 
 var _ feature.Builder = &EnjinBuilder{}
 
+type htmlHeadTag struct {
+	name string
+	attr map[string]string
+}
+
 type EnjinBuilder struct {
 	flags        []cli.Flag
 	commands     cli.Commands
 	pages        map[string]*page.Page
+	htmlHeadTags []htmlHeadTag
 	context      context.Context
 	theme        string
 	theming      map[string]*theme.Theme
@@ -86,6 +92,30 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 	if err := eb.resolveFeatureDeps(); err != nil {
 		log.FatalF("error resolving feature dependencies: %v", err)
 		return nil
+	}
+
+	if len(eb.htmlHeadTags) > 0 {
+		var tags []template.HTML
+		for _, tag := range eb.htmlHeadTags {
+			var attrs string
+			for _, key := range maps.ReverseSortedKeys(tag.attr) {
+				if attrs != "" {
+					attrs += " "
+				}
+				attrs += fmt.Sprintf(`%v="%v"`, key, template.HTMLEscapeString(tag.attr[key]))
+			}
+			if attrs == "" {
+				// log.FatalF("SetHtmlHeadTag #%d requires attributes", idx+1)
+				continue
+			}
+			tags = append(
+				tags,
+				template.HTML(
+					fmt.Sprintf("<%v %v/>", tag.name, attrs),
+				),
+			)
+		}
+		eb.Set("HtmlHeadTags", tags)
 	}
 
 	if eb.theme != "" {
