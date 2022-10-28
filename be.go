@@ -50,6 +50,8 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
+//go:generate _scripts/be-pkg-list.sh
+
 var (
 	_ feature.Runner    = &Enjin{}
 	_ feature.System    = &Enjin{}
