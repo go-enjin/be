@@ -15,14 +15,28 @@
 package page
 
 import (
+	"sort"
+	"strings"
+
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/be/pkg/theme/types"
+	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 var (
 	knownFormats = make(map[string]types.Format)
 	Extensions   = make([]string, 0)
 )
+
+func MatchFormatExtension(filename string) (format types.Format, match string) {
+	for _, extension := range Extensions {
+		if strings.HasSuffix(filename, "."+extension) {
+			match = extension
+			format, _ = knownFormats[extension]
+			break
+		}
+	}
+	return
+}
 
 func GetFormat(name string) (format types.Format) {
 	if v, ok := knownFormats[name]; ok {
@@ -32,15 +46,24 @@ func GetFormat(name string) (format types.Format) {
 }
 
 func AddFormat(format types.Format) {
-	knownFormats[format.Name()] = format
-	if !beStrings.StringInStrings(format.Name(), Extensions...) {
-		Extensions = append(Extensions, format.Name())
+	extensions := format.Extensions()
+	for _, extension := range extensions {
+		knownFormats[extension] = format
+		if !beStrings.StringInStrings(extension, Extensions...) {
+			Extensions = append(Extensions, extension)
+		}
 	}
+	sort.Sort(beStrings.SortByLengthDesc(Extensions))
 }
 
 func RemoveFormat(name string) {
-	delete(knownFormats, name)
-	if idx := beStrings.StringIndexInStrings(name, Extensions...); idx >= 0 {
-		Extensions = beStrings.RemoveIndexFromStrings(idx, Extensions)
+	if format, ok := knownFormats[name]; ok {
+		for _, extension := range format.Extensions() {
+			delete(knownFormats, extension)
+			if idx := beStrings.StringIndexInStrings(extension, Extensions...); idx >= 0 {
+				Extensions = beStrings.RemoveIndexFromStrings(idx, Extensions)
+			}
+		}
 	}
+	sort.Sort(beStrings.SortByLengthDesc(Extensions))
 }
