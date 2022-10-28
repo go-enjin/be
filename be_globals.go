@@ -51,9 +51,9 @@ func init() {
 		var err error
 		var absPath string
 		if absPath, err = filepath.Abs(os.Args[0]); err != nil {
-			log.ErrorF("absolute path error %v: %v", os.Args[0], err)
+			log.DebugF("absolute path error %v: %v", os.Args[0], err)
 		} else if globals.BinHash, err = sha.FileHash10(absPath); err != nil {
-			log.ErrorF("sha hashing error %v: %v", os.Args[0], err)
+			log.DebugF("sha hashing error %v: %v", os.Args[0], err)
 			globals.BinHash = "0000000000"
 		}
 	}
