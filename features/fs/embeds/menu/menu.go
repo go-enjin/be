@@ -109,20 +109,20 @@ func (f *Feature) addMenuFiles(tag language.Tag, bfs beFs.FileSystem) (err error
 			if item.Lang == "" {
 				item.Lang = tag.String()
 			}
-			log.WarnF("rewrite: [%v] - %v - %v", tag, item.Href, item.Text)
+			// log.WarnF("rewrite: [%v] - %v - %v", tag, item.Href, item.Text)
 			item.SubMenu = rewrite(tag, item.SubMenu)
 			out = append(out, item)
 		}
 		return
 	}
 
-	log.DebugF("checking %v menu files: %v", tag.String(), bfs.Name())
+	log.DebugF("checking [%v] %v menu files", tag.String(), bfs.Name())
 	var filenames []string
 	if filenames, err = bfs.ListFiles("."); err != nil {
 		err = fmt.Errorf("error listing files: [%v] %v", bfs.Name(), err)
 		return
 	}
-	// log.DebugF("filenames: %v", filenames)
+	log.DebugF("found [%v] %v menu files: %v", tag.String(), bfs.Name(), filenames)
 	sort.Sort(sortorder.Natural(filenames))
 	for _, filename := range filenames {
 		name := bePath.Base(filename)
