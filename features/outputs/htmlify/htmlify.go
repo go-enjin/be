@@ -132,6 +132,8 @@ func (f *Feature) TransformOutput(_ string, input []byte) (output []byte) {
 		"var":    true,
 		"sub":    true,
 		"sup":    true,
+		"abbr":   true,
+		"cite":   true,
 		"code":   true,
 		"span":   true,
 		"input":  true,
@@ -139,7 +141,11 @@ func (f *Feature) TransformOutput(_ string, input []byte) (output []byte) {
 		"strong": true,
 	}
 	gohtml.IsPreformatted = func(token html.Token) bool {
-		return token.Data == "pre" || token.Data == "textarea" || token.Data == "code" || token.Data == "p"
+		switch token.Data {
+		case "pre", "textarea", "code", "p":
+			return true
+		}
+		return false
 	}
 	output = []byte(gohtml.Format(string(input)))
 	return
