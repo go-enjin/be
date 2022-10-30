@@ -15,10 +15,11 @@
 package be
 
 import (
-	"github.com/go-enjin/be/pkg/lang"
-	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
+
+	"github.com/go-enjin/be/pkg/lang"
+	"github.com/go-enjin/be/pkg/log"
 )
 
 func (e *Enjin) initLocales() {
@@ -33,7 +34,7 @@ func (e *Enjin) SiteLocales() (locales []language.Tag) {
 	return
 }
 
-func (e *Enjin) SiteLanguageMode() (mode string) {
+func (e *Enjin) SiteLanguageMode() (mode lang.Mode) {
 	mode = e.eb.langMode
 	return
 }

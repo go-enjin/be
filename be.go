@@ -263,7 +263,7 @@ func (e *Enjin) startupWebServices() (err error) {
 
 	e.router.Use(e.panicMiddleware)
 
-	e.router.Use(langMiddleware(e))
+	e.router.Use(e.langMiddleware)
 
 	for _, f := range e.eb.features {
 		if rm, ok := f.(feature.RequestModifier); ok {

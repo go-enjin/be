@@ -20,7 +20,6 @@ import (
 	"net"
 	"net/http"
 	"runtime"
-	"strings"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
@@ -29,8 +28,6 @@ import (
 	"github.com/go-enjin/be/pkg/net/headers"
 	bePath "github.com/go-enjin/be/pkg/path"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/be/pkg/types/site"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 func (e *Enjin) requestFiltersMiddleware(next http.Handler) http.Handler {
@@ -122,49 +119,35 @@ func (e *Enjin) themeMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func langMiddleware(e site.Enjin) func(next http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			requested := e.SiteDefaultLanguage().String()
-			switch e.SiteLanguageMode() {
-			case "query":
-				langValues, ok := r.URL.Query()["lang"]
-				if ok && len(langValues) >= 1 {
-					if tag, err := language.Parse(langValues[0]); err != nil {
-						log.ErrorF("error parsing language tag: %v", langValues[0])
-					} else {
-						requested = tag.String()
-					}
-				}
-			case "domain":
-				log.ErrorF("domain language mode not implemented")
-			case "path":
-				path := bePath.TrimSlashes(r.URL.Path)
-				parts := strings.Split(path, "/")
-				if len(parts) >= 1 {
-					if pathTag, err := language.Parse(parts[0]); err == nil {
-						for _, tag := range e.SiteLocales() {
-							if language.Compare(tag, pathTag) {
-								requested = tag.String()
-								r.URL.Path = strings.TrimPrefix(r.URL.Path, "/"+tag.String())
-								if r.URL.Path == "" {
-									r.URL.Path = "/"
-								}
-								break
-							}
-						}
-					}
-				}
+func (e *Enjin) langMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		langMode := e.SiteLanguageMode()
+		defaultTag := e.SiteDefaultLanguage()
+
+		requested, reqPath := langMode.FromRequest(defaultTag, r)
+		// log.DebugF("requested=%v, reqPath=%v, r.Url=%v", requested, reqPath, r.URL.Path)
+		if pg := e.FindPage(requested, reqPath); pg != nil {
+			if !e.SiteSupportsLanguage(requested) {
+				log.TraceF("requested language not supported: %v", requested)
+				requested = defaultTag
 			}
 
-			tag, printer := lang.NewCatalogPrinter(requested, e.SiteLanguageCatalog())
+			tag, printer := lang.NewCatalogPrinter(requested.String(), e.SiteLanguageCatalog())
 			ctx := context.WithValue(r.Context(), lang.LanguageTag, tag)
 			ctx = context.WithValue(ctx, lang.LanguagePrinter, printer)
 			ctx = context.WithValue(ctx, lang.LanguageDefault, e.SiteDefaultLanguage())
-			log.TraceF("client requested language: %v", tag)
-			next.ServeHTTP(w, r.WithContext(ctx))
-		})
-	}
+			if reqPath == "" {
+				reqPath = "/"
+			} else if reqPath[0] != '/' {
+				reqPath = "/" + reqPath
+			}
+			r.URL.Path = reqPath
+			// log.DebugF("requested language: [%v] %v", tag, reqPath)
+			r = r.WithContext(ctx)
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (e *Enjin) panicMiddleware(next http.Handler) http.Handler {

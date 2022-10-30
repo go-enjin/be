@@ -24,6 +24,8 @@ import (
 	"github.com/fvbommel/sortorder"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/feature"
 	beFs "github.com/go-enjin/be/pkg/fs"
 	beFsEmbed "github.com/go-enjin/be/pkg/fs/embed"
@@ -31,7 +33,6 @@ import (
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
 	bePath "github.com/go-enjin/be/pkg/path"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 var _embedMenu *Feature

@@ -15,9 +15,10 @@
 package site
 
 import (
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
+
+	"github.com/go-enjin/be/pkg/lang"
 
 	"github.com/go-enjin/be/pkg/page"
 )
@@ -28,9 +29,10 @@ type Enjin interface {
 	SiteTagLine() (tagLine string)
 	SiteLocales() (locales []language.Tag)
 	SiteLangCatalog() (c *lang.Catalog)
-	SiteLanguageMode() (mode string)
+	SiteLanguageMode() (mode lang.Mode)
 	SiteLanguageCatalog() (c catalog.Catalog)
 	SiteDefaultLanguage() (tag language.Tag)
+	SiteSupportsLanguage(tag language.Tag) (supported bool)
 
 	FindPage(tag language.Tag, url string) (p *page.Page)
 }

@@ -23,8 +23,10 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/golang-org-x-text/language"
+
+	"github.com/go-enjin/be/pkg/lang"
+	"github.com/go-enjin/be/pkg/maps"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
@@ -69,7 +71,7 @@ type EnjinBuilder struct {
 	copyrightNotice string
 	tagLine         string
 
-	langMode    string
+	langMode    lang.Mode
 	localeTags  []language.Tag
 	localeFiles []fs.FileSystem
 	defaultLang language.Tag
@@ -93,7 +95,7 @@ func New() (be *EnjinBuilder) {
 	be.slugsums = true
 	be.statusPages = make(map[int]string)
 	be.hotReload = false
-	be.langMode = "query"
+	be.langMode = lang.NewQueryMode().Make()
 	be.defaultLang = language.Und
 	return be
 }

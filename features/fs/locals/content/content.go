@@ -26,8 +26,9 @@ import (
 	"github.com/fvbommel/sortorder"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/golang-org-x-text/language"
+
+	"github.com/go-enjin/be/pkg/forms"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
@@ -164,13 +165,8 @@ func (f *Feature) UpdateSearch(tag language.Tag, index bleve.Index) (err error) 
 			} else if doc != nil {
 				pgUrl := pg.Url
 				if !language.Compare(pg.LanguageTag, f.enjin.SiteDefaultLanguage(), language.Und) {
-					switch f.enjin.SiteLanguageMode() {
-					case "query":
-						pgUrl = "?lang=" + pg.Language
-					case "domain": // TODO: implement domain support
-					case "path":
-						pgUrl = "/" + pg.Language + pg.Url
-					}
+					langMode := f.enjin.SiteLanguageMode()
+					pgUrl = langMode.ToUrl(f.enjin.SiteDefaultLanguage(), pg.LanguageTag, pg.Url)
 				}
 				if ee := index.Index(pgUrl, doc.Self()); ee != nil {
 					err = fmt.Errorf("error indexing locals search document: %v", ee)
@@ -189,8 +185,7 @@ func (f *Feature) FindPage(tag language.Tag, path string) (p *page.Page) {
 	f.cache.Rebuild()
 	path = forms.TrimQueryParams(path)
 	_, path, _ = lang.ParseLangPath(path)
-	path = strings.TrimSuffix(path, "/")
-	if path == "" {
+	if path = strings.TrimSuffix(path, "/"); path == "" {
 		path = "/"
 	}
 	if _, _, pg, e := f.cache.Lookup(tag, path); e == nil {

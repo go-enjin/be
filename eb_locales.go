@@ -16,25 +16,17 @@ package be
 
 import (
 	"embed"
-	"strings"
+
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
 	embed2 "github.com/go-enjin/be/pkg/fs/embed"
 	"github.com/go-enjin/be/pkg/fs/local"
-	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-enjin/be/pkg/lang"
 )
 
-func (eb *EnjinBuilder) SiteLanguageMode(mode string) feature.Builder {
-	check := strings.ToLower(mode)
-	switch check {
-	case "domain":
-		log.FatalDF(1, "domain language mode not implemented yet")
-	case "path", "query":
-		eb.langMode = mode
-	default:
-		log.FatalDF(1, "invalid site language mode: %v", mode)
-	}
+func (eb *EnjinBuilder) SiteLanguageMode(mode lang.Mode) feature.Builder {
+	eb.langMode = mode
 	return eb
 }
 

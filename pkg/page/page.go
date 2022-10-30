@@ -22,9 +22,10 @@ import (
 	"github.com/iancoleman/strcase"
 	"gorm.io/gorm"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/forms"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -147,30 +148,4 @@ func (p *Page) SetSlugUrl(path string) {
 	} else {
 		p.Url = "/" + p.Slug
 	}
-}
-
-func (p *Page) LangModeUrl(mode string, targetLang, defaultLang language.Tag) (translated string) {
-	switch mode {
-	case "domain":
-		translated = p.Url
-	case "path":
-		if language.Compare(p.LanguageTag, defaultLang) {
-			translated = p.Url
-		} else if language.Compare(p.LanguageTag, language.Und) {
-			if language.Compare(targetLang, defaultLang) {
-				translated = p.Url
-			} else {
-				translated = "/" + targetLang.String() + p.Url
-			}
-		} else {
-			translated = "/" + p.LanguageTag.String() + p.Url
-		}
-	case "query":
-		if language.Compare(p.LanguageTag, language.Und) {
-			translated = p.Url + "?lang=" + targetLang.String()
-		} else {
-			translated = p.Url + "?lang=" + p.LanguageTag.String()
-		}
-	}
-	return
 }

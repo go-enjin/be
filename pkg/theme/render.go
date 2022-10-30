@@ -20,10 +20,11 @@ import (
 	"html/template"
 	"time"
 
-	"github.com/go-enjin/be/pkg/types/site"
-	"github.com/go-enjin/be/pkg/types/theme-types"
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/message"
+
+	"github.com/go-enjin/be/pkg/types/site"
+	"github.com/go-enjin/be/pkg/types/theme-types"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/log"
@@ -92,6 +93,11 @@ func (t *Theme) NewFuncMapWithContext(ctx context.Context) (fm template.FuncMap)
 			return
 		}
 
+		if !enjin.SiteSupportsLanguage(targetLang) {
+			log.ErrorF("unsupported site language requested: %v", targetLang)
+			targetLang = enjin.SiteDefaultLanguage()
+		}
+
 		var targetPage *page.Page
 		if targetPage = enjin.FindPage(targetLang, targetPath); targetPage == nil {
 			if targetPage = enjin.FindPage(language.Und, targetPath); targetPage == nil {
@@ -111,7 +117,7 @@ func (t *Theme) NewFuncMapWithContext(ctx context.Context) (fm template.FuncMap)
 			}
 		}
 
-		translated = targetPage.LangModeUrl(enjin.SiteLanguageMode(), targetLang, enjin.SiteDefaultLanguage())
+		translated = enjin.SiteLanguageMode().ToUrl(enjin.SiteDefaultLanguage(), targetLang, targetPath)
 		log.TraceF("__: [%v] %v - %#v ([%v] %v - %v)", targetLang, translated, argv, targetPage.LanguageTag, targetPage.Url, targetPage.Title)
 		return
 	}
