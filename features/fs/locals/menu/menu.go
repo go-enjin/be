@@ -173,6 +173,10 @@ func (f *Feature) Reload() (err error) {
 }
 
 func (f *Feature) GetMenus(tag language.Tag) (found map[string]menu.Menu) {
+	if err := f.Reload(); err != nil {
+		log.ErrorF("error reloading menus: %v", err)
+	}
+
 	found = make(map[string]menu.Menu)
 
 	// undefined first so that actual lang can overwrite, leaving Und fallbacks
