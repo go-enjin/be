@@ -106,5 +106,11 @@ func (e *Enjin) FindPage(tag language.Tag, url string) (p *page.Page) {
 			}
 		}
 	}
+	for _, pg := range e.eb.pages {
+		if pg.Url == url && language.Compare(pg.LanguageTag, tag) {
+			p = pg
+			break
+		}
+	}
 	return
 }
