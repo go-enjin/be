@@ -57,3 +57,12 @@ func (e *Enjin) SiteDefaultLanguage() (tag language.Tag) {
 	tag = e.eb.defaultLang
 	return
 }
+
+func (e *Enjin) SiteSupportsLanguage(tag language.Tag) (supported bool) {
+	for _, known := range e.SiteLocales() {
+		if supported = language.Compare(tag, known); supported {
+			break
+		}
+	}
+	return
+}
