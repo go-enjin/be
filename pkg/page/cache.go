@@ -67,10 +67,10 @@ func (c *Cache) Lookup(tag language.Tag, url string) (mount, path string, p *Pag
 	defer c.RUnlock()
 
 	process := func(localeCache map[string]*Page) (file string, pg *Page) {
-		for lf, lp := range localeCache {
-			if lp.Url == url {
-				file = lf
-				pg = lp
+		for _, lp := range localeCache {
+			if m, ok := lp.Match(url); ok {
+				file = m
+				pg = lp.Copy()
 				return
 			}
 		}
@@ -81,7 +81,7 @@ func (c *Cache) Lookup(tag language.Tag, url string) (mount, path string, p *Pag
 	for m, cache := range c.cache {
 		if lc, ok := cache[tag]; ok {
 			if f, pg := process(lc); pg != nil {
-				p = pg
+				p = pg.Copy()
 				path = f
 				mount = m
 				return
@@ -93,7 +93,7 @@ func (c *Cache) Lookup(tag language.Tag, url string) (mount, path string, p *Pag
 	for m, cache := range c.cache {
 		if lc, ok := cache[language.Und]; ok {
 			if f, pg := process(lc); pg != nil {
-				p = pg
+				p = pg.Copy()
 				path = f
 				mount = m
 				return
@@ -105,13 +105,28 @@ func (c *Cache) Lookup(tag language.Tag, url string) (mount, path string, p *Pag
 	return
 }
 
+func (c *Cache) FindAll(path string) (found []*Page) {
+	c.RLock()
+	defer c.RUnlock()
+	for _, cache := range c.cache {
+		for _, localeCache := range cache {
+			for _, pg := range localeCache {
+				if _, ok := pg.Match(path); ok {
+					found = append(found, pg.Copy())
+				}
+			}
+		}
+	}
+	return
+}
+
 func (c *Cache) ListAll() (found []*Page) {
 	c.RLock()
 	defer c.RUnlock()
 	for _, cache := range c.cache {
 		for _, localeCache := range cache {
 			for _, pg := range localeCache {
-				found = append(found, pg)
+				found = append(found, pg.Copy())
 			}
 		}
 	}

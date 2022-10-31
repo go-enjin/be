@@ -28,13 +28,6 @@ func (p *Page) parseContext(ctx context.Context) {
 
 	ctx.DeleteKeys("Path", "Content", "Section")
 
-	p.SetLanguage(language.Und)
-	if ctxLang := ctx.String("Language", ""); ctxLang != "" {
-		if tag, err := language.Parse(ctxLang); err == nil {
-			p.SetLanguage(tag)
-		}
-	}
-
 	p.Url = ctx.String("Url", p.Url)
 	if p.Url == "" || p.Url[0] != '/' {
 		p.Url = "/" + p.Url
@@ -43,6 +36,13 @@ func (p *Page) parseContext(ctx context.Context) {
 	p.Archetype = p.Section
 	ctx.Set("Url", p.Url)
 	ctx.Set("Slug", p.Slug)
+
+	p.SetLanguage(language.Und)
+	if ctxLang := ctx.String("Language", ""); ctxLang != "" {
+		if tag, err := language.Parse(ctxLang); err == nil {
+			p.SetLanguage(tag)
+		}
+	}
 
 	if ctxTranslates := ctx.String("Translates", ""); ctxTranslates != "" {
 		p.Translates = ctxTranslates
