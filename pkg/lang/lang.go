@@ -84,3 +84,12 @@ func GetPrinterFromRequest(r *http.Request) (printer *message.Printer) {
 	}
 	return
 }
+
+func TagInTags(needle language.Tag, haystack ...language.Tag) (found bool) {
+	for _, tag := range haystack {
+		if found = language.Compare(needle, tag); found {
+			return
+		}
+	}
+	return
+}
