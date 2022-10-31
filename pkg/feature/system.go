@@ -19,8 +19,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/go-enjin/be/pkg/types/site"
 	"github.com/go-enjin/golang-org-x-text/language"
+
+	"github.com/go-enjin/be/pkg/types/site"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/net/headers"
