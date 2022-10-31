@@ -123,9 +123,11 @@ func (e *Enjin) FindPage(tag language.Tag, url string) (p *page.Page) {
 		}
 	}
 	for _, pg := range e.eb.pages {
-		if pg.Url == url && language.Compare(pg.LanguageTag, tag) {
-			p = pg
-			break
+		if _, ok := pg.Match(url); ok {
+			if language.Compare(pg.LanguageTag, tag) || pg.IsTranslation(url) {
+				p = pg
+				break
+			}
 		}
 	}
 	return
