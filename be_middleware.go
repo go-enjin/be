@@ -126,7 +126,8 @@ func (e *Enjin) langMiddleware(next http.Handler) http.Handler {
 
 		requested, reqPath, reqOk := langMode.FromRequest(defaultTag, r)
 		if !reqOk {
-			e.Serve404(w, r)
+			log.WarnF("language mode rejecting request: %#v", r)
+			e.Serve404(w, r) // specifically not ServeNotFound()
 			return
 		}
 		// log.DebugF("requested=%v, reqPath=%v, r.Url=%v", requested, reqPath, r.URL.Path)
