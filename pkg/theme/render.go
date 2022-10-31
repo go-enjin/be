@@ -157,7 +157,7 @@ func (t *Theme) NewFuncMapWithContext(ctx context.Context) (fm template.FuncMap)
 		return
 	}
 
-	fm["displayLangTag"] = func(tag language.Tag) (name string) {
+	fm["_tag"] = func(tag language.Tag) (name string) {
 		name = display.Tags(tag).Name(tag)
 		return
 	}
