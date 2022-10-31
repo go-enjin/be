@@ -202,7 +202,10 @@ func (t *Theme) NewFuncMapWithContext(ctx context.Context) (fm template.FuncMap)
 	}
 
 	fm["_tag"] = func(tag language.Tag) (name string) {
-		name = display.Tags(tag).Name(tag)
+		var ok bool
+		if name, ok = enjin.SiteLanguageDisplayName(tag); !ok {
+			name = display.Tags(tag).Name(tag)
+		}
 		return
 	}
 	return
