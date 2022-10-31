@@ -79,3 +79,10 @@ func (e *Enjin) SiteSupportsLanguage(tag language.Tag) (supported bool) {
 	}
 	return
 }
+
+func (e *Enjin) SiteLanguageDisplayName(tag language.Tag) (name string, ok bool) {
+	if len(e.eb.localeNames) > 0 {
+		name, ok = e.eb.localeNames[tag]
+	}
+	return
+}

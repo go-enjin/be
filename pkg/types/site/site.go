@@ -33,6 +33,7 @@ type Enjin interface {
 	SiteLanguageCatalog() (c catalog.Catalog)
 	SiteDefaultLanguage() (tag language.Tag)
 	SiteSupportsLanguage(tag language.Tag) (supported bool)
+	SiteLanguageDisplayName(tag language.Tag) (name string, ok bool)
 
 	FindTranslations(url string) (pages []*page.Page)
 	FindPage(tag language.Tag, url string) (p *page.Page)
