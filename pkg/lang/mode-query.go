@@ -60,13 +60,15 @@ func (q *QueryMode) ToUrl(defaultTag, tag language.Tag, path string) (translated
 	return
 }
 
-func (q *QueryMode) FromRequest(defaultTag language.Tag, r *http.Request) (tag language.Tag, path string) {
+func (q *QueryMode) FromRequest(defaultTag language.Tag, r *http.Request) (tag language.Tag, path string, ok bool) {
+	ok = true
 	path = forms.TrimQueryParams(r.URL.Path)
-	if langValues, ok := r.URL.Query()[q.name]; ok && len(langValues) >= 1 {
+	if langValues, found := r.URL.Query()[q.name]; found && len(langValues) >= 1 {
 		var err error
 		if tag, err = language.Parse(langValues[0]); err != nil {
 			log.ErrorF("error parsing language tag: %v", langValues[0])
 			tag = language.Und
+			ok = false
 		}
 	} else {
 		tag = defaultTag

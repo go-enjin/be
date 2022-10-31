@@ -78,12 +78,12 @@ func (p *DomainMode) ToUrl(defaultTag, tag language.Tag, path string) (translate
 	return
 }
 
-func (p *DomainMode) FromRequest(defaultTag language.Tag, r *http.Request) (tag language.Tag, path string) {
+func (p *DomainMode) FromRequest(defaultTag language.Tag, r *http.Request) (tag language.Tag, path string, ok bool) {
 	tag = language.Und
 	path = r.URL.Path
 
 	for domainTag, domain := range p.domains {
-		if r.Host == domain.Host {
+		if ok = r.Host == domain.Host; ok {
 			tag = domainTag
 			// log.DebugF("found [%v] %v - %v", tag, domain.Host, path)
 			break

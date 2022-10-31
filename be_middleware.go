@@ -124,7 +124,11 @@ func (e *Enjin) langMiddleware(next http.Handler) http.Handler {
 		langMode := e.SiteLanguageMode()
 		defaultTag := e.SiteDefaultLanguage()
 
-		requested, reqPath := langMode.FromRequest(defaultTag, r)
+		requested, reqPath, reqOk := langMode.FromRequest(defaultTag, r)
+		if !reqOk {
+			e.Serve404(w, r)
+			return
+		}
 		// log.DebugF("requested=%v, reqPath=%v, r.Url=%v", requested, reqPath, r.URL.Path)
 		if pg := e.FindPage(requested, reqPath); pg != nil {
 			if !e.SiteSupportsLanguage(requested) {
