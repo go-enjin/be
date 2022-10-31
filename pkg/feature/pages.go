@@ -38,5 +38,6 @@ type DataRestrictionHandler interface {
 }
 
 type PageProvider interface {
+	FindTranslations(url string) (pages []*page.Page)
 	FindPage(tag language.Tag, url string) (p *page.Page)
 }

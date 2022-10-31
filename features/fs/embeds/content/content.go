@@ -184,6 +184,17 @@ func (f *Feature) UpdateSearch(tag language.Tag, index bleve.Index) (err error) 
 	return
 }
 
+func (f *Feature) FindTranslations(path string) (found []*page.Page) {
+	f.cache.Rebuild()
+	path = forms.TrimQueryParams(path)
+	_, path, _ = lang.ParseLangPath(path)
+	if path = strings.TrimSuffix(path, "/"); path == "" {
+		path = "/"
+	}
+	found = f.cache.FindAll(path)
+	return
+}
+
 func (f *Feature) FindPage(tag language.Tag, path string) (p *page.Page) {
 	f.cache.Rebuild()
 	path = forms.TrimQueryParams(path)

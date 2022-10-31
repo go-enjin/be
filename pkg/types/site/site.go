@@ -34,6 +34,7 @@ type Enjin interface {
 	SiteDefaultLanguage() (tag language.Tag)
 	SiteSupportsLanguage(tag language.Tag) (supported bool)
 
+	FindTranslations(url string) (pages []*page.Page)
 	FindPage(tag language.Tag, url string) (p *page.Page)
 }
 

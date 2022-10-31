@@ -439,6 +439,17 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 	}
 }
 
+func (f *CFeature) FindTranslations(path string) (found []*page.Page) {
+	if strings.HasPrefix(path, f.path) {
+		for _, tag := range f.enjin.SiteLocales() {
+			if pg := f.FindPage(tag, path); pg != nil {
+				found = append(found, pg)
+			}
+		}
+	}
+	return
+}
+
 func (f *CFeature) FindPage(tag language.Tag, path string) (searchPage *page.Page) {
 	if f.findingSelf == true {
 		return

@@ -98,6 +98,22 @@ func (e *Enjin) Context() (ctx context.Context) {
 	return
 }
 
+func (e *Enjin) FindTranslations(url string) (pages []*page.Page) {
+	for _, f := range e.Features() {
+		if provider, ok := f.(feature.PageProvider); ok {
+			if found := provider.FindTranslations(url); len(found) > 0 {
+				pages = append(pages, found...)
+			}
+		}
+	}
+	for _, pg := range e.eb.pages {
+		if _, ok := pg.Match(url); ok {
+			pages = append(pages, pg.Copy())
+		}
+	}
+	return
+}
+
 func (e *Enjin) FindPage(tag language.Tag, url string) (p *page.Page) {
 	for _, f := range e.Features() {
 		if provider, ok := f.(feature.PageProvider); ok {
