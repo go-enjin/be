@@ -74,6 +74,7 @@ type EnjinBuilder struct {
 	langMode    lang.Mode
 	localeTags  []language.Tag
 	localeFiles []fs.FileSystem
+	localeNames map[language.Tag]string
 	defaultLang language.Tag
 }
 

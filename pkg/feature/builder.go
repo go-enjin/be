@@ -35,6 +35,8 @@ type Builder interface {
 	SiteCopyrightName(name string) Builder
 	SiteCopyrightNotice(notice string) Builder
 	SiteDefaultLanguage(tag language.Tag) Builder
+	SiteSupportedLanguages(tags ...language.Tag) Builder
+	SiteLanguageDisplayNames(names map[language.Tag]string) Builder
 
 	AddLocalesLocalFS(path string) Builder
 	AddLocalesEmbedFS(path string, efs embed.FS) Builder

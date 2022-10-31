@@ -35,6 +35,21 @@ func (eb *EnjinBuilder) SiteDefaultLanguage(tag language.Tag) feature.Builder {
 	return eb
 }
 
+func (eb *EnjinBuilder) SiteSupportedLanguages(tags ...language.Tag) feature.Builder {
+	eb.localeTags = append(eb.localeTags, tags...)
+	return eb
+}
+
+func (eb *EnjinBuilder) SiteLanguageDisplayNames(names map[language.Tag]string) feature.Builder {
+	if eb.localeNames == nil {
+		eb.localeNames = make(map[language.Tag]string)
+	}
+	for tag, name := range names {
+		eb.localeNames[tag] = name
+	}
+	return eb
+}
+
 func (eb *EnjinBuilder) AddLocalesLocalFS(path string) feature.Builder {
 	if f, err := local.New(path); err == nil {
 		eb.localeFiles = append(eb.localeFiles, f)
