@@ -44,6 +44,10 @@ func (p *Page) parseContext(ctx context.Context) {
 	ctx.Set("Url", p.Url)
 	ctx.Set("Slug", p.Slug)
 
+	if ctxTranslates := ctx.String("Translates", ""); ctxTranslates != "" {
+		p.Translates = ctxTranslates
+	}
+
 	p.Title = ctx.String("Title", p.Title)
 	ctx.Set("Title", p.Title)
 
@@ -75,5 +79,4 @@ func (p *Page) parseContext(ctx context.Context) {
 
 	p.Initial.Apply(ctx)
 	p.Context.Apply(p.Initial)
-
 }

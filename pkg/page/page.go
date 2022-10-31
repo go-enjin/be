@@ -46,6 +46,7 @@ type Page struct {
 	Archetype   string `json:"archetype"`
 	FrontMatter string `json:"frontMatter"`
 	Language    string `json:"language"`
+	Translates  string `json:"translates"`
 	Content     string `json:"content"`
 
 	Initial context.Context `json:"-" gorm:"-"`
@@ -102,8 +103,8 @@ func (p *Page) Copy() (copy *Page) {
 		Archetype:   p.Archetype,
 		FrontMatter: p.FrontMatter,
 		Language:    p.Language,
+		Translates:  p.Translates,
 		Content:     p.Content,
-		// LanguageTag: p.LanguageTag,
 	}
 	copy.Model.ID = p.Model.ID
 	copy.Model.CreatedAt = p.Model.CreatedAt
