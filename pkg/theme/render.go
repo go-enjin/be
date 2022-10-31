@@ -101,25 +101,46 @@ func (t *Theme) NewFuncMapWithContext(ctx context.Context) (fm template.FuncMap)
 
 		var targetPage *page.Page
 		if targetPage = enjin.FindPage(targetLang, targetPath); targetPage == nil {
-			if targetPage = enjin.FindPage(language.Und, targetPath); targetPage == nil {
-				if fallbackPath != "" {
-					if targetPage = enjin.FindPage(targetLang, fallbackPath); targetPage == nil {
-						if targetPage = enjin.FindPage(language.Und, fallbackPath); targetPage == nil {
-							log.ErrorF("__%v error: page not found, fallback not found, returning fallback", argv)
-							translated = fallbackPath
-							return
+			if found := enjin.FindTranslations(targetPath); len(found) > 0 {
+				for _, pg := range found {
+					if pg.IsTranslation(targetPath) {
+						if language.Compare(pg.LanguageTag, targetLang) {
+							targetPage = pg
+							break
 						}
+					} else {
+						targetPage = enjin.FindPage(targetLang, pg.Translates)
+						break
 					}
-				} else {
-					log.ErrorF("__%v error: page not found, fallback not given, returning target", argv)
-					translated = targetPath
-					return
+				}
+			}
+
+			if targetPage == nil {
+				if targetPage = enjin.FindPage(language.Und, targetPath); targetPage == nil {
+					if fallbackPath != "" {
+						if targetPage = enjin.FindPage(targetLang, fallbackPath); targetPage == nil {
+							if targetPage = enjin.FindPage(language.Und, fallbackPath); targetPage == nil {
+								log.ErrorF("__%v error: page not found, fallback not found, returning fallback", argv)
+								translated = fallbackPath
+								return
+							}
+						}
+					} else {
+						log.ErrorF("__%v error: page not found, fallback not given, returning target", argv)
+						translated = targetPath
+						return
+					}
 				}
 			}
 		}
 
+		if targetPath != targetPage.Url {
+			targetPath = targetPage.Url
+		}
+
+		// log.WarnF("__: [%v] tp=%v ([%v] %v) - %#v", targetLang, targetPath, targetPage.LanguageTag, targetPage.Url, argv)
 		translated = enjin.SiteLanguageMode().ToUrl(enjin.SiteDefaultLanguage(), targetLang, targetPath)
-		log.TraceF("__: [%v] %v - %#v ([%v] %v - %v)", targetLang, translated, argv, targetPage.LanguageTag, targetPage.Url, targetPage.Title)
+		// log.WarnF("__: [%v] tx=%v ([%v] %v) - %#v", targetLang, translated, targetPage.LanguageTag, targetPage.Url, argv)
 		return
 	}
 
