@@ -75,6 +75,7 @@ func (p *PathMode) ToUrl(defaultTag, tag language.Tag, path string) (translated 
 
 func (p *PathMode) FromRequest(defaultTag language.Tag, r *http.Request) (tag language.Tag, path string, ok bool) {
 	if tag, path, ok = p.ParsePathLang(r.URL.Path); !ok {
+		ok = true
 		tag = defaultTag
 		path = r.URL.Path
 	}
