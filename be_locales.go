@@ -30,7 +30,19 @@ func (e *Enjin) initLocales() {
 }
 
 func (e *Enjin) SiteLocales() (locales []language.Tag) {
-	locales = e.catalog.LocaleTagsWithDefault(e.eb.defaultLang)
+	if len(e.eb.localeTags) == 0 {
+		locales = e.catalog.LocaleTagsWithDefault(e.eb.defaultLang)
+	} else {
+		if present := e.catalog.LocaleTagsWithDefault(e.eb.defaultLang); len(present) > 0 {
+			for _, tag := range e.eb.localeTags {
+				if lang.TagInTags(tag, present...) {
+					locales = append(locales, tag)
+				} else {
+					log.WarnF("%v locale not found in locales present: %v", tag, present)
+				}
+			}
+		}
+	}
 	return
 }
 
