@@ -160,12 +160,12 @@ func (re *RenderEnjin) PrepareGenericBlock(typeName string, data map[string]inte
 	if v, ok = data["jump-top"].(string); ok && beStrings.IsTrue(v) {
 		preparedData["JumpTop"] = "true"
 	} else {
-		preparedData["JumpTop"] = "false"
+		// preparedData["JumpTop"] = "false"
 	}
 	if v, ok = data["jump-link"].(string); ok && beStrings.IsTrue(v) {
 		preparedData["JumpLink"] = "true"
 	} else {
-		preparedData["JumpLink"] = "false"
+		// preparedData["JumpLink"] = "false"
 	}
 
 	if linkHref, ok := data["link-href"].(string); ok {
