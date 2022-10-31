@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-enjin/golang-org-x-text/language/display"
 	"github.com/go-enjin/golang-org-x-text/message"
 
 	"github.com/go-enjin/be/pkg/types/site"
@@ -132,6 +133,11 @@ func (t *Theme) NewFuncMapWithContext(ctx context.Context) (fm template.FuncMap)
 		} else {
 			translated = fmt.Sprintf(format, argv...)
 		}
+		return
+	}
+
+	fm["displayLangTag"] = func(tag language.Tag) (name string) {
+		name = display.Tags(tag).Name(tag)
 		return
 	}
 	return
