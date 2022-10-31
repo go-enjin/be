@@ -79,7 +79,7 @@ func GetPrinterFromRequest(r *http.Request) (printer *message.Printer) {
 	} else if tag, ok := r.Context().Value(LanguageDefault).(language.Tag); ok {
 		printer = message.NewPrinter(tag)
 	} else {
-		log.ErrorDF(1, "request missing language printer, defaulting to Undefined")
+		log.TraceDF(1, "request missing language printer, defaulting to Undefined")
 		printer = message.NewPrinter(language.Und)
 	}
 	return
