@@ -20,11 +20,6 @@ import (
 	"html/template"
 	"time"
 
-	"github.com/go-enjin/golang-org-x-text/language"
-	"github.com/go-enjin/golang-org-x-text/language/display"
-	"github.com/go-enjin/golang-org-x-text/message"
-
-	"github.com/go-enjin/be/pkg/types/site"
 	"github.com/go-enjin/be/pkg/types/theme-types"
 
 	"github.com/go-enjin/be/pkg/context"
@@ -48,118 +43,6 @@ func (t *Theme) RenderTemplateContent(ctx context.Context, tmplContent string) (
 		}
 	} else {
 		err = fmt.Errorf("error making new theme template: %v", err)
-	}
-	return
-}
-
-func (t *Theme) NewFuncMapWithContext(ctx context.Context) (fm template.FuncMap) {
-	enjin, _ := ctx.Get("SiteEnjin").(site.Enjin)
-
-	fm = template.FuncMap{}
-	for k, v := range t.FuncMap {
-		fm[k] = v
-	}
-
-	// translate page paths
-	fm["__"] = func(argv ...string) (translated string, err error) {
-		targetLang, _ := ctx.Get("ReqLangTag").(language.Tag)
-		var targetPath, fallbackPath string
-
-		switch len(argv) {
-		case 0:
-			err = fmt.Errorf("called with no arguments")
-			return
-		case 1:
-			targetPath = argv[0]
-		case 2:
-			if targetLang, err = language.Parse(argv[0]); err != nil {
-				err = fmt.Errorf("called with invalid language: %v", argv[0])
-				return
-			}
-			targetPath = argv[1]
-		case 3:
-			if targetLang, err = language.Parse(argv[0]); err != nil {
-				err = fmt.Errorf("called with invalid language: %v", argv[0])
-				return
-			}
-			fallbackPath = argv[1]
-			targetPath = argv[2]
-		default:
-			err = fmt.Errorf("called with too many arguments")
-			return
-		}
-
-		if targetPath == "" || targetPath[0] != '/' {
-			translated = targetPath
-			return
-		}
-
-		if !enjin.SiteSupportsLanguage(targetLang) {
-			log.ErrorF("unsupported site language requested: %v", targetLang)
-			targetLang = enjin.SiteDefaultLanguage()
-		}
-
-		var targetPage *page.Page
-		if targetPage = enjin.FindPage(targetLang, targetPath); targetPage == nil {
-			if found := enjin.FindTranslations(targetPath); len(found) > 0 {
-				for _, pg := range found {
-					if pg.IsTranslation(targetPath) {
-						if language.Compare(pg.LanguageTag, targetLang) {
-							targetPage = pg
-							break
-						}
-					} else {
-						targetPage = enjin.FindPage(targetLang, pg.Translates)
-						break
-					}
-				}
-			}
-
-			if targetPage == nil {
-				if targetPage = enjin.FindPage(language.Und, targetPath); targetPage == nil {
-					if fallbackPath != "" {
-						if targetPage = enjin.FindPage(targetLang, fallbackPath); targetPage == nil {
-							if targetPage = enjin.FindPage(language.Und, fallbackPath); targetPage == nil {
-								log.ErrorF("__%v error: page not found, fallback not found, returning fallback", argv)
-								translated = fallbackPath
-								return
-							}
-						}
-					} else {
-						log.ErrorF("__%v error: page not found, fallback not given, returning target", argv)
-						translated = targetPath
-						return
-					}
-				}
-			}
-		}
-
-		if targetPath != targetPage.Url {
-			targetPath = targetPage.Url
-		}
-
-		// log.WarnF("__: [%v] tp=%v ([%v] %v) - %#v", targetLang, targetPath, targetPage.LanguageTag, targetPage.Url, argv)
-		translated = enjin.SiteLanguageMode().ToUrl(enjin.SiteDefaultLanguage(), targetLang, targetPath)
-		// log.WarnF("__: [%v] tx=%v ([%v] %v) - %#v", targetLang, translated, targetPage.LanguageTag, targetPage.Url, argv)
-		return
-	}
-
-	// translate page content
-	fm["_"] = func(format string, argv ...interface{}) (translated string) {
-		if printer, ok := ctx.Get("LangPrinter").(*message.Printer); ok {
-			translated = printer.Sprintf(format, argv...)
-			if fmt.Sprintf(format, argv...) != translated {
-				log.DebugF("template translated: \"%v\" -> \"%v\"", format, translated)
-			}
-		} else {
-			translated = fmt.Sprintf(format, argv...)
-		}
-		return
-	}
-
-	fm["_tag"] = func(tag language.Tag) (name string) {
-		name = display.Tags(tag).Name(tag)
-		return
 	}
 	return
 }
