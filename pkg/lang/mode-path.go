@@ -59,10 +59,8 @@ func (p *PathMode) ParsePathLang(path string) (tag language.Tag, trimmed string,
 func (p *PathMode) ToUrl(defaultTag, tag language.Tag, path string) (translated string) {
 	if parsedTag, parsedPath, ok := p.ParsePathLang(path); ok {
 		if language.Compare(parsedTag, tag) {
-			translated = path
+			translated = parsedPath
 			return
-		} else {
-			path = parsedPath
 		}
 	}
 	translated = path
