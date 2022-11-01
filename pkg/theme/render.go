@@ -66,11 +66,6 @@ func (t *Theme) NewHtmlTemplateWithContext(name string, ctx context.Context) (tm
 	return
 }
 
-func (t *Theme) NewHtmlTemplate(name string) (tmpl *template.Template, err error) {
-	tmpl, err = t.NewHtmlTemplateWithContext(name, context.New())
-	return
-}
-
 func (t *Theme) FindLayout(named string) (layout *Layout, name string, ok bool) {
 	if named == "" {
 		named = "_default"

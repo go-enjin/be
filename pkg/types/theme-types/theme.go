@@ -25,7 +25,6 @@ type Theme interface {
 	FS() fs.FileSystem
 	GetParentTheme() (parent Theme)
 	GetBlockThemeNames() (names []string)
-	NewHtmlTemplate(name string) (tmpl *template.Template, err error)
 	NewHtmlTemplateWithContext(name string, ctx context.Context) (tmpl *template.Template, err error)
 	NewFuncMapWithContext(ctx context.Context) (fm template.FuncMap)
 }
