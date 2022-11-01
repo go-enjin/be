@@ -16,6 +16,7 @@ package be
 
 import (
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
 )
@@ -27,7 +28,14 @@ func (eb *EnjinBuilder) AddPage(p *page.Page) feature.Builder {
 }
 
 func (eb *EnjinBuilder) AddPageFromString(path, raw string) feature.Builder {
-	if p, err := page.NewFromString(path, raw); err == nil {
+	var created, updated int64
+	if info, err := globals.BuildFileInfo(); err == nil {
+		if info.HasBirthTime() {
+			created = info.BirthTime().Unix()
+		}
+		updated = info.ModTime().Unix()
+	}
+	if p, err := page.New(path, raw, created, updated); err == nil {
 		eb.pages[p.Url] = p
 		log.DebugF("adding page from string: %v", p.Url)
 	} else {

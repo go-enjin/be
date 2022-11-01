@@ -182,7 +182,22 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 		if data, eee := bfs.ReadFile(file); eee == nil {
 			path = trimPrefixes(path, tag.String())
 			// log.DebugF("caching path: %v, %v, %v", file, path, tag.String())
-			if p, eeee := NewFromString(path, string(data)); eeee == nil {
+			var created, updated int64
+
+			if epoch, err := bfs.FileCreated(file); err == nil {
+				created = epoch
+				// log.ErrorF("setting created: %v", epoch)
+			} else {
+				log.ErrorF("error getting page created: %v", err)
+			}
+
+			if epoch, err := bfs.LastModified(file); err == nil {
+				updated = epoch
+			} else {
+				log.ErrorF("error getting page last modified: %v", err)
+			}
+
+			if p, eeee := New(path, string(data), created, updated); eeee == nil {
 
 				p.Context.Set("Shasum", shasum)
 				if language.Compare(p.LanguageTag, language.Und) {
