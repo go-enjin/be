@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/iancoleman/strcase"
 	"gorm.io/gorm"
@@ -55,17 +56,19 @@ type Page struct {
 	LanguageTag language.Tag `json:"-"`
 }
 
-func New() *Page {
-	p := new(Page)
+func New(path, raw string, created, updated int64) (p *Page, err error) {
+	p = new(Page)
 	p.Initial = context.New()
 	p.Context = context.New()
-	return p
-}
 
-func NewFromString(path, raw string) (p *Page, err error) {
 	path = forms.TrimQueryParams(path)
-	p = New()
 	p.SetSlugUrl(path)
+
+	p.CreatedAt = time.Unix(created, 0)
+	p.Initial.SetSpecific("Created", p.CreatedAt)
+
+	p.UpdatedAt = time.Unix(updated, 0)
+	p.Initial.SetSpecific("Updated", p.UpdatedAt)
 
 	// log.DebugF("new page for path: %v - %v - %v", path, slug, p.Url)
 	p.Title = beStrings.TitleCase(strings.Join(strings.Split(p.Slug, "-"), " "))
@@ -107,10 +110,10 @@ func (p *Page) Copy() (copy *Page) {
 		Translates:  p.Translates,
 		Content:     p.Content,
 	}
-	copy.Model.ID = p.Model.ID
-	copy.Model.CreatedAt = p.Model.CreatedAt
-	copy.Model.UpdatedAt = p.Model.UpdatedAt
-	copy.Model.DeletedAt = p.Model.DeletedAt
+	copy.ID = p.ID
+	copy.CreatedAt = p.CreatedAt
+	copy.UpdatedAt = p.UpdatedAt
+	copy.DeletedAt = p.DeletedAt
 	copy.Initial = p.Initial.Copy()
 	copy.Context = p.Initial.Copy()
 	return
