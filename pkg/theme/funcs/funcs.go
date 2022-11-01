@@ -21,6 +21,7 @@ import (
 	"html/template"
 	"net/url"
 	"strings"
+	"time"
 
 	"golang.org/x/net/html"
 
@@ -264,3 +265,8 @@ func IsPath(value string) (ok bool) {
 // 	}
 // 	return
 // }
+
+func CompareDateFormats(format string, a, b time.Time) (same bool) {
+	same = a.Format(format) == b.Format(format)
+	return
+}

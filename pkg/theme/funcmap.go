@@ -82,6 +82,8 @@ func DefaultFuncMap() (funcMap template.FuncMap) {
 
 		"sortedKeys": funcs.SortedKeys,
 
+		"cmpDateFmt": funcs.CompareDateFormats,
+
 		"DebugF": funcs.LogDebug,
 		"WarnF":  funcs.LogWarn,
 		"ErrorF": funcs.LogError,
