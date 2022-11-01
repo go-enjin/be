@@ -100,20 +100,14 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *templ
 	}
 
 	var baseLookups []string
-	section := ctx.String("Section", "")
 	archetype := ctx.String("Archetype", "")
-	pageFormat := ctx.String("Format", "")
 	if archetype != "" {
-		if section != "" {
-			baseLookups = append(baseLookups, fmt.Sprintf("%s/%s", archetype, section))
-		}
-		baseLookups = append(baseLookups, fmt.Sprintf("%s/%s", archetype, view))
-	} else if section != "" {
-		baseLookups = append(
-			baseLookups,
-			fmt.Sprintf("%s/%s", layoutName, section),
-			fmt.Sprintf("%s/%s-baseof", layoutName, section),
-		)
+		// archetype is a filename, not a directory
+		//  - layouts/_default/blog-single.fmt.tmpl
+		//  - layouts/_default/blog.fmt.tmpl
+		//  - layouts/_default/blog.tmpl
+		baseLookups = append(baseLookups, fmt.Sprintf("%s/%s-%s", layoutName, archetype, view))
+		baseLookups = append(baseLookups, fmt.Sprintf("%s/%s", layoutName, archetype))
 	}
 	baseLookups = append(
 		baseLookups,
@@ -123,24 +117,27 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *templ
 	)
 
 	if layoutName != "_default" {
-		if ctxLayout != nil {
-			if section != "" {
-				baseLookups = append(baseLookups, fmt.Sprintf("%v/%s-baseof", layoutName, section))
-			}
-			baseLookups = append(
-				baseLookups,
-				fmt.Sprintf("%v/%s-baseof", layoutName, view),
-				"_default/baseof",
-			)
+		if archetype != "" {
+			baseLookups = append(baseLookups, fmt.Sprintf("_default/%s-%s", archetype, view))
+			baseLookups = append(baseLookups, fmt.Sprintf("_default/%s", archetype))
 		}
+		baseLookups = append(
+			baseLookups,
+			fmt.Sprintf("_default/%s", view),
+			fmt.Sprintf("_default/%s-baseof", view),
+			"_default/baseof",
+		)
 	}
 
 	var lookups []string
+	var pageFormat string
+	var lookupFormat string
+	if pageFormat = ctx.String("Format", ""); pageFormat != "" {
+		lookupFormat = "." + pageFormat
+	}
 	for _, name := range baseLookups {
+		lookups = append(lookups, name+lookupFormat+".tmpl")
 		lookups = append(lookups, name+".tmpl")
-		if pageFormat != "" {
-			lookups = append(lookups, name+"."+pageFormat+".tmpl")
-		}
 	}
 
 	var tmpl *template.Template
@@ -168,7 +165,7 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *templ
 	}
 
 	if tt = LookupTemplate(tmpl, lookups...); tt == nil {
-		err = fmt.Errorf("%v theme template not found for: archetype=%v, section=%v, layout=%v, pageFormat=%v, lookups=%v", t.Config.Name, archetype, section, layoutName, pageFormat, lookups)
+		err = fmt.Errorf("%v theme template not found for: archetype=%v, layout=%v, pageFormat=%v, lookups=%v", t.Config.Name, archetype, layoutName, pageFormat, lookups)
 	} else {
 		log.DebugF("lookup success: %v", tt.Name())
 	}
