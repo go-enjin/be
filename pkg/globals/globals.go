@@ -17,7 +17,10 @@ package globals
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
+
+	"github.com/go-enjin/github-com-djherbis-times"
 )
 
 var (
@@ -77,4 +80,14 @@ func BuildInfoString() string {
 		BinHash,
 		Hostname,
 	)
+}
+
+func BuildFileInfo() (info times.Timespec, err error) {
+	var name, tgt string
+	if name, err = os.Executable(); err == nil {
+		if tgt, err = filepath.EvalSymlinks(name); err == nil {
+			info, err = times.Stat(tgt)
+		}
+	}
+	return
 }
