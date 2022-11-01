@@ -11,6 +11,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.1
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-curses/cdk v0.5.12
+	github.com/go-enjin/github-com-djherbis-times v0.0.0-20221101184323-aeef8854ee8a
 	github.com/go-enjin/golang-org-x-text v0.0.0-20221026190533-d0e9c4fd3b27
 	github.com/goccy/go-json v0.9.11
 	github.com/gomarkdown/markdown v0.0.0-20220905174103-7b278df48cfb
