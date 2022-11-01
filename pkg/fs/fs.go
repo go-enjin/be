@@ -29,6 +29,7 @@ type FileSystem interface {
 	ReadFile(path string) (content []byte, err error)
 	MimeType(path string) (mime string, err error)
 	Shasum(path string) (shasum string, err error)
+	FileCreated(path string) (created int64, err error)
 	LastModified(path string) (dateTime int64, err error)
 	Exists(path string) (exists bool)
 }

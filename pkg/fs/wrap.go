@@ -96,7 +96,12 @@ func (w WrapFileSystem) Shasum(path string) (shasum string, err error) {
 	return
 }
 
-func (w WrapFileSystem) LastModified(path string) (lastMod int64, err error) {
-	lastMod, err = w.fs.LastModified(w.realpath(path))
+func (w WrapFileSystem) FileCreated(path string) (created int64, err error) {
+	created, err = w.fs.FileCreated(w.realpath(path))
+	return
+}
+
+func (w WrapFileSystem) LastModified(path string) (updated int64, err error) {
+	updated, err = w.fs.LastModified(w.realpath(path))
 	return
 }

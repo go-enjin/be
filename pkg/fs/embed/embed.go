@@ -17,10 +17,11 @@ package embed
 import (
 	"embed"
 	"io/fs"
-	"os"
-	"path/filepath"
 	"strings"
 
+	"github.com/go-enjin/github-com-djherbis-times"
+
+	"github.com/go-enjin/be/pkg/globals"
 	bePath "github.com/go-enjin/be/pkg/path"
 	bePathEmbed "github.com/go-enjin/be/pkg/path/embed"
 )
@@ -134,15 +135,18 @@ func (f FileSystem) Shasum(path string) (shasum string, err error) {
 	return
 }
 
-func (f FileSystem) LastModified(path string) (modTime int64, err error) {
-	var info os.FileInfo
-	var name, tgt string
-	if name, err = os.Executable(); err == nil {
-		if tgt, err = filepath.EvalSymlinks(name); err == nil {
-			if info, err = os.Stat(tgt); err == nil {
-				modTime = info.ModTime().Unix()
-			}
-		}
+func (f FileSystem) FileCreated(_ string) (created int64, err error) {
+	var info times.Timespec
+	if info, err = globals.BuildFileInfo(); err == nil && info.HasBirthTime() {
+		created = info.BirthTime().Unix()
+	}
+	return
+}
+
+func (f FileSystem) LastModified(_ string) (modTime int64, err error) {
+	var info times.Timespec
+	if info, err = globals.BuildFileInfo(); err == nil {
+		modTime = info.ModTime().Unix()
 	}
 	return
 }

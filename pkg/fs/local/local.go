@@ -19,6 +19,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/go-enjin/github-com-djherbis-times"
+
 	"github.com/go-enjin/be/pkg/hash/sha"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
@@ -118,11 +120,18 @@ func (f FileSystem) Shasum(path string) (shasum string, err error) {
 	return
 }
 
-func (f FileSystem) LastModified(path string) (modTime int64, err error) {
-	var info os.FileInfo
-	if info, err = os.Stat(f.realpath(path)); err != nil {
-		return
+func (f FileSystem) FileCreated(path string) (created int64, err error) {
+	var info times.Timespec
+	if info, err = times.Stat(f.realpath(path)); err == nil && info.HasBirthTime() {
+		created = info.BirthTime().Unix()
 	}
-	modTime = info.ModTime().Unix()
+	return
+}
+
+func (f FileSystem) LastModified(path string) (updated int64, err error) {
+	var info times.Timespec
+	if info, err = times.Stat(f.realpath(path)); err == nil && info.HasBirthTime() {
+		updated = info.ModTime().Unix()
+	}
 	return
 }
