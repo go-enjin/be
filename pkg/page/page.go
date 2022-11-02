@@ -154,24 +154,3 @@ func (p *Page) SetSlugUrl(path string) {
 		p.Url = "/" + p.Slug
 	}
 }
-
-func (p *Page) Match(path string) (found string, ok bool) {
-	if ok = p.Url == path; !ok {
-		if ok = p.IsTranslation(path); ok {
-			found = p.Translates
-		}
-	} else {
-		found = p.Url
-	}
-	return
-}
-
-func (p *Page) IsTranslation(path string) (ok bool) {
-	ok = p.Translates == path
-	return
-}
-
-func (p *Page) HasTranslation() (ok bool) {
-	ok = p.Translates != ""
-	return
-}
