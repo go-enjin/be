@@ -17,6 +17,7 @@ package theme
 import (
 	"fmt"
 	"html/template"
+	"sync"
 
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/language/display"
@@ -30,6 +31,33 @@ import (
 	"github.com/go-enjin/be/pkg/theme/funcs"
 	"github.com/go-enjin/be/pkg/types/site"
 )
+
+var (
+	_knownFuncMap   = make(map[string]interface{})
+	_knownFuncMutex = sync.RWMutex{}
+)
+
+func RegisterFuncMap(key string, fn interface{}) {
+	_knownFuncMutex.Lock()
+	defer _knownFuncMutex.Unlock()
+	_knownFuncMap[key] = fn
+}
+
+func GetFuncMap(key string) (fn interface{}, ok bool) {
+	_knownFuncMutex.RLock()
+	defer _knownFuncMutex.RUnlock()
+	fn, ok = _knownFuncMap[key]
+	return
+}
+
+func AddRegisteredFuncsToMap(fm *template.FuncMap) {
+	_knownFuncMutex.RLock()
+	defer _knownFuncMutex.RUnlock()
+	for key, fn := range _knownFuncMap {
+		(*fm)[key] = fn
+	}
+	return
+}
 
 func DefaultFuncMap() (funcMap template.FuncMap) {
 	funcMap = template.FuncMap{
@@ -95,6 +123,7 @@ func DefaultFuncMap() (funcMap template.FuncMap) {
 	for k, v := range gtf.GtfFuncMap {
 		funcMap[k] = v
 	}
+	AddRegisteredFuncsToMap(&funcMap)
 	return
 }
 
@@ -105,6 +134,7 @@ func (t *Theme) NewFuncMapWithContext(ctx context.Context) (fm template.FuncMap)
 	for k, v := range t.FuncMap {
 		fm[k] = v
 	}
+	AddRegisteredFuncsToMap(&fm)
 
 	// translate page paths
 	fm["__"] = func(argv ...string) (translated string, err error) {
