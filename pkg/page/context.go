@@ -18,8 +18,11 @@ import (
 	"strings"
 
 	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/gofrs/uuid"
 
 	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/hash/sha"
+	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -46,6 +49,20 @@ func (p *Page) parseContext(ctx context.Context) {
 
 	if ctxTranslates := ctx.String("Translates", ""); ctxTranslates != "" {
 		p.Translates = ctxTranslates
+	}
+
+	if ctxPermalinkId := ctx.String("Permalink", ""); ctxPermalinkId != "" {
+		if id, e := uuid.FromString(ctxPermalinkId); e != nil {
+			log.ErrorF("error parsing permalink id: %v - %v", ctxPermalinkId, e)
+		} else if sum, ee := sha.DataHash10([]byte(ctxPermalinkId)); ee != nil {
+			log.ErrorF("error getting permalink sha: %v - %v", id, ee)
+		} else {
+			p.Permalink = id
+			p.PermalinkSha = sum
+			ctx.SetSpecific("Permalink", id)
+			ctx.SetSpecific("PermalinkSha", sum)
+			ctx.SetSpecific("Permalinked", true)
+		}
 	}
 
 	p.Title = ctx.String("Title", p.Title)

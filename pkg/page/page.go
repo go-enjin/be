@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/iancoleman/strcase"
 	"gorm.io/gorm"
 
@@ -54,12 +55,17 @@ type Page struct {
 	Context context.Context `json:"context" gorm:"-"`
 
 	LanguageTag language.Tag `json:"-"`
+
+	Permalink    uuid.UUID `json:"permalink"`
+	PermalinkSha string    `json:"-"`
 }
 
 func New(path, raw string, created, updated int64) (p *Page, err error) {
 	p = new(Page)
 	p.Initial = context.New()
 	p.Context = context.New()
+
+	p.Permalink = uuid.Nil
 
 	path = forms.TrimQueryParams(path)
 	p.SetSlugUrl(path)
@@ -94,21 +100,23 @@ func (p *Page) String() string {
 
 func (p *Page) Copy() (copy *Page) {
 	copy = &Page{
-		Url:         p.Url,
-		Slug:        p.Slug,
-		Path:        p.Path,
-		Title:       p.Title,
-		Format:      p.Format,
-		Summary:     p.Summary,
-		Description: p.Description,
-		Layout:      p.Layout,
-		Section:     p.Section,
-		Archetype:   p.Archetype,
-		FrontMatter: p.FrontMatter,
-		Language:    p.Language,
-		LanguageTag: p.LanguageTag,
-		Translates:  p.Translates,
-		Content:     p.Content,
+		Url:          p.Url,
+		Slug:         p.Slug,
+		Path:         p.Path,
+		Title:        p.Title,
+		Format:       p.Format,
+		Summary:      p.Summary,
+		Description:  p.Description,
+		Layout:       p.Layout,
+		Section:      p.Section,
+		Archetype:    p.Archetype,
+		FrontMatter:  p.FrontMatter,
+		Language:     p.Language,
+		LanguageTag:  p.LanguageTag,
+		Translates:   p.Translates,
+		Permalink:    p.Permalink,
+		PermalinkSha: p.PermalinkSha,
+		Content:      p.Content,
 	}
 	copy.ID = p.ID
 	copy.CreatedAt = p.CreatedAt
