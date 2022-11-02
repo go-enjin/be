@@ -65,7 +65,9 @@ type System interface {
 }
 
 type Internals interface {
+	Service
 	site.Enjin
+
 	FindPage(tag language.Tag, url string) (p *page.Page)
 
 	Features() (features []Feature)
