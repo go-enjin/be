@@ -27,6 +27,7 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/forms"
+	"github.com/go-enjin/be/pkg/lang"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 
 	"github.com/go-enjin/be/pkg/context"
@@ -82,6 +83,7 @@ func New(path, raw string, created, updated int64) (p *Page, err error) {
 	p.Initial.Set("Slug", p.Slug)
 	p.Initial.Set("Title", p.Title)
 
+	raw = lang.StripTranslatorComments(raw)
 	if !p.parseYaml(raw) {
 		if !p.parseToml(raw) {
 			if !p.parseJson(raw) {
