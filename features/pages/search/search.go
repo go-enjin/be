@@ -273,6 +273,7 @@ func (f *CFeature) handleQueryRedirect(w http.ResponseWriter, r *http.Request) (
 			}
 			value = forms.Sanitize(value)
 			if !nonce.Validate("site-search-form", value) {
+				// Let the visitor know that their search form expired
 				err = fmt.Errorf(printer.Sprintf("search form expired"))
 				return
 			}
@@ -300,6 +301,7 @@ func (f *CFeature) handleQueryRedirect(w http.ResponseWriter, r *http.Request) (
 		}
 	}
 	if foundQuery && !foundNonce {
+		// Let the user know that the search form submission resulted in a (generic) error
 		err = fmt.Errorf(printer.Sprintf("search form error"))
 		return
 	}
@@ -405,17 +407,28 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 						idEnd := idStart + numHits - 1
 						printer := lang.GetPrinterFromRequest(r)
 						var resultSummary, hitsSummary, pageSummary string
-						switch numHits {
+						switch results.Total {
 						case 0:
-							resultSummary = printer.Sprintf("No results found for:")
+							// Search result summary when no results are found
+							resultSummary = printer.Sprintf("No results found")
 						case 1:
-							pageSummary = printer.Sprintf("Page %d of %d", pg+1, pages+1)
-							hitsSummary = printer.Sprintf("Showing #%d of %d", idStart, results.Total)
-							resultSummary = printer.Sprintf("%d result found for:", results.Total)
+							// Search result summary when exactly one result is found
+							resultSummary = printer.Sprintf("1 result found")
 						default:
+							// Search result summary, <total-hits>
+							resultSummary = printer.Sprintf("%d results found", results.Total)
+						}
+						switch numHits {
+						case 1:
+							// Search page summary, <number> of <pages>
 							pageSummary = printer.Sprintf("Page %d of %d", pg+1, pages+1)
+							// Search hits summary with only one hit, <hit-number> of <total-hits>
+							hitsSummary = printer.Sprintf("Showing #%d of %d", idStart, results.Total)
+						default:
+							// Search page summary, <number> of <pages>
+							pageSummary = printer.Sprintf("Page %d of %d", pg+1, pages+1)
+							// Search hits summary with more than one hit, <first-hit-number>-<last-hit-number> of <total-hits>
 							hitsSummary = printer.Sprintf("Showing %d-%d of %d", idStart, idEnd, results.Total)
-							resultSummary = printer.Sprintf("%d results found for:", results.Total)
 						}
 						searchPage.Context.SetSpecific("SiteSearchPageSummary", template.HTML(pageSummary))
 						searchPage.Context.SetSpecific("SiteSearchHitsSummary", template.HTML(hitsSummary))
