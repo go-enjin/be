@@ -23,6 +23,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	beFs "github.com/go-enjin/be/pkg/fs"
+	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -99,7 +100,7 @@ func (l *Layout) Reload() (err error) {
 			}
 
 			l.lastMods[entryName] = lastMod
-			l.cache[entryName] = string(data)
+			l.cache[entryName] = lang.StripTranslatorComments(string(data))
 
 			if !beStrings.StringInStrings(entryName, l.Keys...) {
 				l.Keys = append(l.Keys, entryName)
