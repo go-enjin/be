@@ -95,9 +95,11 @@ func TagInTags(needle language.Tag, haystack ...language.Tag) (found bool) {
 	return
 }
 
-var rxTranslatorComments = regexp.MustCompile(`\{\{(-??\s*_\s+.+?\s*)/\*.+?\*/(\s*-??)}}`)
+var rxTranslatorInlineComments = regexp.MustCompile(`\((\s*_\s+.+?\s*)/\*.+?\*/\s*\)`)
+var rxTranslatorPipelineComments = regexp.MustCompile(`\{\{(-??\s*_\s+.+?\s*)/\*.+?\*/(\s*-??)}}`)
 
 func StripTranslatorComments(raw string) (clean string) {
-	clean = rxTranslatorComments.ReplaceAllString(raw, `{{${1}${2}}}`)
+	clean = rxTranslatorInlineComments.ReplaceAllString(raw, `(${1})`)
+	clean = rxTranslatorPipelineComments.ReplaceAllString(raw, `{{${1}${2}}}`)
 	return
 }
