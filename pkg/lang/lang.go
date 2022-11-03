@@ -16,6 +16,7 @@ package lang
 
 import (
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/go-enjin/golang-org-x-text/language"
@@ -91,5 +92,12 @@ func TagInTags(needle language.Tag, haystack ...language.Tag) (found bool) {
 			return
 		}
 	}
+	return
+}
+
+var rxTranslatorComments = regexp.MustCompile(`\{\{(-??\s*_\s+.+?\s*)/\*.+?\*/(\s*-??)}}`)
+
+func StripTranslatorComments(raw string) (clean string) {
+	clean = rxTranslatorComments.ReplaceAllString(raw, `{{${1}${2}}}`)
 	return
 }
