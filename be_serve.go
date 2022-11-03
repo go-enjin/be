@@ -21,8 +21,9 @@ import (
 
 	"github.com/iancoleman/strcase"
 
-	"github.com/go-enjin/be/pkg/types/site"
 	"github.com/go-enjin/golang-org-x-text/language"
+
+	"github.com/go-enjin/be/pkg/types/site"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
@@ -41,13 +42,18 @@ func (e *Enjin) Serve204(w http.ResponseWriter, r *http.Request) {
 	printer := lang.GetPrinterFromRequest(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusNoContent)
+
+	// The request was successful and there is no content in the response
 	_, _ = w.Write([]byte("204 - " + printer.Sprintf("No Content")))
+
 }
 
 func (e *Enjin) Serve401(w http.ResponseWriter, r *http.Request) {
 	printer := lang.GetPrinterFromRequest(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusUnauthorized)
+
+	// The request was rejected due to being an Unauthorized user (or anonymous guest)
 	_, _ = w.Write([]byte("401 - " + printer.Sprintf("Unauthorized")))
 }
 
@@ -63,6 +69,8 @@ func (e *Enjin) Serve403(w http.ResponseWriter, r *http.Request) {
 	printer := lang.GetPrinterFromRequest(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusForbidden)
+
+	// The request was rejected due to being Forbidden to the user (or anonymous guest)
 	_, _ = w.Write([]byte("403 - " + printer.Sprintf("Forbidden")))
 }
 
@@ -70,6 +78,8 @@ func (e *Enjin) Serve404(w http.ResponseWriter, r *http.Request) {
 	printer := lang.GetPrinterFromRequest(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusNotFound)
+
+	// The request was rejected due to the page requested not existing
 	_, _ = w.Write([]byte("404 - " + printer.Sprintf("Not Found")))
 }
 
@@ -77,6 +87,8 @@ func (e *Enjin) Serve405(w http.ResponseWriter, r *http.Request) {
 	printer := lang.GetPrinterFromRequest(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusMethodNotAllowed)
+
+	// The request was rejected due to the method used bin not allowed
 	_, _ = w.Write([]byte("405 - " + printer.Sprintf("Method Not Allowed")))
 }
 
@@ -84,6 +96,8 @@ func (e *Enjin) Serve500(w http.ResponseWriter, r *http.Request) {
 	printer := lang.GetPrinterFromRequest(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusInternalServerError)
+
+	// The request resulted in an internal server error
 	_, _ = w.Write([]byte("500 - " + printer.Sprintf("Internal Server Error")))
 }
 
