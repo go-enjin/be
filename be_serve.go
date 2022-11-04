@@ -38,6 +38,10 @@ type ContextKey string
 
 const ServeStatusResponseKey ContextKey = "ServeStatusResponse"
 
+func (e *Enjin) ServeRedirect(destination string, w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, destination, http.StatusSeeOther)
+}
+
 func (e *Enjin) Serve204(w http.ResponseWriter, r *http.Request) {
 	printer := lang.GetPrinterFromRequest(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
@@ -45,7 +49,6 @@ func (e *Enjin) Serve204(w http.ResponseWriter, r *http.Request) {
 
 	// The request was successful and there is no content in the response
 	_, _ = w.Write([]byte("204 - " + printer.Sprintf("No Content")))
-
 }
 
 func (e *Enjin) Serve401(w http.ResponseWriter, r *http.Request) {

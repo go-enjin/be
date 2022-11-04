@@ -36,6 +36,8 @@ type Service interface {
 	ThemeNames() (names []string)
 	ServerName() (name string)
 
+	ServeRedirect(destination string, w http.ResponseWriter, r *http.Request)
+
 	Serve204(w http.ResponseWriter, r *http.Request)
 	Serve401(w http.ResponseWriter, r *http.Request)
 	ServeBasic401(w http.ResponseWriter, r *http.Request)
