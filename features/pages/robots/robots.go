@@ -44,13 +44,13 @@ type CFeature struct {
 	cli   *cli.Context
 	enjin feature.Internals
 
-	rules []*Rule
+	rules []*RuleGroup
 
 	siteRobots string
 }
 
 type MakeFeature interface {
-	AddRule(rule *Rule) MakeFeature
+	AddRule(rule *RuleGroup) MakeFeature
 	SiteRobotsMetaTag(content string) MakeFeature
 
 	Make() Feature
@@ -62,7 +62,7 @@ func New() MakeFeature {
 	return f
 }
 
-func (f *CFeature) AddRule(rule *Rule) MakeFeature {
+func (f *CFeature) AddRule(rule *RuleGroup) MakeFeature {
 	f.rules = append(f.rules, rule)
 	return f
 }
