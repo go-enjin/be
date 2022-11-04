@@ -90,7 +90,7 @@ func (f *CFeature) Make() Feature {
 }
 
 func (f *CFeature) Init(this interface{}) {
-	f.CFeature.Init(this)
+	f.CMiddleware.Init(this)
 }
 
 func (f *CFeature) Tag() (tag feature.Tag) {
@@ -324,7 +324,7 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			path := forms.TrimQueryParams(r.URL.Path)
+			path := forms.SanitizeRequestPath(r.URL.Path)
 			if _, p, ok := lang.ParseLangPath(path); ok {
 				path = p
 			}
