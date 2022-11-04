@@ -98,6 +98,24 @@ func (e *Enjin) Context() (ctx context.Context) {
 	return
 }
 
+func (e *Enjin) FindRedirection(url string) (p *page.Page) {
+	for _, f := range e.Features() {
+		if provider, ok := f.(feature.PageProvider); ok {
+			if pg := provider.FindRedirection(url); pg != nil {
+				p = pg.Copy()
+				return
+			}
+		}
+	}
+	for _, pg := range e.eb.pages {
+		if pg.IsRedirection(url) {
+			p = pg.Copy()
+			return
+		}
+	}
+	return
+}
+
 func (e *Enjin) FindTranslations(url string) (pages []*page.Page) {
 	for _, f := range e.Features() {
 		if provider, ok := f.(feature.PageProvider); ok {
