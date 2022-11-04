@@ -38,6 +38,17 @@ func LowerStrings(in ...string) (out []string) {
 	return
 }
 
+func StringInSlices(src string, dst ...[]string) bool {
+	for _, v := range dst {
+		for _, vv := range v {
+			if src == vv {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func StringInStrings(src string, dst ...string) bool {
 	for _, v := range dst {
 		if src == v {
