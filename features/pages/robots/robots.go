@@ -1,4 +1,4 @@
-// disabled //go:build page_robots || pages || all
+//go:build page_robots || pages || all
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //
