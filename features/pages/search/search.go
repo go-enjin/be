@@ -452,6 +452,11 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 	}
 }
 
+func (f *CFeature) FindRedirection(_ string) (p *page.Page) {
+	// nop for search page redirects
+	return
+}
+
 func (f *CFeature) FindTranslations(path string) (found []*page.Page) {
 	if strings.HasPrefix(path, f.path) {
 		for _, tag := range f.enjin.SiteLocales() {
