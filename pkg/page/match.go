@@ -14,7 +14,11 @@
 
 package page
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/go-enjin/be/pkg/log"
+)
 
 type MatcherFn func(path string, pg *Page) (found string, ok bool)
 
@@ -34,12 +38,29 @@ func (p *Page) Match(path string) (found string, ok bool) {
 		found = p.Url
 	} else if ok = p.IsTranslation(path); ok {
 		found = p.Translates
+	} else if ok = p.IsRedirection(path); ok {
+		found = p.Url
 	} else {
 		_knownMatcherFnMutex.RLock()
 		defer _knownMatcherFnMutex.RUnlock()
 		for _, matcher := range _knownMatcherFns {
 			if found, ok = matcher(path, p); ok {
 				return
+			}
+		}
+	}
+	return
+}
+
+func (p *Page) IsRedirection(path string) (ok bool) {
+	if redirection, found := p.Context.Get("Redirect").([]interface{}); found {
+		for _, thing := range redirection {
+			if href, check := thing.(string); check {
+				if ok = path == href; ok {
+					return
+				}
+			} else {
+				log.ErrorF("page (%v) redirection setting is not a string: %#v", p.Url, thing)
 			}
 		}
 	}
