@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
-	"strings"
 
 	"github.com/blevesearch/bleve/v2"
 	"github.com/fvbommel/sortorder"
@@ -28,9 +27,8 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
-	"github.com/go-enjin/be/pkg/forms"
-
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/fs/local"
 	"github.com/go-enjin/be/pkg/lang"
@@ -123,7 +121,7 @@ func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
 	log.DebugF("including local content %v middleware: %v", page.Extensions, f.setup)
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			path := forms.TrimQueryParams(r.URL.Path)
+			path := forms.SanitizeRequestPath(r.URL.Path)
 			if err := f.ServePath(path, s, w, r); err == nil {
 				return
 			} else if err.Error() != "path not found" {
@@ -137,11 +135,7 @@ func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
 func (f *Feature) ServePath(path string, s feature.System, w http.ResponseWriter, r *http.Request) (err error) {
 	f.cache.Rebuild()
 	reqLangTag := lang.GetTag(r)
-	path = forms.TrimQueryParams(path)
-	path = strings.TrimSuffix(path, "/")
-	if path == "" {
-		path = "/"
-	}
+	path = forms.SanitizeRequestPath(path)
 	if mount, mpath, pg, e := f.cache.Lookup(reqLangTag, path); e == nil && pg.Context.String("type", "page") == "page" {
 		if err = s.ServePage(pg, w, r); err == nil {
 			log.DebugF("served local %v content: [%v] %v", mount, pg.Language, mpath)
@@ -181,24 +175,30 @@ func (f *Feature) UpdateSearch(tag language.Tag, index bleve.Index) (err error) 
 	return
 }
 
+func (f *Feature) FindRedirection(path string) (p *page.Page) {
+	f.cache.Rebuild()
+	path = forms.SanitizeRequestPath(path)
+	if found := f.cache.FindAll(path); len(found) > 0 {
+		for _, pg := range found {
+			if pg.IsRedirection(path) {
+				p = pg
+				return
+			}
+		}
+	}
+	return
+}
+
 func (f *Feature) FindTranslations(path string) (found []*page.Page) {
 	f.cache.Rebuild()
-	path = forms.TrimQueryParams(path)
-	_, path, _ = lang.ParseLangPath(path)
-	if path = strings.TrimSuffix(path, "/"); path == "" {
-		path = "/"
-	}
+	path = forms.SanitizeRequestPath(path)
 	found = f.cache.FindAll(path)
 	return
 }
 
 func (f *Feature) FindPage(tag language.Tag, path string) (p *page.Page) {
 	f.cache.Rebuild()
-	path = forms.TrimQueryParams(path)
-	_, path, _ = lang.ParseLangPath(path)
-	if path = strings.TrimSuffix(path, "/"); path == "" {
-		path = "/"
-	}
+	path = forms.SanitizeRequestPath(path)
 	if _, _, pg, e := f.cache.Lookup(tag, path); e == nil {
 		p = pg.Copy()
 	}
