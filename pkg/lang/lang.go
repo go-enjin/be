@@ -23,7 +23,9 @@ import (
 	"github.com/go-enjin/golang-org-x-text/message"
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
 
+	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
+	bePath "github.com/go-enjin/be/pkg/path"
 )
 
 type ContextKey string
@@ -101,5 +103,11 @@ var rxTranslatorPipelineComments = regexp.MustCompile(`\{\{(-??\s*_\s+.+?\s*)/\*
 func StripTranslatorComments(raw string) (clean string) {
 	clean = rxTranslatorInlineComments.ReplaceAllString(raw, `(${1})`)
 	clean = rxTranslatorPipelineComments.ReplaceAllString(raw, `{{${1}${2}}}`)
+	return
+}
+
+func NonPageRequested(r *http.Request) (is bool) {
+	path := forms.TrimQueryParams(r.URL.Path)
+	is = bePath.Ext(path) != ""
 	return
 }
