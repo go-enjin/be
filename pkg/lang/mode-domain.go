@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -80,8 +81,7 @@ func (p *DomainMode) ToUrl(defaultTag, tag language.Tag, path string) (translate
 
 func (p *DomainMode) FromRequest(defaultTag language.Tag, r *http.Request) (tag language.Tag, path string, ok bool) {
 	tag = language.Und
-	path = r.URL.Path
-
+	path = forms.SanitizeRequestPath(r.URL.Path)
 	for domainTag, domain := range p.domains {
 		if ok = r.Host == domain.Host; ok {
 			tag = domainTag

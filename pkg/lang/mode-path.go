@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/pkg/forms"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -74,7 +75,8 @@ func (p *PathMode) ToUrl(defaultTag, tag language.Tag, path string) (translated 
 }
 
 func (p *PathMode) FromRequest(defaultTag language.Tag, r *http.Request) (tag language.Tag, path string, ok bool) {
-	if tag, path, ok = p.ParsePathLang(r.URL.Path); !ok {
+	path = forms.SanitizeRequestPath(r.URL.Path)
+	if tag, path, ok = p.ParsePathLang(path); !ok {
 		ok = true
 		tag = defaultTag
 		path = r.URL.Path

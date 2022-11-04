@@ -62,7 +62,7 @@ func (q *QueryMode) ToUrl(defaultTag, tag language.Tag, path string) (translated
 
 func (q *QueryMode) FromRequest(defaultTag language.Tag, r *http.Request) (tag language.Tag, path string, ok bool) {
 	ok = true
-	path = forms.TrimQueryParams(r.URL.Path)
+	path = forms.SanitizeRequestPath(r.URL.Path)
 	if langValues, found := r.URL.Query()[q.name]; found && len(langValues) >= 1 {
 		var err error
 		if tag, err = language.Parse(langValues[0]); err != nil {
