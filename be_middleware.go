@@ -123,6 +123,24 @@ func (e *Enjin) themeMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func (e *Enjin) redirectionMiddleware(next http.Handler) http.Handler {
+	log.DebugF("including pages middleware")
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := forms.SanitizeRequestPath(r.URL.Path)
+
+		if rp := e.FindRedirection(path); rp != nil {
+			langMode := e.SiteLanguageMode()
+			reqLang := lang.GetTag(r)
+			dst := langMode.ToUrl(e.SiteDefaultLanguage(), reqLang, rp.Url)
+			log.DebugF("redirecting from %v to %v", path, dst)
+			e.ServeRedirect(dst, w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (e *Enjin) langMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		langMode := e.SiteLanguageMode()

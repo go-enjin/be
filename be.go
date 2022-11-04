@@ -265,6 +265,8 @@ func (e *Enjin) startupWebServices() (err error) {
 
 	e.router.Use(e.langMiddleware)
 
+	e.router.Use(e.redirectionMiddleware)
+
 	for _, f := range e.eb.features {
 		if rm, ok := f.(feature.RequestModifier); ok {
 			log.DebugF("including %v request modifier middleware", f.Tag())
