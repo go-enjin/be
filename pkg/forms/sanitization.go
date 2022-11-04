@@ -14,7 +14,11 @@
 
 package forms
 
-import "github.com/microcosm-cc/bluemonday"
+import (
+	"strings"
+
+	"github.com/microcosm-cc/bluemonday"
+)
 
 func Sanitize(input string) (sanitized string) {
 	p := bluemonday.UGCPolicy()
@@ -25,5 +29,15 @@ func Sanitize(input string) (sanitized string) {
 func StripTags(input string) (sanitized string) {
 	p := bluemonday.StripTagsPolicy()
 	sanitized = p.Sanitize(input)
+	return
+}
+
+func SanitizeRequestPath(path string) (cleaned string) {
+	cleaned = TrimQueryParams(path)
+	if cleaned = strings.TrimSuffix(cleaned, "/"); cleaned == "" {
+		cleaned = "/"
+	} else if cleaned[0] != '/' {
+		cleaned = "/" + cleaned
+	}
 	return
 }
