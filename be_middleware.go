@@ -21,7 +21,10 @@ import (
 	"net/http"
 	"runtime"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	beNet "github.com/go-enjin/be/pkg/net"
@@ -80,18 +83,19 @@ func (e *Enjin) modifyHeadersFn(request *http.Request, headers map[string]string
 
 func (e *Enjin) pagesMiddleware(next http.Handler) http.Handler {
 	log.DebugF("including pages middleware")
-	return http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
-		path := request.URL.Path
-		if p, ok := e.eb.pages[path]; ok {
-			if err := e.ServePage(p, w, request); err == nil {
-				log.DebugF("page served: %v", path)
-				return
-			} else {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := forms.SanitizeRequestPath(r.URL.Path)
+		if pg, ok := e.eb.pages[path]; ok {
+			if err := e.ServePage(pg, w, r); err != nil {
 				log.ErrorF("serve page err: %v", err)
+				e.ServeInternalServerError(w, r)
+			} else {
+				log.DebugF("page served: %v", path)
 			}
+			return
 		}
 		// log.DebugF("not a page: %v, %v", path, e.eb.pages)
-		next.ServeHTTP(w, request)
+		next.ServeHTTP(w, r)
 	})
 }
 
@@ -124,32 +128,53 @@ func (e *Enjin) langMiddleware(next http.Handler) http.Handler {
 		langMode := e.SiteLanguageMode()
 		defaultTag := e.SiteDefaultLanguage()
 
-		requested, reqPath, reqOk := langMode.FromRequest(defaultTag, r)
-		if !reqOk {
-			log.WarnF("language mode rejecting request: %#v", r)
-			e.Serve404(w, r) // specifically not ServeNotFound()
-			return
-		}
-		// log.DebugF("requested=%v, reqPath=%v, r.Url=%v", requested, reqPath, r.URL.Path)
-		if pg := e.FindPage(requested, reqPath); pg != nil {
-			if !e.SiteSupportsLanguage(requested) {
-				log.TraceF("requested language not supported: %v", requested)
-				requested = defaultTag
-			}
+		var reqPath string
+		var requested language.Tag
 
-			tag, printer := lang.NewCatalogPrinter(requested.String(), e.SiteLanguageCatalog())
-			ctx := context.WithValue(r.Context(), lang.LanguageTag, tag)
-			ctx = context.WithValue(ctx, lang.LanguagePrinter, printer)
-			ctx = context.WithValue(ctx, lang.LanguageDefault, e.SiteDefaultLanguage())
-			if reqPath == "" {
-				reqPath = "/"
-			} else if reqPath[0] != '/' {
-				reqPath = "/" + reqPath
+		if lang.NonPageRequested(r) {
+			requested = defaultTag
+			reqPath = forms.SanitizeRequestPath(r.URL.Path)
+			log.DebugF("non page requested: %v", reqPath)
+		} else {
+			var reqOk bool
+			if requested, reqPath, reqOk = langMode.FromRequest(defaultTag, r); !reqOk {
+				log.WarnF("language mode rejecting request: %#v", r)
+				e.Serve404(w, r) // specifically not ServeNotFound()
+				return
 			}
-			r.URL.Path = reqPath
-			// log.DebugF("requested language: [%v] %v", tag, reqPath)
-			r = r.WithContext(ctx)
+			log.DebugF("page requested: %v", reqPath)
 		}
+
+		// TODO: determine what to do with Accept-Language request headers
+		// if acceptLanguage := r.Header.Get("Accept-Language"); acceptLanguage != "" {
+		// 	if parsed, err := language.Parse(acceptLanguage); err == nil {
+		// 		if e.SiteSupportsLanguage(parsed) && !language.Compare(requested, parsed) {
+		// 			// requested = parsed
+		// 			// e.ServeRedirect(langMode.ToUrl(requested, parsed, reqPath), w, r)
+		// 			// return
+		// 		}
+		// 	}
+		// }
+
+		if !e.SiteSupportsLanguage(requested) {
+			log.WarnF("%v language not supported, using default: %v", requested, defaultTag)
+			requested = defaultTag
+		}
+
+		// if pg := e.FindPage(requested, reqPath); pg == nil {
+		// 	log.DebugF("page not found for: [%v] %v", requested, reqPath)
+		// }
+		tag, printer := lang.NewCatalogPrinter(requested.String(), e.SiteLanguageCatalog())
+		ctx := context.WithValue(r.Context(), lang.LanguageTag, tag)
+		ctx = context.WithValue(ctx, lang.LanguagePrinter, printer)
+		ctx = context.WithValue(ctx, lang.LanguageDefault, e.SiteDefaultLanguage())
+		if reqPath == "" {
+			reqPath = "/"
+		} else if reqPath[0] != '/' {
+			reqPath = "/" + reqPath
+		}
+		r.URL.Path = reqPath
+		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
 	})
