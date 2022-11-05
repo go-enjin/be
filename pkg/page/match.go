@@ -15,6 +15,7 @@
 package page
 
 import (
+	"strings"
 	"sync"
 
 	"github.com/go-enjin/be/pkg/log"
@@ -48,6 +49,13 @@ func (p *Page) Match(path string) (found string, ok bool) {
 				return
 			}
 		}
+	}
+	return
+}
+
+func (p *Page) MatchPrefix(prefix string) (found string, ok bool) {
+	if ok = strings.HasPrefix(p.Url, prefix); ok {
+		found = p.Url
 	}
 	return
 }
