@@ -150,3 +150,14 @@ func (e *Enjin) FindPage(tag language.Tag, url string) (p *page.Page) {
 	}
 	return
 }
+
+func (e *Enjin) FindPages(prefix string) (pages []*page.Page) {
+	for _, f := range e.Features() {
+		if provider, ok := f.(feature.PageProvider); ok {
+			if pgs := provider.FindPages(prefix); pgs != nil {
+				pages = append(pages, pgs...)
+			}
+		}
+	}
+	return
+}
