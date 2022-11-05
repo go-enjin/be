@@ -17,11 +17,14 @@
 package robots
 
 import (
+	"fmt"
+	"html/template"
 	"net/http"
 	"strings"
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
@@ -30,8 +33,9 @@ import (
 )
 
 var (
-	_ MakeFeature        = (*CFeature)(nil)
-	_ feature.Middleware = (*CFeature)(nil)
+	_ MakeFeature             = (*CFeature)(nil)
+	_ feature.Middleware      = (*CFeature)(nil)
+	_ feature.RequestModifier = (*CFeature)(nil)
 )
 
 const Tag feature.Tag = "PagesRobots"
@@ -43,18 +47,21 @@ type Feature interface {
 type CFeature struct {
 	feature.CMiddleware
 
-	cli   *cli.Context
-	enjin feature.Internals
+	cliCtx *cli.Context
+	enjin  feature.Internals
 
 	rules    []RuleGroup
 	sitemaps []string
 
-	siteRobots string
+	siteHeader  string
+	siteMetaTag string
 }
 
 type MakeFeature interface {
 	AddSitemap(sitemap string) MakeFeature
 	AddRuleGroup(rule RuleGroup) MakeFeature
+
+	SiteRobotsHeader(content string) MakeFeature
 	SiteRobotsMetaTag(content string) MakeFeature
 
 	Make() Feature
@@ -79,8 +86,13 @@ func (f *CFeature) AddRuleGroup(rule RuleGroup) MakeFeature {
 	return f
 }
 
+func (f *CFeature) SiteRobotsHeader(content string) MakeFeature {
+	f.siteHeader = content
+	return f
+}
+
 func (f *CFeature) SiteRobotsMetaTag(content string) MakeFeature {
-	f.siteRobots = content
+	f.siteMetaTag = content
 	return f
 }
 
@@ -98,12 +110,24 @@ func (f *CFeature) Tag() (tag feature.Tag) {
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
-	if f.siteRobots != "" {
+	if f.siteMetaTag != "" {
 		b.AddHtmlHeadTag("meta", map[string]string{
 			"name":    "robots",
-			"content": f.siteRobots,
+			"content": f.siteMetaTag,
 		})
 	}
+	b.AddFlags(
+		&cli.StringFlag{
+			Name:    "meta-robots",
+			Usage:   "set a site-wide <meta name=\"robots\"> head tag",
+			EnvVars: b.MakeEnvKeys("META_ROBOTS"),
+		},
+		&cli.StringFlag{
+			Name:    "x-robots-tag",
+			Usage:   "set a site-wide X-Robots-Tag response header",
+			EnvVars: b.MakeEnvKeys("X_ROBOTS_TAG"),
+		},
+	)
 	return
 }
 
@@ -112,15 +136,34 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
-	f.cli = ctx
+	f.cliCtx = ctx
+	if xrt := f.cliCtx.Value("x-robots-tag"); xrt != nil {
+		if xRobotsTag, ok := xrt.(string); ok && xRobotsTag != "" {
+			f.siteHeader = xRobotsTag
+		}
+	}
 	return
 }
 
-// func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.Request) (out context.Context) {
-// 	out = themeCtx
-// 	out.SetSpecific("SiteSearchable", true)
-// 	return
-// }
+func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.Request) (out context.Context) {
+	out = themeCtx
+	if mr := f.cliCtx.Value("meta-robots"); mr != nil {
+		if metaRobots, ok := mr.(string); ok && metaRobots != "" {
+			var v []template.HTML
+			v, _ = out.Get("HtmlHeadTags").([]template.HTML)
+			v = append(v, template.HTML(fmt.Sprintf(`<meta name="robots" content="%s"/>`, metaRobots)))
+			out.SetSpecific("HtmlHeadTags", v)
+		}
+	}
+	// out.SetSpecific("SiteSearchable", true)
+	return
+}
+
+func (f *CFeature) ModifyRequest(w http.ResponseWriter, r *http.Request) {
+	if f.siteHeader != "" {
+		w.Header().Set("X-Robots-Tag", f.siteHeader)
+	}
+}
 
 func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 	log.DebugF("including page robots middleware")
