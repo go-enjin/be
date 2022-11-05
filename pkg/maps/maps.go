@@ -23,6 +23,7 @@ import (
 
 	"github.com/fvbommel/sortorder"
 	"github.com/iancoleman/strcase"
+	"github.com/maruel/natural"
 
 	"github.com/go-enjin/be/pkg/log"
 	beStrings "github.com/go-enjin/be/pkg/strings"
@@ -188,7 +189,7 @@ func SortedKeys[V interface{}](data map[string]V) (keys []string) {
 	for key, _ := range data {
 		keys = append(keys, key)
 	}
-	sort.Sort(sortorder.Natural(keys))
+	sort.Sort(natural.StringSlice(keys))
 	return
 }
 
