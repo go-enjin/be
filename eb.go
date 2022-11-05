@@ -25,14 +25,13 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
-	"github.com/go-enjin/be/pkg/lang"
-	"github.com/go-enjin/be/pkg/maps"
-
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
+	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/net/ip/deny"
 	"github.com/go-enjin/be/pkg/page"
@@ -142,30 +141,6 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 	eb.Set("DefaultLanguage", eb.defaultLang.String())
 	eb.Set("DefaultLanguageTag", eb.defaultLang)
 
-	if len(eb.htmlHeadTags) > 0 {
-		var tags []template.HTML
-		for _, tag := range eb.htmlHeadTags {
-			var attrs string
-			for _, key := range maps.ReverseSortedKeys(tag.attr) {
-				if attrs != "" {
-					attrs += " "
-				}
-				attrs += fmt.Sprintf(`%v="%v"`, key, template.HTMLEscapeString(tag.attr[key]))
-			}
-			if attrs == "" {
-				// log.FatalF("SetHtmlHeadTag #%d requires attributes", idx+1)
-				continue
-			}
-			tags = append(
-				tags,
-				template.HTML(
-					fmt.Sprintf("<%v %v/>", tag.name, attrs),
-				),
-			)
-		}
-		eb.Set("HtmlHeadTags", tags)
-	}
-
 	if eb.theme != "" {
 		if _, ok := eb.theming[eb.theme]; !ok {
 			log.FatalF("theme not found: %v", eb.theme)
@@ -191,6 +166,30 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 			log.FatalF("console [%v] - %v", tag, err)
 			return nil
 		}
+	}
+
+	if len(eb.htmlHeadTags) > 0 {
+		var tags []template.HTML
+		for _, tag := range eb.htmlHeadTags {
+			var attrs string
+			for _, key := range maps.ReverseSortedKeys(tag.attr) {
+				if attrs != "" {
+					attrs += " "
+				}
+				attrs += fmt.Sprintf(`%v="%v"`, key, template.HTMLEscapeString(tag.attr[key]))
+			}
+			if attrs == "" {
+				// log.FatalF("SetHtmlHeadTag #%d requires attributes", idx+1)
+				continue
+			}
+			tags = append(
+				tags,
+				template.HTML(
+					fmt.Sprintf("<%v %v/>\n", tag.name, attrs),
+				),
+			)
+		}
+		eb.Set("HtmlHeadTags", tags)
 	}
 
 	eb.flags = append(
