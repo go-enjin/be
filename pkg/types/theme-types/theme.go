@@ -26,5 +26,5 @@ type Theme interface {
 	GetParentTheme() (parent Theme)
 	GetBlockThemeNames() (names []string)
 	NewHtmlTemplateWithContext(name string, ctx context.Context) (tmpl *template.Template, err error)
-	NewFuncMapWithContext(ctx context.Context) (fm template.FuncMap)
+	NewHtmlFuncMapWithContext(ctx context.Context) (fm template.FuncMap)
 }
