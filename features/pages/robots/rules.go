@@ -23,33 +23,39 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
-type RuleGroup struct {
-	userAgent  string
+type RuleGroup interface {
+	String() string
+}
+
+type cRuleGroup struct {
+	userAgents []string
 	allowed    []string
 	disallowed []string
-	sitemaps   []string
 }
 
 type MakeRuleGroup interface {
+	AddUserAgent(userAgent string) MakeRuleGroup
 	AddAllowed(allow string) MakeRuleGroup
 	AddDisallowed(disallow string) MakeRuleGroup
-	AddSitemap(sitemap string) MakeRuleGroup
 
-	Make() (r *RuleGroup)
+	Make() (r RuleGroup)
 }
 
-func NewRuleGroup(userAgent string) (rule MakeRuleGroup) {
-	r := new(RuleGroup)
-	if userAgent == "" {
-		r.userAgent = "*"
-	} else {
-		r.userAgent = userAgent
-	}
+func NewRuleGroup() (rule MakeRuleGroup) {
+	r := new(cRuleGroup)
 	rule = r
 	return
 }
 
-func (r *RuleGroup) AddAllowed(allow string) MakeRuleGroup {
+func (r *cRuleGroup) AddUserAgent(userAgent string) MakeRuleGroup {
+	userAgent = strings.TrimSpace(userAgent)
+	if !beStrings.StringInSlices(userAgent, r.userAgents) {
+		r.userAgents = append(r.userAgents, userAgent)
+	}
+	return r
+}
+
+func (r *cRuleGroup) AddAllowed(allow string) MakeRuleGroup {
 	allow = strings.TrimSpace(allow)
 	if !beStrings.StringInSlices(allow, r.allowed) {
 		r.allowed = append(r.allowed, allow)
@@ -57,7 +63,7 @@ func (r *RuleGroup) AddAllowed(allow string) MakeRuleGroup {
 	return r
 }
 
-func (r *RuleGroup) AddDisallowed(disallow string) MakeRuleGroup {
+func (r *cRuleGroup) AddDisallowed(disallow string) MakeRuleGroup {
 	disallow = strings.TrimSpace(disallow)
 	if !beStrings.StringInSlices(disallow, r.disallowed) {
 		r.disallowed = append(r.disallowed, disallow)
@@ -65,43 +71,28 @@ func (r *RuleGroup) AddDisallowed(disallow string) MakeRuleGroup {
 	return r
 }
 
-func (r *RuleGroup) AddSitemap(sitemap string) MakeRuleGroup {
-	sitemap = strings.TrimSpace(sitemap)
-	if !beStrings.StringInSlices(sitemap, r.sitemaps) {
-		r.sitemaps = append(r.sitemaps, sitemap)
+func (r *cRuleGroup) Make() RuleGroup {
+	if len(r.userAgents) > 0 {
+		log.FatalDF(1, "at least one user-agent is required per robots.txt rule group")
+	}
+	if len(r.allowed) == 0 && len(r.disallowed) == 0 {
+		log.FatalDF(1, "at least one allowed and/or disallowed is required per robots.txt rule group")
 	}
 	return r
 }
 
-func (r *RuleGroup) Make() *RuleGroup {
-	if len(r.allowed) == 0 && len(r.disallowed) == 0 && len(r.sitemaps) == 0 {
-		log.FatalF("at least one allowed, disallowed or sitemap is required per robots.txt rule group")
+func (r *cRuleGroup) String() (grouped string) {
+	for _, userAgent := range r.userAgents {
+		grouped += "User-Agent: " + userAgent + "\n"
 	}
-	return r
-}
-
-func (r *RuleGroup) String() (grouped string) {
-	hasAllowed, hasDisallowed, hasSitemaps := len(r.allowed) > 0, len(r.disallowed) > 0, len(r.sitemaps) > 0
-	grouped += "User-Agent: " + r.userAgent + "\n\n"
-	if hasAllowed {
+	if len(r.allowed) > 0 {
 		for _, allow := range r.allowed {
 			grouped += "Allow: " + allow + "\n"
 		}
-		if hasDisallowed || hasSitemaps {
-			grouped += "\n"
-		}
 	}
-	if hasDisallowed {
+	if len(r.disallowed) > 0 {
 		for _, disallow := range r.disallowed {
 			grouped += "Disallow: " + disallow + "\n"
-		}
-		if hasSitemaps {
-			grouped += "\n"
-		}
-	}
-	if hasSitemaps {
-		for _, sitemap := range r.sitemaps {
-			grouped += "Sitemap: " + sitemap + "\n"
 		}
 	}
 	return

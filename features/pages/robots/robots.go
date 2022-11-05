@@ -18,6 +18,7 @@ package robots
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/urfave/cli/v2"
 
@@ -25,6 +26,7 @@ import (
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 var (
@@ -44,13 +46,15 @@ type CFeature struct {
 	cli   *cli.Context
 	enjin feature.Internals
 
-	rules []*RuleGroup
+	rules    []RuleGroup
+	sitemaps []string
 
 	siteRobots string
 }
 
 type MakeFeature interface {
-	AddRule(rule *RuleGroup) MakeFeature
+	AddSitemap(sitemap string) MakeFeature
+	AddRuleGroup(rule RuleGroup) MakeFeature
 	SiteRobotsMetaTag(content string) MakeFeature
 
 	Make() Feature
@@ -62,7 +66,15 @@ func New() MakeFeature {
 	return f
 }
 
-func (f *CFeature) AddRule(rule *RuleGroup) MakeFeature {
+func (f *CFeature) AddSitemap(sitemap string) MakeFeature {
+	sitemap = strings.TrimSpace(sitemap)
+	if !beStrings.StringInSlices(sitemap, f.sitemaps) {
+		f.sitemaps = append(f.sitemaps, sitemap)
+	}
+	return f
+}
+
+func (f *CFeature) AddRuleGroup(rule RuleGroup) MakeFeature {
 	f.rules = append(f.rules, rule)
 	return f
 }
@@ -122,8 +134,19 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 
 			if path == "/robots.txt" && len(f.rules) > 0 {
 				var contents string
-				for _, rule := range f.rules {
+				for idx, rule := range f.rules {
+					if idx > 0 {
+						contents += "\n"
+					}
 					contents += rule.String()
+				}
+				if len(f.sitemaps) > 0 {
+					if contents != "" {
+						contents += "\n"
+					}
+					for _, sitemap := range f.sitemaps {
+						contents += "Sitemap: " + sitemap + "\n"
+					}
 				}
 				f.enjin.ServeData([]byte(contents), "text/plain", w, r)
 				return
