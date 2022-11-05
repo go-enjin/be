@@ -29,6 +29,7 @@ import (
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/page"
 )
 
@@ -128,9 +129,9 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 					domain = DefaultSiteScheme + "://" + r.Host
 				}
 
-				var pages []*page.Page
+				pages := make(map[string]*page.Page)
 				for _, found := range f.enjin.FindPages("/") {
-					if !found.Context.Bool("SitemapIgnored", false) {
+					if ignored := found.Context.String("SitemapIgnored", "false"); ignored != "true" {
 						priority := found.Context.Float64("SitemapPriority", 0.5)
 						found.Context.SetSpecific("SitemapPriority", priority)
 						if changeFreq := found.Context.String("SitemapChangeFreq", ""); changeFreq != "" {
@@ -142,7 +143,18 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 								found.Context.Delete("SitemapChangeFreq")
 							}
 						}
-						pages = append(pages, found)
+
+						tag := found.LanguageTag
+						if language.Compare(tag, language.Und) {
+							tag = defaultTag
+						}
+
+						fullUrl := langMode.ToUrl(defaultTag, tag, found.Url)
+						if !strings.HasPrefix(fullUrl, "http") && domain != "" {
+							fullUrl = domain + fullUrl
+						}
+
+						pages[fullUrl] = found
 					}
 				}
 
@@ -150,16 +162,8 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 				contents += `<?xml version="1.0" encoding="UTF-8"?>` + "\n"
 				contents += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n"
 
-				for _, pg := range pages {
-					tag := pg.LanguageTag
-					if language.Compare(tag, language.Und) {
-						tag = defaultTag
-					}
-					fullUrl := langMode.ToUrl(defaultTag, tag, pg.Url)
-					if !strings.HasPrefix(fullUrl, "http") && domain != "" {
-						fullUrl = domain + fullUrl
-					}
-
+				for _, fullUrl := range maps.SortedKeys(pages) {
+					pg := pages[fullUrl]
 					contents += "\t<url>\n"
 					contents += "\t\t<loc>" + html.EscapeString(fullUrl) + "</loc>\n"
 					contents += "\t\t<lastmod>" + pg.UpdatedAt.Format("2006-01-02") + "</lastmod>\n"
