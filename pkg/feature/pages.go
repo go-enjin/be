@@ -41,4 +41,5 @@ type PageProvider interface {
 	FindRedirection(url string) (p *page.Page)
 	FindTranslations(url string) (pages []*page.Page)
 	FindPage(tag language.Tag, url string) (p *page.Page)
+	FindPages(prefix string) (pages []*page.Page)
 }

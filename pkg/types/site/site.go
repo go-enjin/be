@@ -37,6 +37,7 @@ type Enjin interface {
 
 	FindTranslations(url string) (pages []*page.Page)
 	FindPage(tag language.Tag, url string) (p *page.Page)
+	FindPages(prefix string) (pages []*page.Page)
 }
 
 func Info(e Enjin) (info map[string]interface{}) {
