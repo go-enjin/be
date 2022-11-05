@@ -120,6 +120,21 @@ func (c *Cache) FindAll(path string) (found []*Page) {
 	return
 }
 
+func (c *Cache) FindAllPrefix(prefix string) (found []*Page) {
+	c.RLock()
+	defer c.RUnlock()
+	for _, cache := range c.cache {
+		for _, localeCache := range cache {
+			for _, pg := range localeCache {
+				if _, ok := pg.MatchPrefix(prefix); ok {
+					found = append(found, pg.Copy())
+				}
+			}
+		}
+	}
+	return
+}
+
 func (c *Cache) ListAll() (found []*Page) {
 	c.RLock()
 	defer c.RUnlock()
