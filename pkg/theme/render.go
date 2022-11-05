@@ -17,7 +17,9 @@ package theme
 import (
 	"bytes"
 	"fmt"
-	"html/template"
+	htmlTemplate "html/template"
+	"strings"
+	textTemplate "text/template"
 	"time"
 
 	"github.com/go-enjin/be/pkg/types/theme-types"
@@ -27,13 +29,13 @@ import (
 	"github.com/go-enjin/be/pkg/page"
 )
 
-func (t *Theme) RenderTemplateContent(ctx context.Context, tmplContent string) (html string, err error) {
-	var tt *template.Template
+func (t *Theme) RenderHtmlTemplateContent(ctx context.Context, tmplContent string) (rendered string, err error) {
+	var tt *htmlTemplate.Template
 	if tt, err = t.NewHtmlTemplateWithContext("content.tmpl", ctx); err == nil {
 		if tt, err = tt.Parse(tmplContent); err == nil {
 			var w bytes.Buffer
 			if err = tt.Execute(&w, ctx); err == nil {
-				html = string(w.Bytes())
+				rendered = string(w.Bytes())
 				return
 			} else {
 				err = fmt.Errorf("error executing template content: %v", err)
@@ -47,18 +49,51 @@ func (t *Theme) RenderTemplateContent(ctx context.Context, tmplContent string) (
 	return
 }
 
-func (t *Theme) NewHtmlTemplateWithContext(name string, ctx context.Context) (tmpl *template.Template, err error) {
+func (t *Theme) RenderTextTemplateContent(ctx context.Context, tmplContent string) (rendered string, err error) {
+	var tt *textTemplate.Template
+	if tt, err = t.NewTextTemplateWithContext("content.tmpl", ctx); err == nil {
+		if tt, err = tt.Parse(tmplContent); err == nil {
+			var w bytes.Buffer
+			if err = tt.Execute(&w, ctx); err == nil {
+				rendered = string(w.Bytes())
+				return
+			} else {
+				err = fmt.Errorf("error executing template content: %v", err)
+			}
+		} else {
+			err = fmt.Errorf("error parsing template content: %v", err)
+		}
+	} else {
+		err = fmt.Errorf("error making new theme template: %v", err)
+	}
+	return
+}
+
+func (t *Theme) NewTextTemplateWithContext(name string, ctx context.Context) (tmpl *textTemplate.Template, err error) {
+	if parent := t.GetParent(); parent != nil {
+		if tmpl, err = parent.NewTextTemplateWithContext(name, ctx); err != nil {
+			return
+		}
+		// log.DebugF("starting %v template from theme %v", name, t.Config.Name)
+	} else {
+		tmpl = textTemplate.New(name).Funcs(t.NewTextFuncMapWithContext(ctx))
+		log.DebugF("starting %v template from theme %v", name, t.Config.Name)
+	}
+	return
+}
+
+func (t *Theme) NewHtmlTemplateWithContext(name string, ctx context.Context) (tmpl *htmlTemplate.Template, err error) {
 	if parent := t.GetParent(); parent != nil {
 		if tmpl, err = parent.NewHtmlTemplateWithContext(name, ctx); err != nil {
 			return
 		}
 		// log.DebugF("starting %v template from theme %v", name, t.Config.Name)
 	} else {
-		tmpl = template.New(name).Funcs(t.NewFuncMapWithContext(ctx))
+		tmpl = htmlTemplate.New(name).Funcs(t.NewHtmlFuncMapWithContext(ctx))
 		log.DebugF("starting %v template from theme %v", name, t.Config.Name)
 	}
 
-	var layoutsTmpl *template.Template
+	var layoutsTmpl *htmlTemplate.Template
 	if layoutsTmpl, err = t.Layouts.NewTemplate("", ctx); err != nil {
 		return
 	}
@@ -79,7 +114,7 @@ func (t *Theme) FindLayout(named string) (layout *Layout, name string, ok bool) 
 	return
 }
 
-func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *template.Template, err error) {
+func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *htmlTemplate.Template, err error) {
 	var ok bool
 	var ctxLayout, parentLayout *Layout
 	layoutName := ctx.String("Layout", "_default")
@@ -140,7 +175,7 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *templ
 		lookups = append(lookups, name+".tmpl")
 	}
 
-	var tmpl *template.Template
+	var tmpl *htmlTemplate.Template
 	if ctxTmpl, e := ctxLayout.NewTemplateFrom(parentLayout, ctx); e != nil {
 		err = fmt.Errorf("error creating new %v layout template: %v", layoutName, e)
 		return
@@ -176,7 +211,7 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *templ
 func (t *Theme) Render(view string, ctx context.Context) (data []byte, err error) {
 	now := time.Now()
 	ctx.Set("CurrentYear", now.Year())
-	var tt *template.Template
+	var tt *htmlTemplate.Template
 	if tt, err = t.TemplateFromContext(view, ctx); err == nil {
 		log.DebugF("%v theme template used: (%v) %v - \"%v\"", t.Config.Name, view, tt.Name(), ctx.String("Url", "nil"))
 		var wr bytes.Buffer
@@ -188,7 +223,7 @@ func (t *Theme) Render(view string, ctx context.Context) (data []byte, err error
 	return
 }
 
-func (t *Theme) renderErrorPage(title, summary, output string) (html template.HTML) {
+func (t *Theme) renderErrorPage(title, summary, output string) (html htmlTemplate.HTML) {
 	html = types.NewEnjinError(title, summary, output).Html()
 	return
 }
@@ -197,20 +232,35 @@ func (t *Theme) RenderPage(ctx context.Context, p *page.Page) (data []byte, err 
 	ctx.Apply(p.Context.Copy())
 	ctx.Set("Theme", t.GetConfig())
 
-	if output, e := t.RenderTemplateContent(ctx, p.Content); e == nil {
-		if format := page.GetFormat(p.Format); format != nil {
-			if html, ee := format.Process(ctx, t, output); ee != nil {
-				log.ErrorF("error processing %v page format: %v - %v", p.Format, ee.Title, ee.Summary)
-				ctx["Content"] = ee.Html()
-			} else {
-				ctx["Content"] = html
-				log.DebugF("page format success: %v", format.Name())
-			}
-		} else {
-			ctx["Content"] = t.renderErrorPage("Unsupported Page Format", fmt.Sprintf(`Unknown page format specified: "%v"`, p.Format), p.String())
+	var output string
+
+	if p.Format == "html.tmpl" {
+		if output, err = t.RenderHtmlTemplateContent(ctx, p.Content); err != nil {
+			err = nil
+			ctx["Content"] = t.renderErrorPage("Template Render Error", err.Error(), p.String())
+			return
+		}
+	} else if strings.HasSuffix(p.Format, ".tmpl") {
+		// TODO: find a more safe way to pre-render .njn.tmpl files
+		if output, err = t.RenderTextTemplateContent(ctx, p.Content); err != nil {
+			err = nil
+			ctx["Content"] = t.renderErrorPage("Template Render Error", err.Error(), p.String())
+			return
 		}
 	} else {
-		ctx["Content"] = t.renderErrorPage("Template Render Error", e.Error(), p.String())
+		output = p.Content
+	}
+
+	if format := page.GetFormat(p.Format); format != nil {
+		if html, ee := format.Process(ctx, t, output); ee != nil {
+			log.ErrorF("error processing %v page format: %v - %v", p.Format, ee.Title, ee.Summary)
+			ctx["Content"] = ee.Html()
+		} else {
+			ctx["Content"] = html
+			log.DebugF("page format success: %v", format.Name())
+		}
+	} else {
+		ctx["Content"] = t.renderErrorPage("Unsupported Page Format", fmt.Sprintf(`Unknown page format specified: "%v"`, p.Format), p.String())
 	}
 
 	return t.Render("single", ctx)

@@ -143,7 +143,7 @@ func (l *Layout) NewTemplateFrom(parent *Layout, ctx context.Context) (tmpl *tem
 }
 
 func (l *Layout) Apply(tt *template.Template, ctx context.Context) (err error) {
-	tt.Funcs(l.theme.NewFuncMapWithContext(ctx))
+	tt.Funcs(l.theme.NewHtmlFuncMapWithContext(ctx))
 	for _, name := range maps.SortedKeys(l.cache) {
 		if _, err = tt.New(name).Parse(l.cache[name]); err != nil {
 			err = fmt.Errorf("error parsing cached template: %v - %v", name, err)

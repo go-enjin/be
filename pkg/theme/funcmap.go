@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"html/template"
 	"sync"
+	textTemplate "text/template"
 
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/language/display"
@@ -50,7 +51,16 @@ func GetFuncMap(key string) (fn interface{}, ok bool) {
 	return
 }
 
-func AddRegisteredFuncsToMap(fm *template.FuncMap) {
+func AddRegisteredHtmlFuncsToMap(fm *template.FuncMap) {
+	_knownFuncMutex.RLock()
+	defer _knownFuncMutex.RUnlock()
+	for key, fn := range _knownFuncMap {
+		(*fm)[key] = fn
+	}
+	return
+}
+
+func AddRegisteredTextFuncsToMap(fm *textTemplate.FuncMap) {
 	_knownFuncMutex.RLock()
 	defer _knownFuncMutex.RUnlock()
 	for key, fn := range _knownFuncMap {
@@ -116,28 +126,72 @@ func DefaultFuncMap() (funcMap template.FuncMap) {
 		"WarnF":  funcs.LogWarn,
 		"ErrorF": funcs.LogError,
 
-		"_": fmt.Sprintf,
-
 		"CmpLang": funcs.CmpLang,
 	}
 	for k, v := range gtf.GtfFuncMap {
 		funcMap[k] = v
 	}
-	AddRegisteredFuncsToMap(&funcMap)
+	AddRegisteredHtmlFuncsToMap(&funcMap)
 	return
 }
 
-func (t *Theme) NewFuncMapWithContext(ctx context.Context) (fm template.FuncMap) {
-	enjin, _ := ctx.Get("SiteEnjin").(site.Enjin)
+func (t *Theme) NewTextFuncMapWithContext(ctx context.Context) (fm textTemplate.FuncMap) {
+
+	fm = textTemplate.FuncMap{}
+	for k, v := range t.FuncMap {
+		fm[k] = v
+	}
+	AddRegisteredTextFuncsToMap(&fm)
+
+	fm["_"] = t.makeUnderscore(ctx)            // translate page content
+	fm["__"] = t.makeUnderscoreUnderscore(ctx) // translate page paths
+	fm["_tag"] = t.makeUnderscoreTag(ctx)      // render language tag in native language
+	return
+}
+
+func (t *Theme) NewHtmlFuncMapWithContext(ctx context.Context) (fm template.FuncMap) {
 
 	fm = template.FuncMap{}
 	for k, v := range t.FuncMap {
 		fm[k] = v
 	}
-	AddRegisteredFuncsToMap(&fm)
+	AddRegisteredHtmlFuncsToMap(&fm)
 
-	// translate page paths
-	fm["__"] = func(argv ...string) (translated string, err error) {
+	fm["_"] = t.makeUnderscore(ctx)            // translate page content
+	fm["__"] = t.makeUnderscoreUnderscore(ctx) // translate page paths
+	fm["_tag"] = t.makeUnderscoreTag(ctx)      // render language tag in native language
+	return
+}
+
+func (t *Theme) makeUnderscoreTag(ctx context.Context) func(tag language.Tag) (name string) {
+	return func(tag language.Tag) (name string) {
+		enjin, _ := ctx.Get("SiteEnjin").(site.Enjin)
+		var ok bool
+		if name, ok = enjin.SiteLanguageDisplayName(tag); !ok {
+			name = display.Tags(tag).Name(tag)
+		}
+		return
+	}
+}
+
+func (t *Theme) makeUnderscore(ctx context.Context) func(format string, argv ...interface{}) (translated string) {
+	return func(format string, argv ...interface{}) (translated string) {
+		printer, _ := ctx.Get("LangPrinter").(*message.Printer)
+		if printer != nil {
+			translated = printer.Sprintf(format, argv...)
+			if fmt.Sprintf(format, argv...) != translated {
+				log.DebugF("template translated: \"%v\" -> \"%v\"", format, translated)
+			}
+		} else {
+			translated = fmt.Sprintf(format, argv...)
+		}
+		return
+	}
+}
+
+func (t *Theme) makeUnderscoreUnderscore(ctx context.Context) func(argv ...string) (translated string, err error) {
+	return func(argv ...string) (translated string, err error) {
+		enjin, _ := ctx.Get("SiteEnjin").(site.Enjin)
 		targetLang, _ := ctx.Get("ReqLangTag").(language.Tag)
 		var targetPath, fallbackPath string
 
@@ -219,26 +273,4 @@ func (t *Theme) NewFuncMapWithContext(ctx context.Context) (fm template.FuncMap)
 		// log.WarnF("__: [%v] tx=%v ([%v] %v) - %#v", targetLang, translated, targetPage.LanguageTag, targetPage.Url, argv)
 		return
 	}
-
-	// translate page content
-	fm["_"] = func(format string, argv ...interface{}) (translated string) {
-		if printer, ok := ctx.Get("LangPrinter").(*message.Printer); ok {
-			translated = printer.Sprintf(format, argv...)
-			if fmt.Sprintf(format, argv...) != translated {
-				log.DebugF("template translated: \"%v\" -> \"%v\"", format, translated)
-			}
-		} else {
-			translated = fmt.Sprintf(format, argv...)
-		}
-		return
-	}
-
-	fm["_tag"] = func(tag language.Tag) (name string) {
-		var ok bool
-		if name, ok = enjin.SiteLanguageDisplayName(tag); !ok {
-			name = display.Tags(tag).Name(tag)
-		}
-		return
-	}
-	return
 }
