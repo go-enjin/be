@@ -250,13 +250,13 @@ func (t *Theme) makeUnderscoreUnderscore(ctx context.Context) func(argv ...strin
 					if fallbackPath != "" {
 						if targetPage = enjin.FindPage(targetLang, fallbackPath); targetPage == nil {
 							if targetPage = enjin.FindPage(language.Und, fallbackPath); targetPage == nil {
-								log.ErrorF("__%v error: page not found, fallback not found, returning fallback", argv)
+								log.DebugF("__%v error: page not found, fallback not found, returning fallback", argv)
 								translated = fallbackPath
 								return
 							}
 						}
 					} else {
-						log.ErrorF("__%v error: page not found, fallback not given, returning target", argv)
+						log.DebugF("__%v error: page not found, fallback not given, returning target", argv)
 						translated = targetPath
 						return
 					}
