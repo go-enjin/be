@@ -468,6 +468,15 @@ func (f *CFeature) FindTranslations(path string) (found []*page.Page) {
 	return
 }
 
+func (f *CFeature) FindPages(prefix string) (pages []*page.Page) {
+	if strings.HasPrefix(f.path, prefix) {
+		if pg := f.FindPage(f.enjin.SiteDefaultLanguage(), f.path); pg != nil {
+			pages = append(pages, pg)
+		}
+	}
+	return
+}
+
 func (f *CFeature) FindPage(tag language.Tag, path string) (searchPage *page.Page) {
 	if f.findingSelf == true {
 		return

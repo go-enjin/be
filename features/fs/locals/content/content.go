@@ -204,3 +204,10 @@ func (f *Feature) FindPage(tag language.Tag, path string) (p *page.Page) {
 	}
 	return
 }
+
+func (f *Feature) FindPages(path string) (pages []*page.Page) {
+	f.cache.Rebuild()
+	path = forms.SanitizeRequestPath(path)
+	pages = f.cache.FindAllPrefix(path)
+	return
+}
