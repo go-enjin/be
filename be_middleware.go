@@ -114,7 +114,7 @@ func (e *Enjin) themeMiddleware(next http.Handler) http.Handler {
 				name = t.Config.Name
 				mime, _ = t.FileSystem.MimeType(path)
 				e.ServeData(data, mime, w, request)
-				log.DebugF("%v served: %v (%v)", name, path, mime)
+				log.DebugF("%v theme served: %v (%v)", name, path, mime)
 				return
 			}
 		}
@@ -132,7 +132,7 @@ func (e *Enjin) redirectionMiddleware(next http.Handler) http.Handler {
 			langMode := e.SiteLanguageMode()
 			reqLang := lang.GetTag(r)
 			dst := langMode.ToUrl(e.SiteDefaultLanguage(), reqLang, rp.Url)
-			log.DebugF("redirecting from %v to %v", path, dst)
+			// log.DebugF("redirecting from %v to %v", path, dst)
 			e.ServeRedirect(dst, w, r)
 			return
 		}
@@ -152,7 +152,7 @@ func (e *Enjin) langMiddleware(next http.Handler) http.Handler {
 		if lang.NonPageRequested(r) {
 			requested = defaultTag
 			reqPath = forms.SanitizeRequestPath(r.URL.Path)
-			log.DebugF("non page requested: %v", reqPath)
+			// log.DebugF("non page requested: %v", reqPath)
 		} else {
 			var reqOk bool
 			if requested, reqPath, reqOk = langMode.FromRequest(defaultTag, r); !reqOk {
@@ -160,7 +160,7 @@ func (e *Enjin) langMiddleware(next http.Handler) http.Handler {
 				e.Serve404(w, r) // specifically not ServeNotFound()
 				return
 			}
-			log.DebugF("page requested: %v", reqPath)
+			// log.DebugF("page requested: %v", reqPath)
 		}
 
 		// TODO: determine what to do with Accept-Language request headers
