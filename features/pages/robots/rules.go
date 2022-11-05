@@ -72,7 +72,7 @@ func (r *cRuleGroup) AddDisallowed(disallow string) MakeRuleGroup {
 }
 
 func (r *cRuleGroup) Make() RuleGroup {
-	if len(r.userAgents) > 0 {
+	if len(r.userAgents) == 0 {
 		log.FatalDF(1, "at least one user-agent is required per robots.txt rule group")
 	}
 	if len(r.allowed) == 0 && len(r.disallowed) == 0 {

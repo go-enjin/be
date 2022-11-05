@@ -123,7 +123,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 // }
 
 func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
-	log.DebugF("including page search middleware")
+	log.DebugF("including page robots middleware")
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
