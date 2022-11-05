@@ -15,19 +15,24 @@
 package md
 
 import (
+	"bytes"
+	"fmt"
 	"html/template"
 	"strings"
+	textTemplate "text/template"
 
 	"github.com/blevesearch/bleve/v2/mapping"
 	"golang.org/x/net/html"
+
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/search"
 	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/types/theme-types"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 var (
@@ -99,7 +104,24 @@ func (f *CFeature) AddSearchDocumentMapping(tag language.Tag, indexMapping *mapp
 func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error) {
 	pg, _ := p.(*page.Page)
 
-	rendered := RenderMarkdown(pg.Content)
+	var rendered string
+
+	if strings.HasSuffix(pg.Format, ".tmpl") {
+		var buf bytes.Buffer
+		if tt, e := textTemplate.New("content.md.text").Funcs(theme.DefaultFuncMap()).Parse(pg.Content); e != nil {
+			err = fmt.Errorf("error parsing template: %v", e)
+			return
+		} else if e = tt.Execute(&buf, pg.Context); e != nil {
+			err = fmt.Errorf("error executing template: %v", e)
+			return
+		} else {
+			rendered = buf.String()
+		}
+	} else {
+		rendered = pg.Content
+	}
+
+	rendered = RenderMarkdown(rendered)
 
 	d := NewMarkdownDocument(pg.Language, pg.Url, pg.Title)
 	var parsed *html.Node

@@ -19,8 +19,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"strings"
+	textTemplate "text/template"
 
 	"github.com/blevesearch/bleve/v2/mapping"
+
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/card"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/carousel"
@@ -62,7 +66,6 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/types/theme-types"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 var (
@@ -342,25 +345,27 @@ func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error)
 	pg, _ := p.(*page.Page)
 
 	d := NewEnjinDocument(pg.Language, pg.Url, pg.Title)
-	// d.AddContent(content)
 
 	var data []interface{}
-	// cleaned := beStrings.StripTmplTags(pg.Content)
-	var buf bytes.Buffer
-	var cleaned string
-	if tt, e := template.New("content").Funcs(theme.DefaultFuncMap()).Parse(pg.Content); e != nil {
-		err = fmt.Errorf("error parsing template: %v", e)
-		return
-	} else if e = tt.Execute(&buf, pg.Context); e != nil {
-		err = fmt.Errorf("error executing template: %v", e)
-		return
+	var rendered string
+	if strings.HasSuffix(pg.Format, ".tmpl") {
+		var buf bytes.Buffer
+		if tt, e := textTemplate.New("content.njn.text").Funcs(theme.DefaultFuncMap()).Parse(pg.Content); e != nil {
+			err = fmt.Errorf("error parsing template: %v", e)
+			return
+		} else if e = tt.Execute(&buf, pg.Context); e != nil {
+			err = fmt.Errorf("error executing template: %v", e)
+			return
+		} else {
+			rendered = buf.String()
+		}
 	} else {
-		cleaned = buf.String()
+		rendered = pg.Content
 	}
 
-	if err = json.Unmarshal([]byte(cleaned), &data); err != nil {
+	if err = json.Unmarshal([]byte(rendered), &data); err != nil {
 		err = fmt.Errorf("error parsing content: %v", err)
-		log.ErrorF("error parsing content (data):\n%v", cleaned)
+		log.ErrorF("error parsing content (data):\n%v", rendered)
 		return
 	}
 
