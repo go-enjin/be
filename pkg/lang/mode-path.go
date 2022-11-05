@@ -22,15 +22,19 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/forms"
+	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
 var _ Mode = (*PathMode)(nil)
 
 type PathMode struct {
+	domain string
 }
 
 type PathModeBuilder interface {
+	SetDomain(domain string) PathModeBuilder
+
 	Make() Mode
 }
 
@@ -39,7 +43,15 @@ func NewPathMode() (p PathModeBuilder) {
 	return
 }
 
+func (p *PathMode) SetDomain(domain string) PathModeBuilder {
+	p.domain = domain
+	return p
+}
+
 func (p *PathMode) Make() Mode {
+	if p.domain != "" && !strings.HasPrefix(p.domain, "http://") && !strings.HasPrefix(p.domain, "https://") {
+		log.FatalDF(1, "http:// or https:// required for language path mode domain setting")
+	}
 	return p
 }
 
@@ -70,6 +82,9 @@ func (p *PathMode) ToUrl(defaultTag, tag language.Tag, path string) (translated 
 			path = path[1:]
 		}
 		translated = fmt.Sprintf("/%v/%v", tag.String(), path)
+	}
+	if p.domain != "" {
+		translated = p.domain + translated
 	}
 	return
 }

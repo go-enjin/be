@@ -27,10 +27,12 @@ import (
 var _ Mode = (*QueryMode)(nil)
 
 type QueryMode struct {
-	name string
+	name   string
+	domain string
 }
 
 type QueryModeBuilder interface {
+	SetDomain(domain string) QueryModeBuilder
 	SetQueryParameter(name string) QueryModeBuilder
 
 	Make() Mode
@@ -41,6 +43,11 @@ func NewQueryMode() (q QueryModeBuilder) {
 		name: "lang",
 	}
 	return
+}
+
+func (q *QueryMode) SetDomain(domain string) QueryModeBuilder {
+	q.domain = domain
+	return q
 }
 
 func (q *QueryMode) SetQueryParameter(name string) QueryModeBuilder {
@@ -56,6 +63,9 @@ func (q *QueryMode) ToUrl(defaultTag, tag language.Tag, path string) (translated
 	translated = path
 	if !language.Compare(defaultTag, tag) {
 		translated += fmt.Sprintf("?%v=%v", q.name, tag.String())
+	}
+	if q.domain != "" {
+		translated = q.domain + translated
 	}
 	return
 }
