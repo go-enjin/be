@@ -162,7 +162,7 @@ func (p *Page) SetSlugUrl(path string) {
 
 	var slug, urlPath string
 	if f, e := MatchFormatExtension(trimmedPath); f != nil {
-		p.Format = f.Name()
+		p.Format = e
 		urlPath = strings.TrimSuffix(trimmedPath, "."+e)
 		slug = filepath.Base(urlPath)
 	} else {
