@@ -119,7 +119,7 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	b.AddFlags(
 		&cli.StringFlag{
 			Name:    "meta-robots",
-			Usage:   "set a site-wide <meta name=\"robots\"> head tag",
+			Usage:   "set a site-wide <meta name=\"robots\"/> head tag",
 			EnvVars: b.MakeEnvKeys("META_ROBOTS"),
 		},
 		&cli.StringFlag{
@@ -145,17 +145,38 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
+func pruneRobotsFromHtmlHeadTags(existing []template.HTML) (found []template.HTML) {
+	for _, mt := range existing {
+		if !strings.Contains(string(mt), `name="robots"`) {
+			found = append(found, mt)
+		}
+	}
+	return
+}
+
 func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.Request) (out context.Context) {
 	out = themeCtx
 	if mr := f.cliCtx.Value("meta-robots"); mr != nil {
 		if metaRobots, ok := mr.(string); ok && metaRobots != "" {
-			var v []template.HTML
-			v, _ = out.Get("HtmlHeadTags").([]template.HTML)
-			v = append(v, template.HTML(fmt.Sprintf(`<meta name="robots" content="%s"/>`, metaRobots)))
-			out.SetSpecific("HtmlHeadTags", v)
+			var found []template.HTML
+			if existing, ok := out.Get("HtmlHeadTags").([]template.HTML); ok {
+				found = pruneRobotsFromHtmlHeadTags(existing)
+			}
+			found = append(found, template.HTML(fmt.Sprintf(`<meta name="robots" content="%s"/>`, metaRobots)))
+			out.SetSpecific("HtmlHeadTags", found)
+			return
 		}
 	}
-	// out.SetSpecific("SiteSearchable", true)
+	if pr := out.Get("Robots"); pr != nil {
+		if pgRobots, ok := pr.(string); ok {
+			var found []template.HTML
+			if existing, ok := out.Get("HtmlHeadTags").([]template.HTML); ok {
+				found = pruneRobotsFromHtmlHeadTags(existing)
+			}
+			found = append(found, template.HTML(fmt.Sprintf(`<meta name="robots" content="%s"/>`, pgRobots)))
+			out.SetSpecific("HtmlHeadTags", found)
+		}
+	}
 	return
 }
 
