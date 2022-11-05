@@ -15,16 +15,97 @@
 package page
 
 import (
+	"bufio"
+	"encoding/json"
 	"strings"
 
+	"github.com/BurntSushi/toml"
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/gofrs/uuid"
+	"gopkg.in/yaml.v3"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
-	bePath "github.com/go-enjin/be/pkg/path"
+	"github.com/go-enjin/be/pkg/path"
 )
+
+type FrontMatterType string
+
+const (
+	TomlMatter FrontMatterType = "toml"
+	JsonMatter FrontMatterType = "json"
+	YamlMatter FrontMatterType = "yaml"
+	NoneMatter FrontMatterType = "none"
+)
+
+func ParseJson(content string) (m context.Context, err error) {
+	m = context.New()
+	err = json.Unmarshal([]byte(content), &m)
+	return
+}
+
+func ParseToml(content string) (m context.Context, err error) {
+	m = context.New()
+	_, err = toml.Decode(content, &m)
+	return
+}
+
+func ParseYaml(content string) (m context.Context, err error) {
+	m = context.New()
+	err = yaml.Unmarshal([]byte(content), m)
+	return
+}
+
+func ParseFrontMatterContent(raw string) (matter, content string, matterType FrontMatterType) {
+	scanner := bufio.NewScanner(strings.NewReader(raw))
+	scanner.Split(bufio.ScanLines)
+
+	slurpEOF := func() (lines string) {
+		for scanner.Scan() {
+			lines += scanner.Text() + "\n"
+		}
+		return
+	}
+
+	slurp := func(until string) (lines string) {
+		for scanner.Scan() {
+			line := scanner.Text()
+			if line == until {
+				break
+			}
+			lines += line + "\n"
+		}
+		return
+	}
+
+	if scanner.Scan() {
+		switch scanner.Text() {
+		case "+++": // toml
+			matter = slurp("+++")
+			content = slurpEOF()
+			matterType = TomlMatter
+			return
+		case "---": // yaml
+			matter = slurp("---")
+			content = slurpEOF()
+			matterType = YamlMatter
+			return
+		case "{{{": // json
+			matter = "{\n"
+			matter += slurp("}}}")
+			matter += "}"
+			content = slurpEOF()
+			matterType = JsonMatter
+			return
+		}
+	}
+
+	matter = ""
+	content = raw
+	matterType = NoneMatter
+	return
+}
 
 func (p *Page) parseContext(ctx context.Context) {
 	ctx.CamelizeKeys()
@@ -35,7 +116,7 @@ func (p *Page) parseContext(ctx context.Context) {
 	if p.Url == "" || p.Url[0] != '/' {
 		p.Url = "/" + p.Url
 	}
-	p.Path, p.Section, p.Slug = bePath.GetSectionSlug(p.Url)
+	p.Path, p.Section, p.Slug = path.GetSectionSlug(p.Url)
 	p.Archetype = p.Section
 	ctx.Set("Url", p.Url)
 	ctx.Set("Slug", p.Slug)

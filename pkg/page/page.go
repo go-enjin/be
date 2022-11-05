@@ -16,6 +16,7 @@ package page
 
 import (
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"strings"
 	"time"
@@ -84,20 +85,41 @@ func New(path, raw string, created, updated int64) (p *Page, err error) {
 	p.Initial.Set("Title", p.Title)
 
 	raw = lang.StripTranslatorComments(raw)
-	if !p.parseYaml(raw) {
-		if !p.parseToml(raw) {
-			if !p.parseJson(raw) {
-				p.Content = raw
-				p.parseContext(p.Initial)
-			}
+
+	frontMatter, content, frontMatterType := ParseFrontMatterContent(raw)
+	switch frontMatterType {
+	case TomlMatter:
+		if ctx, ee := ParseToml(frontMatter); ee != nil {
+			err = fmt.Errorf("error parsing page toml front matter: %v", ee)
+		} else {
+			p.Content = content
+			p.parseContext(ctx)
 		}
+	case YamlMatter:
+		if ctx, ee := ParseYaml(frontMatter); ee != nil {
+			err = fmt.Errorf("error parsing page yaml front matter: %v", ee)
+		} else {
+			p.Content = content
+			p.parseContext(ctx)
+		}
+	case JsonMatter:
+		if ctx, ee := ParseJson(frontMatter); ee != nil {
+			err = fmt.Errorf("error parsing page json front matter: %v", ee)
+		} else {
+			p.Content = content
+			p.parseContext(ctx)
+		}
+	default:
+		p.Content = raw
+		p.parseContext(p.Initial)
 	}
+
 	return
 }
 
 func (p *Page) String() string {
 	ctx, _ := json.MarshalIndent(p.Context, "", "    ")
-	return string(ctx) + "\n" + p.Content
+	return "{{" + string(ctx) + "}}" + "\n" + p.Content
 }
 
 func (p *Page) Copy() (copy *Page) {

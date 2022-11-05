@@ -64,23 +64,45 @@ func (t *Table) Get(path string) (p *Page, err error) {
 	if err = t.Tx().Raw(sql, cleaned).First(&p).Error; err != nil {
 		return
 	}
+
+	p.Initial = context.New()
+	p.Initial.Set("Url", p.Url)
+	p.Initial.Set("Slug", p.Slug)
+	p.Initial.Set("Title", p.Title)
+	p.Initial.Set("Format", p.Format)
+	p.Initial.Set("Summary", p.Summary)
+	p.Initial.Set("Description", p.Description)
+	p.Initial.Set("Archetype", p.Archetype)
+	p.Initial.Set("Section", p.Section)
+	p.Initial.Set("Content", p.Content)
+	p.Initial.Set("Language", p.Language)
+
 	p.Context = context.New()
-	if !p.parseToml(p.FrontMatter) {
-		if !p.parseYaml(p.FrontMatter) {
-			if !p.parseJson(p.FrontMatter) {
-				p.Context.Set("Url", p.Url)
-				p.Context.Set("Slug", p.Slug)
-				p.Context.Set("Title", p.Title)
-				p.Context.Set("Format", p.Format)
-				p.Context.Set("Summary", p.Summary)
-				p.Context.Set("Description", p.Description)
-				p.Context.Set("Archetype", p.Archetype)
-				p.Context.Set("Section", p.Section)
-				p.Context.Set("Content", p.Content)
-				p.Context.Set("Language", p.Language)
-			}
+
+	frontMatter, _, frontMatterType := ParseFrontMatterContent(p.FrontMatter)
+	switch frontMatterType {
+	case TomlMatter:
+		if ctx, ee := ParseToml(frontMatter); ee != nil {
+			err = fmt.Errorf("error parsing page toml front matter: %v", ee)
+		} else {
+			p.parseContext(ctx)
 		}
+	case YamlMatter:
+		if ctx, ee := ParseYaml(frontMatter); ee != nil {
+			err = fmt.Errorf("error parsing page yaml front matter: %v", ee)
+		} else {
+			p.parseContext(ctx)
+		}
+	case JsonMatter:
+		if ctx, ee := ParseJson(frontMatter); ee != nil {
+			err = fmt.Errorf("error parsing page json front matter: %v", ee)
+		} else {
+			p.parseContext(ctx)
+		}
+	default:
+		p.parseContext(p.Initial)
 	}
+
 	// log.DebugF("%v page.Table got: %v", t.Name, p)
 	return
 }
