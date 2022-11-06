@@ -62,15 +62,15 @@ func CheckRequestDenied(req *http.Request) (address string, denied bool) {
 
 func Serve403(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.WriteHeader(http.StatusForbidden)
-	_, _ = w.Write([]byte("403 - Forbidden"))
+	w.WriteHeader(http.StatusNotFound)
+	_, _ = w.Write([]byte("404 - Not Found"))
 }
 
 func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if address, denied := CheckRequestDenied(r); denied {
 			Serve403(w, r)
-			log.WarnF(`denied request for: "%v", from: "%v"`, r.URL.Path, address)
+			log.DebugF(`denied: "%v" (%v)`, r.URL.Path, address)
 			return
 		}
 		next.ServeHTTP(w, r)
