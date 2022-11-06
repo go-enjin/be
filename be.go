@@ -95,14 +95,14 @@ func newEnjin(eb *EnjinBuilder) *Enjin {
 }
 
 func (e *Enjin) setupFeatures() {
-	for _, f := range e.eb.features {
+	for _, f := range e.Features() {
 		f.Setup(e)
 	}
 	return
 }
 
 func (e *Enjin) startupFeatures(ctx *cli.Context) (err error) {
-	for _, f := range e.eb.features {
+	for _, f := range e.Features() {
 		if err = f.Startup(ctx); err != nil {
 			return
 		}
@@ -267,7 +267,7 @@ func (e *Enjin) startupWebServices() (err error) {
 
 	e.router.Use(e.redirectionMiddleware)
 
-	for _, f := range e.eb.features {
+	for _, f := range e.Features() {
 		if rm, ok := f.(feature.RequestModifier); ok {
 			log.DebugF("including %v request modifier middleware", f.Tag())
 			e.router.Use(func(next http.Handler) http.Handler {
@@ -292,7 +292,7 @@ func (e *Enjin) startupWebServices() (err error) {
 	// theme static files
 	e.router.Use(e.themeMiddleware)
 
-	for _, f := range e.eb.features {
+	for _, f := range e.Features() {
 		if mf, ok := f.(feature.Middleware); ok {
 			if mw := mf.Use(e); mw != nil {
 				// log.DebugF("including %v feature middleware", f.Tag())
@@ -301,14 +301,14 @@ func (e *Enjin) startupWebServices() (err error) {
 		}
 	}
 
-	for _, f := range e.eb.features {
+	for _, f := range e.Features() {
 		if hm, ok := f.(feature.HeadersModifier); ok {
 			log.DebugF("including %v use-after modify headers middleware", f.Tag())
 			e.router.Use(headers.ModifyAfterUseMiddleware(hm.ModifyHeaders))
 		}
 	}
 
-	for _, f := range e.eb.features {
+	for _, f := range e.Features() {
 		if proc, ok := f.(feature.Processor); ok {
 			log.DebugF("including %v processor middleware", f.Tag())
 			e.router.Use(func(next http.Handler) http.Handler {
@@ -335,7 +335,7 @@ func (e *Enjin) startupWebServices() (err error) {
 
 	e.router.Use(e.pagesMiddleware)
 
-	for _, f := range e.eb.features {
+	for _, f := range e.Features() {
 		if mf, ok := f.(feature.Middleware); ok {
 			if err = mf.Apply(e); err != nil {
 				return
@@ -364,7 +364,7 @@ func (e *Enjin) startupWebServices() (err error) {
 }
 
 func (e *Enjin) Shutdown() {
-	for _, f := range e.eb.features {
+	for _, f := range e.Features() {
 		f.Shutdown()
 	}
 	e.Notify("web process shutdown")

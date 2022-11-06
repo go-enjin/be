@@ -8,7 +8,9 @@ import (
 )
 
 func (e *Enjin) Features() (features []feature.Feature) {
-	features = e.eb.features
+	for _, feat := range e.eb.features {
+		features = append(features, feat)
+	}
 	return
 }
 
