@@ -29,7 +29,7 @@ var (
 
 func CleanWithSlash(path string) (clean string) {
 	clean = "/" + strings.Trim(path, "/\t ")
-	clean = RxDupeSlashes.ReplaceAllString(clean, "/")
+	clean = filepath.Clean(clean)
 	return
 }
 
