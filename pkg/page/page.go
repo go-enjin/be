@@ -62,6 +62,27 @@ type Page struct {
 	PermalinkSha string    `json:"-"`
 }
 
+func NewFromFile(path, file string) (p *Page, err error) {
+	if !bePath.IsFile(file) {
+		err = fmt.Errorf("not a file: %v", file)
+		return
+	}
+	path = bePath.CleanWithSlash(forms.TrimQueryParams(path))
+	var contents []byte
+	if contents, err = bePath.ReadFile(path); err != nil {
+		return
+	}
+	var created, updated int64
+	if spec, e := bePath.Stat(file); e == nil {
+		if spec.HasBirthTime() {
+			created = spec.BirthTime().Unix()
+		}
+		updated = spec.ModTime().Unix()
+	}
+	p, err = New(path, string(contents), created, updated)
+	return
+}
+
 func New(path, raw string, created, updated int64) (p *Page, err error) {
 	p = new(Page)
 	p.Initial = context.New()
