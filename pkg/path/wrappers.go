@@ -18,6 +18,8 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+
+	times "github.com/go-enjin/github-com-djherbis-times"
 )
 
 // Abs is a convenience wrapper around filepath.Abs
@@ -47,5 +49,11 @@ func ReadDir(path string) (paths []fs.DirEntry, err error) {
 // ReadFile is a convenience wrapper around os.ReadFile
 func ReadFile(path string) (content []byte, err error) {
 	content, err = os.ReadFile(path)
+	return
+}
+
+// Stat is a convenience wrapper around github-com-djherbis-times.Stat
+func Stat(path string) (spec times.Timespec, err error) {
+	spec, err = times.Stat(path)
 	return
 }
