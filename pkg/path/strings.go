@@ -166,3 +166,12 @@ func GetSectionSlug(url string) (path, section, slug string) {
 	slug = filepath.Clean(slug)
 	return
 }
+
+func TrimTrailingSlash(path string) (out string) {
+	if out = path; out != "" {
+		if last := len(out) - 1; out[last] == '/' {
+			out = out[:last]
+		}
+	}
+	return
+}
