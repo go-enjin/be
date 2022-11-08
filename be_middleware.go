@@ -17,7 +17,6 @@ package be
 import (
 	"context"
 	"fmt"
-	"net"
 	"net/http"
 	"runtime"
 
@@ -54,14 +53,9 @@ func (e *Enjin) requestFiltersMiddleware(next http.Handler) http.Handler {
 func (e *Enjin) domainsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if len(e.eb.domains) > 0 {
-			var err error
-			var host string
-			if host, _, err = net.SplitHostPort(r.Host); err != nil {
-				host = r.Host
-			}
-			if !beStrings.StringInStrings(host, e.eb.domains...) {
-				e.Serve404(w, r)
-				log.WarnF("ignoring request for unsupported domain: %v", host)
+			if !beStrings.StringInStrings(r.Host, e.eb.domains...) {
+				log.WarnF("rejecting unsupported domain: %v", r.Host)
+				e.ServeNotFound(w, r)
 				return
 			}
 		}
