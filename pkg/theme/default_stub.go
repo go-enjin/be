@@ -19,6 +19,6 @@ package theme
 import "github.com/go-enjin/be/pkg/log"
 
 func DefaultTheme() *Theme {
-	log.FatalF("default theme requires go build without the \"excludeDefaultTheme\" and \"semanticTheme\" tags")
+	log.FatalF("default theme requires go build without the \"excludeDefaultTheme\" tag")
 	return nil
 }
