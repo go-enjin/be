@@ -25,19 +25,26 @@ func (e *Enjin) String() string {
 }
 
 func (e *Enjin) ListenerString() string {
+	var domains []string
+	domains = append(domains, e.eb.domains...)
+	for _, enjin := range e.eb.enjins {
+		domains = append(domains, enjin.domains...)
+	}
 	return fmt.Sprintf(
 		`{
 	listen: "%v",
 	port: %v,
 	debug: %v,
 	prefix: "%v",
-	themes: %v
+	themes: %v,
+	domains: %v
 }`,
 		e.listen,
 		e.port,
 		e.debug,
 		e.prefix,
 		e.ThemeNames(),
+		domains,
 	)
 }
 
