@@ -15,8 +15,6 @@
 package theme
 
 import (
-	"fmt"
-
 	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
@@ -24,12 +22,18 @@ var (
 	knownThemes = map[string]*Theme{}
 )
 
-func addThemeInstance(t *Theme) (err error) {
-	var ok bool
-	if _, ok = knownThemes[t.Name]; ok {
-		err = fmt.Errorf(`duplicate theme instance: "%v"`, t.Name)
-	} else {
-		knownThemes[t.Name] = t
+func addThemeInstance(t *Theme) (added bool) {
+	if _, ok := knownThemes[t.Name]; ok {
+		return
+	}
+	knownThemes[t.Name] = t
+	added = true
+	return
+}
+
+func getThemeInstance(name string) (t *Theme) {
+	if v, ok := knownThemes[name]; ok {
+		t = v
 	}
 	return
 }
