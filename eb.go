@@ -110,18 +110,19 @@ func (eb *EnjinBuilder) IgnoreSlugsums() *EnjinBuilder {
 	return eb
 }
 
-func (eb *EnjinBuilder) Build() feature.Runner {
-	if err := eb.resolveFeatureDeps(); err != nil {
-		log.FatalF("error resolving feature dependencies: %v", err)
-		return nil
+func (eb *EnjinBuilder) prepareBuild() {
+	var err error
+
+	if err = eb.resolveFeatureDeps(); err != nil {
+		log.FatalDF(2, "error resolving feature dependencies: %v", err)
 	}
 
 	if eb.tag == "" {
-		log.FatalDF(1, "missing .SiteTag")
+		log.FatalDF(2, "missing .SiteTag")
 	}
 	eb.Set("SiteTag", eb.tag)
 	if eb.name == "" {
-		log.FatalDF(1, "missing .SiteName")
+		log.FatalDF(2, "missing .SiteName")
 	}
 	eb.Set("SiteName", eb.name)
 	if eb.copyrightName != "" {
@@ -143,7 +144,7 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 
 	if eb.theme != "" {
 		if _, ok := eb.theming[eb.theme]; !ok {
-			log.FatalF("theme not found: %v", eb.theme)
+			log.FatalDF(2, "theme not found: %v", eb.theme)
 		}
 	}
 
@@ -155,16 +156,16 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 	}
 
 	for _, f := range eb.features {
-		if err := f.Self().Build(eb); err != nil {
-			log.FatalF("feature [%v] - %v", f.Tag(), err)
-			return nil
+		if err = f.Self().Build(eb); err != nil {
+			log.FatalDF(2, "feature [%v] - %v", f.Tag(), err)
+			return
 		}
 	}
 
 	for tag, console := range eb.consoles {
-		if err := console.Build(eb); err != nil {
-			log.FatalF("console [%v] - %v", tag, err)
-			return nil
+		if err = console.Build(eb); err != nil {
+			log.FatalDF(2, "console [%v] - %v", tag, err)
+			return
 		}
 	}
 
@@ -191,6 +192,10 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 		}
 		eb.Set("HtmlHeadTags", tags)
 	}
+}
+
+func (eb *EnjinBuilder) Build() feature.Runner {
+	eb.prepareBuild()
 
 	eb.flags = append(
 		eb.flags,
