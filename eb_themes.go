@@ -28,7 +28,7 @@ func (eb *EnjinBuilder) SetTheme(name string) feature.Builder {
 	if _, ok := eb.theming[name]; ok {
 		eb.theme = name
 	} else {
-		log.FatalF(`theme not found: "%v"`, name)
+		log.FatalDF(1, `theme not found: "%v"`, name)
 	}
 	return eb
 }
