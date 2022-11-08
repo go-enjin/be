@@ -19,6 +19,7 @@ import (
 
 	beFs "github.com/go-enjin/be/pkg/fs"
 	beFsEmbed "github.com/go-enjin/be/pkg/fs/embed"
+	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -36,6 +37,14 @@ func NewEmbed(path string, efs embed.FS) (t *Theme, err error) {
 	} else {
 		t.StaticFS = nil
 	}
+
+	t.Name = bePath.Base(path)
+	if found := getThemeInstance(t.Name); found != nil {
+		t = found
+		log.DebugF("found existing theme: %v", t.Name)
+		return
+	}
+
 	err = t.init()
 	return
 }

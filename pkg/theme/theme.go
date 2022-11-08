@@ -73,12 +73,19 @@ func New(path string, fs fs.FileSystem) (t *Theme, err error) {
 	t = new(Theme)
 	t.Path = path
 	t.FileSystem = fs
+
+	t.Name = bePath.Base(path)
+	if found := getThemeInstance(t.Name); found != nil {
+		t = found
+		log.DebugF("found existing instance: %v", t.Name)
+		return
+	}
+
 	err = t.init()
 	return
 }
 
 func (t *Theme) init() (err error) {
-	t.Name = bePath.Base(t.Path)
 	t.Layouts = nil
 	t.Archetypes = make(map[string]*Archetype)
 	if t.FileSystem == nil {
@@ -107,7 +114,7 @@ func (t *Theme) init() (err error) {
 		}
 	}
 
-	err = addThemeInstance(t)
+	addThemeInstance(t)
 	return
 }
 
