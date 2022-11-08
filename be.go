@@ -30,6 +30,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/hostrouter"
+	"github.com/iancoleman/strcase"
 	"github.com/nanmu42/gzip"
 	"github.com/urfave/cli/v2"
 
@@ -145,6 +146,18 @@ func (e *Enjin) setupRootEnjin(ctx *cli.Context) (err error) {
 		for _, domain := range domains {
 			if domain != "" && !beStrings.StringInStrings(domain, e.eb.domains...) {
 				e.eb.domains = append(e.eb.domains, domains...)
+			}
+		}
+	}
+
+	for _, enjin := range e.eb.enjins {
+		tag := strcase.ToKebab(enjin.tag)
+		if domains := ctx.StringSlice(tag + "-domain"); len(domains) > 0 {
+			for _, domain := range domains {
+				if !beStrings.StringInSlices(domain, enjin.domains) {
+					log.DebugF("adding domain to %v enjin: %v", tag, domain)
+					enjin.domains = append(enjin.domains, domain)
+				}
 			}
 		}
 	}
