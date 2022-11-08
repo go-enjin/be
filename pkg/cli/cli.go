@@ -28,3 +28,12 @@ func FlagInFlags(name string, flags []cli.Flag) (ok bool) {
 	}
 	return
 }
+
+func CommandInCommands(name string, commands cli.Commands) (ok bool) {
+	for _, c := range commands {
+		if ok = beStrings.StringInSlices(name, c.Names()); ok {
+			return
+		}
+	}
+	return
+}
