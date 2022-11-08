@@ -10,10 +10,12 @@ require (
 	github.com/fvbommel/sortorder v1.0.2
 	github.com/gabriel-vasile/mimetype v1.4.1
 	github.com/go-chi/chi/v5 v5.0.7
+	github.com/go-chi/hostrouter v0.2.0
 	github.com/go-curses/cdk v0.5.12
 	github.com/go-enjin/github-com-djherbis-times v0.0.0-20221101184323-aeef8854ee8a
 	github.com/go-enjin/golang-org-x-text v0.0.0-20221026190533-d0e9c4fd3b27
 	github.com/goccy/go-json v0.9.11
+	github.com/gofrs/uuid v4.3.0+incompatible
 	github.com/gomarkdown/markdown v0.0.0-20220905174103-7b278df48cfb
 	github.com/iancoleman/strcase v0.2.0
 	github.com/leekchan/gtf v0.0.0-20190214083521-5fba33c5b00b
@@ -68,7 +70,6 @@ require (
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
-	github.com/gofrs/uuid v4.3.0+incompatible // indirect
 	github.com/golang/geo v0.0.0-20210211234256-740aa86cb551 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
