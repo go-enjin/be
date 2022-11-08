@@ -25,6 +25,7 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	beCli "github.com/go-enjin/be/pkg/cli"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
@@ -75,6 +76,8 @@ type EnjinBuilder struct {
 	localeFiles []fs.FileSystem
 	localeNames map[language.Tag]string
 	defaultLang language.Tag
+
+	enjins []*EnjinBuilder
 }
 
 func New() (be *EnjinBuilder) {
@@ -98,6 +101,20 @@ func New() (be *EnjinBuilder) {
 	be.langMode = lang.NewQueryMode().Make()
 	be.defaultLang = language.Und
 	return be
+}
+
+func (eb *EnjinBuilder) IncludeEnjin(enjins ...*EnjinBuilder) feature.Builder {
+	var checked []*EnjinBuilder
+	for _, enjin := range enjins {
+		for _, check := range checked {
+			if check.tag == enjin.tag {
+				log.FatalDF(1, "enjin tags must be unique")
+			}
+		}
+		checked = append(checked, enjin)
+	}
+	eb.enjins = append(eb.enjins, checked...)
+	return eb
 }
 
 func (eb *EnjinBuilder) HotReload(enabled bool) feature.Builder {
@@ -259,6 +276,15 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 			EnvVars: eb.MakeEnvKeys("SUMS_INTEGRITY_" + strings.ToUpper(globals.BinHash)),
 		},
 	)
+
+	for _, enjin := range eb.enjins {
+		for _, f := range enjin.flags {
+			names := f.Names()
+			if !beCli.FlagInFlags(names[0], eb.flags) {
+				eb.flags = append(eb.flags, f)
+			}
+		}
+	}
 
 	return newEnjin(eb)
 }
