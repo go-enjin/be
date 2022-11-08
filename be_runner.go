@@ -16,9 +16,15 @@ package be
 
 import (
 	"fmt"
+
+	"github.com/iancoleman/strcase"
 )
 
 func (e *Enjin) String() string {
+	return strcase.ToKebab(e.eb.tag)
+}
+
+func (e *Enjin) ListenerString() string {
 	return fmt.Sprintf(
 		`{
 	listen: "%v",
