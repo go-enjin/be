@@ -20,6 +20,7 @@ func GoEnjinPackageList() (list []string) {
 	list = append(list,
 		"github.com/go-enjin/be",
 		"github.com/go-enjin/be/pkg/autocert",
+		"github.com/go-enjin/be/pkg/cli",
 		"github.com/go-enjin/be/pkg/cli/env",
 		"github.com/go-enjin/be/pkg/cli/git",
 		"github.com/go-enjin/be/pkg/cli/run",
