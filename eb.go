@@ -21,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/golang-org-x-text/language"
@@ -276,6 +277,16 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 			EnvVars: eb.MakeEnvKeys("SUMS_INTEGRITY_" + strings.ToUpper(globals.BinHash)),
 		},
 	)
+
+	for _, enjin := range eb.enjins {
+		tag := strcase.ToKebab(enjin.tag)
+		key := strcase.ToScreamingSnake(tag)
+		eb.flags = append(eb.flags, &cli.StringSliceFlag{
+			Name:    tag + "-domain",
+			Usage:   "specify one or more domains for the " + tag + " enjin",
+			EnvVars: eb.MakeEnvKeys(key + "_DOMAIN"),
+		})
+	}
 
 	for _, enjin := range eb.enjins {
 		for _, f := range enjin.flags {
