@@ -284,6 +284,11 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 				eb.flags = append(eb.flags, f)
 			}
 		}
+		for _, c := range enjin.commands {
+			if !beCli.CommandInCommands(c.Name, eb.commands) {
+				eb.commands = append(eb.commands, c)
+			}
+		}
 	}
 
 	return newEnjin(eb)
