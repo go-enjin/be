@@ -5,6 +5,7 @@
 package handlers
 
 import (
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -173,7 +174,13 @@ func buildCommonLogLine(req *http.Request, url url.URL, ts time.Time, status int
 	buf = append(buf, " ["...)
 	buf = append(buf, ts.Format("02/Jan/2006:15:04:05 -0700")...)
 	buf = append(buf, `] `...)
+	buf = append(buf, `- `...)
 	buf = append(buf, req.Host...)
+	if v, ok := req.Context().Value("enjin-id").(string); ok {
+		buf = append(buf, fmt.Sprintf(" [%v]", v)...)
+	} else {
+		buf = append(buf, ` [nil]`...)
+	}
 	buf = append(buf, ` "`...)
 	buf = append(buf, req.Method...)
 	buf = append(buf, " "...)
