@@ -36,8 +36,6 @@ import (
 	"github.com/go-enjin/be/pkg/page"
 )
 
-var _localContent *Feature
-
 var (
 	_ feature.Feature      = (*Feature)(nil)
 	_ feature.Middleware   = (*Feature)(nil)
@@ -62,11 +60,9 @@ type MakeFeature interface {
 }
 
 func New() MakeFeature {
-	if _localContent == nil {
-		_localContent = new(Feature)
-		_localContent.Init(_localContent)
-	}
-	return _localContent
+	f := new(Feature)
+	f.Init(f)
+	return f
 }
 
 func (f *Feature) MountPath(mount, path string) MakeFeature {

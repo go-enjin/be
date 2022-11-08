@@ -24,8 +24,6 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 )
 
-var _embedLocales *Feature
-
 var _ feature.Feature = (*Feature)(nil)
 
 const Tag feature.Tag = "EmbedLocales"
@@ -43,11 +41,9 @@ type MakeFeature interface {
 }
 
 func New() MakeFeature {
-	if _embedLocales == nil {
-		_embedLocales = new(Feature)
-		_embedLocales.Init(_embedLocales)
-	}
-	return _embedLocales
+	f := new(Feature)
+	f.Init(f)
+	return f
 }
 
 func (f *Feature) Include(path string, efs embed.FS) MakeFeature {

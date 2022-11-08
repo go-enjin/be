@@ -38,8 +38,6 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
-var _auth *Feature
-
 var (
 	_ feature.Feature                = (*Feature)(nil)
 	_ feature.PageRestrictionHandler = (*Feature)(nil)
@@ -107,11 +105,9 @@ type MakeFeature interface {
 }
 
 func New() MakeFeature {
-	if _auth == nil {
-		_auth = new(Feature)
-		_auth.Init(_auth)
-	}
-	return _auth
+	f := new(Feature)
+	f.Init(f)
+	return f
 }
 
 func (f *Feature) Realm(name string) MakeFeature {

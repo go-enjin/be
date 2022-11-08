@@ -30,8 +30,6 @@ import (
 	"github.com/go-enjin/be/pkg/page"
 )
 
-var _databaseContent *Feature
-
 var _ feature.Feature = (*Feature)(nil)
 
 var _ feature.Middleware = (*Feature)(nil)
@@ -52,11 +50,9 @@ type MakeFeature interface {
 }
 
 func New() MakeFeature {
-	if _databaseContent == nil {
-		_databaseContent = new(Feature)
-		_databaseContent.Init(_databaseContent)
-	}
-	return _databaseContent
+	f := new(Feature)
+	f.Init(f)
+	return f
 }
 
 func (f *Feature) MountTable(mount, name string) MakeFeature {

@@ -33,8 +33,6 @@ import (
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
-var _embedPublic *Feature
-
 var _ feature.Feature = (*Feature)(nil)
 
 var _ feature.Middleware = (*Feature)(nil)
@@ -56,11 +54,9 @@ type MakeFeature interface {
 }
 
 func New() MakeFeature {
-	if _embedPublic == nil {
-		_embedPublic = new(Feature)
-		_embedPublic.Init(_embedPublic)
-	}
-	return _embedPublic
+	f := new(Feature)
+	f.Init(f)
+	return f
 }
 
 func (f *Feature) MountPathFs(mount, path string, efs embed.FS) MakeFeature {

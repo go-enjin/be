@@ -30,8 +30,6 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
-var _minify *Feature
-
 var _minifyInstance = beMinify.NewInstance()
 
 var _ MakeFeature = (*Feature)(nil)
@@ -59,11 +57,9 @@ type MakeFeature interface {
 }
 
 func New() MakeFeature {
-	if _minify == nil {
-		_minify = new(Feature)
-		_minify.Init(_minify)
-	}
-	return _minify
+	f := new(Feature)
+	f.Init(f)
+	return f
 }
 
 func (f *Feature) AddMimeType(mime string) MakeFeature {

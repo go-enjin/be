@@ -24,8 +24,6 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 )
 
-var _papertrail *Feature
-
 var _ feature.Feature = (*Feature)(nil)
 
 const Tag feature.Tag = "Papertrail"
@@ -39,11 +37,9 @@ type MakeFeature interface {
 }
 
 func Make() feature.Feature {
-	if _papertrail == nil {
-		_papertrail = new(Feature)
-		_papertrail.Init(_papertrail)
-	}
-	return _papertrail
+	f := new(Feature)
+	f.Init(f)
+	return f
 }
 
 func (f *Feature) Tag() (tag feature.Tag) {

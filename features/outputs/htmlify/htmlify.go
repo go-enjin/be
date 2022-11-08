@@ -31,8 +31,6 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
-var _htmlify *Feature
-
 var _ MakeFeature = (*Feature)(nil)
 
 var _ feature.Feature = (*Feature)(nil)
@@ -55,11 +53,9 @@ type MakeFeature interface {
 }
 
 func New() MakeFeature {
-	if _htmlify == nil {
-		_htmlify = new(Feature)
-		_htmlify.Init(_htmlify)
-	}
-	return _htmlify
+	f := new(Feature)
+	f.Init(f)
+	return f
 }
 
 func (f *Feature) Ignore(pathsOrPatterns ...string) MakeFeature {

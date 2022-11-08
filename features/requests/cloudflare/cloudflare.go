@@ -28,8 +28,6 @@ import (
 	"github.com/go-enjin/be/pkg/net/ip/ranges/cloudflare"
 )
 
-var _cloudflare *Feature
-
 var _ feature.Feature = (*Feature)(nil)
 
 var _ feature.RequestFilter = (*Feature)(nil)
@@ -50,11 +48,9 @@ type MakeFeature interface {
 }
 
 func New() MakeFeature {
-	if _cloudflare == nil {
-		_cloudflare = new(Feature)
-		_cloudflare.Init(_cloudflare)
-	}
-	return _cloudflare
+	f := new(Feature)
+	f.Init(f)
+	return f
 }
 
 func (f *Feature) AllowDirect() MakeFeature {

@@ -29,8 +29,6 @@ var (
 	DefaultDatabaseUri  = "db.sqlite"
 )
 
-var _database *Feature
-
 var _ feature.Feature = (*Feature)(nil)
 
 const Tag feature.Tag = "Database"
@@ -50,11 +48,9 @@ type MakeFeature interface {
 }
 
 func New() MakeFeature {
-	if _database == nil {
-		_database = new(Feature)
-		_database.Init(_database)
-	}
-	return _database
+	f := new(Feature)
+	f.Init(f)
+	return f
 }
 
 func (f *Feature) DatabaseType(dbType string) MakeFeature {

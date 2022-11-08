@@ -41,8 +41,6 @@ var (
 	_ types.Format = (*CFeature)(nil)
 )
 
-var _instance *CFeature
-
 type Feature interface {
 	feature.Feature
 	types.Format
@@ -66,11 +64,9 @@ type CFeature struct {
 }
 
 func New() MakeFeature {
-	if _instance == nil {
-		_instance = new(CFeature)
-		_instance.Init(_instance)
-	}
-	return _instance
+	f := new(CFeature)
+	f.Init(f)
+	return f
 }
 
 func (f *CFeature) Init(this interface{}) {

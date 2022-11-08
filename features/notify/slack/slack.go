@@ -25,8 +25,6 @@ import (
 	"github.com/go-enjin/be/pkg/strings"
 )
 
-var _notifySlack *Feature
-
 var _ feature.Feature = (*Feature)(nil)
 
 const Tag feature.Tag = "NotifySlack"
@@ -44,11 +42,9 @@ type MakeFeature interface {
 }
 
 func New() MakeFeature {
-	if _notifySlack == nil {
-		_notifySlack = new(Feature)
-		_notifySlack.Init(_notifySlack)
-	}
-	return _notifySlack
+	f := new(Feature)
+	f.Init(f)
+	return f
 }
 
 func (f *Feature) Add(channel string) MakeFeature {

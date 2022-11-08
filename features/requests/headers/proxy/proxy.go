@@ -26,8 +26,6 @@ import (
 	"github.com/go-enjin/be/pkg/net"
 )
 
-var _headerProxy *Feature
-
 var (
 	_ feature.Feature         = (*Feature)(nil)
 	_ feature.RequestModifier = (*Feature)(nil)
@@ -48,11 +46,9 @@ type MakeFeature interface {
 }
 
 func New() MakeFeature {
-	if _headerProxy == nil {
-		_headerProxy = new(Feature)
-		_headerProxy.Init(_headerProxy)
-	}
-	return _headerProxy
+	f := new(Feature)
+	f.Init(f)
+	return f
 }
 
 // Enable sets the default state to enabled, overridden by --header-proxy

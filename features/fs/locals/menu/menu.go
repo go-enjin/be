@@ -34,8 +34,6 @@ import (
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
-var _localMenu *Feature
-
 var _ feature.Feature = (*Feature)(nil)
 var _ feature.MenuProvider = (*Feature)(nil)
 
@@ -56,11 +54,9 @@ type MakeFeature interface {
 }
 
 func New() MakeFeature {
-	if _localMenu == nil {
-		_localMenu = new(Feature)
-		_localMenu.Init(_localMenu)
-	}
-	return _localMenu
+	f := new(Feature)
+	f.Init(f)
+	return f
 }
 
 func (f *Feature) MountPath(mount, path string) MakeFeature {

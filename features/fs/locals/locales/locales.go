@@ -23,8 +23,6 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
-var _localLocales *Feature
-
 var _ feature.Feature = (*Feature)(nil)
 
 const Tag feature.Tag = "LocalLocales"
@@ -42,11 +40,9 @@ type MakeFeature interface {
 }
 
 func New() MakeFeature {
-	if _localLocales == nil {
-		_localLocales = new(Feature)
-		_localLocales.Init(_localLocales)
-	}
-	return _localLocales
+	f := new(Feature)
+	f.Init(f)
+	return f
 }
 
 func (f *Feature) Include(path string) MakeFeature {
