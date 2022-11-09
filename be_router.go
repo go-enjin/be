@@ -16,12 +16,14 @@ package be
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/net/ip/deny"
@@ -31,6 +33,11 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	router.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			r = r.WithContext(context.WithValue(r.Context(), "enjin-id", e.String()))
+			if e.debug {
+				w.Header().Set("Server", fmt.Sprintf("%v/%v", globals.BinName, globals.BinHash))
+			} else {
+				w.Header().Set("Server", globals.BinName)
+			}
 			next.ServeHTTP(w, r)
 			return
 		})
@@ -42,6 +49,7 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	router.Use(e.panicMiddleware)
 	router.Use(e.langMiddleware)
 	router.Use(e.redirectionMiddleware)
+	router.Use(e.headersMiddleware)
 
 	for _, f := range e.Features() {
 		tag := f.Tag()
@@ -56,8 +64,6 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 			})
 		}
 	}
-
-	router.Use(e.headersMiddleware)
 
 	// operational security measures
 	router.Use(deny.Middleware)

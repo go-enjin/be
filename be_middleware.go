@@ -68,7 +68,6 @@ func (e *Enjin) headersMiddleware(next http.Handler) http.Handler {
 }
 
 func (e *Enjin) modifyHeadersFn(request *http.Request, headers map[string]string) map[string]string {
-	headers["Server"] = e.ServerName()
 	for _, fn := range e.eb.headers {
 		headers = fn(request, headers)
 	}
