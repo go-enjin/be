@@ -203,7 +203,6 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 			continue
 		}
 
-		eb.prepareBuild()
 		enjin := newEnjin(eb)
 		e.enjins = append(e.enjins, enjin)
 
