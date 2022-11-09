@@ -75,7 +75,6 @@ func (f *Feature) Startup(ctx *cli.Context) (err error) {
 	if ctx.IsSet("header-proxy") {
 		f.enabled = ctx.Bool("header-proxy")
 	}
-	log.InfoF("header-proxy enabled: %v", f.enabled)
 	return
 }
 
