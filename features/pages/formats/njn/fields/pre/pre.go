@@ -31,8 +31,6 @@ var (
 	_ MakeField = (*CField)(nil)
 )
 
-var _instance *CField
-
 type Field interface {
 	feature.EnjinField
 }
@@ -46,12 +44,9 @@ type CField struct {
 }
 
 func New() (field MakeField) {
-	if _instance == nil {
-		_instance = new(CField)
-		_instance.Init(_instance)
-	}
-	field = _instance
-	return
+	f := new(CField)
+	f.Init(f)
+	return f
 }
 
 func (f *CField) Tag() feature.Tag {

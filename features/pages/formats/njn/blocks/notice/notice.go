@@ -32,8 +32,6 @@ var (
 	_ MakeBlock = (*CBlock)(nil)
 )
 
-var _instance *CBlock
-
 type Block interface {
 	feature.EnjinBlock
 }
@@ -47,12 +45,9 @@ type CBlock struct {
 }
 
 func New() (field MakeBlock) {
-	if _instance == nil {
-		_instance = new(CBlock)
-		_instance.Init(_instance)
-	}
-	field = _instance
-	return
+	f := new(CBlock)
+	f.Init(f)
+	return f
 }
 
 func (f *CBlock) Tag() feature.Tag {
