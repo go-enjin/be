@@ -30,6 +30,7 @@ import (
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/theme"
+	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 func (e *Enjin) Router() (router *chi.Mux) {
@@ -154,9 +155,38 @@ func (e *Enjin) FindPage(tag language.Tag, url string) (p *page.Page) {
 func (e *Enjin) FindPages(prefix string) (pages []*page.Page) {
 	for _, f := range e.Features() {
 		if provider, ok := f.(feature.PageProvider); ok {
-			if pgs := provider.FindPages(prefix); pgs != nil {
-				pages = append(pages, pgs...)
+			pages = append(pages, provider.FindPages(prefix)...)
+		}
+	}
+	return
+}
+
+func (e *Enjin) GetFormat(name string) (format types.Format) {
+	for _, f := range e.Features() {
+		if p, ok := f.(types.FormatProvider); ok {
+			if format = p.GetFormat(name); format != nil {
+				return
 			}
+		}
+	}
+	return
+}
+
+func (e *Enjin) MatchFormat(filename string) (format types.Format, match string) {
+	for _, f := range e.Features() {
+		if p, ok := f.(types.FormatProvider); ok {
+			if format, match = p.MatchFormat(filename); format != nil {
+				return
+			}
+		}
+	}
+	return
+}
+
+func (e *Enjin) MatchQL(query string) (pages []*page.Page) {
+	for _, f := range e.Features() {
+		if provider, ok := f.(feature.PageProvider); ok {
+			pages = append(pages, provider.MatchQL(query)...)
 		}
 	}
 	return
