@@ -66,6 +66,8 @@ type Theme struct {
 
 	FileSystem fs.FileSystem
 	StaticFS   fs.FileSystem
+
+	FormatProviders []types.FormatProvider
 }
 
 func New(path string, fs fs.FileSystem) (t *Theme, err error) {
@@ -107,14 +109,31 @@ func (t *Theme) init() (err error) {
 	}
 	t.initArchetypes()
 
-	if parent := t.GetParent(); parent != nil {
-		if parent.StaticFS != nil {
-			fs.RegisterFileSystem("/", parent.StaticFS)
-			// log.DebugF("made new (parent) theme static: %v", parent.Path+"/static")
+	addThemeInstance(t)
+	return
+}
+
+func (t *Theme) AddFormatProvider(providers ...types.FormatProvider) {
+	for _, provider := range providers {
+		t.FormatProviders = append(t.FormatProviders, provider)
+	}
+}
+
+func (t *Theme) GetFormat(name string) (format types.Format) {
+	for _, provider := range t.FormatProviders {
+		if format = provider.GetFormat(name); format != nil {
+			return
 		}
 	}
+	return
+}
 
-	addThemeInstance(t)
+func (t *Theme) MatchFormat(filename string) (format types.Format, match string) {
+	for _, provider := range t.FormatProviders {
+		if format, match = provider.MatchFormat(filename); format != nil {
+			return
+		}
+	}
 	return
 }
 

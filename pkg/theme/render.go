@@ -251,7 +251,7 @@ func (t *Theme) RenderPage(ctx context.Context, p *page.Page) (data []byte, err 
 		output = p.Content
 	}
 
-	if format := page.GetFormat(p.Format); format != nil {
+	if format := t.GetFormat(p.Format); format != nil {
 		if html, ee := format.Process(ctx, t, output); ee != nil {
 			log.ErrorF("error processing %v page format: %v - %v", p.Format, ee.Title, ee.Summary)
 			ctx["Content"] = ee.Html()
