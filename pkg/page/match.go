@@ -19,6 +19,7 @@ import (
 	"sync"
 
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/pageql"
 )
 
 type MatcherFn func(path string, pg *Page) (found string, ok bool)
@@ -82,5 +83,13 @@ func (p *Page) IsTranslation(path string) (ok bool) {
 
 func (p *Page) HasTranslation() (ok bool) {
 	ok = p.Translates != ""
+	return
+}
+
+func (p *Page) MatchQL(query string) (ok bool, err error) {
+	if err = pageql.Validate(query); err != nil {
+		return
+	}
+	ok, err = pageql.Match(query, p.Context.Copy())
 	return
 }
