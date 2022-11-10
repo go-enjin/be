@@ -50,6 +50,7 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/pkg/net/minify",
 		"github.com/go-enjin/be/pkg/notify",
 		"github.com/go-enjin/be/pkg/page",
+		"github.com/go-enjin/be/pkg/pageql",
 		"github.com/go-enjin/be/pkg/path",
 		"github.com/go-enjin/be/pkg/path/embed",
 		"github.com/go-enjin/be/pkg/search",
