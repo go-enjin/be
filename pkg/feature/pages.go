@@ -42,4 +42,5 @@ type PageProvider interface {
 	FindTranslations(url string) (pages []*page.Page)
 	FindPage(tag language.Tag, url string) (p *page.Page)
 	FindPages(prefix string) (pages []*page.Page)
+	MatchQL(query string) (pages []*page.Page)
 }

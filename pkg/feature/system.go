@@ -54,6 +54,7 @@ type Service interface {
 	ServePath(urlPath string, w http.ResponseWriter, r *http.Request) (err error)
 	ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request)
 
+	MatchQL(query string) (pages []*page.Page)
 	FindPage(tag language.Tag, url string) (p *page.Page)
 
 	Notify(tag string)
