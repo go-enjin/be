@@ -222,7 +222,6 @@ func (eb *EnjinBuilder) prepareBuild() {
 }
 
 func (eb *EnjinBuilder) Build() feature.Runner {
-	eb.prepareBuild()
 
 	eb.flags = append(
 		eb.flags,
@@ -298,7 +297,6 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 	}
 
 	for _, enjin := range eb.enjins {
-		enjin.prepareBuild()
 		for _, f := range enjin.flags {
 			names := f.Names()
 			if !beCli.FlagInFlags(names[0], eb.flags) {

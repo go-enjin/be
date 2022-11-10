@@ -49,6 +49,5 @@ func (e *Enjin) ListenerString() string {
 }
 
 func (e *Enjin) Run(argv []string) (err error) {
-	e.setupFeatures()
 	return e.cli.Run(argv)
 }

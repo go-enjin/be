@@ -69,7 +69,7 @@ type Enjin struct {
 }
 
 func newEnjin(eb *EnjinBuilder) *Enjin {
-	be := &Enjin{
+	e := &Enjin{
 		eb: eb,
 		cli: &cli.App{
 			Name:     globals.BinName,
@@ -79,13 +79,15 @@ func newEnjin(eb *EnjinBuilder) *Enjin {
 			Commands: eb.commands,
 		},
 	}
-	be.initLocales()
-	be.initConsoles()
-	be.cli.Action = be.action
+	e.eb.prepareBuild()
+	e.initLocales()
+	e.initConsoles()
+	e.setupFeatures()
+	e.cli.Action = e.action
 	cli.VersionPrinter = func(c *cli.Context) {
 		fmt.Printf("%s %s\n", globals.BinName, c.App.Version)
 	}
-	return be
+	return e
 }
 
 func (e *Enjin) action(ctx *cli.Context) (err error) {
@@ -205,8 +207,6 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 
 		enjin := newEnjin(eb)
 		e.enjins = append(e.enjins, enjin)
-
-		enjin.setupFeatures()
 
 		if err = enjin.startupFeatures(ctx); err != nil {
 			return
