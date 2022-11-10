@@ -17,7 +17,6 @@ package theme
 import (
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/fs/local"
-	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -42,7 +41,7 @@ func NewLocal(path string) (t *Theme, err error) {
 	t.Name = bePath.Base(path)
 	if found := getThemeInstance(t.Name); found != nil {
 		t = found
-		log.DebugF("found existing theme: %v", t.Name)
+		// log.DebugF("found existing theme: %v", t.Name)
 		return
 	}
 
