@@ -38,6 +38,7 @@ import (
 	"github.com/go-enjin/be/pkg/net/ip/deny"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/theme"
+	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 var _ feature.Builder = &EnjinBuilder{}
@@ -170,6 +171,14 @@ func (eb *EnjinBuilder) prepareBuild() {
 		for k, _ := range eb.theming {
 			eb.theme = k
 			break
+		}
+	}
+
+	for _, t := range eb.theming {
+		for _, f := range eb.features {
+			if p, ok := f.(types.FormatProvider); ok {
+				t.AddFormatProvider(p)
+			}
 		}
 	}
 

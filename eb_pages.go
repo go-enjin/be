@@ -19,6 +19,7 @@ import (
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/pkg/theme"
 )
 
 func (eb *EnjinBuilder) AddPage(p *page.Page) feature.Builder {
@@ -28,6 +29,14 @@ func (eb *EnjinBuilder) AddPage(p *page.Page) feature.Builder {
 }
 
 func (eb *EnjinBuilder) AddPageFromString(path, raw string) feature.Builder {
+	if eb.theme == "" {
+		log.FatalDF(1, "cannot add pages before theme is set")
+	}
+	var ok bool
+	var t *theme.Theme
+	if t, ok = eb.theming[eb.theme]; !ok {
+		log.FatalDF(1, "cannot add pages before theme added")
+	}
 	var created, updated int64
 	if info, err := globals.BuildFileInfo(); err == nil {
 		if info.HasBirthTime() {
@@ -35,7 +44,7 @@ func (eb *EnjinBuilder) AddPageFromString(path, raw string) feature.Builder {
 		}
 		updated = info.ModTime().Unix()
 	}
-	if p, err := page.New(path, raw, created, updated); err == nil {
+	if p, err := page.New(path, raw, created, updated, t); err == nil {
 		eb.pages[p.Url] = p
 		log.DebugF("adding page from string: %v", p.Url)
 	} else {
