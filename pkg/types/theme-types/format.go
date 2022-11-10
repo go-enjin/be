@@ -22,9 +22,15 @@ import (
 )
 
 type Format interface {
+	This() interface{}
 	Name() (name string)
 	Label() (label string)
 	Extensions() (extensions []string)
 	Process(ctx context.Context, t Theme, content string) (html template.HTML, err *EnjinError)
 	IndexDocument(pg interface{}) (doc search.Document, err error)
+}
+
+type FormatProvider interface {
+	GetFormat(name string) (format Format)
+	MatchFormat(filename string) (format Format, match string)
 }
