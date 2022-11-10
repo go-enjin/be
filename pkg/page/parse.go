@@ -27,7 +27,6 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/path"
 )
 
 type FrontMatterType string
@@ -109,17 +108,10 @@ func ParseFrontMatterContent(raw string) (matter, content string, matterType Fro
 
 func (p *Page) parseContext(ctx context.Context) {
 	ctx.CamelizeKeys()
+	ctx.DeleteKeys("Path", "Section", "Slug", "Content", "Format")
 
-	ctx.DeleteKeys("Path", "Content", "Section")
-
-	p.Url = ctx.String("Url", p.Url)
-	if p.Url == "" || p.Url[0] != '/' {
-		p.Url = "/" + p.Url
-	}
-	p.Path, p.Section, p.Slug = path.GetSectionSlug(p.Url)
-	p.Archetype = p.Section
-	ctx.Set("Url", p.Url)
-	ctx.Set("Slug", p.Slug)
+	url := ctx.String("Url", p.Url)
+	p.SetSlugUrl(url, ctx)
 
 	p.SetLanguage(language.Und)
 	if ctxLang := ctx.String("Language", ""); ctxLang != "" {
@@ -149,10 +141,6 @@ func (p *Page) parseContext(ctx context.Context) {
 	p.Title = ctx.String("Title", p.Title)
 	ctx.Set("Title", p.Title)
 
-	raw := ctx.String("Format", p.Format)
-	p.Format = strings.ToLower(raw)
-	ctx.Set("Format", p.Format)
-
 	p.Summary = ctx.String("Summary", p.Summary)
 	ctx.Set("Summary", p.Summary)
 
@@ -168,12 +156,6 @@ func (p *Page) parseContext(ctx context.Context) {
 	// context content is not "source" content, do not populate "from" context,
 	// only set it so that it's current
 	ctx.Set("Content", p.Content)
-
-	// section cannot be set from front-matter
-	ctx.Set("Section", p.Section)
-
-	// path cannot be set from front-matter
-	ctx.Set("Path", p.Path)
 
 	p.Initial.Apply(ctx)
 	p.Context.Apply(p.Initial)

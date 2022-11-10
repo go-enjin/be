@@ -17,7 +17,6 @@ package page
 import (
 	"encoding/json"
 	"fmt"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -27,12 +26,12 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
-	beStrings "github.com/go-enjin/be/pkg/strings"
-
-	"github.com/go-enjin/be/pkg/context"
 	bePath "github.com/go-enjin/be/pkg/path"
+	beStrings "github.com/go-enjin/be/pkg/strings"
+	types "github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 type Page struct {
@@ -59,10 +58,12 @@ type Page struct {
 	LanguageTag language.Tag `json:"-"`
 
 	Permalink    uuid.UUID `json:"permalink"`
-	PermalinkSha string    `json:"-"`
+	PermalinkSha string    `json:"-" gorm:"-"`
+
+	formats types.FormatProvider
 }
 
-func NewFromFile(path, file string) (p *Page, err error) {
+func NewFromFile(path, file string, formats types.FormatProvider) (p *Page, err error) {
 	if !bePath.IsFile(file) {
 		err = fmt.Errorf("not a file: %v", file)
 		return
@@ -79,19 +80,22 @@ func NewFromFile(path, file string) (p *Page, err error) {
 		}
 		updated = spec.ModTime().Unix()
 	}
-	p, err = New(path, string(contents), created, updated)
+	p, err = New(path, string(contents), created, updated, formats)
 	return
 }
 
-func New(path, raw string, created, updated int64) (p *Page, err error) {
+func New(path, raw string, created, updated int64, formats types.FormatProvider) (p *Page, err error) {
+
 	p = new(Page)
+	p.formats = formats
 	p.Initial = context.New()
 	p.Context = context.New()
 
 	p.Permalink = uuid.Nil
 
 	path = forms.TrimQueryParams(path)
-	p.SetSlugUrl(path)
+	path = p.SetFormat(path, p.Initial)
+	p.SetSlugUrl(path, p.Initial)
 
 	p.CreatedAt = time.Unix(created, 0)
 	p.Initial.SetSpecific("Created", p.CreatedAt)
@@ -162,6 +166,7 @@ func (p *Page) Copy() (copy *Page) {
 		Permalink:    p.Permalink,
 		PermalinkSha: p.PermalinkSha,
 		Content:      p.Content,
+		formats:      p.formats,
 	}
 	copy.ID = p.ID
 	copy.CreatedAt = p.CreatedAt
@@ -178,32 +183,34 @@ func (p *Page) SetLanguage(tag language.Tag) {
 	p.Context.Set("Language", p.Language)
 }
 
-func (p *Page) SetSlugUrl(path string) {
-	trimmedPath := bePath.TrimSlashes(path)
+func (p *Page) getUrlPathSectionSlug(url string) (path, section, slug string) {
+	path = bePath.TrimSlashes(url)
+	slug = strcase.ToKebab(bePath.Base(path))
+	path = strings.ToLower(path)
+	if parts := strings.Split(path, "/"); len(parts) > 0 {
+		section = parts[0]
+	}
+	if path != "" && path != "/" && path[0] != '/' {
+		path = "/" + path
+	}
+	return
+}
 
-	var slug, urlPath string
-	if f, e := MatchFormatExtension(trimmedPath); f != nil {
-		p.Format = e
-		urlPath = strings.TrimSuffix(trimmedPath, "."+e)
-		slug = filepath.Base(urlPath)
+func (p *Page) SetFormat(filepath string, ctx context.Context) (path string) {
+	if format, match := p.formats.MatchFormat(filepath); format != nil {
+		p.Format = match
+		path = strings.TrimSuffix(filepath, "."+match)
 	} else {
 		p.Format = "html"
-		urlPath = trimmedPath
-		slug = filepath.Base(slug)
+		path = strings.TrimSuffix(filepath, ".html")
 	}
+	ctx.SetSpecific("Format", p.Format)
+	return
+}
 
-	dirPath := bePath.Dir(urlPath)
-	if dirPath != "." {
-		urlPath = strings.ToLower(dirPath)
-	} else {
-		urlPath = ""
-	}
-
-	p.Slug = strcase.ToKebab(slug)
-
-	if urlPath != "" {
-		p.Url = "/" + urlPath + "/" + p.Slug
-	} else {
-		p.Url = "/" + p.Slug
-	}
+func (p *Page) SetSlugUrl(filepath string, ctx context.Context) {
+	p.Url, p.Section, p.Slug = p.getUrlPathSectionSlug(filepath)
+	ctx.SetSpecific("Url", p.Url)
+	ctx.SetSpecific("Section", p.Section)
+	ctx.SetSpecific("Slug", p.Slug)
 }
