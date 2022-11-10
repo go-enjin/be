@@ -23,6 +23,8 @@ import (
 
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/pageql"
+	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 type Mount struct {
@@ -35,13 +37,16 @@ type Cache struct {
 	mount map[string]*Mount
 	cache map[string]map[language.Tag]map[string]*Page
 
+	formats types.FormatProvider
+
 	sync.RWMutex
 }
 
-func NewCache() (c *Cache) {
+func NewCache(formats types.FormatProvider) (c *Cache) {
 	c = new(Cache)
 	c.mount = make(map[string]*Mount)
 	c.cache = make(map[string]map[language.Tag]map[string]*Page)
+	c.formats = formats
 	return
 }
 
@@ -148,6 +153,25 @@ func (c *Cache) ListAll() (found []*Page) {
 	return
 }
 
+func (c *Cache) MatchQL(query string) (found []*Page) {
+	c.RLock()
+	defer c.RUnlock()
+	if err := pageql.Validate(query); err != nil {
+		log.ErrorF("pageql validation error: %v", err)
+		return
+	}
+	for _, cache := range c.cache {
+		for _, localeCache := range cache {
+			for _, pg := range localeCache {
+				if matched, err := pg.MatchQL(query); err == nil && matched {
+					found = append(found, pg)
+				}
+			}
+		}
+	}
+	return
+}
+
 func checkIgnored(file string, ignore []string) (ok bool) {
 	for _, ignored := range ignore {
 		if ok = strings.HasPrefix(file, ignored+"/"); ok {
@@ -174,6 +198,9 @@ func trimPrefixes(value string, prefixes ...string) (trimmed string) {
 func (c *Cache) Rebuild() (ok bool, errs []error) {
 	c.Lock()
 	defer c.Unlock()
+	if c.formats == nil {
+		return
+	}
 
 	for mount, cache := range c.cache {
 		for tag, pages := range cache {
@@ -212,7 +239,7 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 				log.ErrorF("error getting page last modified: %v", err)
 			}
 
-			if p, eeee := New(path, string(data), created, updated); eeee == nil {
+			if p, eeee := New(path, string(data), created, updated, c.formats); eeee == nil {
 
 				p.Context.Set("Shasum", shasum)
 				if language.Compare(p.LanguageTag, language.Und) {
