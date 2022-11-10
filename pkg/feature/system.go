@@ -85,3 +85,7 @@ type Internals interface {
 	Transformers() (transformers map[string]TransformOutputFn)
 	Slugsums() (enabled bool)
 }
+
+type CanSetupInternals interface {
+	Setup(enjin Internals)
+}
