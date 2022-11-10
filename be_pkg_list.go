@@ -86,6 +86,7 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/features/pages/formats/njn/blocks/header",
 		"github.com/go-enjin/be/features/pages/formats/njn/blocks/icon",
 		"github.com/go-enjin/be/features/pages/formats/njn/blocks/image",
+		"github.com/go-enjin/be/features/pages/formats/njn/blocks/index",
 		"github.com/go-enjin/be/features/pages/formats/njn/blocks/linkList",
 		"github.com/go-enjin/be/features/pages/formats/njn/blocks/notice",
 		"github.com/go-enjin/be/features/pages/formats/njn/blocks/pair",
