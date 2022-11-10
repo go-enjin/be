@@ -497,3 +497,8 @@ func (f *CFeature) FindPage(tag language.Tag, path string) (searchPage *page.Pag
 	}
 	return
 }
+
+func (f *CFeature) MatchQL(query string) (pages []*page.Page) {
+	// search cannot be found with MatchQL?
+	return
+}
