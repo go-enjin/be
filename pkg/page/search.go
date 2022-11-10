@@ -30,7 +30,7 @@ func (p *Page) SearchDocument() (doc search.Document, err error) {
 		log.TraceF("skipping search index for (not searchable): %v", p.Url)
 		return
 	}
-	if format := GetFormat(p.Format); format != nil {
+	if format := p.formats.GetFormat(p.Format); format != nil {
 		doc, err = format.IndexDocument(p)
 	} else {
 		err = fmt.Errorf("unsupported page format: %v", p.Format)
