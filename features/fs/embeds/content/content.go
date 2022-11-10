@@ -34,6 +34,7 @@ import (
 	beFsEmbed "github.com/go-enjin/be/pkg/fs/embed"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/page"
 )
 
@@ -77,7 +78,6 @@ func (f *Feature) Init(this interface{}) {
 	f.CMiddleware.Init(this)
 	f.paths = make(map[string]string)
 	f.setup = make(map[string]embed.FS)
-	f.cache = page.NewCache()
 }
 
 func (f *Feature) Tag() (tag feature.Tag) {
@@ -86,12 +86,16 @@ func (f *Feature) Tag() (tag feature.Tag) {
 }
 
 func (f *Feature) Build(_ feature.Buildable) (err error) {
-	var mounts []string
-	for mount, _ := range f.setup {
-		mounts = append(mounts, mount)
-	}
-	sort.Sort(sortorder.Natural(mounts))
-	for _, mount := range mounts {
+	return
+}
+
+func (f *Feature) Setup(enjin feature.Internals) {
+	f.enjin = enjin
+	t, _ := f.enjin.GetTheme()
+	f.cache = page.NewCache(t)
+
+	var err error
+	for _, mount := range maps.SortedKeys(f.setup) {
 		if f.cache.Mounted(mount) {
 			err = fmt.Errorf(`"%v" already mounted`, mount)
 			return
@@ -104,11 +108,6 @@ func (f *Feature) Build(_ feature.Buildable) (err error) {
 		f.cache.Mount(mount, f.paths[mount], lfs)
 		log.DebugF("mounted embed content filesystem on %v to %v", mount, f.paths[mount])
 	}
-	return
-}
-
-func (f *Feature) Setup(enjin feature.Internals) {
-	f.enjin = enjin
 }
 
 func (f *Feature) Startup(ctx *cli.Context) (err error) {
@@ -117,7 +116,7 @@ func (f *Feature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
-	log.DebugF("including embed content %v middleware: %v", page.Extensions, f.setup)
+	log.DebugF("including embed content middleware: %v", f.setup)
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			path := forms.SanitizeRequestPath(r.URL.Path)
@@ -195,7 +194,7 @@ func (f *Feature) FindTranslations(path string) (found []*page.Page) {
 func (f *Feature) FindPage(tag language.Tag, path string) (p *page.Page) {
 	path = forms.SanitizeRequestPath(path)
 	if _, _, pg, e := f.cache.Lookup(tag, path); e == nil {
-		p = pg.Copy()
+		p = pg
 	}
 	return
 }
@@ -203,5 +202,10 @@ func (f *Feature) FindPage(tag language.Tag, path string) (p *page.Page) {
 func (f *Feature) FindPages(path string) (pages []*page.Page) {
 	path = forms.SanitizeRequestPath(path)
 	pages = f.cache.FindAllPrefix(path)
+	return
+}
+
+func (f *Feature) MatchQL(query string) (pages []*page.Page) {
+	pages = f.cache.MatchQL(query)
 	return
 }

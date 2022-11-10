@@ -19,10 +19,8 @@ package content
 import (
 	"fmt"
 	"net/http"
-	"sort"
 
 	"github.com/blevesearch/bleve/v2"
-	"github.com/fvbommel/sortorder"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/golang-org-x-text/language"
@@ -33,6 +31,7 @@ import (
 	"github.com/go-enjin/be/pkg/fs/local"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/page"
 )
 
@@ -73,7 +72,6 @@ func (f *Feature) MountPath(mount, path string) MakeFeature {
 func (f *Feature) Init(this interface{}) {
 	f.CMiddleware.Init(this)
 	f.setup = make(map[string]string)
-	f.cache = page.NewCache()
 }
 
 func (f *Feature) Tag() (tag feature.Tag) {
@@ -82,30 +80,29 @@ func (f *Feature) Tag() (tag feature.Tag) {
 }
 
 func (f *Feature) Build(_ feature.Buildable) (err error) {
-	var mounts []string
-	for mount, _ := range f.setup {
-		mounts = append(mounts, mount)
-	}
-	sort.Sort(sortorder.Natural(mounts))
-	for _, mount := range mounts {
+	return
+}
+
+func (f *Feature) Setup(enjin feature.Internals) {
+	f.enjin = enjin
+	t, _ := f.enjin.GetTheme()
+	f.cache = page.NewCache(t)
+
+	var err error
+	for _, mount := range maps.SortedKeys(f.setup) {
 		if f.cache.Mounted(mount) {
-			err = fmt.Errorf(`"%v" already mounted`, mount)
+			log.FatalF(`"%v" already mounted`, mount)
 			return
 		}
 		path := f.setup[mount]
 		var lfs fs.FileSystem
 		if lfs, err = local.New(path); err != nil {
 			log.FatalF(`error mounting filesystem: %v`, err)
-			return nil
+			return
 		}
 		f.cache.Mount(mount, f.setup[mount], lfs)
 		log.DebugF("mounted local content filesystem on %v to %v", mount, path)
 	}
-	return
-}
-
-func (f *Feature) Setup(enjin feature.Internals) {
-	f.enjin = enjin
 }
 
 func (f *Feature) Startup(ctx *cli.Context) (err error) {
@@ -114,7 +111,7 @@ func (f *Feature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
-	log.DebugF("including local content %v middleware: %v", page.Extensions, f.setup)
+	log.DebugF("including local content middleware: %v", f.setup)
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			path := forms.SanitizeRequestPath(r.URL.Path)
@@ -196,7 +193,7 @@ func (f *Feature) FindPage(tag language.Tag, path string) (p *page.Page) {
 	f.cache.Rebuild()
 	path = forms.SanitizeRequestPath(path)
 	if _, _, pg, e := f.cache.Lookup(tag, path); e == nil {
-		p = pg.Copy()
+		p = pg
 	}
 	return
 }
@@ -205,5 +202,11 @@ func (f *Feature) FindPages(path string) (pages []*page.Page) {
 	f.cache.Rebuild()
 	path = forms.SanitizeRequestPath(path)
 	pages = f.cache.FindAllPrefix(path)
+	return
+}
+
+func (f *Feature) MatchQL(query string) (pages []*page.Page) {
+	f.cache.Rebuild()
+	pages = f.cache.MatchQL(query)
 	return
 }
