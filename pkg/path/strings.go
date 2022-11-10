@@ -80,7 +80,7 @@ func TrimSlashes(path string) (clean string) {
 	}
 	clean = strings.TrimSpace(path)
 	clean = RxBothSlashes.ReplaceAllString(clean, "$1")
-	clean = RxDupeSlashes.ReplaceAllString(clean, "/")
+	clean = filepath.Clean(clean)
 	return
 }
 
