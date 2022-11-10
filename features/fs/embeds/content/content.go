@@ -20,10 +20,8 @@ import (
 	"embed"
 	"fmt"
 	"net/http"
-	"sort"
 
 	"github.com/blevesearch/bleve/v2"
-	"github.com/fvbommel/sortorder"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/golang-org-x-text/language"
@@ -103,7 +101,7 @@ func (f *Feature) Setup(enjin feature.Internals) {
 		var lfs fs.FileSystem
 		if lfs, err = beFsEmbed.New(f.paths[mount], f.setup[mount]); err != nil {
 			log.FatalF(`error mounting filesystem: %v`, err)
-			return nil
+			return
 		}
 		f.cache.Mount(mount, f.paths[mount], lfs)
 		log.DebugF("mounted embed content filesystem on %v to %v", mount, f.paths[mount])
