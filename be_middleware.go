@@ -136,15 +136,15 @@ func (e *Enjin) redirectionMiddleware(next http.Handler) http.Handler {
 
 func (e *Enjin) langMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		urlPath := forms.SanitizeRequestPath(r.URL.Path)
 		langMode := e.SiteLanguageMode()
 		defaultTag := e.SiteDefaultLanguage()
 
 		var reqPath string
 		var requested language.Tag
-
 		if lang.NonPageRequested(r) {
 			requested = defaultTag
-			reqPath = forms.SanitizeRequestPath(r.URL.Path)
+			reqPath = urlPath
 			// log.DebugF("non page requested: %v", reqPath)
 		} else {
 			var reqOk bool
@@ -152,6 +152,10 @@ func (e *Enjin) langMiddleware(next http.Handler) http.Handler {
 				log.WarnF("language mode rejecting request: %#v", r)
 				e.Serve404(w, r) // specifically not ServeNotFound()
 				return
+			} else if !e.SiteSupportsLanguage(requested) {
+				log.WarnF("%v language not supported, using default: %v", requested, defaultTag)
+				requested = defaultTag
+				reqPath = urlPath
 			}
 			// log.DebugF("page requested: %v", reqPath)
 		}
@@ -167,27 +171,19 @@ func (e *Enjin) langMiddleware(next http.Handler) http.Handler {
 		// 	}
 		// }
 
-		if !e.SiteSupportsLanguage(requested) {
-			log.WarnF("%v language not supported, using default: %v", requested, defaultTag)
-			requested = defaultTag
-		}
-
-		// if pg := e.FindPage(requested, reqPath); pg == nil {
-		// 	log.DebugF("page not found for: [%v] %v", requested, reqPath)
-		// }
 		tag, printer := lang.NewCatalogPrinter(requested.String(), e.SiteLanguageCatalog())
 		ctx := context.WithValue(r.Context(), lang.LanguageTag, tag)
 		ctx = context.WithValue(ctx, lang.LanguagePrinter, printer)
 		ctx = context.WithValue(ctx, lang.LanguageDefault, e.SiteDefaultLanguage())
+
 		if reqPath == "" {
 			reqPath = "/"
 		} else if reqPath[0] != '/' {
 			reqPath = "/" + reqPath
 		}
 		r.URL.Path = reqPath
-		r = r.WithContext(ctx)
 
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
