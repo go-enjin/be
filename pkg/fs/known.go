@@ -42,7 +42,7 @@ func RegisterFileSystem(mount string, f FileSystem) {
 	_registry.Lock()
 	defer _registry.Unlock()
 	_registry.registered[mount] = append(_registry.registered[mount], f)
-	// log.DebugDF(1, "registered fs: %v (%d)", mount, len(_registry.registered[mount]))
+	// log.DebugDF(1, "registered fs: %v [%d] - %v", mount, len(_registry.registered[mount]), f.Name())
 }
 
 func FileExists(path string) (exists bool) {
@@ -66,10 +66,11 @@ func FindFileShasum(path string) (shasum string, err error) {
 	for mount, systems := range _registry.registered {
 		p := bePath.TrimPrefix(path, mount)
 		for _, f := range systems {
-			// log.DebugF("checking for file shasum: %v - %v", f.Name(), p)
 			if shasum, err = f.Shasum(p); err == nil {
+				// log.DebugF("file shasum found: %v - %v - %v", mount, f.Name(), p)
 				return
 			}
+			// log.DebugF("file shasum not found: %v %v - %v", mount, f.Name(), p)
 		}
 	}
 	err = fmt.Errorf("%v not found", path)
