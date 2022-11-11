@@ -25,7 +25,9 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/pageql"
+	"github.com/go-enjin/be/pkg/types/site"
 )
 
 const (
@@ -89,14 +91,41 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		return
 	}
 
+	reqArgv := re.RequestArgv()
+	// log.WarnF("reqArgv=%#v", reqArgv.String())
+
 	var blockDataContent map[string]interface{}
 	if blockDataContent, err = re.PrepareGenericBlockData(data["content"]); err != nil {
 		return
 	}
 	delete(blockDataContent, "section")
 
-	block = re.PrepareGenericBlock("content", data)
-	block["Type"] = "index"
+	block = re.PrepareGenericBlock("index", data)
+
+	var ok bool
+	var tag string
+	if tag, ok = block["Tag"].(string); !ok {
+		err = fmt.Errorf("index block missing data-block-tag")
+		return
+	}
+
+	var pgntn string
+	if pgntn, ok = data["index-pagination"].(string); ok {
+		pgntn = strings.ToLower(pgntn)
+		switch pgntn {
+		case "none", "more", "page":
+		default:
+			err = fmt.Errorf("invalid index block pagination value: %v", pgntn)
+			return
+		}
+	}
+	block["Pagination"] = pgntn
+
+	numPerPage, pageNumber := 10, 0
+
+	if v, check := data["index-num-per-page"].(float64); check {
+		numPerPage = int(v)
+	}
 
 	var indexViews []string
 	if views, ok := data["index-views"].(string); ok {
@@ -109,7 +138,6 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	}
 	block["Views"] = indexViews
 
-	var ok bool
 	var orderBy, sortDir string
 	if orderBy, ok = data["index-order-by"].(string); ok {
 		orderBy = strcase.ToCamel(orderBy)
@@ -141,6 +169,110 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			err = fmt.Errorf("unsupported index-max-results value type: %T %v", v, v)
 			return
 		}
+	}
+
+	var filters Filters
+	if indexFilters, check := data["index-filters"].([]interface{}); check {
+		for _, item := range indexFilters {
+			switch t := item.(type) {
+			case map[string]interface{}:
+				filters = append(filters, []Filter{MakeFilterFrom(t)})
+			case []interface{}:
+				var subFilters []Filter
+				for _, subItem := range t {
+					switch tt := subItem.(type) {
+					case map[string]interface{}:
+						subFilters = append(subFilters, MakeFilterFrom(tt))
+					}
+				}
+				filters = append(filters, subFilters)
+			}
+		}
+	}
+
+	for idx, pieces := range reqArgv.Argv {
+		if pieces[0] != "" && pieces[0] == tag {
+			re.RequestContext().SetSpecific(site.RequestArgvConsumedKey, true)
+			if reqArgv.NumPerPage > -1 {
+				numPerPage = reqArgv.NumPerPage
+			}
+			reqArgv.NumPerPage = numPerPage
+			if reqArgv.PageNumber > -1 {
+				pageNumber = reqArgv.PageNumber
+			}
+			reqArgv.PageNumber = pageNumber
+			var fixArgs []string
+			for _, piece := range pieces[1:] {
+				foundPiece := false
+				for jdx, filterSet := range filters {
+					for kdx, filter := range filterSet {
+						if filter.Key == piece {
+							foundPiece = true
+							filters[jdx][kdx].Present = true
+							break
+						}
+					}
+					if foundPiece {
+						break
+					}
+				}
+				if foundPiece {
+					fixArgs = append(fixArgs, piece)
+				} else {
+					break
+				}
+			}
+			if len(fixArgs) != len(pieces[1:]) {
+				reqArgv.Argv[idx] = append([]string{pieces[0]}, fixArgs...)
+				re.RequestContext().SetSpecific(site.RequestRedirectKey, reqArgv.String())
+			}
+		}
+	}
+
+	var filterLinkGroup []int
+	var filterLinkChain []string
+	for idx, group := range filters {
+		for _, filter := range group {
+			if filter.Present {
+				filterLinkGroup = append(filterLinkGroup, idx)
+				filterLinkChain = append(filterLinkChain, filter.Key)
+				break // one per group
+			}
+		}
+	}
+
+	for idx, group := range filters {
+		for jdx, filter := range group {
+			filters[idx][jdx].Url = reqArgv.Path
+			var chain []string
+			var removed bool
+			for cdx, chained := range filterLinkChain {
+				gdx := filterLinkGroup[cdx]
+				if chained == filter.Key {
+					removed = true
+				} else if gdx != idx {
+					chain = append(chain, chained)
+				}
+			}
+			if len(chain) == 0 {
+				if removed {
+					filters[idx][jdx].Url += "/:" + tag
+				} else {
+					filters[idx][jdx].Url += "/:" + tag + "," + filter.Key
+				}
+			} else {
+				if removed {
+					filters[idx][jdx].Url += "/:" + tag + "," + strings.Join(chain, ",")
+				} else {
+					filters[idx][jdx].Url += "/:" + tag + "," + strings.Join(chain, ",") + "," + filter.Key
+				}
+			}
+		}
+	}
+
+	if len(filters) > 0 {
+		block["Filters"] = filters
+		// log.DebugF("index-filters: %#v", filters)
 	}
 
 	var query string
@@ -177,13 +309,56 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 
 		sort.Slice(found, sortFn)
 
-		log.DebugF("index block found %v (max=%v) pages with query: %v", len(found), maxResults, query)
-		if maxResults > 0 && len(found) > maxResults {
+		totalFound := len(found)
+
+		runFilter := func(filter Filter) {
+			var modified []*page.Page
+			for _, pg := range found {
+				if matched, e := pg.MatchQL(filter.Query); e != nil {
+					log.ErrorF("error parsing filter query: %v - %v", filter.Query, e)
+				} else if matched {
+					// log.DebugF("%v - matches - %v", pg.Url, filter.Query)
+					modified = append(modified, pg)
+				}
+			}
+			found = modified
+		}
+		for _, filterSet := range filters {
+			for _, filter := range filterSet {
+				if filter.Present {
+					runFilter(filter)
+				}
+			}
+		}
+
+		if maxResults > 0 && totalFound > maxResults {
 			found = found[:maxResults]
+		}
+
+		totalFiltered := len(found)
+
+		totalPages := totalFiltered / numPerPage
+		if pageNumber > totalPages {
+			reqArgv.PageNumber = totalPages - 1
+			pageNumber = reqArgv.PageNumber
+			re.RequestContext().SetSpecific(site.RequestRedirectKey, reqArgv.String())
+		}
+
+		if numPerPage > 0 {
+			start := pageNumber * numPerPage
+			end := start + numPerPage
+			if start < len(found) {
+				if end < totalFiltered-1 {
+					found = found[start:end]
+				} else {
+					found = found[start:]
+				}
+			}
 		}
 
 		block["Results"] = found
 
+		// log.DebugF("index block found %v (total=%v, max=%v) pages with query: %v", totalFiltered, totalFound, maxResults, query)
 	} else {
 		err = fmt.Errorf("index blocks require an index-query property set")
 		return
