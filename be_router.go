@@ -23,21 +23,34 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/net/ip/deny"
+	"github.com/go-enjin/be/pkg/types/site"
 )
 
 func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	router.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 			r = r.WithContext(context.WithValue(r.Context(), "enjin-id", e.String()))
+
 			if e.debug {
-				w.Header().Set("Server", fmt.Sprintf("%v/%v", globals.BinName, globals.BinHash))
+				w.Header().Set("Server", fmt.Sprintf("%v/%v-%v", globals.BinName, globals.Version, globals.BinHash))
 			} else {
 				w.Header().Set("Server", globals.BinName)
 			}
+
+			path := forms.SanitizeRequestPath(r.URL.Path)
+			if reqArgv := site.ParseRequestArgv(path); reqArgv != nil {
+				r = reqArgv.Set(r)
+				path = reqArgv.Path
+				log.TraceF("parsed request argv: %v", reqArgv)
+			}
+			r.URL.Path = path
+
 			next.ServeHTTP(w, r)
 			return
 		})
