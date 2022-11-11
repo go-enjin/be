@@ -22,6 +22,7 @@ import (
 	textTemplate "text/template"
 	"time"
 
+	"github.com/go-enjin/be/pkg/types/site"
 	"github.com/go-enjin/be/pkg/types/theme-types"
 
 	"github.com/go-enjin/be/pkg/context"
@@ -228,7 +229,7 @@ func (t *Theme) renderErrorPage(title, summary, output string) (html htmlTemplat
 	return
 }
 
-func (t *Theme) RenderPage(ctx context.Context, p *page.Page) (data []byte, err error) {
+func (t *Theme) RenderPage(ctx context.Context, p *page.Page) (data []byte, redirect string, err error) {
 	ctx.Apply(p.Context.Copy())
 	ctx.Set("Theme", t.GetConfig())
 
@@ -263,5 +264,17 @@ func (t *Theme) RenderPage(ctx context.Context, p *page.Page) (data []byte, err 
 		ctx["Content"] = t.renderErrorPage("Unsupported Page Format", fmt.Sprintf(`Unknown page format specified: "%v"`, p.Format), p.String())
 	}
 
-	return t.Render("single", ctx)
+	if !p.Context.Bool(site.RequestArgvIgnoredKey, false) {
+		if redirect = ctx.String(site.RequestRedirectKey, ""); redirect != "" {
+			return
+		} else if consumed := ctx.Bool(site.RequestArgvConsumedKey, false); !consumed {
+			if reqArgv, ok := ctx.Get(string(site.RequestArgvKey)).(*site.RequestArgv); ok && reqArgv != nil && reqArgv.MustConsume() {
+				redirect = p.Url
+				return
+			}
+		}
+	}
+
+	data, err = t.Render("single", ctx)
+	return
 }
