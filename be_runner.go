@@ -49,5 +49,9 @@ func (e *Enjin) ListenerString() string {
 }
 
 func (e *Enjin) Run(argv []string) (err error) {
+	if e.cli == nil {
+		err = fmt.Errorf("calling .Run on included enjin")
+		return
+	}
 	return e.cli.Run(argv)
 }

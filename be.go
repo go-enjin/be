@@ -51,6 +51,12 @@ var (
 	_ feature.Internals = &Enjin{}
 )
 
+func init() {
+	cli.VersionPrinter = func(c *cli.Context) {
+		fmt.Printf("%s %s\n", globals.BinName, c.App.Version)
+	}
+}
+
 type Enjin struct {
 	port       int
 	listen     string
@@ -83,9 +89,16 @@ func newEnjin(eb *EnjinBuilder) *Enjin {
 	e.initConsoles()
 	e.setupFeatures()
 	e.cli.Action = e.action
-	cli.VersionPrinter = func(c *cli.Context) {
-		fmt.Printf("%s %s\n", globals.BinName, c.App.Version)
+	return e
+}
+
+func newIncludedEnjin(eb *EnjinBuilder, parent *Enjin) *Enjin {
+	e := &Enjin{
+		eb: eb,
 	}
+	e.initLocales()
+	e.initConsoles()
+	e.setupFeatures()
 	return e
 }
 
@@ -204,7 +217,7 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 			continue
 		}
 
-		enjin := newEnjin(eb)
+		enjin := newIncludedEnjin(eb, e)
 		e.enjins = append(e.enjins, enjin)
 
 		if err = enjin.startupFeatures(ctx); err != nil {
