@@ -79,7 +79,6 @@ func newEnjin(eb *EnjinBuilder) *Enjin {
 			Commands: eb.commands,
 		},
 	}
-	e.eb.prepareBuild()
 	e.initLocales()
 	e.initConsoles()
 	e.setupFeatures()

@@ -222,6 +222,7 @@ func (eb *EnjinBuilder) prepareBuild() {
 }
 
 func (eb *EnjinBuilder) Build() feature.Runner {
+	eb.prepareBuild()
 
 	eb.flags = append(
 		eb.flags,
@@ -287,6 +288,7 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 	)
 
 	for _, enjin := range eb.enjins {
+		enjin.prepareBuild()
 		tag := strcase.ToKebab(enjin.tag)
 		key := strcase.ToScreamingSnake(tag)
 		eb.flags = append(eb.flags, &cli.StringSliceFlag{
@@ -294,9 +296,6 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 			Usage:   "specify one or more domains for the " + tag + " enjin",
 			EnvVars: eb.MakeEnvKeys(key + "_DOMAIN"),
 		})
-	}
-
-	for _, enjin := range eb.enjins {
 		for _, f := range enjin.flags {
 			names := f.Names()
 			if !beCli.FlagInFlags(names[0], eb.flags) {
