@@ -23,6 +23,7 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/types/site"
 
 	"github.com/go-enjin/be/pkg/feature"
@@ -34,9 +35,7 @@ import (
 	"github.com/go-enjin/be/pkg/theme"
 )
 
-type ContextKey string
-
-const ServeStatusResponseKey ContextKey = "ServeStatusResponse"
+const ServeStatusResponseKey beContext.RequestKey = "ServeStatusResponse"
 
 func (e *Enjin) ServeRedirect(destination string, w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, destination, http.StatusSeeOther)
