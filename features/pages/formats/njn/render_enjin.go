@@ -27,6 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
+	"github.com/go-enjin/be/pkg/types/site"
 	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
@@ -62,6 +63,16 @@ func renderNjnData(f feature.EnjinSystem, ctx context.Context, t types.Theme, da
 	re.footnotes = make(map[int][]map[string]interface{}, 0)
 	re.currentDepth = 0
 	html, err = re.Render(data)
+	return
+}
+
+func (re *RenderEnjin) RequestArgv() (reqArgv *site.RequestArgv) {
+	reqArgv, _ = re.ctx.Get("RequestArgv").(*site.RequestArgv)
+	return
+}
+
+func (re *RenderEnjin) RequestContext() (ctx context.Context) {
+	ctx = re.ctx
 	return
 }
 

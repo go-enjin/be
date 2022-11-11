@@ -18,9 +18,15 @@ import (
 	"html/template"
 
 	"golang.org/x/net/html"
+
+	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/types/site"
 )
 
 type EnjinRenderer interface {
+	RequestArgv() (reqArgv *site.RequestArgv)
+	RequestContext() (ctx context.Context)
+
 	RenderNjnTemplate(tag string, data map[string]interface{}) (html template.HTML, err error)
 
 	ProcessBlock(data map[string]interface{}) (html template.HTML, err error)
