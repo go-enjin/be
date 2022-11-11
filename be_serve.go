@@ -117,6 +117,7 @@ func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Reque
 
 	if path, ok := e.eb.statusPages[status]; ok {
 		if pg := e.FindPage(reqLangTag, path); pg != nil {
+			pg.Context.SetSpecific(site.RequestArgvIgnoredKey, true)
 			if err := e.ServePage(pg, w, r); err != nil {
 				log.DebugF("error serving %v (pages) page: %v - %v", status, path, err)
 			} else {
@@ -207,8 +208,9 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 		"Language":   reqLangTag.String(),
 	})
 
-	ctx.Set("BaseUrl", net.BaseURL(r))
+	ctx.SetSpecific("BaseUrl", net.BaseURL(r))
 	ctx.SetSpecific("LangPrinter", lang.GetPrinterFromRequest(r))
+	ctx.SetSpecific(string(site.RequestArgvKey), site.GetRequestArgv(r))
 
 	ctx.Apply(p.Context.Copy())
 
@@ -264,7 +266,13 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	}
 
 	var data []byte
-	if data, err = t.RenderPage(ctx, p); err != nil {
+	var redirect string
+	if data, redirect, err = t.RenderPage(ctx, p); err != nil {
+		log.ErrorF("error rendering page: %v - %v", p.Url, err)
+		return
+	} else if redirect != "" {
+		log.DebugF("redirecting from RenderPage: %v - %v", p.Url, redirect)
+		e.ServeRedirect(redirect, w, r)
 		return
 	}
 	e.ServeData(data, "text/html; charset=utf-8", w, r)
@@ -274,7 +282,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request) {
 	for _, f := range e.eb.features {
 		if prh, ok := f.(feature.DataRestrictionHandler); ok {
-			log.DebugF("checking restricted data with: %v", f.Tag())
+			// log.DebugF("checking restricted data with: %v", f.Tag())
 			if r, ok = prh.RestrictServeData(data, mime, w, r); !ok {
 				addr, _ := net.GetIpFromRequest(r)
 				log.WarnF("[restricted] permission denied %v for: %v", addr, r.URL.Path)
