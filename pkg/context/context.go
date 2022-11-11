@@ -22,6 +22,8 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
+type RequestKey string
+
 // Context is a wrapper around a map[string]interface{} structure which is used
 // throughout Go-Enjin for parsing configurations and contents.
 type Context map[string]interface{}
