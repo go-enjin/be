@@ -84,6 +84,9 @@ func (e *Enjin) startupIntegrityChecks(ctx *cli.Context) (err error) {
 					return
 				}
 				log.InfoF(eicLogMsg("partial-pass", "sums integrity validated successfully"))
+			} else if sums, ee := slugMap.SumsIntegrity(); ee == nil {
+				envKey := e.eb.MakeEnvKey("SUMS_INTEGRITY_" + strings.ToUpper(globals.BinHash))
+				log.InfoF("export %v=\"%v\"", envKey, sums)
 			}
 			vl := len(validated)
 			if el > 0 {
