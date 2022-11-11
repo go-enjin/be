@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"html/template"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/iancoleman/strcase"
@@ -283,7 +282,8 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 		&cli.StringFlag{
 			Name:    "sums-integrity",
 			Usage:   "specify the sha256sum of the Shasums file for --strict validations",
-			EnvVars: eb.MakeEnvKeys("SUMS_INTEGRITY_" + strings.ToUpper(globals.BinHash)),
+			Value:   "",
+			EnvVars: eb.MakeEnvKeys("SUMS_INTEGRITY_" + strcase.ToScreamingSnake(globals.BinHash)),
 		},
 	)
 
