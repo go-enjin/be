@@ -23,16 +23,15 @@ import (
 	"github.com/go-enjin/golang-org-x-text/message"
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
 
+	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
-type ContextKey string
-
-const LanguageTag ContextKey = "language-tag"
-const LanguagePrinter ContextKey = "language-printer"
-const LanguageDefault ContextKey = "language-default"
+const LanguageTag context.RequestKey = "language-tag"
+const LanguagePrinter context.RequestKey = "language-printer"
+const LanguageDefault context.RequestKey = "language-default"
 
 func ParseLangPath(p string) (tag language.Tag, modified string, ok bool) {
 	modified = p
