@@ -237,15 +237,15 @@ func (t *Theme) RenderPage(ctx context.Context, p *page.Page) (data []byte, redi
 
 	if p.Format == "html.tmpl" {
 		if output, err = t.RenderHtmlTemplateContent(ctx, p.Content); err != nil {
-			err = nil
 			ctx["Content"] = t.renderErrorPage("Template Render Error", err.Error(), p.String())
+			err = nil
 			return
 		}
 	} else if strings.HasSuffix(p.Format, ".tmpl") {
 		// TODO: find a more safe way to pre-render .njn.tmpl files
 		if output, err = t.RenderTextTemplateContent(ctx, p.Content); err != nil {
-			err = nil
 			ctx["Content"] = t.renderErrorPage("Template Render Error", err.Error(), p.String())
+			err = nil
 			return
 		}
 	} else {
