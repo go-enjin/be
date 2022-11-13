@@ -183,9 +183,6 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			}
 		}
 	}
-	if argvView == "" {
-		argvView = indexViews[0]
-	}
 	block["View"] = argvView
 
 	var query string
