@@ -29,6 +29,54 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
+func ExtractEnumValue(key string, upper bool, enums []string, data map[string]interface{}) (value string, err error) {
+	if v, ok := data[key]; ok {
+		switch t := v.(type) {
+		case string:
+			if upper {
+				t = strings.ToUpper(t)
+			} else {
+				t = strings.ToLower(t)
+			}
+			for _, enum := range enums {
+				if t == enum {
+					value = enum
+					return
+				}
+			}
+		default:
+			err = fmt.Errorf("unsupported enum value structure: %T", t)
+		}
+	}
+	return
+}
+
+func ExtractIntValue(key string, data map[string]interface{}) (value int, err error) {
+	if v, ok := data[key]; ok {
+		switch t := v.(type) {
+		case string:
+			if value, err = strconv.Atoi(t); err != nil {
+				err = fmt.Errorf("error parsing %v integer string: %v", key, err)
+				return
+			}
+		case float64:
+			value = int(t)
+		case float32:
+			value = int(t)
+		case uint:
+			value = int(t)
+		case int:
+			value = t
+		case int64:
+			value = int(t)
+		default:
+			err = fmt.Errorf("unsupported %v integer type: %T %v", key, v, v)
+			return
+		}
+	}
+	return
+}
+
 func ParseKeyIntValue(key string, data map[string]interface{}) (v int, ok bool) {
 	if i, found := data[key]; found {
 		switch t := i.(type) {
