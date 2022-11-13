@@ -17,16 +17,17 @@ package index
 import (
 	"fmt"
 	"html/template"
-	"sort"
-	"strconv"
 	"strings"
 
+	"github.com/go-enjin/golang-org-x-text/cases"
 	"github.com/iancoleman/strcase"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/pageql"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/types/site"
 )
 
@@ -109,23 +110,11 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		return
 	}
 
-	var pgntn string
-	if pgntn, ok = data["index-pagination"].(string); ok {
-		pgntn = strings.ToLower(pgntn)
-		switch pgntn {
-		case "none", "more", "page":
-		default:
-			err = fmt.Errorf("invalid index block pagination value: %v", pgntn)
-			return
-		}
-	}
-	block["Pagination"] = pgntn
-
 	numPerPage, pageNumber := 10, 0
-
-	if v, check := data["index-num-per-page"].(float64); check {
-		numPerPage = int(v)
+	if numPerPage, err = maps.ExtractIntValue("index-num-per-page", data); err != nil {
+		return
 	}
+	blockNumPerPage := numPerPage
 
 	var indexViews []string
 	if views, ok := data["index-views"].(string); ok {
@@ -136,7 +125,6 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		err = fmt.Errorf("index blocks require an index-view property set")
 		return
 	}
-	block["Views"] = indexViews
 
 	var orderBy, sortDir string
 	if orderBy, ok = data["index-order-by"].(string); ok {
@@ -144,51 +132,19 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	} else {
 		orderBy = "Title"
 	}
-	if sortDir, ok = data["index-sort-dir"].(string); ok {
-		switch strings.ToUpper(sortDir) {
-		case "ASC", "DSC":
-		default:
-			log.ErrorF("unknown sort direction: %v", sortDir)
-			sortDir = "ASC"
-		}
-	} else {
-		sortDir = "ASC"
+
+	if sortDir, err = maps.ExtractEnumValue("index-sort-dir", true, []string{"ASC", "DSC"}, data); err != nil {
+		return
 	}
 
 	var maxResults int
-	if v, found := data["index-max-results"]; found {
-		switch t := v.(type) {
-		case string:
-			if maxResults, err = strconv.Atoi(t); err != nil {
-				err = fmt.Errorf("error parsing index-max-results integer: %v", err)
-				return
-			}
-		case float64:
-			maxResults = int(t)
-		default:
-			err = fmt.Errorf("unsupported index-max-results value type: %T %v", v, v)
-			return
-		}
+	if maxResults, err = maps.ExtractIntValue("index-max-results", data); err != nil {
+		return
 	}
 
-	var filters Filters
-	if indexFilters, check := data["index-filters"].([]interface{}); check {
-		for _, item := range indexFilters {
-			switch t := item.(type) {
-			case map[string]interface{}:
-				filters = append(filters, []Filter{MakeFilterFrom(t)})
-			case []interface{}:
-				var subFilters []Filter
-				for _, subItem := range t {
-					switch tt := subItem.(type) {
-					case map[string]interface{}:
-						subFilters = append(subFilters, MakeFilterFrom(tt))
-					}
-				}
-				filters = append(filters, subFilters)
-			}
-		}
-	}
+	filters := makeFilters(data)
+
+	var argvView string
 
 	for idx, pieces := range reqArgv.Argv {
 		if pieces[0] != "" && pieces[0] == tag {
@@ -196,173 +152,163 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			if reqArgv.NumPerPage > -1 {
 				numPerPage = reqArgv.NumPerPage
 			}
-			reqArgv.NumPerPage = numPerPage
 			if reqArgv.PageNumber > -1 {
+				reqArgv.NumPerPage = numPerPage
 				pageNumber = reqArgv.PageNumber
+				reqArgv.PageNumber = pageNumber
+			} else {
+				reqArgv.PageNumber = -1
+				reqArgv.NumPerPage = -1
 			}
-			reqArgv.PageNumber = pageNumber
 			var fixArgs []string
+			var viewArgs []string
 			for _, piece := range pieces[1:] {
-				foundPiece := false
-				for jdx, filterSet := range filters {
-					for kdx, filter := range filterSet {
-						if filter.Key == piece {
-							foundPiece = true
-							filters[jdx][kdx].Present = true
-							break
-						}
-					}
-					if foundPiece {
-						break
-					}
-				}
-				if foundPiece {
+				if updated := filters.SetPresent(piece); updated {
 					fixArgs = append(fixArgs, piece)
+				} else if beStrings.StringInSlices(piece, indexViews) {
+					if argvView == "" {
+						argvView = piece
+						viewArgs = append(viewArgs, piece)
+					} else {
+						fixArgs = append(fixArgs, piece)
+					}
 				} else {
-					break
+					fixArgs = append(fixArgs, piece)
 				}
 			}
+			fixArgs = append(viewArgs, fixArgs...)
 			if len(fixArgs) != len(pieces[1:]) {
 				reqArgv.Argv[idx] = append([]string{pieces[0]}, fixArgs...)
 				re.RequestContext().SetSpecific(site.RequestRedirectKey, reqArgv.String())
 			}
 		}
 	}
-
-	var filterLinkGroup []int
-	var filterLinkChain []string
-	for idx, group := range filters {
-		for _, filter := range group {
-			if filter.Present {
-				filterLinkGroup = append(filterLinkGroup, idx)
-				filterLinkChain = append(filterLinkChain, filter.Key)
-				break // one per group
-			}
-		}
+	if argvView == "" {
+		argvView = indexViews[0]
 	}
-
-	for idx, group := range filters {
-		for jdx, filter := range group {
-			filters[idx][jdx].Url = reqArgv.Path
-			var chain []string
-			var removed bool
-			for cdx, chained := range filterLinkChain {
-				gdx := filterLinkGroup[cdx]
-				if chained == filter.Key {
-					removed = true
-				} else if gdx != idx {
-					chain = append(chain, chained)
-				}
-			}
-			if len(chain) == 0 {
-				if removed {
-					filters[idx][jdx].Url += "/:" + tag
-				} else {
-					filters[idx][jdx].Url += "/:" + tag + "," + filter.Key
-				}
-			} else {
-				if removed {
-					filters[idx][jdx].Url += "/:" + tag + "," + strings.Join(chain, ",")
-				} else {
-					filters[idx][jdx].Url += "/:" + tag + "," + strings.Join(chain, ",") + "," + filter.Key
-				}
-			}
-		}
-	}
-
-	if len(filters) > 0 {
-		block["Filters"] = filters
-		// log.DebugF("index-filters: %#v", filters)
-	}
+	block["View"] = argvView
 
 	var query string
-	if query, ok = data["index-query"].(string); ok {
-		if err = pageql.Validate(query); err != nil {
-			err = fmt.Errorf("query error: %v - %v", query, err)
-			return
-		}
-
-		found := f.enjin.MatchQL(query)
-
-		sortFn := func(i, j int) (less bool) {
-			var a, b interface{}
-			a = found[i].Context.Get(orderBy)
-			b = found[j].Context.Get(orderBy)
-			if (a == nil && b == nil) || (a != nil && b == nil) {
-				less = false
-			} else if a == nil && b != nil {
-				less = true
-			} else {
-				var ta, tb string
-				if ta, ok = a.(string); ok {
-					if tb, ok = b.(string); ok {
-						less = ta < tb
-
-					}
-				}
-			}
-			if sortDir != "ASC" {
-				less = !less
-			}
-			return
-		}
-
-		sort.Slice(found, sortFn)
-
-		totalFound := len(found)
-
-		runFilter := func(filter Filter) {
-			var modified []*page.Page
-			for _, pg := range found {
-				if matched, e := pg.MatchQL(filter.Query); e != nil {
-					log.ErrorF("error parsing filter query: %v - %v", filter.Query, e)
-				} else if matched {
-					// log.DebugF("%v - matches - %v", pg.Url, filter.Query)
-					modified = append(modified, pg)
-				}
-			}
-			found = modified
-		}
-		for _, filterSet := range filters {
-			for _, filter := range filterSet {
-				if filter.Present {
-					runFilter(filter)
-				}
-			}
-		}
-
-		if maxResults > 0 && totalFound > maxResults {
-			found = found[:maxResults]
-		}
-
-		totalFiltered := len(found)
-
-		totalPages := totalFiltered / numPerPage
-		if pageNumber > totalPages {
-			reqArgv.PageNumber = totalPages - 1
-			pageNumber = reqArgv.PageNumber
-			re.RequestContext().SetSpecific(site.RequestRedirectKey, reqArgv.String())
-		}
-
-		if numPerPage > 0 {
-			start := pageNumber * numPerPage
-			end := start + numPerPage
-			if start < len(found) {
-				if end < totalFiltered-1 {
-					found = found[start:end]
-				} else {
-					found = found[start:]
-				}
-			}
-		}
-
-		block["Results"] = found
-
-		// log.DebugF("index block found %v (total=%v, max=%v) pages with query: %v", totalFiltered, totalFound, maxResults, query)
-	} else {
+	if query, ok = data["index-query"].(string); !ok {
 		err = fmt.Errorf("index blocks require an index-query property set")
 		return
 	}
+
+	if err = pageql.Validate(query); err != nil {
+		err = fmt.Errorf("query error: %v - %v", query, err)
+		return
+	}
+
+	found := f.enjin.MatchQL(query)
+	found = page.SortPages(found, orderBy, sortDir)
+
+	totalFound := len(found)
+
+	found = filters.FilterPages(found)
+
+	if maxResults > 0 && totalFound > maxResults {
+		found = found[:maxResults]
+	}
+
+	totalFiltered := len(found)
+	totalPages := totalFiltered / numPerPage
+
+	if pageNumber > totalPages {
+		reqArgv.PageNumber = totalPages - 1
+		pageNumber = reqArgv.PageNumber
+		re.RequestContext().SetSpecific(site.RequestRedirectKey, reqArgv.String())
+	}
+	if numPerPage > 0 && totalFiltered > 0 {
+		start := pageNumber * numPerPage
+		end := start + numPerPage
+		if start < end && end < totalFiltered {
+			found = found[start:end]
+		} else {
+			found = found[start:]
+		}
+	}
+
+	block["Results"] = found
+
+	var pgntn string
+	if pgntn, ok = data["index-pagination"].(string); ok {
+		pgntn = strings.ToLower(pgntn)
+		switch pgntn {
+		case "none", "more", "page":
+		default:
+			err = fmt.Errorf("invalid index block pagination value: %v", pgntn)
+			return
+		}
+	} else {
+		pgntn = "none"
+	}
+
+	var builtViews Views
+	for idx, viewKey := range indexViews {
+		viewFilters := filters.Copy()
+		viewFilters.UpdateUrls(tag, reqArgv.Path, viewKey)
+
+		titleCase := cases.Title(reqArgv.Language)
+		viewTitle := titleCase.String(strcase.ToDelimited(viewKey, ' '))
+		view := makeView(idx, viewKey, viewTitle, viewFilters)
+		if argvView == viewKey {
+			view.Present = true
+		}
+
+		view.Paginate = pgntn
+
+		if numPerPage < totalFiltered {
+
+			cra := reqArgv.Copy()
+			argv := []string{tag, view.Key}
+			for _, groups := range viewFilters {
+				for _, filter := range groups {
+					if filter.Present {
+						argv = append(argv, filter.Key)
+					}
+				}
+			}
+			cra.Argv = append([][]string{}, argv)
+
+			// more pagination
+			moreCra := cra.Copy()
+			count := numPerPage / blockNumPerPage
+			count += 1
+			moreCra.PageNumber = 0
+			moreCra.NumPerPage = count * blockNumPerPage
+			if moreCra.NumPerPage > totalFiltered {
+				moreCra.NumPerPage = totalFiltered
+			}
+			view.NextMore = moreCra.String() + "#" + tag + "-" + viewKey
+			// page pagination
+			if totalPages > 0 {
+				pageCra := cra.Copy()
+				pageCra.PageNumber = pageNumber
+				pageCra.NumPerPage = numPerPage
+				if pageNumber > 0 {
+					pageCra.PageNumber = 0
+					view.FirstPage = pageCra.String() + "#" + tag + "-" + viewKey
+					pageCra.PageNumber = pageNumber - 1
+					view.PrevPage = pageCra.String() + "#" + tag + "-" + viewKey
+				}
+
+				view.PageNumber = pageNumber + 1
+				view.TotalPages = totalPages
+
+				if pageNumber < totalPages-1 {
+					pageCra.PageNumber = pageNumber + 1
+					view.NextPage = pageCra.String() + "#" + tag + "-" + viewKey
+					pageCra.PageNumber = totalPages - 1
+					view.LastPage = pageCra.String() + "#" + tag + "-" + viewKey
+				}
+			}
+		}
+		view.Url = reqArgv.Path + "/:" + tag + "," + viewKey + "#" + tag + "-" + viewKey
+		builtViews = append(builtViews, view)
+	}
+	block["Views"] = builtViews
+
+	log.DebugF("index block found %v (total=%v, max=%v) pages with query: %v", totalFiltered, totalFound, maxResults, query)
 
 	if heading, ok := re.PrepareBlockHeader(blockDataContent); ok {
 		block["Heading"] = heading
