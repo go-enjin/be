@@ -22,6 +22,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	beContext "github.com/go-enjin/be/pkg/context"
 )
 
@@ -43,6 +45,7 @@ type RequestArgv struct {
 	Argv       [][]string
 	NumPerPage int
 	PageNumber int
+	Language   language.Tag
 }
 
 func (ra *RequestArgv) MustConsume() (must bool) {
@@ -55,16 +58,27 @@ func (ra *RequestArgv) Set(r *http.Request) (req *http.Request) {
 	return
 }
 
+func (ra *RequestArgv) Copy() (reqArg *RequestArgv) {
+	var argv [][]string
+	for _, group := range ra.Argv {
+		argv = append(argv, append([]string{}, group...))
+	}
+	reqArg = &RequestArgv{
+		Path:       ra.Path,
+		Argv:       argv,
+		NumPerPage: ra.NumPerPage,
+		PageNumber: ra.PageNumber,
+	}
+	return
+}
+
 func (ra *RequestArgv) String() (url string) {
 	url = ra.Path
 	for _, pieces := range ra.Argv {
 		url += "/:" + strings.Join(pieces, ",")
 	}
-	if ra.NumPerPage > -1 {
-		url += fmt.Sprintf("/%v", ra.NumPerPage)
-	}
-	if ra.PageNumber > -1 {
-		url += fmt.Sprintf("/%v", ra.PageNumber)
+	if ra.NumPerPage > -1 && ra.PageNumber > -1 {
+		url += fmt.Sprintf("/%v/%v/", ra.NumPerPage, ra.PageNumber)
 	}
 	return
 }
