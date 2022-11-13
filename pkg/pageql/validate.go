@@ -16,7 +16,8 @@ package pageql
 
 import (
 	"fmt"
-	"regexp"
+
+	"github.com/go-enjin/be/pkg/regexps"
 )
 
 func Validate(query string) (err error) {
@@ -112,7 +113,7 @@ func validateOpRhs(key string, op *Value) (err error) {
 	switch {
 
 	case op.Regexp != nil:
-		if _, e := regexp.Compile(*op.Regexp); e != nil {
+		if _, e := regexps.Compile(*op.Regexp); e != nil {
 			err = fmt.Errorf("error compiling regular expression")
 		}
 

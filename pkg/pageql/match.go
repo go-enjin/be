@@ -16,15 +16,15 @@ package pageql
 
 import (
 	"fmt"
-	"regexp"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/regexps"
 )
 
 func Match(query string, ctx context.Context) (matched bool, err error) {
 	var expr *Expression
-	if expr, err = parser.ParseString("pageql", query); err != nil {
+	if expr, err = Compile(query); err != nil {
 		return
 	}
 	matched, err = process(expr, ctx)
@@ -32,7 +32,6 @@ func Match(query string, ctx context.Context) (matched bool, err error) {
 }
 
 func process(expr *Expression, ctx context.Context) (matched bool, err error) {
-
 	var chained bool
 	if chained, err = validateGrouping(expr); err != nil {
 		return
@@ -99,7 +98,7 @@ func processOpRhs(key string, opValue *Value, ctx context.Context) (matched bool
 
 	case opValue.Regexp != nil:
 		if value, ok := ctx.Get(key).(string); ok {
-			if rx, e := regexp.Compile(*opValue.Regexp); e != nil {
+			if rx, e := regexps.Compile(*opValue.Regexp); e != nil {
 				err = fmt.Errorf("error compiling regular expression")
 				return
 			} else if matched = rx.MatchString(value); matched {
