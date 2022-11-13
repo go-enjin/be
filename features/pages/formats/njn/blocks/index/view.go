@@ -17,13 +17,15 @@ package index
 type Views []*View
 
 type View struct {
-	Index      int
-	Key        string
-	Url        string
-	Label      string
+	Index int
+	Key   string
+	Url   string
+	Label string
+
+	Present bool
+
 	Filters    Filters
 	HasFilters bool
-	Present    bool
 
 	Paginate string
 	NextMore string
