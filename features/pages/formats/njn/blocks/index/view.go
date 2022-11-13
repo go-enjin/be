@@ -57,3 +57,38 @@ func (v Views) HasFilters() (has bool) {
 	}
 	return
 }
+
+func (v Views) HasFilterPresent() (has bool) {
+	for _, view := range v {
+		for _, group := range view.Filters {
+			for _, filter := range group {
+				if has = filter.Present; has {
+					return
+				}
+			}
+		}
+	}
+	return
+}
+
+func (v *View) HasFilterPresent() (has bool) {
+	for _, group := range v.Filters {
+		for _, filter := range group {
+			if has = filter.Present; has {
+				return
+			}
+		}
+	}
+	return
+}
+
+func (v *View) GroupHasFilterPresent(idx int) (has bool) {
+	if idx >= 0 && len(v.Filters) > idx {
+		for _, filter := range v.Filters[idx] {
+			if has = filter.Present; has {
+				return
+			}
+		}
+	}
+	return
+}
