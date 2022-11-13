@@ -616,12 +616,12 @@ func (f *Feature) RestrictServeData(data []byte, mime string, w http.ResponseWri
 	if allow {
 		out = r.WithContext(context.WithValue(r.Context(), "BasicAuthUsername", authInfo.Username))
 		out = out.WithContext(context.WithValue(out.Context(), "BasicAuthDenied", false))
-		log.DebugF("basic-auth allowing %v user request: %v", authInfo.Username, r.URL.Path)
+		// log.DebugF("basic-auth allowing %v user request: %v", authInfo.Username, r.URL.Path)
 		return
 	}
 	out = r.WithContext(context.WithValue(r.Context(), "BasicAuthUsername", "anonymous"))
 	out = out.WithContext(context.WithValue(out.Context(), "BasicAuthDenied", true))
-	log.DebugF("basic-auth denying %v user request: %v", "anonymous", r.URL.Path)
+	log.WarnF("basic-auth denying %v user request: %v", "anonymous", r.URL.Path)
 	return
 }
 
