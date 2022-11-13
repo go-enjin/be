@@ -43,10 +43,15 @@ type Config struct {
 	Homepage    string
 	Authors     []Author
 	Extends     string
+
 	RootStyles  []template.CSS
 	BlockStyles map[string][]template.CSS
 	BlockThemes map[string]map[string]interface{}
-	Context     context.Context
+
+	FontawesomeLinks   map[string]string
+	FontawesomeClasses []string
+
+	Context context.Context
 }
 
 type Archetype struct {
@@ -156,14 +161,15 @@ func (t *Theme) Locales() (locales fs.FileSystem, ok bool) {
 
 func (t *Theme) initConfig(ctx context.Context) {
 	t.Config = Config{
-		Name:        ctx.String("name", t.Name),
-		Parent:      ctx.String("parent", ""),
-		Extends:     ctx.String("extends", ""),
-		License:     ctx.String("license", ""),
-		LicenseLink: ctx.String("licenselink", ""),
-		Description: ctx.String("description", ""),
-		Homepage:    ctx.String("homepage", ""),
-		Context:     context.New(),
+		Name:             ctx.String("name", t.Name),
+		Parent:           ctx.String("parent", ""),
+		Extends:          ctx.String("extends", ""),
+		License:          ctx.String("license", ""),
+		LicenseLink:      ctx.String("licenselink", ""),
+		Description:      ctx.String("description", ""),
+		Homepage:         ctx.String("homepage", ""),
+		FontawesomeLinks: make(map[string]string),
+		Context:          context.New(),
 	}
 
 	t.Config.Authors = make([]Author, 0)
@@ -176,6 +182,34 @@ func (t *Theme) initConfig(ctx context.Context) {
 			author.Name = actx.String("name", "")
 			author.Homepage = actx.String("homepage", "")
 			t.Config.Authors = append(t.Config.Authors, author)
+		}
+	}
+
+	if ctx.Has("fontawesome") {
+		if fa, ok := ctx.Get("fontawesome").(map[string]interface{}); ok {
+			for k, v := range fa {
+				key := strings.ToLower(k)
+				switch key {
+				case "classes":
+					if vv, ok := v.([]interface{}); ok {
+						for _, vvv := range vv {
+							if class, ok := vvv.(string); ok {
+								t.Config.FontawesomeClasses = append(t.Config.FontawesomeClasses, strings.ToLower(class))
+							} else {
+								log.ErrorF("error parsing fontawesome config: expected string, found: %T", vvv)
+							}
+						}
+					} else {
+						log.ErrorF("error parsing fontawesome config: expected []interface{}, found: %T", vv)
+					}
+				default:
+					if vv, ok := v.(string); ok {
+						t.Config.FontawesomeLinks[key] = vv
+					} else {
+						log.ErrorF("error parsing fontawesome config: expected string, found: %T", v)
+					}
+				}
+			}
 		}
 	}
 
@@ -330,14 +364,15 @@ func (t *Theme) initConfig(ctx context.Context) {
 
 func (t *Theme) GetConfig() (config Config) {
 	config = Config{
-		Name:        t.Config.Name,
-		Parent:      t.Config.Parent,
-		License:     t.Config.License,
-		LicenseLink: t.Config.LicenseLink,
-		Description: t.Config.Description,
-		Homepage:    t.Config.Homepage,
-		Authors:     t.Config.Authors,
-		Extends:     t.Config.Extends,
+		Name:             t.Config.Name,
+		Parent:           t.Config.Parent,
+		License:          t.Config.License,
+		LicenseLink:      t.Config.LicenseLink,
+		Description:      t.Config.Description,
+		Homepage:         t.Config.Homepage,
+		Authors:          t.Config.Authors,
+		Extends:          t.Config.Extends,
+		FontawesomeLinks: make(map[string]string),
 	}
 
 	config.BlockStyles = make(map[string][]template.CSS)
@@ -359,6 +394,13 @@ func (t *Theme) GetConfig() (config Config) {
 			for j, vv := range v {
 				config.BlockThemes[k][j] = vv
 			}
+		}
+
+		for _, v := range parent.Config.FontawesomeClasses {
+			config.FontawesomeClasses = append(config.FontawesomeClasses, v)
+		}
+		for k, v := range parent.Config.FontawesomeLinks {
+			config.FontawesomeLinks[k] = v
 		}
 
 		config.Context = parent.Config.Context.Copy()
