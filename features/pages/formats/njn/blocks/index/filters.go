@@ -14,19 +14,151 @@
 
 package index
 
+import (
+	"strings"
+
+	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/page"
+)
+
 type Filters [][]Filter
 
-type Filter struct {
-	Key     string `json:"key"`
-	Label   string `json:"label"`
-	Query   string `json:"query"`
-	Present bool
-	Url     string
+func makeFilters(data map[string]interface{}) (filters Filters) {
+	if indexFilters, check := data["index-filters"].([]interface{}); check {
+		for idx, item := range indexFilters {
+			switch t := item.(type) {
+			case map[string]interface{}:
+				filters = append(filters, []Filter{makeFilter(idx, 0, t)})
+			case []interface{}:
+				var subFilters []Filter
+				for jdx, subItem := range t {
+					switch tt := subItem.(type) {
+					case map[string]interface{}:
+						subFilters = append(subFilters, makeFilter(idx, jdx, tt))
+					default:
+						log.ErrorF("invalid filter data structure: %T", tt)
+					}
+				}
+				filters = append(filters, subFilters)
+			}
+		}
+	}
+	return
 }
 
-func MakeFilterFrom(v map[string]interface{}) (filter Filter) {
-	filter.Key, _ = v["key"].(string)
-	filter.Label, _ = v["label"].(string)
-	filter.Query, _ = v["query"].(string)
+func (f Filters) Copy() (duplicate Filters) {
+	for _, group := range f {
+		var copied []Filter
+		for _, filter := range group {
+			copied = append(copied, filter.Copy())
+		}
+		duplicate = append(duplicate, copied)
+	}
+	return
+}
+
+func (f Filters) SetPresent(key string) (updated bool) {
+	var filter Filter
+	if filter, updated = f.Find(key); updated {
+		f[filter.Group][filter.Position].Present = true
+		// log.WarnF("set present: %d/%d - %v", filter.Group, filter.Position, key)
+	}
+	return
+}
+
+func (f Filters) Update(filter Filter) (updated bool) {
+	for idx, group := range f {
+		for jdx, fltr := range group {
+			if updated = fltr.Key == filter.Key; updated {
+				f[idx][jdx] = filter
+				break
+			}
+		}
+	}
+	return
+}
+
+func (f Filters) Find(key string) (filter Filter, ok bool) {
+	for idx, group := range f {
+		for jdx, fltr := range group {
+			fltr.Group = idx
+			fltr.Position = jdx
+			f[idx][jdx] = fltr
+			if ok = fltr.Key == key; ok {
+				filter = fltr
+				return
+			}
+		}
+	}
+	return
+}
+
+func (f Filters) UpdateUrls(tag, reqArgvPath string, argv ...string) {
+	var filterLinkGroup []int
+	var filterLinkChain []string
+	for idx, group := range f {
+		for _, filter := range group {
+			if filter.Present {
+				filterLinkGroup = append(filterLinkGroup, idx)
+				filterLinkChain = append(filterLinkChain, filter.Key)
+				break // one per group
+			}
+		}
+	}
+	for idx, group := range f {
+		for jdx, filter := range group {
+			var chain []string
+			var removed bool
+			for cdx, chained := range filterLinkChain {
+				gdx := filterLinkGroup[cdx]
+				if chained == filter.Key {
+					removed = true
+				} else if gdx != idx {
+					chain = append(chain, chained)
+				}
+			}
+			f[idx][jdx].Url = reqArgvPath
+
+			prefix := tag
+			if len(argv) > 0 {
+				prefix += "," + strings.Join(argv, ",")
+			}
+			if len(chain) > 0 {
+				prefix += "," + strings.Join(chain, ",")
+			}
+
+			if removed {
+				f[idx][jdx].Url += "/:" + prefix
+			} else {
+				f[idx][jdx].Url += "/:" + prefix + "," + filter.Key
+			}
+
+		}
+	}
+	return
+}
+
+func (f Filters) FilterPages(pages []*page.Page) (filtered []*page.Page) {
+	var present []Filter
+	for _, group := range f {
+		for _, filter := range group {
+			if filter.Present {
+				present = append(present, filter)
+				break // move to next group, only one filter present per group
+			}
+		}
+	}
+	needed := len(present)
+	for _, pg := range pages {
+		count := 0
+		for _, filter := range present {
+			if matched, e := pg.MatchQL(filter.Query); e == nil && matched {
+				count += 1
+			}
+		}
+		if count == needed {
+			filtered = append(filtered, pg)
+		}
+	}
 	return
 }
