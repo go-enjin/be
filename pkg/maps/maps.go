@@ -233,6 +233,17 @@ func DebugWalk(thing map[string]interface{}) (results string) {
 	return
 }
 
+func SortedKeyLengths[V interface{}](data map[string]V) (keys []string) {
+	for key, _ := range data {
+		keys = append(keys, key)
+	}
+	// longest -> shortest
+	sort.Slice(keys, func(i, j int) bool {
+		return len(keys[i]) > len(keys[j])
+	})
+	return
+}
+
 func SortedKeys[V interface{}](data map[string]V) (keys []string) {
 	for key, _ := range data {
 		keys = append(keys, key)
