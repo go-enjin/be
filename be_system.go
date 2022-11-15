@@ -22,6 +22,7 @@ import (
 
 	"github.com/fvbommel/sortorder"
 	"github.com/go-chi/chi/v5"
+	"github.com/iancoleman/strcase"
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
@@ -188,6 +189,26 @@ func (e *Enjin) MatchQL(query string) (pages []*page.Page) {
 		if provider, ok := f.(feature.PageProvider); ok {
 			pages = append(pages, provider.MatchQL(query)...)
 		}
+	}
+	return
+}
+
+func (e *Enjin) ProcessContextQuery(ctx context.Context) (err error) {
+	if ctxQueries, ok := ctx.Get("Query").(context.Context); ok {
+		queryStrings := make(map[string]string)
+		queryResults := make(map[string][]*page.Page)
+		for k, v := range ctxQueries {
+			if q, ok := v.(string); ok {
+				key := strcase.ToCamel(k)
+				queryStrings[key] = q
+				queryResults[key] = e.MatchQL(q)
+			} else {
+				err = fmt.Errorf("unexpected query context value structure: %T", v)
+				return
+			}
+		}
+		ctx.SetSpecific("Query", queryStrings)
+		ctx.SetSpecific("QueryResults", queryResults)
 	}
 	return
 }
