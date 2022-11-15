@@ -19,16 +19,18 @@ package proxy
 import (
 	"net/http"
 
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/net"
 )
 
 var (
-	_ Feature            = (*CFeature)(nil)
-	_ MakeFeature        = (*CFeature)(nil)
-	_ feature.Middleware = (*CFeature)(nil)
+	_ Feature                 = (*CFeature)(nil)
+	_ MakeFeature             = (*CFeature)(nil)
+	_ feature.Middleware      = (*CFeature)(nil)
+	_ feature.RequestModifier = (*CFeature)(nil)
 )
 
 const Tag feature.Tag = "HeaderProxy"
@@ -86,13 +88,25 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
-	return func(next http.Handler) (this http.Handler) {
-		if f.enabled {
-			return middleware.RealIP(next)
+func (f *CFeature) ModifyRequest(w http.ResponseWriter, r *http.Request) {
+	if f.enabled {
+		if ip, err := net.GetIpFromRequest(r); err == nil {
+			if ip != r.RemoteAddr {
+				log.TraceF("setting RemoteAddr to %v (was: %v)", ip, r.RemoteAddr)
+				r.RemoteAddr = ip
+			}
+		} else {
+			log.ErrorF("error getting ip from request: %v", err)
 		}
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			return
-		})
 	}
 }
+
+// func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
+// 	// TODO: figure out how to re-use chi middleware.RealIP
+// 	return func(next http.Handler) (this http.Handler) {
+// 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 			middleware.RealIP(next)
+// 			return
+// 		})
+// 	}
+// }
