@@ -15,12 +15,11 @@
 package org
 
 import (
-	"github.com/blevesearch/bleve/v2/analysis/analyzer/standard"
 	"github.com/blevesearch/bleve/v2/mapping"
 
-	"github.com/go-enjin/be/pkg/lang"
-	"github.com/go-enjin/be/pkg/search"
 	"github.com/go-enjin/golang-org-x-text/language"
+
+	"github.com/go-enjin/be/pkg/search"
 )
 
 var _ Document = (*CDocument)(nil)
@@ -66,11 +65,8 @@ func (d *CDocument) AddFootnote(text string) {
 }
 
 func NewOrgModeDocumentMapping(tag language.Tag) (dm *mapping.DocumentMapping) {
-	dm = search.NewDocumentMapping()
-	analyzer := standard.Name
-	if lang.BleveSupportedAnalyzer(tag) {
-		analyzer = tag.String()
-	}
+	var analyzer string
+	analyzer, dm = search.NewDocumentMapping(tag)
 	dm.AddFieldMappingsAt("links", search.NewDefaultTextFieldMapping(analyzer))
 	dm.AddFieldMappingsAt("headings", search.NewDefaultTextFieldMapping(analyzer))
 	dm.AddFieldMappingsAt("footnotes", search.NewDefaultTextFieldMapping(analyzer))

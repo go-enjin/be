@@ -17,7 +17,11 @@ package search
 import (
 	"github.com/blevesearch/bleve/v2"
 	"github.com/blevesearch/bleve/v2/analysis/analyzer/simple"
+	"github.com/blevesearch/bleve/v2/analysis/analyzer/standard"
 	"github.com/blevesearch/bleve/v2/mapping"
+	"github.com/go-enjin/golang-org-x-text/language"
+
+	"github.com/go-enjin/be/pkg/lang"
 )
 
 var _ Document = (*CDocument)(nil)
@@ -77,22 +81,17 @@ func (d *CDocument) AddContent(text string) {
 	d.Contents = append(d.Contents, text)
 }
 
-func NewDocumentMapping() (dm *mapping.DocumentMapping) {
+func NewDocumentMapping(tag language.Tag) (analyzer string, dm *mapping.DocumentMapping) {
 	dm = bleve.NewDocumentMapping()
 
-	newField := func(analyzer string) (f *mapping.FieldMapping) {
-		f = bleve.NewTextFieldMapping()
-		f.Store = true
-		f.Analyzer = analyzer
-		f.IncludeInAll = true
-		f.IncludeTermVectors = true
-		return
+	analyzer = standard.Name
+	if lang.BleveSupportedAnalyzer(tag) {
+		analyzer = tag.String()
 	}
 
-	dm.AddFieldMappingsAt("Url", newField(simple.Name))
-	dm.AddFieldMappingsAt("Title", newField(simple.Name))
-	dm.AddFieldMappingsAt("Content", newField(simple.Name))
-	dm.AddFieldMappingsAt("Headings", newField(simple.Name))
-	dm.AddFieldMappingsAt("Language", newField(simple.Name))
+	dm.AddFieldMappingsAt("url", NewDefaultTextFieldMapping(simple.Name))
+	dm.AddFieldMappingsAt("title", NewDefaultTextFieldMapping(analyzer))
+	dm.AddFieldMappingsAt("content", NewDefaultTextFieldMapping(analyzer))
+	dm.AddFieldMappingsAt("language", NewDefaultTextFieldMapping(simple.Name))
 	return
 }

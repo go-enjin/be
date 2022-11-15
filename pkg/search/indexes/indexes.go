@@ -55,7 +55,7 @@ func NewFeaturesIndex(e feature.Internals) (index map[language.Tag]bleve.Index, 
 
 func NewMemOnlyIndex(tag language.Tag, e feature.Internals) (index bleve.Index, err error) {
 	indexMapping := bleve.NewIndexMapping()
-	indexMapping.DefaultMapping = search.NewDocumentMapping()
+	_, indexMapping.DefaultMapping = search.NewDocumentMapping(tag)
 	indexMapping.AddDocumentMapping("document", indexMapping.DefaultMapping)
 
 	for _, f := range e.Features() {
