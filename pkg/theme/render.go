@@ -75,10 +75,9 @@ func (t *Theme) NewTextTemplateWithContext(name string, ctx context.Context) (tm
 		if tmpl, err = parent.NewTextTemplateWithContext(name, ctx); err != nil {
 			return
 		}
-		// log.DebugF("starting %v template from theme %v", name, t.Config.Name)
 	} else {
 		tmpl = textTemplate.New(name).Funcs(t.NewTextFuncMapWithContext(ctx))
-		log.DebugF("starting %v template from theme %v", name, t.Config.Name)
+		log.DebugF("starting %v (text) template from theme %v", name, t.Config.Name)
 	}
 	return
 }
@@ -88,12 +87,10 @@ func (t *Theme) NewHtmlTemplateWithContext(name string, ctx context.Context) (tm
 		if tmpl, err = parent.NewHtmlTemplateWithContext(name, ctx); err != nil {
 			return
 		}
-		// log.DebugF("starting %v template from theme %v", name, t.Config.Name)
 	} else {
 		tmpl = htmlTemplate.New(name).Funcs(t.NewHtmlFuncMapWithContext(ctx))
-		log.DebugF("starting %v template from theme %v", name, t.Config.Name)
+		log.DebugF("starting %v (html) template from theme %v", name, t.Config.Name)
 	}
-
 	var layoutsTmpl *htmlTemplate.Template
 	if layoutsTmpl, err = t.Layouts.NewTemplate("", ctx); err != nil {
 		return
