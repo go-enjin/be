@@ -21,6 +21,7 @@ import (
 	"github.com/go-enjin/be/features/pages/formats/md"
 	"github.com/go-enjin/be/features/pages/formats/njn"
 	"github.com/go-enjin/be/features/pages/formats/org"
+	"github.com/go-enjin/be/features/pages/formats/tmpl"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/types/theme-types"
@@ -63,6 +64,7 @@ func (f *CFeature) Defaults() MakeFeature {
 		org.New().Make(),
 		njn.New().Defaults().Make(),
 		html.New().Make(),
+		tmpl.New().Make(),
 	)
 	return f
 }
