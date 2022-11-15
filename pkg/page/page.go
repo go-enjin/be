@@ -17,6 +17,7 @@ package page
 import (
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -185,7 +186,7 @@ func (p *Page) SetLanguage(tag language.Tag) {
 
 func (p *Page) getUrlPathSectionSlug(url string) (path, section, slug string) {
 	path = bePath.TrimSlashes(url)
-	slug = strcase.ToKebab(bePath.Base(path))
+	slug = strcase.ToKebab(filepath.Base(path))
 	path = strings.ToLower(path)
 	if parts := strings.Split(path, "/"); len(parts) > 0 {
 		section = parts[0]
