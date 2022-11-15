@@ -57,11 +57,7 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	})
 
 	router.Use(middleware.RequestID)
-	router.Use(middleware.Logger)
 	router.Use(e.panicMiddleware)
-	router.Use(e.langMiddleware)
-	router.Use(e.redirectionMiddleware)
-	router.Use(e.headersMiddleware)
 
 	for _, f := range e.Features() {
 		tag := f.Tag()
@@ -76,6 +72,14 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 			})
 		}
 	}
+
+	// logging after requests modified so proxy and populate ip
+	router.Use(middleware.Logger)
+
+	// these should be request modifiers instead of enjin middleware
+	router.Use(e.langMiddleware)
+	router.Use(e.redirectionMiddleware)
+	router.Use(e.headersMiddleware)
 
 	// operational security measures
 	router.Use(deny.Middleware)
