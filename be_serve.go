@@ -177,6 +177,23 @@ func (e *Enjin) ServePath(urlPath string, w http.ResponseWriter, r *http.Request
 }
 
 func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) (err error) {
+	for _, f := range e.Features() {
+		if ptp, ok := f.(feature.PageTypeProcessor); ok {
+			var pg *page.Page
+			var redirect string
+			var processed bool
+			if pg, redirect, processed, err = ptp.ProcessRequestPageType(r, p); err != nil {
+				return
+			} else if redirect != "" {
+				e.ServeRedirect(redirect, w, r)
+				return
+			} else if processed {
+				p = pg
+				break
+			}
+		}
+	}
+
 	var t *theme.Theme
 	if t, err = e.GetTheme(); err != nil {
 		return
