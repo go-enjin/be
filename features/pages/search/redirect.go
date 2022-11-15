@@ -19,7 +19,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/go-enjin/golang-org-x-text/language"
 	"golang.org/x/net/html"
 
 	"github.com/go-enjin/be/pkg/forms"
@@ -43,19 +42,14 @@ func (f *CFeature) handleQueryRedirect(r *http.Request) (redirect string, err er
 				value = vv
 			}
 			value = forms.Sanitize(value)
-			if !nonce.Validate("site-search-form", value) {
-				// Let the visitor know that their search form expired
+			if nonce.Validate("site-search-form", value) {
+				foundNonce = true
+			} else {
 				err = fmt.Errorf(printer.Sprintf("search form expired"))
-				return
-			}
-			foundNonce = true
-			if foundQuery {
 				break
 			}
 		case "query":
-			// trap random page ?query= requests?
 			query = forms.StripTags(v[0])
-			query = forms.Sanitize(query)
 			if vv, e := url.QueryUnescape(query); e != nil {
 				log.ErrorF("error un-escaping url path: %v", e)
 			} else {
@@ -63,30 +57,29 @@ func (f *CFeature) handleQueryRedirect(r *http.Request) (redirect string, err er
 			}
 			query = forms.Sanitize(query)
 			query = html.UnescapeString(query)
-			// query = html.EscapeString(query)
-			// query = url.PathEscape(query)
 			foundQuery = true
-			if foundNonce {
-				break
-			}
+
+		}
+		if foundQuery && foundNonce || err != nil {
+			break
 		}
 	}
-	if foundQuery && !foundNonce {
-		// Let the user know that the search form submission resulted in a (generic) error
-		err = fmt.Errorf(printer.Sprintf("search form error"))
+
+	langMode := f.enjin.SiteLanguageMode()
+
+	if ok := err == nil && foundQuery && foundNonce; ok {
+		query = url.PathEscape(query)
+		if query != "" {
+			query = "/:" + query
+		}
+		redirect = langMode.ToUrl(f.enjin.SiteDefaultLanguage(), tag, f.path+query)
+		// log.DebugF("search redirecting: %v", dst)
 		return
 	}
-	if ok := foundQuery && foundNonce; ok {
-		var dst string
-		query = url.PathEscape(query)
-		if !language.Compare(tag, f.enjin.SiteDefaultLanguage()) {
-			dst = "/" + tag.String() + f.path + "/:" + query
-		} else {
-			dst = f.path + "/:" + query
-		}
-		// log.DebugF("search redirecting: %v", dst)
-		// http.Redirect(w, r, dst, http.StatusSeeOther)
-		redirect = dst
+
+	if err != nil {
+		log.TraceF("error handling search redirect: %v", err)
 	}
+	redirect = langMode.ToUrl(f.enjin.SiteDefaultLanguage(), tag, f.path)
 	return
 }

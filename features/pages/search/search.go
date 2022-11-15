@@ -142,12 +142,13 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 			if len(r.URL.Query()) > 0 {
 				if redirect, err = f.handleQueryRedirect(r); err != nil {
 					p.Context.SetSpecific("SiteSearchError", err.Error())
-					processed = true
 					pg = p
+					err = nil
+					processed = true
 					return
 				} else if redirect != "" {
 					processed = true
-					log.WarnF("redirecting from: %v, to: %v", r.URL.Path, redirect)
+					// log.WarnF("redirecting from: %v, to: %v", r.URL.Path, redirect)
 					return
 				}
 			}
@@ -182,7 +183,7 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 		input = forms.StripTags(input)
 		p.Context.SetSpecific("SiteSearchQuery", input)
 
-		log.WarnF("search info: numPerPage=%d, pageNumber=%d, input=%v", numPerPage, pageNumber, reqArgv.Argv)
+		// log.WarnF("search info: numPerPage=%d, pageNumber=%d, input=%v", numPerPage, pageNumber, reqArgv.Argv)
 
 		if input != "" {
 			// perform search
