@@ -132,20 +132,12 @@ func (f *Feature) ServePath(path string, s feature.System, w http.ResponseWriter
 	reqLangTag := lang.GetTag(r)
 	path = forms.SanitizeRequestPath(path)
 	if mount, mpath, pg, e := f.cache.Lookup(reqLangTag, path); e == nil {
-		switch pg.Context.String("type", "page") {
-		case "query":
-			if err = f.enjin.ProcessContextQuery(pg.Context); err != nil {
-				return
-			}
-			fallthrough
-		case "page":
-			if err = s.ServePage(pg, w, r); err == nil {
-				log.DebugF("served embed %v content: [%v] %v", mount, pg.Language, mpath)
-				return
-			}
-			err = fmt.Errorf("serve embed %v content: %v - error: %v", mount, mpath, err)
+		if err = s.ServePage(pg, w, r); err == nil {
+			log.DebugF("served embed %v content: [%v] %v", mount, pg.Language, mpath)
 			return
 		}
+		err = fmt.Errorf("serve embed %v content: %v - error: %v", mount, mpath, err)
+		return
 	}
 	err = fmt.Errorf("path not found")
 	return
