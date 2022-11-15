@@ -181,6 +181,18 @@ func UnescapeHtml(input interface{}) (out template.HTML) {
 	return
 }
 
+func StringsAsList(v ...string) (list []string) {
+	list = v
+	return
+}
+
+func ReverseStrings(v []string) (reversed []string) {
+	for i := len(v) - 1; i >= 0; i-- {
+		reversed = append(reversed, v[i])
+	}
+	return
+}
+
 func SortedKeys(v interface{}) (keys []string) {
 	if maps.IsMap(v) {
 		switch t := v.(type) {
