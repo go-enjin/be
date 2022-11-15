@@ -28,6 +28,7 @@ import (
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/page"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -206,6 +207,8 @@ func SortedKeys(v interface{}) (keys []string) {
 		case map[string][]template.CSS:
 			keys = maps.SortedKeys(t)
 		case map[string][]template.JS:
+			keys = maps.SortedKeys(t)
+		case map[string][]*page.Page:
 			keys = maps.SortedKeys(t)
 
 		default:
