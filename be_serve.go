@@ -275,7 +275,8 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 		e.ServeRedirect(redirect, w, r)
 		return
 	}
-	e.ServeData(data, "text/html; charset=utf-8", w, r)
+	mime := ctx.String("ContentType", "text/html; charset=utf-8")
+	e.ServeData(data, fmt.Sprintf("%v", mime), w, r)
 	return
 }
 
