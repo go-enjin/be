@@ -57,7 +57,6 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	})
 
 	router.Use(middleware.RequestID)
-	router.Use(middleware.RealIP)
 	router.Use(middleware.Logger)
 	router.Use(e.panicMiddleware)
 	router.Use(e.langMiddleware)
