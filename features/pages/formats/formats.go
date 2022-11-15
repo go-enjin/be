@@ -108,10 +108,12 @@ func (f *CFeature) GetFormat(extn string) (format types.Format) {
 }
 
 func (f *CFeature) MatchFormat(filename string) (format types.Format, match string) {
-	for extn, frmt := range f.formats {
+	for _, extn := range maps.SortedKeyLengths(f.formats) {
+		frmt := f.formats[extn]
 		if strings.HasSuffix(filename, "."+extn) {
 			match = extn
 			format = frmt
+			break
 		}
 	}
 	return
