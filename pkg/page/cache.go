@@ -16,10 +16,12 @@ package page
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"sync"
 
 	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/iancoleman/strcase"
 
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
@@ -153,9 +155,25 @@ func (c *Cache) ListAll() (found []*Page) {
 	return
 }
 
+var rxMatchQLOrderBy = regexp.MustCompile(`ORDER BY \.(.+?)\s*(ASC|DSC|DESC)?\s*$`)
+
 func (c *Cache) MatchQL(query string) (found []*Page) {
 	c.RLock()
 	defer c.RUnlock()
+	orderBy := "Title"
+	sortDir := "ASC"
+	if rxMatchQLOrderBy.MatchString(query) {
+		m := rxMatchQLOrderBy.FindAllStringSubmatch(query, 1)
+		orderBy = strcase.ToCamel(m[0][1])
+		switch strings.ToUpper(m[0][2]) {
+		case "ASC", "":
+		case "DSC", "DESC":
+			sortDir = "DSC"
+		default:
+			log.ErrorF("invalid sort direction specified in PageQL statement: %v", m[0][2])
+		}
+		query = rxMatchQLOrderBy.ReplaceAllString(query, "")
+	}
 	if err := pageql.Validate(query); err != nil {
 		log.ErrorF("pageql validation error: %v", err)
 		return
@@ -169,6 +187,7 @@ func (c *Cache) MatchQL(query string) (found []*Page) {
 			}
 		}
 	}
+	found = SortPages(found, orderBy, sortDir)
 	return
 }
 
