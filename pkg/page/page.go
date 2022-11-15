@@ -38,6 +38,8 @@ import (
 type Page struct {
 	gorm.Model
 
+	Type string `json:"type" gorm:"type"`
+
 	Url         string `json:"url" gorm:"index"`
 	Slug        string `json:"slug"`
 	Path        string `json:"path"`
@@ -158,6 +160,7 @@ func (p *Page) Copy() (copy *Page) {
 		return p
 	}
 	copy = &Page{
+		Type:         p.Type,
 		Url:          p.Url,
 		Slug:         p.Slug,
 		Path:         p.Path,

@@ -111,6 +111,8 @@ func (p *Page) parseContext(ctx context.Context) {
 	ctx.CamelizeKeys()
 	ctx.DeleteKeys("Path", "Section", "Slug", "Content", "Format")
 
+	p.Type = ctx.String("Type", "page")
+
 	url := ctx.String("Url", p.Url)
 	p.SetSlugUrl(url, ctx)
 
