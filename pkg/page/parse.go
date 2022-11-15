@@ -17,6 +17,7 @@ package page
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -135,7 +136,15 @@ func (p *Page) parseContext(ctx context.Context) {
 			ctx.SetSpecific("Permalink", id)
 			ctx.SetSpecific("PermalinkSha", sum)
 			ctx.SetSpecific("Permalinked", true)
+			ctx.SetSpecific("PermalinkUrl", fmt.Sprintf("%v-%v", p.Url, p.PermalinkSha))
+			ctx.SetSpecific("PermalinkLongUrl", fmt.Sprintf("%v-%v", p.Url, p.Permalink))
 		}
+	} else {
+		ctx.SetSpecific("Permalink", p.Permalink)
+		ctx.SetSpecific("PermalinkSha", "")
+		ctx.SetSpecific("Permalinked", false)
+		ctx.SetSpecific("PermalinkUrl", p.Url)
+		ctx.SetSpecific("PermalinkLongUrl", p.Url)
 	}
 
 	p.Title = ctx.String("Title", p.Title)
