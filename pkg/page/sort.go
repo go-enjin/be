@@ -14,7 +14,12 @@
 
 package page
 
-import "sort"
+import (
+	"sort"
+	"time"
+
+	"github.com/go-enjin/be/pkg/log"
+)
 
 func SortPages(filtered []*Page, orderBy, sortDir string) (sorted []*Page) {
 	if orderBy == "" {
@@ -34,14 +39,24 @@ func SortPages(filtered []*Page, orderBy, sortDir string) (sorted []*Page) {
 		} else if a == nil && b != nil {
 			less = true
 		} else {
-			var ok bool
-			var ta, tb string
-			if ta, ok = a.(string); ok {
-				if tb, ok = b.(string); ok {
-					less = ta < tb
 
+			switch ta := a.(type) {
+			case string:
+				if tb, ok := b.(string); ok {
+					less = ta < tb
 				}
+			case int:
+				if tb, ok := b.(int); ok {
+					less = ta < tb
+				}
+			case time.Time:
+				if tb, ok := b.(time.Time); ok {
+					less = ta.Before(tb)
+				}
+			default:
+				log.ErrorF("unsupported sort key type: %T", a)
 			}
+
 		}
 		if sortDir != "ASC" {
 			less = !less
