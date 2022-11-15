@@ -56,7 +56,6 @@ type Service interface {
 
 	MatchQL(query string) (pages []*page.Page)
 	FindPage(tag language.Tag, url string) (p *page.Page)
-	ProcessContextQuery(ctx context.Context) (err error)
 
 	Notify(tag string)
 	NotifyF(tag, format string, argv ...interface{})
