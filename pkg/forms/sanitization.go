@@ -39,5 +39,6 @@ func SanitizeRequestPath(path string) (cleaned string) {
 	} else if cleaned[0] != '/' {
 		cleaned = "/" + cleaned
 	}
+	cleaned = Sanitize(cleaned)
 	return
 }
