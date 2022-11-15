@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -25,6 +26,8 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/forms"
+	"github.com/go-enjin/be/pkg/log"
 )
 
 const (
@@ -100,6 +103,12 @@ func ParseRequestArgv(path string) (reqArgv *RequestArgv) {
 			for _, part := range parts {
 				var pieces []string
 				for _, piece := range strings.Split(part, ",") {
+					if clean, err := url.PathUnescape(piece); err != nil {
+						log.ErrorF("error unescaping url path: %v", piece)
+					} else {
+						piece = clean
+					}
+					piece = forms.Sanitize(piece)
 					pieces = append(pieces, piece)
 				}
 				argv = append(argv, pieces)
