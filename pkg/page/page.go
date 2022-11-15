@@ -62,6 +62,7 @@ type Page struct {
 	PermalinkSha string    `json:"-" gorm:"-"`
 
 	formats types.FormatProvider
+	copied  int
 }
 
 func NewFromFile(path, file string, formats types.FormatProvider) (p *Page, err error) {
@@ -149,6 +150,13 @@ func (p *Page) String() string {
 }
 
 func (p *Page) Copy() (copy *Page) {
+	if p.copied > 0 {
+		p.copied += 1
+		// if p.copied > 1 {
+		// 	log.WarnDF(1, "copied page (%d): %v", p.copied, p.Url)
+		// }
+		return p
+	}
 	copy = &Page{
 		Url:          p.Url,
 		Slug:         p.Slug,
@@ -168,6 +176,7 @@ func (p *Page) Copy() (copy *Page) {
 		PermalinkSha: p.PermalinkSha,
 		Content:      p.Content,
 		formats:      p.formats,
+		copied:       1,
 	}
 	copy.ID = p.ID
 	copy.CreatedAt = p.CreatedAt
@@ -175,6 +184,7 @@ func (p *Page) Copy() (copy *Page) {
 	copy.DeletedAt = p.DeletedAt
 	copy.Initial = p.Initial.Copy()
 	copy.Context = p.Initial.Copy()
+	// log.WarnDF(1, "copied page: %v", p.Url)
 	return
 }
 
