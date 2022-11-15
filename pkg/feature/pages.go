@@ -26,21 +26,35 @@ import (
 type PageContextFilterFn = func(ctx context.Context, r *http.Request) (out context.Context)
 
 type PageContextModifier interface {
+	Feature
+
 	FilterPageContext(tCtx, pCtx context.Context, r *http.Request) (out context.Context)
 }
 
 type PageRestrictionHandler interface {
+	Feature
+
 	RestrictServePage(ctx context.Context, w http.ResponseWriter, r *http.Request) (co context.Context, ro *http.Request, allow bool)
 }
 
 type DataRestrictionHandler interface {
+	Feature
+
 	RestrictServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request) (out *http.Request, allow bool)
 }
 
 type PageProvider interface {
+	Feature
+
 	FindRedirection(url string) (p *page.Page)
 	FindTranslations(url string) (pages []*page.Page)
 	FindPage(tag language.Tag, url string) (p *page.Page)
 	FindPages(prefix string) (pages []*page.Page)
 	MatchQL(query string) (pages []*page.Page)
+}
+
+type PageTypeProcessor interface {
+	Feature
+
+	ProcessRequestPageType(r *http.Request, p *page.Page) (pg *page.Page, redirect string, processed bool, err error)
 }
