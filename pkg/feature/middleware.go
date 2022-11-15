@@ -44,7 +44,7 @@ func (f *CMiddleware) Apply(s System) (err error) {
 }
 
 func (f *CMiddleware) Use(s System) MiddlewareFn {
-	log.WarnF("using %v middleware", f.Self().Tag())
+	log.DebugF("using %v middleware", f.Self().Tag())
 	return f.Middleware
 }
 
