@@ -30,18 +30,18 @@ import (
 )
 
 var (
-	_ MakeFeature        = (*CFeature)(nil)
-	_ feature.Middleware = (*CFeature)(nil)
+	_ MakeFeature               = (*CFeature)(nil)
+	_ feature.PageTypeProcessor = (*CFeature)(nil)
 )
 
 const Tag feature.Tag = "PagesQuery"
 
 type Feature interface {
-	feature.Middleware
+	feature.Feature
 }
 
 type CFeature struct {
-	feature.CMiddleware
+	feature.CFeature
 
 	cli   *cli.Context
 	enjin feature.Internals
@@ -64,7 +64,7 @@ func (f *CFeature) Make() Feature {
 }
 
 func (f *CFeature) Init(this interface{}) {
-	f.CMiddleware.Init(this)
+	f.CFeature.Init(this)
 }
 
 func (f *CFeature) Tag() (tag feature.Tag) {
