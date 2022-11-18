@@ -29,6 +29,20 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
+func ExtractBoolValue(v interface{}) (b bool) {
+	switch t := v.(type) {
+	case int:
+		b = t != 0
+	case float64:
+		b = t != 0.0
+	case bool:
+		b = t
+	case string:
+		b = beStrings.IsTrue(t)
+	}
+	return
+}
+
 func ExtractEnumValue(key string, upper bool, enums []string, data map[string]interface{}) (value string, err error) {
 	if v, ok := data[key]; ok {
 		switch t := v.(type) {
