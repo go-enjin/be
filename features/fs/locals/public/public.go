@@ -32,48 +32,68 @@ import (
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
-var _ feature.Feature = (*Feature)(nil)
+var (
+	_ Feature = (*CFeature)(nil)
+)
 
-var _ feature.Middleware = (*Feature)(nil)
+var (
+	DefaultCacheControl = "max-age=604800, must-revalidate"
+)
 
 const Tag feature.Tag = "LocalPublic"
 
-type Feature struct {
+type Feature interface {
+	feature.Middleware
+}
+
+type CFeature struct {
 	feature.CMiddleware
 
 	setup   map[string]string
 	mounted map[string]beFs.FileSystem
+
+	cacheControl string
 }
 
 type MakeFeature interface {
-	feature.MakeFeature
-
 	MountPath(mount, path string) MakeFeature
+	SetCacheControl(values string) MakeFeature
+
+	Make() Feature
 }
 
 func New() MakeFeature {
-	f := new(Feature)
+	f := new(CFeature)
 	f.Init(f)
 	return f
 }
 
-func (f *Feature) MountPath(mount, path string) MakeFeature {
+func (f *CFeature) MountPath(mount, path string) MakeFeature {
 	f.setup[mount] = path
 	return f
 }
 
-func (f *Feature) Init(this interface{}) {
+func (f *CFeature) SetCacheControl(values string) MakeFeature {
+	f.cacheControl = values
+	return f
+}
+
+func (f *CFeature) Make() Feature {
+	return f
+}
+
+func (f *CFeature) Init(this interface{}) {
 	f.CMiddleware.Init(this)
 	f.setup = make(map[string]string)
 	f.mounted = make(map[string]beFs.FileSystem)
 }
 
-func (f *Feature) Tag() (tag feature.Tag) {
+func (f *CFeature) Tag() (tag feature.Tag) {
 	tag = Tag
 	return
 }
 
-func (f *Feature) listMountPoints() (mounts []string) {
+func (f *CFeature) listMountPoints() (mounts []string) {
 	for mount, _ := range f.setup {
 		mounts = append(mounts, mount)
 	}
@@ -81,7 +101,7 @@ func (f *Feature) listMountPoints() (mounts []string) {
 	return
 }
 
-func (f *Feature) Build(_ feature.Buildable) (err error) {
+func (f *CFeature) Build(_ feature.Buildable) (err error) {
 	for _, mount := range f.listMountPoints() {
 		if _, ok := f.mounted[mount]; ok {
 			err = fmt.Errorf(`"%v" already mounted`, mount)
@@ -100,11 +120,11 @@ func (f *Feature) Build(_ feature.Buildable) (err error) {
 	return
 }
 
-func (f *Feature) Startup(ctx *cli.Context) (err error) {
+func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
+func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 	mounts := f.listMountPoints()
 	log.DebugF("including local public middleware: %v", f.setup)
 	return func(next http.Handler) (this http.Handler) {
@@ -113,9 +133,14 @@ func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
 			path = forms.TrimQueryParams(path)
 			if len(path) > 1 {
 				for _, m := range mounts {
-					if data, mime, path, ok := beFs.CheckForFileData(f.mounted[m], path, m); ok {
+					if data, mime, filePath, ok := beFs.CheckForFileData(f.mounted[m], path, m); ok {
+						if f.cacheControl == "" && DefaultCacheControl != "" {
+							w.Header().Set("Cache-Control", DefaultCacheControl)
+						} else if f.cacheControl != "" {
+							w.Header().Set("Cache-Control", f.cacheControl)
+						}
 						s.ServeData(data, mime, w, r)
-						log.DebugF("served local %v public: %v (%v)", m, path, mime)
+						log.DebugF("served local %v public: %v (%v)", m, filePath, mime)
 						return
 					}
 				}

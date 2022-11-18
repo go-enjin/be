@@ -36,54 +36,73 @@ import (
 )
 
 var (
-	_ feature.Feature      = (*Feature)(nil)
-	_ feature.Middleware   = (*Feature)(nil)
-	_ feature.PageProvider = (*Feature)(nil)
+	_ Feature = (*CFeature)(nil)
+)
+
+var (
+	DefaultCacheControl = "no-cache"
 )
 
 const Tag feature.Tag = "LocalContent"
 
-type Feature struct {
+type Feature interface {
+	feature.Middleware
+	feature.PageProvider
+}
+
+type CFeature struct {
 	feature.CMiddleware
 
 	enjin feature.Internals
 
 	setup map[string]string
 	cache *page.Cache
+
+	cacheControl string
 }
 
 type MakeFeature interface {
-	feature.MakeFeature
-
 	MountPath(mount, path string) MakeFeature
+	SetCacheControl(values string) MakeFeature
+
+	Make() Feature
 }
 
 func New() MakeFeature {
-	f := new(Feature)
+	f := new(CFeature)
 	f.Init(f)
 	return f
 }
 
-func (f *Feature) MountPath(mount, path string) MakeFeature {
+func (f *CFeature) MountPath(mount, path string) MakeFeature {
 	f.setup[mount] = path
 	return f
 }
 
-func (f *Feature) Init(this interface{}) {
+func (f *CFeature) SetCacheControl(values string) MakeFeature {
+	f.cacheControl = values
+	return f
+}
+
+func (f *CFeature) Make() Feature {
+	return f
+}
+
+func (f *CFeature) Init(this interface{}) {
 	f.CMiddleware.Init(this)
 	f.setup = make(map[string]string)
 }
 
-func (f *Feature) Tag() (tag feature.Tag) {
+func (f *CFeature) Tag() (tag feature.Tag) {
 	tag = Tag
 	return
 }
 
-func (f *Feature) Build(_ feature.Buildable) (err error) {
+func (f *CFeature) Build(_ feature.Buildable) (err error) {
 	return
 }
 
-func (f *Feature) Setup(enjin feature.Internals) {
+func (f *CFeature) Setup(enjin feature.Internals) {
 	f.enjin = enjin
 	t, _ := f.enjin.GetTheme()
 	f.cache = page.NewCache(t)
@@ -105,12 +124,12 @@ func (f *Feature) Setup(enjin feature.Internals) {
 	}
 }
 
-func (f *Feature) Startup(ctx *cli.Context) (err error) {
+func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	f.cache.Rebuild()
 	return
 }
 
-func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
+func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 	log.DebugF("including local content middleware: %v", f.setup)
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -125,11 +144,16 @@ func (f *Feature) Use(s feature.System) feature.MiddlewareFn {
 	}
 }
 
-func (f *Feature) ServePath(path string, s feature.System, w http.ResponseWriter, r *http.Request) (err error) {
+func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWriter, r *http.Request) (err error) {
 	f.cache.Rebuild()
 	reqLangTag := lang.GetTag(r)
 	path = forms.SanitizeRequestPath(path)
 	if mount, mpath, pg, e := f.cache.Lookup(reqLangTag, path); e == nil {
+		if f.cacheControl == "" && DefaultCacheControl != "" {
+			w.Header().Set("Cache-Control", DefaultCacheControl)
+		} else if f.cacheControl != "" {
+			w.Header().Set("Cache-Control", f.cacheControl)
+		}
 		if err = s.ServePage(pg, w, r); err == nil {
 			log.DebugF("served local %v content: [%v] %v", mount, pg.Language, mpath)
 			return
@@ -141,7 +165,7 @@ func (f *Feature) ServePath(path string, s feature.System, w http.ResponseWriter
 	return
 }
 
-func (f *Feature) UpdateSearch(tag language.Tag, index bleve.Index) (err error) {
+func (f *CFeature) UpdateSearch(tag language.Tag, index bleve.Index) (err error) {
 	f.cache.Rebuild()
 	allPages := f.cache.ListAll()
 	log.DebugF("locals content search updating %d documents", len(allPages))
@@ -168,7 +192,7 @@ func (f *Feature) UpdateSearch(tag language.Tag, index bleve.Index) (err error) 
 	return
 }
 
-func (f *Feature) FindRedirection(path string) (p *page.Page) {
+func (f *CFeature) FindRedirection(path string) (p *page.Page) {
 	f.cache.Rebuild()
 	path = forms.SanitizeRequestPath(path)
 	if found := f.cache.FindAll(path); len(found) > 0 {
@@ -182,14 +206,14 @@ func (f *Feature) FindRedirection(path string) (p *page.Page) {
 	return
 }
 
-func (f *Feature) FindTranslations(path string) (found []*page.Page) {
+func (f *CFeature) FindTranslations(path string) (found []*page.Page) {
 	f.cache.Rebuild()
 	path = forms.SanitizeRequestPath(path)
 	found = f.cache.FindAll(path)
 	return
 }
 
-func (f *Feature) FindPage(tag language.Tag, path string) (p *page.Page) {
+func (f *CFeature) FindPage(tag language.Tag, path string) (p *page.Page) {
 	f.cache.Rebuild()
 	path = forms.SanitizeRequestPath(path)
 	if _, _, pg, e := f.cache.Lookup(tag, path); e == nil {
@@ -198,14 +222,14 @@ func (f *Feature) FindPage(tag language.Tag, path string) (p *page.Page) {
 	return
 }
 
-func (f *Feature) FindPages(path string) (pages []*page.Page) {
+func (f *CFeature) FindPages(path string) (pages []*page.Page) {
 	f.cache.Rebuild()
 	path = forms.SanitizeRequestPath(path)
 	pages = f.cache.FindAllPrefix(path)
 	return
 }
 
-func (f *Feature) MatchQL(query string) (pages []*page.Page) {
+func (f *CFeature) MatchQL(query string) (pages []*page.Page) {
 	f.cache.Rebuild()
 	pages = f.cache.MatchQL(query)
 	return
