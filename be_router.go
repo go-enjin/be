@@ -44,7 +44,7 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 			}
 
 			path := forms.SanitizeRequestPath(r.URL.Path)
-			if reqArgv := site.ParseRequestArgv(path); reqArgv != nil {
+			if reqArgv := site.DecodeHttpRequest(r); reqArgv != nil {
 				r = reqArgv.Set(r)
 				path = reqArgv.Path
 				log.TraceF("parsed request argv: %v", reqArgv)
