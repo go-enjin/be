@@ -342,7 +342,7 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 		}
 		return
 	}
-	html, err = renderNjnData(f, ctx, t, data)
+	html, redirect, err = renderNjnData(f, ctx, t, data)
 	return
 }
 

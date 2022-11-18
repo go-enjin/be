@@ -29,7 +29,7 @@ import (
 
 func (re *RenderEnjin) PrepareErrorBlock(summary string, data ...interface{}) (block map[string]interface{}, err error) {
 	b, _ := json.MarshalIndent(data, "", "  ")
-	block, err = re.PrepareBlock(map[string]interface{}{
+	block, _, err = re.PrepareBlock(map[string]interface{}{
 		"type": "content",
 		"content": map[string]interface{}{
 			"section": []interface{}{
@@ -59,10 +59,10 @@ func (re *RenderEnjin) RenderErrorBlock(summary string, data ...interface{}) (ht
 	return
 }
 
-func (re *RenderEnjin) PrepareBlock(data map[string]interface{}) (block map[string]interface{}, err error) {
+func (re *RenderEnjin) PrepareBlock(data map[string]interface{}) (block map[string]interface{}, redirect string, err error) {
 	if name, ok := re.ParseTypeName(data); ok {
 		if njnBlock, ok := re.Njn.FindBlock(feature.AnyNjnClass, name); ok {
-			if block, err = njnBlock.PrepareBlock(re, name, data); err == nil {
+			if block, redirect, err = njnBlock.PrepareBlock(re, name, data); err == nil {
 				log.TraceF("prepared block type: %v", name)
 			}
 			return
@@ -89,10 +89,10 @@ func (re *RenderEnjin) RenderPreparedBlock(block map[string]interface{}) (html t
 	return
 }
 
-func (re *RenderEnjin) ProcessBlock(block map[string]interface{}) (html template.HTML, err error) {
+func (re *RenderEnjin) ProcessBlock(block map[string]interface{}) (html template.HTML, redirect string, err error) {
 	if name, ok := re.ParseTypeName(block); ok {
 		if njnBlock, ok := re.Njn.FindBlock(feature.AnyNjnClass, name); ok {
-			if html, err = njnBlock.ProcessBlock(re, name, block); err == nil {
+			if html, redirect, err = njnBlock.ProcessBlock(re, name, block); err == nil {
 				log.DebugF("processed block type: %v (depth=%v)", name, re.GetCurrentDepth())
 			}
 			return

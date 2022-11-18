@@ -52,7 +52,7 @@ type RenderEnjin struct {
 	sync.RWMutex
 }
 
-func renderNjnData(f feature.EnjinSystem, ctx context.Context, t types.Theme, data interface{}) (html template.HTML, err *types.EnjinError) {
+func renderNjnData(f feature.EnjinSystem, ctx context.Context, t types.Theme, data interface{}) (html template.HTML, redirect string, err *types.EnjinError) {
 	re := new(RenderEnjin)
 	re.Njn = f
 	re.Theme = t
@@ -62,7 +62,7 @@ func renderNjnData(f feature.EnjinSystem, ctx context.Context, t types.Theme, da
 	re.data = data
 	re.footnotes = make(map[int][]map[string]interface{}, 0)
 	re.currentDepth = 0
-	html, err = re.Render(data)
+	html, redirect, err = re.Render(data)
 	return
 }
 
@@ -76,10 +76,13 @@ func (re *RenderEnjin) RequestContext() (ctx context.Context) {
 	return
 }
 
-func (re *RenderEnjin) Render(data interface{}) (html template.HTML, err *types.EnjinError) {
+func (re *RenderEnjin) Render(data interface{}) (html template.HTML, redirect string, err *types.EnjinError) {
 
-	if prepared, e := re.PreparePageData(data); e != nil {
+	if prepared, redir, e := re.PreparePageData(data); e != nil {
 		err = e
+		return
+	} else if redir != "" {
+		redirect = redir
 		return
 	} else {
 		if h, ee := re.RenderNjnTemplateList("block-list", prepared); ee != nil {
@@ -97,14 +100,17 @@ func (re *RenderEnjin) Render(data interface{}) (html template.HTML, err *types.
 	return
 }
 
-func (re *RenderEnjin) PreparePageData(data interface{}) (blocks []interface{}, err *types.EnjinError) {
+func (re *RenderEnjin) PreparePageData(data interface{}) (blocks []interface{}, redirect string, err *types.EnjinError) {
 
 	switch typedData := data.(type) {
 
 	case []interface{}:
 		for _, c := range typedData {
-			if preparedBlocks, e := re.PreparePageData(c); e != nil {
+			if preparedBlocks, redir, e := re.PreparePageData(c); e != nil {
 				err = e
+				return
+			} else if redir != "" {
+				redirect = redir
 				return
 			} else {
 				blocks = append(blocks, preparedBlocks...)
@@ -112,9 +118,12 @@ func (re *RenderEnjin) PreparePageData(data interface{}) (blocks []interface{}, 
 		}
 
 	case map[string]interface{}:
-		if prepared, e := re.PrepareBlock(typedData); e != nil {
+		if prepared, redir, e := re.PrepareBlock(typedData); e != nil {
 			preparedBlock, _ := re.PrepareErrorBlock(e.Error(), typedData)
 			blocks = append(blocks, preparedBlock)
+		} else if redir != "" {
+			redirect = redir
+			return
 		} else {
 			blocks = append(blocks, prepared)
 		}
