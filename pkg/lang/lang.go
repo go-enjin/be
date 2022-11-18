@@ -96,6 +96,17 @@ func TagInTags(needle language.Tag, haystack ...language.Tag) (found bool) {
 	return
 }
 
+func TagInTagSlices(needle language.Tag, haystacks ...[]language.Tag) (found bool) {
+	for _, haystack := range haystacks {
+		for _, tag := range haystack {
+			if found = language.Compare(needle, tag); found {
+				return
+			}
+		}
+	}
+	return
+}
+
 var rxTranslatorInlineComments = regexp.MustCompile(`\((\s*_\s+.+?\s*)/\*.+?\*/\s*\)`)
 var rxTranslatorPipelineComments = regexp.MustCompile(`\{\{(-??\s*_\s+.+?\s*)/\*.+?\*/(\s*-??)}}`)
 
