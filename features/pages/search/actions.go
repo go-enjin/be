@@ -17,20 +17,18 @@ package search
 import (
 	"fmt"
 	"net/url"
-	"regexp"
 
 	"github.com/blevesearch/bleve/v2"
-	html2 "github.com/blevesearch/bleve/v2/search/highlight/format/html"
+	bleveFormatHtml "github.com/blevesearch/bleve/v2/search/highlight/format/html"
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/net/html"
 
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
-	indexes2 "github.com/go-enjin/be/pkg/search/indexes"
+	"github.com/go-enjin/be/pkg/regexps"
+	beSearchIndexes "github.com/go-enjin/be/pkg/search/indexes"
 )
-
-var RxLanguageKey = regexp.MustCompile(`language:(\*|[a-z][-a-zA-Z]+)\s*`)
 
 func (f *CFeature) SearchAction(ctx *cli.Context) (err error) {
 	var input string
@@ -60,7 +58,7 @@ func (f *CFeature) SearchAction(ctx *cli.Context) (err error) {
 }
 
 func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (results *bleve.SearchResult, err error) {
-	if indexes, all, e := indexes2.NewFeaturesIndex(f.enjin); e != nil {
+	if indexes, all, e := beSearchIndexes.NewFeaturesIndex(f.enjin); e != nil {
 		err = e
 		return
 	} else {
@@ -77,11 +75,11 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 		log.DebugF("performing site search: %v", input)
 
 		// handle user input `language:%v`
-		if RxLanguageKey.MatchString(input) {
-			m := RxLanguageKey.FindAllStringSubmatch(input, 1)
+		if regexps.RxLanguageKey.MatchString(input) {
+			m := regexps.RxLanguageKey.FindAllStringSubmatch(input, 1)
 			if m[0][1] == "*" {
 				searchAll = true
-				input = RxLanguageKey.ReplaceAllString(input, "")
+				input = regexps.RxLanguageKey.ReplaceAllString(input, "")
 			} else if queryLangTag, eee := language.Parse(m[0][1]); eee != nil {
 				err = fmt.Errorf("invalid language")
 				return
@@ -97,7 +95,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 					return
 				}
 				inputWantsTag = queryLangTag
-				input = RxLanguageKey.ReplaceAllString(input, "")
+				input = regexps.RxLanguageKey.ReplaceAllString(input, "")
 			}
 		}
 
@@ -115,7 +113,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 		req.Size = size
 		req.From = pg * size
 		req.Fields = []string{"*"}
-		req.Highlight = bleve.NewHighlightWithStyle(html2.Name)
+		req.Highlight = bleve.NewHighlightWithStyle(bleveFormatHtml.Name)
 
 		// determine which index to search
 		index := all
