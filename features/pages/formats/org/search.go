@@ -64,8 +64,8 @@ func (d *CDocument) AddFootnote(text string) {
 	d.Footnotes = append(d.Footnotes, text)
 }
 
-func NewOrgModeDocumentMapping(tag language.Tag) (dm *mapping.DocumentMapping) {
-	var analyzer string
+func (f *CFeature) NewDocumentMapping(tag language.Tag) (doctype, analyzer string, dm *mapping.DocumentMapping) {
+	doctype = f.Name()
 	analyzer, dm = search.NewDocumentMapping(tag)
 	dm.AddFieldMappingsAt("links", search.NewDefaultTextFieldMapping(analyzer))
 	dm.AddFieldMappingsAt("headings", search.NewDefaultTextFieldMapping(analyzer))

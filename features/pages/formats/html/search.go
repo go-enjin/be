@@ -57,8 +57,8 @@ func (d *CDocument) AddHeading(text string) {
 	d.Headings = append(d.Headings, text)
 }
 
-func NewHtmlDocumentMapping(tag language.Tag) (dm *mapping.DocumentMapping) {
-	var analyzer string
+func (f *CFeature) NewDocumentMapping(tag language.Tag) (doctype, analyzer string, dm *mapping.DocumentMapping) {
+	doctype = f.Name()
 	analyzer, dm = search.NewDocumentMapping(tag)
 	dm.AddFieldMappingsAt("links", search.NewDefaultTextFieldMapping(analyzer))
 	dm.AddFieldMappingsAt("headings", search.NewDefaultTextFieldMapping(analyzer))

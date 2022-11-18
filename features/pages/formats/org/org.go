@@ -108,7 +108,7 @@ func (f *CFeature) Label() (label string) {
 	return
 }
 
-func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, err *types.EnjinError) {
+func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, redirect string, err *types.EnjinError) {
 	if text, e := f.RenderOrgMode(content); e != nil {
 		err = types.NewEnjinError(
 			"org-mode parse error",
@@ -123,7 +123,8 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 }
 
 func (f *CFeature) AddSearchDocumentMapping(tag language.Tag, indexMapping *mapping.IndexMappingImpl) {
-	indexMapping.AddDocumentMapping("org", NewOrgModeDocumentMapping(tag))
+	doctype, _, dm := f.NewDocumentMapping(tag)
+	indexMapping.AddDocumentMapping(doctype, dm)
 }
 
 func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error) {

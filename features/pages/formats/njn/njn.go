@@ -311,7 +311,7 @@ func (f *CFeature) FindBlock(tagClass feature.NjnClass, blockType string) (block
 	return
 }
 
-func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, err *types.EnjinError) {
+func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, redirect string, err *types.EnjinError) {
 	var data interface{}
 	if e := json.Unmarshal([]byte(content), &data); e != nil {
 		switch t := e.(type) {
@@ -347,7 +347,8 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 }
 
 func (f *CFeature) AddSearchDocumentMapping(tag language.Tag, indexMapping *mapping.IndexMappingImpl) {
-	indexMapping.AddDocumentMapping("njn", NewEnjinDocumentMapping(tag))
+	doctype, _, dm := f.NewDocumentMapping(tag)
+	indexMapping.AddDocumentMapping(doctype, dm)
 }
 
 func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error) {

@@ -87,7 +87,7 @@ func (f *CFeature) Label() (label string) {
 	return
 }
 
-func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, err *types.EnjinError) {
+func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, redirect string, err *types.EnjinError) {
 	if tmpl, e := t.NewTextTemplateWithContext("content.tmpl", ctx); e != nil {
 		log.ErrorF("error preparing text template: %v", e)
 		return
