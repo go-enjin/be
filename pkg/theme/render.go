@@ -250,9 +250,12 @@ func (t *Theme) RenderPage(ctx context.Context, p *page.Page) (data []byte, redi
 	}
 
 	if format := t.GetFormat(p.Format); format != nil {
-		if html, ee := format.Process(ctx, t, output); ee != nil {
+		if html, redir, ee := format.Process(ctx, t, output); ee != nil {
 			log.ErrorF("error processing %v page format: %v - %v", p.Format, ee.Title, ee.Summary)
 			ctx["Content"] = ee.Html()
+		} else if redir != "" {
+			redirect = redir
+			return
 		} else {
 			ctx["Content"] = html
 			log.DebugF("page format success: %v", format.Name())
