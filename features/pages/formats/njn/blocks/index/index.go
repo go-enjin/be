@@ -23,10 +23,12 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/forms/nonce"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/pageql"
+	"github.com/go-enjin/be/pkg/pages"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/types/site"
 )
@@ -86,14 +88,11 @@ func (f *CBlock) NjnBlockType() (name string) {
 	return
 }
 
-func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (block map[string]interface{}, err error) {
+func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (block map[string]interface{}, redirect string, err error) {
 	if blockType != "index" {
 		err = fmt.Errorf("%v does not implement %v block type", f.Tag(), blockType)
 		return
 	}
-
-	reqArgv := re.RequestArgv()
-	// log.WarnF("reqArgv=%#v", reqArgv.String())
 
 	var blockDataContent map[string]interface{}
 	if blockDataContent, err = re.PrepareGenericBlockData(data["content"]); err != nil {
@@ -144,22 +143,64 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 
 	filters := makeFilters(data)
 
+	reqArgv := re.RequestArgv()
+	// log.WarnF("reqArgv=%#v", reqArgv.String())
+
+	if reqArgv.NumPerPage > -1 {
+		numPerPage = reqArgv.NumPerPage
+	}
+	if reqArgv.PageNumber > -1 {
+		reqArgv.NumPerPage = numPerPage
+		pageNumber = reqArgv.PageNumber
+		reqArgv.PageNumber = pageNumber
+	} else {
+		reqArgv.PageNumber = -1
+		reqArgv.NumPerPage = -1
+	}
+
+	var csqp bool // correct search query paths
+	decArgv := site.DecomposeHttpRequest(reqArgv.Request)
+	for idx, argv := range decArgv.Argv {
+		for jdx, arg := range argv {
+			if check := strings.HasPrefix(arg, "%28") && strings.HasSuffix(arg, "%29"); check {
+				csqp = check
+				arg = arg[3 : len(arg)-3]
+				if arg == "" {
+					decArgv.Argv[idx][jdx] = ""
+				} else {
+					decArgv.Argv[idx][jdx] = "(" + arg + ")"
+				}
+			} else if check := arg != "" && arg[0] == '(' && arg[len(arg)-1] == ')'; check {
+				arg = arg[1 : len(arg)-1]
+				if arg == "" {
+					csqp = check
+					decArgv.Argv[idx][jdx] = ""
+				} else {
+					decArgv.Argv[idx][jdx] = "(" + arg + ")"
+				}
+			}
+		}
+	}
+	if csqp {
+		redirect = decArgv.String()
+		return
+	}
+
+	searchEnabled := false
+	searchNonceKey := fmt.Sprintf("index-block--%v--search-form", tag)
+	if check, ok := data["search-enabled"]; ok {
+		searchEnabled = maps.ExtractBoolValue(check)
+	}
+
+	var argvBlockPresent bool
 	var argvView string
+	var argvSearch string
 
 	for idx, pieces := range reqArgv.Argv {
 		if pieces[0] != "" && pieces[0] == tag {
+			argvBlockPresent = true
 			re.RequestContext().SetSpecific(site.RequestArgvConsumedKey, true)
-			if reqArgv.NumPerPage > -1 {
-				numPerPage = reqArgv.NumPerPage
-			}
-			if reqArgv.PageNumber > -1 {
-				reqArgv.NumPerPage = numPerPage
-				pageNumber = reqArgv.PageNumber
-				reqArgv.PageNumber = pageNumber
-			} else {
-				reqArgv.PageNumber = -1
-				reqArgv.NumPerPage = -1
-			}
+
 			var fixArgs []string
 			var viewArgs []string
 			for _, piece := range pieces[1:] {
@@ -172,18 +213,39 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 					} else {
 						fixArgs = append(fixArgs, piece)
 					}
+				} else if searchEnabled && piece != "" && piece[0] == '(' && piece[len(piece)-1] == ')' {
+					argvSearch = piece[1 : len(piece)-1] // trim '(' and ')'
+					fixArgs = append(fixArgs, "("+argvSearch+")")
 				} else {
-					fixArgs = append(fixArgs, piece)
+					// 	fixArgs = append(fixArgs, piece)
 				}
 			}
 			fixArgs = append(viewArgs, fixArgs...)
 			if len(fixArgs) != len(pieces[1:]) {
 				reqArgv.Argv[idx] = append([]string{pieces[0]}, fixArgs...)
-				re.RequestContext().SetSpecific(site.RequestRedirectKey, reqArgv.String())
+				// re.RequestContext().SetSpecific(site.RequestRedirectKey, reqArgv.String())
+				redirect = reqArgv.String()
+				return
 			}
 		}
 	}
+
 	block["View"] = argvView
+	block["NumPerPage"] = numPerPage
+
+	block["SearchEnabled"] = searchEnabled
+	if searchEnabled {
+		block["SearchQuery"] = argvSearch
+		block["SearchNonce"] = nonce.Make(searchNonceKey)
+		if argvBlockPresent {
+			if searchRedirect, searchError := f.handleSearchRedirect(tag, searchNonceKey, indexViews, reqArgv); searchError != nil {
+				block["SearchError"] = searchError.Error()
+			} else if searchRedirect != "" {
+				redirect = searchRedirect
+				return
+			}
+		}
+	}
 
 	var query string
 	if query, ok = data["index-query"].(string); !ok {
@@ -208,12 +270,46 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	}
 
 	totalFiltered := len(found)
+
+	if searchEnabled && argvSearch != "" {
+		if len(found) == 0 {
+			// nope
+		} else if matched, searchResults, e := pages.SearchWithin(argvSearch, totalFiltered, 0, found, f.enjin.SiteDefaultLanguage(), reqArgv.Language, f.enjin.SiteLanguageMode()); e != nil {
+			log.ErrorF("error searching within... %v", err)
+			found = nil
+		} else {
+			block["SearchWithinTotal"] = totalFiltered
+			block["SearchResults"] = searchResults
+			var updated []*page.Page
+			for _, hit := range searchResults.Hits {
+				if pg, ok := matched[hit.ID]; ok {
+					updated = append(updated, pg)
+				}
+			}
+			totalFiltered = len(updated)
+			block["SearchTotal"] = totalFiltered
+
+			log.DebugF("search found: %d (of %d total) hits for query: %v", len(updated), len(found), argvSearch)
+			searchRanked := true
+			if ranked, ok := data["search-ranked"]; ok {
+				searchRanked = maps.ExtractBoolValue(ranked)
+			}
+			if searchRanked {
+				found = updated
+			} else {
+				found = page.SortPages(updated, orderBy, sortDir)
+			}
+		}
+	}
+
 	totalPages := totalFiltered / numPerPage
 
 	if pageNumber > totalPages {
 		reqArgv.PageNumber = totalPages - 1
 		pageNumber = reqArgv.PageNumber
-		re.RequestContext().SetSpecific(site.RequestRedirectKey, reqArgv.String())
+		// re.RequestContext().SetSpecific(site.RequestRedirectKey, reqArgv.String())
+		redirect = reqArgv.String()
+		return
 	}
 	if numPerPage > 0 && totalFiltered > 0 {
 		start := pageNumber * numPerPage
@@ -243,7 +339,11 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	var builtViews Views
 	for idx, viewKey := range indexViews {
 		viewFilters := filters.Copy()
-		viewFilters.UpdateUrls(tag, reqArgv.Path, viewKey)
+		if searchEnabled && argvSearch != "" {
+			viewFilters.UpdateUrls(tag, reqArgv.Path, viewKey, "("+argvSearch+")")
+		} else {
+			viewFilters.UpdateUrls(tag, reqArgv.Path, viewKey)
+		}
 
 		titleCase := cases.Title(reqArgv.Language)
 		viewTitle := titleCase.String(strcase.ToDelimited(viewKey, ' '))
@@ -252,20 +352,30 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			view.Present = true
 		}
 
+		cra := reqArgv.Copy()
+		argv := []string{tag, view.Key}
+		for _, groups := range viewFilters {
+			for _, filter := range groups {
+				if filter.Present {
+					argv = append(argv, filter.Key)
+				}
+			}
+		}
+		if searchEnabled {
+			sfa := cra.Copy()
+			sfa.NumPerPage = -1
+			sfa.PageNumber = -1
+			sfa.Argv = append([][]string{}, argv)
+			view.SearchAction = sfa.String()
+		}
+		if searchEnabled && argvSearch != "" {
+			argv = append(argv, "("+argvSearch+")")
+		}
+		cra.Argv = append([][]string{}, argv)
+
 		view.Paginate = pgntn
 
 		if numPerPage < totalFiltered {
-
-			cra := reqArgv.Copy()
-			argv := []string{tag, view.Key}
-			for _, groups := range viewFilters {
-				for _, filter := range groups {
-					if filter.Present {
-						argv = append(argv, filter.Key)
-					}
-				}
-			}
-			cra.Argv = append([][]string{}, argv)
 
 			// more pagination
 			moreCra := cra.Copy()
@@ -300,7 +410,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 				}
 			}
 		}
-		view.Url = reqArgv.Path + "/:" + tag + "," + viewKey + "#" + tag + "-" + viewKey
+		view.Url = strings.TrimSuffix(reqArgv.Path, "/") + "/:" + tag + "," + viewKey + "#" + tag + "-" + viewKey
 		builtViews = append(builtViews, view)
 	}
 	block["Views"] = builtViews
@@ -323,9 +433,12 @@ func (f *CBlock) RenderPreparedBlock(re feature.EnjinRenderer, block map[string]
 	return
 }
 
-func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (html template.HTML, err error) {
-	if block, e := f.PrepareBlock(re, blockType, data); e != nil {
+func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (html template.HTML, redirect string, err error) {
+	if block, redir, e := f.PrepareBlock(re, blockType, data); e != nil {
 		err = e
+		return
+	} else if redir != "" {
+		redirect = redir
 		return
 	} else {
 		html, err = f.RenderPreparedBlock(re, block)

@@ -37,6 +37,8 @@ type View struct {
 
 	PageNumber int
 	TotalPages int
+
+	SearchAction string
 }
 
 func makeView(idx int, key, label string, filters Filters) (view *View) {
