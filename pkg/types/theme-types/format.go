@@ -17,6 +17,9 @@ package types
 import (
 	"html/template"
 
+	"github.com/blevesearch/bleve/v2/mapping"
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/search"
 )
@@ -26,8 +29,9 @@ type Format interface {
 	Name() (name string)
 	Label() (label string)
 	Extensions() (extensions []string)
-	Process(ctx context.Context, t Theme, content string) (html template.HTML, err *EnjinError)
+	Process(ctx context.Context, t Theme, content string) (html template.HTML, redirect string, err *EnjinError)
 	IndexDocument(pg interface{}) (doc search.Document, err error)
+	NewDocumentMapping(tag language.Tag) (doctype, analyzer string, dm *mapping.DocumentMapping)
 }
 
 type FormatProvider interface {
