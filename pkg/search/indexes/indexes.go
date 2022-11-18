@@ -16,6 +16,7 @@ package indexes
 
 import (
 	"github.com/blevesearch/bleve/v2"
+	"github.com/blevesearch/bleve/v2/mapping"
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
@@ -28,7 +29,7 @@ func NewFeaturesIndex(e feature.Internals) (index map[language.Tag]bleve.Index, 
 	locales := e.SiteLocales()
 	index = make(map[language.Tag]bleve.Index)
 	for _, tag := range locales {
-		index[tag], err = NewMemOnlyIndex(tag, e)
+		index[tag], err = NewMemOnlyIndexWithInternals(tag, e)
 	}
 
 	for _, f := range e.Features() {
@@ -49,14 +50,18 @@ func NewFeaturesIndex(e feature.Internals) (index map[language.Tag]bleve.Index, 
 		list = append(list, idx)
 	}
 	all = bleve.NewIndexAlias(list...)
-
 	return
 }
 
-func NewMemOnlyIndex(tag language.Tag, e feature.Internals) (index bleve.Index, err error) {
-	indexMapping := bleve.NewIndexMapping()
+func NewIndexMapping(tag language.Tag) (indexMapping *mapping.IndexMappingImpl) {
+	indexMapping = bleve.NewIndexMapping()
 	_, indexMapping.DefaultMapping = search.NewDocumentMapping(tag)
 	indexMapping.AddDocumentMapping("document", indexMapping.DefaultMapping)
+	return
+}
+
+func NewMemOnlyIndexWithInternals(tag language.Tag, e feature.Internals) (index bleve.Index, err error) {
+	indexMapping := NewIndexMapping(tag)
 
 	for _, f := range e.Features() {
 		if m, ok := f.(feature.SearchDocumentMapper); ok {
@@ -68,5 +73,14 @@ func NewMemOnlyIndex(tag language.Tag, e feature.Internals) (index bleve.Index, 
 	if index, err = bleve.NewMemOnly(indexMapping); err != nil {
 		return
 	}
+	return
+}
+
+func NewMemOnlyIndexWithDocMaps(tag language.Tag, docMaps map[string]*mapping.DocumentMapping) (index bleve.Index, err error) {
+	indexMapping := NewIndexMapping(tag)
+	for doctype, dm := range docMaps {
+		indexMapping.AddDocumentMapping(doctype, dm)
+	}
+	index, err = bleve.NewMemOnly(indexMapping)
 	return
 }
