@@ -99,7 +99,7 @@ func (f *CFeature) AddSearchDocumentMapping(tag language.Tag, indexMapping *mapp
 }
 
 func (f *CFeature) IndexDocument(thing interface{}) (doc search.Document, err error) {
-	pg, _ := thing.(*page.Page) // this "thing" avoids package import loops
+	pg, _ := thing.(*page.Page) // FIXME: this "thing" avoids package import loops
 
 	var rendered string
 
