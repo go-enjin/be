@@ -17,9 +17,20 @@ package page
 import (
 	"fmt"
 
+	"github.com/blevesearch/bleve/v2/mapping"
+
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/search"
 )
+
+func (p *Page) SearchMapping() (doctype string, dm *mapping.DocumentMapping, err error) {
+	if format := p.formats.GetFormat(p.Format); format != nil {
+		doctype, _, dm = format.NewDocumentMapping(p.LanguageTag)
+	} else {
+		err = fmt.Errorf("unsupported page format: %v", p.Format)
+	}
+	return
+}
 
 func (p *Page) SearchDocument() (doc search.Document, err error) {
 	if pgType := p.Context.String("type", "page"); pgType != "page" {
