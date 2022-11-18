@@ -21,9 +21,9 @@ type EnjinBlock interface {
 
 	NjnBlockType() (name string)
 
-	ProcessBlock(re EnjinRenderer, blockType string, data map[string]interface{}) (html template.HTML, err error)
+	ProcessBlock(re EnjinRenderer, blockType string, data map[string]interface{}) (html template.HTML, redirect string, err error)
 
-	PrepareBlock(re EnjinRenderer, blockType string, data map[string]interface{}) (block map[string]interface{}, err error)
+	PrepareBlock(re EnjinRenderer, blockType string, data map[string]interface{}) (block map[string]interface{}, redirect string, err error)
 	RenderPreparedBlock(re EnjinRenderer, block map[string]interface{}) (html template.HTML, err error)
 }
 

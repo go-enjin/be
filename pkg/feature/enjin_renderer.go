@@ -29,9 +29,9 @@ type EnjinRenderer interface {
 
 	RenderNjnTemplate(tag string, data map[string]interface{}) (html template.HTML, err error)
 
-	ProcessBlock(data map[string]interface{}) (html template.HTML, err error)
+	ProcessBlock(data map[string]interface{}) (html template.HTML, redirect string, err error)
 
-	PrepareBlock(data map[string]interface{}) (block map[string]interface{}, err error)
+	PrepareBlock(data map[string]interface{}) (block map[string]interface{}, redirect string, err error)
 	RenderPreparedBlock(block map[string]interface{}) (html template.HTML, err error)
 
 	PrepareGenericBlockData(contentData interface{}) (blockDataContent map[string]interface{}, err error)
