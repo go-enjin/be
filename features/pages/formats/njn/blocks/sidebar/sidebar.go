@@ -70,7 +70,7 @@ func (f *CBlock) NjnBlockType() (name string) {
 	return
 }
 
-func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (block map[string]interface{}, err error) {
+func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (block map[string]interface{}, redirect string, err error) {
 	if blockType != "sidebar" {
 		err = fmt.Errorf("%v does not implement %v block type", f.Tag(), blockType)
 		return
@@ -95,8 +95,11 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		var combined []map[string]interface{}
 		for _, contentBlock := range contentBlocks {
 			if contentBlockData, ok := contentBlock.(map[string]interface{}); ok {
-				if prepared, e := re.PrepareBlock(contentBlockData); e != nil {
+				if prepared, redir, e := re.PrepareBlock(contentBlockData); e != nil {
 					err = e
+					return
+				} else if redir != "" {
+					redirect = redir
 					return
 				} else {
 					combined = append(combined, prepared)
@@ -112,8 +115,11 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		re.SetWithinAside(true)
 		for _, aside := range asides {
 			if asideBlock, ok := aside.(map[string]interface{}); ok {
-				if prepared, e := re.PrepareBlock(asideBlock); e != nil {
+				if prepared, redir, e := re.PrepareBlock(asideBlock); e != nil {
 					err = e
+					return
+				} else if redir != "" {
+					redirect = redir
 					return
 				} else {
 					combined = append(combined, prepared)
@@ -139,9 +145,12 @@ func (f *CBlock) RenderPreparedBlock(re feature.EnjinRenderer, block map[string]
 	return
 }
 
-func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (html template.HTML, err error) {
-	if block, e := f.PrepareBlock(re, blockType, data); e != nil {
+func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (html template.HTML, redirect string, err error) {
+	if block, redir, e := f.PrepareBlock(re, blockType, data); e != nil {
 		err = e
+		return
+	} else if redir != "" {
+		redirect = redir
 		return
 	} else {
 		html, err = f.RenderPreparedBlock(re, block)

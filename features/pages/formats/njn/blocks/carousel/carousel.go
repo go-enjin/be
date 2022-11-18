@@ -71,7 +71,7 @@ func (f *CBlock) NjnBlockType() (name string) {
 	return
 }
 
-func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (block map[string]interface{}, err error) {
+func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (block map[string]interface{}, redirect string, err error) {
 	if blockType != "carousel" {
 		err = fmt.Errorf("%v does not implement %v block type", f.Tag(), blockType)
 		return
@@ -124,8 +124,11 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		for _, section := range sections {
 			if cardBlock, name, ok := re.ParseFieldAndTypeName(section); ok {
 				if name == "card" {
-					if card, e := re.PrepareBlock(cardBlock); e != nil {
+					if card, redir, e := re.PrepareBlock(cardBlock); e != nil {
 						err = e
+						return
+					} else if redir != "" {
+						redirect = redir
 						return
 					} else {
 						card["CardIndex"] = len(cards)
@@ -210,9 +213,12 @@ func (f *CBlock) RenderPreparedBlock(re feature.EnjinRenderer, block map[string]
 	return
 }
 
-func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (html template.HTML, err error) {
-	if block, e := f.PrepareBlock(re, blockType, data); e != nil {
+func (f *CBlock) ProcessBlock(re feature.EnjinRenderer, blockType string, data map[string]interface{}) (html template.HTML, redirect string, err error) {
+	if block, redir, e := f.PrepareBlock(re, blockType, data); e != nil {
 		err = e
+		return
+	} else if redir != "" {
+		redirect = redir
 		return
 	} else {
 		html, err = f.RenderPreparedBlock(re, block)
