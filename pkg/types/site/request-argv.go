@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	"github.com/go-enjin/golang-org-x-text/language"
+	"golang.org/x/net/html"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/forms"
@@ -40,7 +41,7 @@ const (
 var (
 	rxPageRequestSplit = regexp.MustCompile(`/:`)
 	rxPageRequestSafe  = regexp.MustCompile(`/:.*$`)
-	rxPageRequestArgv  = regexp.MustCompile(`^(/[^:]*)((?:/:[^/]+)*)(/\d+/\d+/??)?$`)
+	rxPageRequestArgv  = regexp.MustCompile(`^(/[^:]*)((?:/:[^/]+)*)(/\d+/\d+/?)?$`)
 )
 
 type RequestArgv struct {
@@ -49,6 +50,7 @@ type RequestArgv struct {
 	NumPerPage int
 	PageNumber int
 	Language   language.Tag
+	Request    *http.Request
 }
 
 func (ra *RequestArgv) MustConsume() (must bool) {
@@ -71,17 +73,30 @@ func (ra *RequestArgv) Copy() (reqArg *RequestArgv) {
 		Argv:       argv,
 		NumPerPage: ra.NumPerPage,
 		PageNumber: ra.PageNumber,
+		Request:    ra.Request,
 	}
 	return
 }
 
-func (ra *RequestArgv) String() (url string) {
-	url = ra.Path
+func (ra *RequestArgv) String() (argvUrl string) {
+	argvUrl = strings.TrimSuffix(ra.Path, "/")
 	for _, pieces := range ra.Argv {
-		url += "/:" + strings.Join(pieces, ",")
+		argvUrl += "/:"
+		for idx, piece := range pieces {
+			if piece != "" {
+				if idx > 0 {
+					argvUrl += ","
+				}
+				if piece != "" && piece[0] == '(' && piece[len(piece)-1] == ')' {
+					argvUrl += "(" + url.PathEscape(piece[1:len(piece)-1]) + ")"
+				} else {
+					argvUrl += url.PathEscape(piece)
+				}
+			}
+		}
 	}
 	if ra.NumPerPage > -1 && ra.PageNumber > -1 {
-		url += fmt.Sprintf("/%v/%v/", ra.NumPerPage, ra.PageNumber)
+		argvUrl += fmt.Sprintf("/%v/%v/", ra.NumPerPage, ra.PageNumber)
 	}
 	return
 }
@@ -91,32 +106,25 @@ func GetRequestArgv(r *http.Request) (reqArgv *RequestArgv) {
 	return
 }
 
-func ParseRequestArgv(path string) (reqArgv *RequestArgv) {
+func DecomposeHttpRequest(r *http.Request) (reqArgv *RequestArgv) {
+	path := forms.TrimQueryParams(r.RequestURI)
 	var argv [][]string
 	numPerPage, pageNumber := -1, -1
 	if rxPageRequestArgv.MatchString(path) {
 		m := rxPageRequestArgv.FindAllStringSubmatch(path, 1)
-		path = m[0][1]
+		path = strings.TrimSuffix(m[0][1], "/")
 		if args := m[0][2]; args != "" {
 			args = args[2:] // remove leading "/:"
 			parts := rxPageRequestSplit.Split(args, -1)
 			for _, part := range parts {
-				var pieces []string
-				for _, piece := range strings.Split(part, ",") {
-					if clean, err := url.PathUnescape(piece); err != nil {
-						log.ErrorF("error unescaping url path: %v", piece)
-					} else {
-						piece = clean
-					}
-					piece = forms.Sanitize(piece)
-					pieces = append(pieces, piece)
-				}
-				argv = append(argv, pieces)
+				argv = append(argv, strings.Split(part, ","))
 			}
 		}
+		// log.WarnF("path=%v, uri=%v\nm=%v", path, r.RequestURI, argv)
 		if pgntn := m[0][3]; pgntn != "" {
-			pgntn = pgntn[1:] // remove leading "/"
+			pgntn = strings.TrimPrefix(strings.TrimSuffix(pgntn, "/"), "/")
 			parts := strings.Split(pgntn, "/")
+			// log.WarnF("pgntn: %v - %#v", pgntn, parts)
 			switch len(parts) {
 			case 1:
 				if v, err := strconv.Atoi(parts[0]); err == nil && v >= 0 {
@@ -139,6 +147,23 @@ func ParseRequestArgv(path string) (reqArgv *RequestArgv) {
 		Argv:       argv,
 		NumPerPage: numPerPage,
 		PageNumber: pageNumber,
+		Request:    r,
+	}
+	return
+}
+
+func DecodeHttpRequest(r *http.Request) (reqArgv *RequestArgv) {
+	reqArgv = DecomposeHttpRequest(r)
+	for idx, argv := range reqArgv.Argv {
+		var args []string
+		for _, arg := range argv {
+			if cleaned, err := url.PathUnescape(arg); err != nil {
+				log.ErrorF("error unescaping argument: %v", arg)
+			} else {
+				args = append(args, html.UnescapeString(cleaned))
+			}
+		}
+		reqArgv.Argv[idx] = args
 	}
 	return
 }
