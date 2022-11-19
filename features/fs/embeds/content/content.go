@@ -41,7 +41,7 @@ var (
 )
 
 var (
-	DefaultCacheControl = "no-cache"
+	DefaultCacheControl = "max-age=604800, must-revalidate"
 )
 
 const Tag feature.Tag = "EmbedContent"

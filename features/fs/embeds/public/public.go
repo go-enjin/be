@@ -38,7 +38,7 @@ var (
 )
 
 var (
-	DefaultCacheControl = "max-age=604800, must-revalidate"
+	DefaultCacheControl = "public, max-age=604800, no-transform, immutable"
 )
 
 const Tag feature.Tag = "EmbedPublic"
