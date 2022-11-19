@@ -29,6 +29,10 @@ import (
 	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
+var (
+	DefaultCacheControl = "public, max-age=604800, no-transform, immutable"
+)
+
 type Author struct {
 	Name     string
 	Homepage string
@@ -50,6 +54,8 @@ type Config struct {
 
 	FontawesomeLinks   map[string]string
 	FontawesomeClasses []string
+
+	CacheControl string
 
 	Context context.Context
 }
@@ -170,6 +176,14 @@ func (t *Theme) initConfig(ctx context.Context) {
 		Homepage:         ctx.String("homepage", ""),
 		FontawesomeLinks: make(map[string]string),
 		Context:          context.New(),
+	}
+
+	if ctx.Has("static") {
+		if static, ok := ctx.Get("static").(map[string]interface{}); ok {
+			if cacheControl, ok := static["cache-control"].(string); ok {
+				t.Config.CacheControl = cacheControl
+			}
+		}
 	}
 
 	t.Config.Authors = make([]Author, 0)

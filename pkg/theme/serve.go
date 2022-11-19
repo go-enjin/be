@@ -36,6 +36,13 @@ func (t *Theme) Middleware(next http.Handler) http.Handler {
 		}
 		mime, _ = t.FileSystem.MimeType(path)
 		w.Header().Set("Content-Type", mime)
+		if t.Config.CacheControl == "" {
+			w.Header().Set("Cache-Control", DefaultCacheControl)
+			// log.WarnF("default cache control: %v", DefaultCacheControl)
+		} else {
+			w.Header().Set("Cache-Control", t.Config.CacheControl)
+			// log.WarnF("custom cache control: %v", t.Config.CacheControl)
+		}
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write(data)
 		log.DebugF("%v served: %v (%v)", t.Config.Name, path, mime)
