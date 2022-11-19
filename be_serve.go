@@ -293,6 +293,8 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	mime := ctx.String("ContentType", "text/html; charset=utf-8")
+	contentDisposition := ctx.String("ContentDisposition", "inline")
+	r = r.WithContext(context.WithValue(r.Context(), "Content-Disposition", contentDisposition))
 	e.ServeData(data, fmt.Sprintf("%v", mime), w, r)
 	return
 }
@@ -333,7 +335,11 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 		}
 	}
 
-	w.Header().Set("Content-Disposition", "inline")
+	if value, ok := r.Context().Value("Content-Disposition").(string); ok {
+		w.Header().Set("Content-Disposition", value)
+	} else {
+		w.Header().Set("Content-Disposition", "inline")
+	}
 	w.Header().Set("Content-Type", mime)
 
 	for _, f := range e.eb.features {
