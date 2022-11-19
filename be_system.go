@@ -48,10 +48,14 @@ func (e *Enjin) ServerName() (name string) {
 }
 
 func (e *Enjin) GetTheme() (t *theme.Theme, err error) {
-	tName := e.eb.context.String("Theme", e.eb.theme)
 	var ok bool
-	if t, ok = e.eb.theming[tName]; !ok {
-		err = fmt.Errorf(`theme not found: "%v" %v`, tName, e.ThemeNames())
+	var name string
+	if name = e.eb.context.String("Theme", e.eb.theme); name == "" {
+		err = fmt.Errorf(`theme not found: "%v" %v`, name, e.ThemeNames())
+		return
+	}
+	if t, ok = e.eb.theming[name]; !ok {
+		err = fmt.Errorf(`theme not found: "%v" %v`, name, e.ThemeNames())
 		return
 	}
 	return
