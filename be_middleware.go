@@ -16,7 +16,6 @@ package be
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"runtime"
 
@@ -28,7 +27,6 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	beNet "github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/net/headers"
-	bePath "github.com/go-enjin/be/pkg/path"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/types/site"
 )
@@ -90,30 +88,6 @@ func (e *Enjin) pagesMiddleware(next http.Handler) http.Handler {
 		}
 		// log.DebugF("not a page: %v, %v", path, e.eb.pages)
 		next.ServeHTTP(w, r)
-	})
-}
-
-func (e *Enjin) themeMiddleware(next http.Handler) http.Handler {
-	keys := e.ThemeNames()
-	log.DebugF("including theme middleware: %v", keys)
-	return http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
-		path := fmt.Sprintf("static/%v", bePath.TrimSlashes(request.URL.Path))
-		var err error
-		var data []byte
-		var mime string
-		var name string
-		for _, k := range keys {
-			t := e.eb.theming[k]
-			if data, err = t.FileSystem.ReadFile(path); err == nil {
-				name = t.Config.Name
-				mime, _ = t.FileSystem.MimeType(path)
-				e.ServeData(data, mime, w, request)
-				log.DebugF("%v theme served: %v (%v)", name, path, mime)
-				return
-			}
-		}
-		// log.DebugF("not a theme static: %v", path)
-		next.ServeHTTP(w, request)
 	})
 }
 

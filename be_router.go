@@ -87,7 +87,14 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	router.Use(e.requestFiltersMiddleware)
 
 	// theme static files
-	router.Use(e.themeMiddleware)
+	if t, ee := e.GetTheme(); ee != nil {
+		log.WarnF("not including any theme middleware: %v", ee)
+	} else {
+		router.Use(t.Middleware)
+		if tp := t.GetParent(); tp != nil {
+			router.Use(tp.Middleware)
+		}
+	}
 
 	for _, f := range e.Features() {
 		if mf, ok := f.(feature.Middleware); ok {
