@@ -235,33 +235,31 @@ func (t *Theme) RenderPage(ctx context.Context, p *page.Page) (data []byte, redi
 	if p.Format == "html.tmpl" {
 		if output, err = t.RenderHtmlTemplateContent(ctx, p.Content); err != nil {
 			ctx["Content"] = t.renderErrorPage("Template Render Error", err.Error(), p.String())
-			err = nil
-			return
 		}
 	} else if strings.HasSuffix(p.Format, ".tmpl") {
 		// TODO: find a more safe way to pre-render .njn.tmpl files
 		if output, err = t.RenderTextTemplateContent(ctx, p.Content); err != nil {
 			ctx["Content"] = t.renderErrorPage("Template Render Error", err.Error(), p.String())
-			err = nil
-			return
 		}
 	} else {
 		output = p.Content
 	}
 
-	if format := t.GetFormat(p.Format); format != nil {
-		if html, redir, ee := format.Process(ctx, t, output); ee != nil {
-			log.ErrorF("error processing %v page format: %v - %v", p.Format, ee.Title, ee.Summary)
-			ctx["Content"] = ee.Html()
-		} else if redir != "" {
-			redirect = redir
-			return
+	if err == nil {
+		if format := t.GetFormat(p.Format); format != nil {
+			if html, redir, ee := format.Process(ctx, t, output); ee != nil {
+				log.ErrorF("error processing %v page format: %v - %v", p.Format, ee.Title, ee.Summary)
+				ctx["Content"] = ee.Html()
+			} else if redir != "" {
+				redirect = redir
+				return
+			} else {
+				ctx["Content"] = html
+				log.DebugF("page format success: %v", format.Name())
+			}
 		} else {
-			ctx["Content"] = html
-			log.DebugF("page format success: %v", format.Name())
+			ctx["Content"] = t.renderErrorPage("Unsupported Page Format", fmt.Sprintf(`Unknown page format specified: "%v"`, p.Format), p.String())
 		}
-	} else {
-		ctx["Content"] = t.renderErrorPage("Unsupported Page Format", fmt.Sprintf(`Unknown page format specified: "%v"`, p.Format), p.String())
 	}
 
 	if !p.Context.Bool(site.RequestArgvIgnoredKey, false) {
