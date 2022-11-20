@@ -149,11 +149,14 @@ func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWrite
 	reqLangTag := lang.GetTag(r)
 	path = forms.SanitizeRequestPath(path)
 	if mount, mpath, pg, e := f.cache.Lookup(reqLangTag, path); e == nil {
-		if f.cacheControl == "" && DefaultCacheControl != "" {
-			w.Header().Set("Cache-Control", DefaultCacheControl)
-		} else if f.cacheControl != "" {
-			w.Header().Set("Cache-Control", f.cacheControl)
+		var cacheControl string
+		if f.cacheControl == "" {
+			cacheControl = DefaultCacheControl
+		} else {
+			cacheControl = f.cacheControl
 		}
+		cacheControl = pg.Context.String("CacheControl", cacheControl)
+		pg.Context.SetSpecific("CacheControl", cacheControl)
 		if err = s.ServePage(pg, w, r); err == nil {
 			log.DebugF("served local %v content: [%v] %v", mount, pg.Language, mpath)
 			return

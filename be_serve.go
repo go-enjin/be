@@ -292,6 +292,9 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 		e.ServeRedirect(redirect, w, r)
 		return
 	}
+	if cacheControl := p.Context.String("CacheControl", ""); cacheControl != "" {
+		r = r.WithContext(context.WithValue(r.Context(), "Cache-Control", cacheControl))
+	}
 	mime := ctx.String("ContentType", "text/html; charset=utf-8")
 	contentDisposition := ctx.String("ContentDisposition", "inline")
 	r = r.WithContext(context.WithValue(r.Context(), "Content-Disposition", contentDisposition))
@@ -335,12 +338,15 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 		}
 	}
 
+	w.Header().Set("Content-Type", mime)
+	if value, ok := r.Context().Value("Cache-Control").(string); ok {
+		w.Header().Set("Cache-Control", value)
+	}
 	if value, ok := r.Context().Value("Content-Disposition").(string); ok {
 		w.Header().Set("Content-Disposition", value)
 	} else {
 		w.Header().Set("Content-Disposition", "inline")
 	}
-	w.Header().Set("Content-Type", mime)
 
 	for _, f := range e.eb.features {
 		if tfr, ok := f.(feature.OutputTransformer); ok {
