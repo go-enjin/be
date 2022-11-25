@@ -152,7 +152,11 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 	}
 	sort.Slice(sorted, func(i, j int) (less bool) {
 		a, b := sorted[i], sorted[j]
-		less = scores[a] > scores[b]
+		if scores[a] == scores[b] {
+			less = a < b
+		} else {
+			less = scores[a] > scores[b]
+		}
 		return
 	})
 
