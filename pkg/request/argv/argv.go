@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package site
+package argv
 
 import (
 	"context"
@@ -39,9 +39,9 @@ const (
 )
 
 var (
-	rxPageRequestSplit = regexp.MustCompile(`/:`)
-	rxPageRequestSafe  = regexp.MustCompile(`/:.*$`)
-	rxPageRequestArgv  = regexp.MustCompile(`^(/[^:]*)?((?:/:[^/]+)*)(/\d+/\d+/?)?$`)
+	RxPageRequestSplit = regexp.MustCompile(`/:`)
+	RxPageRequestSafe  = regexp.MustCompile(`/:.*$`)
+	RxPageRequestArgv  = regexp.MustCompile(`^(/[^:]*)?((?:/:[^/]+)*)(/\d+/\d+/?)?$`)
 )
 
 type RequestArgv struct {
@@ -110,12 +110,12 @@ func DecomposeHttpRequest(r *http.Request) (reqArgv *RequestArgv) {
 	path := forms.TrimQueryParams(r.RequestURI)
 	var argv [][]string
 	numPerPage, pageNumber := -1, -1
-	if rxPageRequestArgv.MatchString(path) {
-		m := rxPageRequestArgv.FindAllStringSubmatch(path, 1)
+	if RxPageRequestArgv.MatchString(path) {
+		m := RxPageRequestArgv.FindAllStringSubmatch(path, 1)
 		path = strings.TrimSuffix(m[0][1], "/")
 		if args := m[0][2]; args != "" {
 			args = args[2:] // remove leading "/:"
-			parts := rxPageRequestSplit.Split(args, -1)
+			parts := RxPageRequestSplit.Split(args, -1)
 			for _, part := range parts {
 				argv = append(argv, strings.Split(part, ","))
 			}
@@ -140,7 +140,7 @@ func DecomposeHttpRequest(r *http.Request) (reqArgv *RequestArgv) {
 			}
 		}
 	} else {
-		path = rxPageRequestSafe.ReplaceAllString(path, "")
+		path = RxPageRequestSafe.ReplaceAllString(path, "")
 	}
 	reqArgv = &RequestArgv{
 		Path:       path,
