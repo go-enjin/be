@@ -33,7 +33,7 @@ func Match(query string, ctx context.Context) (matched bool, err error) {
 
 func process(expr *Expression, ctx context.Context) (matched bool, err error) {
 	var chained bool
-	if chained, err = validateGrouping(expr); err != nil {
+	if chained, err = ValidateGrouping(expr); err != nil {
 		return
 	}
 

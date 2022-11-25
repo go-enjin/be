@@ -25,13 +25,13 @@ func Validate(query string) (err error) {
 	if expr, err = parser.ParseString("pageql", query); err != nil {
 		return
 	}
-	if _, err = validateGrouping(expr); err == nil {
+	if _, err = ValidateGrouping(expr); err == nil {
 		err = validateProcess(expr)
 	}
 	return
 }
 
-func validateGrouping(expr *Expression) (chained bool, err error) {
+func ValidateGrouping(expr *Expression) (chained bool, err error) {
 
 	for _, op := range expr.Tail {
 		if chained = op.Op == "AND" || op.Op == "OR"; chained {
@@ -61,7 +61,7 @@ func validateGrouping(expr *Expression) (chained bool, err error) {
 
 func validateProcess(expr *Expression) (err error) {
 	var chained bool
-	if chained, err = validateGrouping(expr); err != nil {
+	if chained, err = ValidateGrouping(expr); err != nil {
 		return
 	}
 
