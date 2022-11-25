@@ -21,7 +21,6 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/search"
 )
 
 type Format interface {
@@ -30,7 +29,7 @@ type Format interface {
 	Label() (label string)
 	Extensions() (extensions []string)
 	Process(ctx context.Context, t Theme, content string) (html template.HTML, redirect string, err *EnjinError)
-	IndexDocument(pg interface{}) (doc search.Document, err error)
+	IndexDocument(pg interface{}) (doc interface{}, err error)
 	NewDocumentMapping(tag language.Tag) (doctype, analyzer string, dm *mapping.DocumentMapping)
 }
 
