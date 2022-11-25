@@ -70,17 +70,21 @@ func New(formats types.FormatProvider, langMode lang.Mode, fallback language.Tag
 	return
 }
 
-func (c *Cache) Mounted(mount string) (ok bool) {
+func (c *Cache) Mounted(path string) (ok bool) {
 	c.RLock()
 	defer c.RUnlock()
-	_, ok = c.mount[mount]
+	for _, mount := range c.mount {
+		if ok = mount.Path == path; ok {
+			return
+		}
+	}
 	return
 }
 
 func (c *Cache) Mount(mount, path string, mfs fs.FileSystem) {
 	c.Lock()
 	defer c.Unlock()
-	c.mount[mount] = &Mount{
+	c.mount[path] = &Mount{
 		Point: mount,
 		Path:  path,
 		FS:    mfs,
