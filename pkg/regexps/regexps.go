@@ -16,4 +16,6 @@ package regexps
 
 import "regexp"
 
+var RxEmptySpace = regexp.MustCompile(`\s+`)
 var RxLanguageKey = regexp.MustCompile(`language:(\*|[a-z][-a-zA-Z]+)\s*`)
+var RxKeywordTrims = regexp.MustCompile(`[^ 'a-zA-Z0-9]+`)
