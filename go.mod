@@ -24,8 +24,10 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.20
 	github.com/nanmu42/gzip v1.2.0
 	github.com/niklasfasching/go-org v1.6.5
+	github.com/pkg/profile v1.6.0
 	github.com/polds/logrus-papertrail-hook v0.0.0-20180214143432-bcfe7b72c1a4
 	github.com/sirupsen/logrus v1.9.0
+	github.com/spkg/zipfs v0.7.1
 	github.com/tdewolff/minify/v2 v2.12.0
 	github.com/tg123/go-htpasswd v1.2.0
 	github.com/urfave/cli/v2 v2.19.2
@@ -99,7 +101,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mschoch/smat v0.2.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
-	github.com/pkg/profile v1.6.0 // indirect
 	github.com/rivo/uniseg v0.4.2 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/signalsciences/ac v1.2.0 // indirect
