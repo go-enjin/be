@@ -29,8 +29,8 @@ import (
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/pages"
+	"github.com/go-enjin/be/pkg/request/argv"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/be/pkg/types/site"
 )
 
 const (
@@ -159,7 +159,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	}
 
 	var csqp bool // correct search query paths
-	decArgv := site.DecomposeHttpRequest(reqArgv.Request)
+	decArgv := argv.DecomposeHttpRequest(reqArgv.Request)
 	for idx, argv := range decArgv.Argv {
 		for jdx, arg := range argv {
 			if check := strings.HasPrefix(arg, "%28") && strings.HasSuffix(arg, "%29"); check {
@@ -199,7 +199,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	for idx, pieces := range reqArgv.Argv {
 		if pieces[0] != "" && pieces[0] == tag {
 			argvBlockPresent = true
-			re.RequestContext().SetSpecific(site.RequestArgvConsumedKey, true)
+			re.RequestContext().SetSpecific(argv.RequestArgvConsumedKey, true)
 
 			var fixArgs []string
 			var viewArgs []string

@@ -24,11 +24,11 @@ import (
 	"github.com/go-enjin/be/pkg/forms/nonce"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/request/argv"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/be/pkg/types/site"
 )
 
-func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []string, reqArgv *site.RequestArgv) (redirect string, err error) {
+func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []string, reqArgv *argv.RequestArgv) (redirect string, err error) {
 
 	// tag := lang.GetTag(r)
 	printer := lang.GetPrinterFromRequest(reqArgv.Request)

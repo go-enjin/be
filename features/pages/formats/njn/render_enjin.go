@@ -27,7 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
-	"github.com/go-enjin/be/pkg/types/site"
+	"github.com/go-enjin/be/pkg/request/argv"
 	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
@@ -66,8 +66,8 @@ func renderNjnData(f feature.EnjinSystem, ctx context.Context, t types.Theme, da
 	return
 }
 
-func (re *RenderEnjin) RequestArgv() (reqArgv *site.RequestArgv) {
-	reqArgv, _ = re.ctx.Get("RequestArgv").(*site.RequestArgv)
+func (re *RenderEnjin) RequestArgv() (reqArgv *argv.RequestArgv) {
+	reqArgv, _ = re.ctx.Get("RequestArgv").(*argv.RequestArgv)
 	return
 }
 
