@@ -24,48 +24,59 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 )
 
-var _ feature.Feature = (*Feature)(nil)
+var (
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
+)
 
 const Tag feature.Tag = "EmbedLocales"
 
-type Feature struct {
+type Feature interface {
+	feature.Feature
+}
+
+type CFeature struct {
 	feature.CFeature
 
 	setup map[string]embed.FS
 }
 
 type MakeFeature interface {
-	feature.MakeFeature
-
 	Include(path string, efs embed.FS) MakeFeature
+
+	Make() Feature
 }
 
 func New() MakeFeature {
-	f := new(Feature)
+	f := new(CFeature)
 	f.Init(f)
 	return f
 }
 
-func (f *Feature) Include(path string, efs embed.FS) MakeFeature {
+func (f *CFeature) Include(path string, efs embed.FS) MakeFeature {
 	f.setup[path] = efs
 	return f
 }
 
-func (f *Feature) Init(this interface{}) {
+func (f *CFeature) Make() Feature {
+	return f
+}
+
+func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.setup = make(map[string]embed.FS)
 }
 
-func (f *Feature) Tag() (tag feature.Tag) {
+func (f *CFeature) Tag() (tag feature.Tag) {
 	tag = Tag
 	return
 }
 
-func (f *Feature) Build(_ feature.Buildable) (err error) {
+func (f *CFeature) Build(_ feature.Buildable) (err error) {
 	return
 }
 
-func (f *Feature) Setup(enjin feature.Internals) {
+func (f *CFeature) Setup(enjin feature.Internals) {
 	tag := enjin.SiteDefaultLanguage()
 	c := enjin.SiteLangCatalog()
 	for path, efs := range f.setup {
@@ -73,6 +84,6 @@ func (f *Feature) Setup(enjin feature.Internals) {
 	}
 }
 
-func (f *Feature) Startup(ctx *cli.Context) (err error) {
+func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }

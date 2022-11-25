@@ -20,7 +20,9 @@ import (
 	"embed"
 	"fmt"
 	"net/http"
+	"sort"
 
+	"github.com/fvbommel/sortorder"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/golang-org-x-text/language"
@@ -37,7 +39,8 @@ import (
 )
 
 var (
-	_ Feature = (*CFeature)(nil)
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
 )
 
 var (
@@ -77,8 +80,8 @@ func New() MakeFeature {
 }
 
 func (f *CFeature) MountPathFs(mount, path string, efs embed.FS) MakeFeature {
-	f.paths[mount] = path
-	f.setup[mount] = efs
+	f.paths[path] = mount
+	f.setup[path] = efs
 	return f
 }
 
@@ -120,18 +123,19 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 	f.cache = pagecache.New(t, f.enjin.SiteLanguageMode(), f.enjin.SiteDefaultLanguage(), search)
 
 	var err error
-	for _, mount := range maps.SortedKeys(f.setup) {
-		if f.cache.Mounted(mount) {
-			log.FatalF(`"%v" already mounted`, mount)
+	for _, path := range maps.SortedKeys(f.paths) {
+		if f.cache.Mounted(path) {
+			log.FatalF(`"%v" already mounted`, path)
 			return
 		}
 		var lfs fs.FileSystem
-		if lfs, err = beFsEmbed.New(f.paths[mount], f.setup[mount]); err != nil {
+		if lfs, err = beFsEmbed.New(path, f.setup[path]); err != nil {
 			log.FatalF(`error mounting filesystem: %v`, err)
 			return
 		}
-		f.cache.Mount(mount, f.paths[mount], lfs)
-		log.DebugF("mounted embed content filesystem on %v to %v", mount, f.paths[mount])
+		mount := f.paths[path]
+		f.cache.Mount(mount, path, lfs)
+		log.DebugF("mounted embed content filesystem %v to %v", path, mount)
 	}
 }
 
@@ -141,7 +145,8 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
-	log.DebugF("including embed content middleware: %v", f.setup)
+	mounts := f.listMountPaths()
+	log.DebugF("including embed content middleware: %v", mounts)
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			path := forms.SanitizeRequestPath(r.URL.Path)
@@ -197,5 +202,13 @@ func (f *CFeature) FindPage(tag language.Tag, path string) (p *page.Page) {
 
 func (f *CFeature) LookupPrefixed(path string) (pages []*page.Page) {
 	pages = f.cache.LookupPrefix(path)
+	return
+}
+
+func (f *CFeature) listMountPaths() (paths []string) {
+	for path, _ := range f.paths {
+		paths = append(paths, path)
+	}
+	sort.Sort(sortorder.Natural(paths))
 	return
 }

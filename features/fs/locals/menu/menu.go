@@ -34,12 +34,19 @@ import (
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
-var _ feature.Feature = (*Feature)(nil)
-var _ feature.MenuProvider = (*Feature)(nil)
+var (
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
+)
 
 const Tag feature.Tag = "LocalMenu"
 
-type Feature struct {
+type Feature interface {
+	feature.Feature
+	feature.MenuProvider
+}
+
+type CFeature struct {
 	feature.CFeature
 
 	setup   map[string]string
@@ -48,57 +55,61 @@ type Feature struct {
 }
 
 type MakeFeature interface {
-	feature.MakeFeature
-
 	MountPath(mount, path string) MakeFeature
+
+	Make() Feature
 }
 
 func New() MakeFeature {
-	f := new(Feature)
+	f := new(CFeature)
 	f.Init(f)
 	return f
 }
 
-func (f *Feature) MountPath(mount, path string) MakeFeature {
+func (f *CFeature) MountPath(mount, path string) MakeFeature {
 	f.setup[mount] = path
 	return f
 }
 
-func (f *Feature) Init(this interface{}) {
+func (f *CFeature) Make() Feature {
+	return f
+}
+
+func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.setup = make(map[string]string)
 	f.mounted = make(map[string]beFs.FileSystem)
 }
 
-func (f *Feature) Tag() (tag feature.Tag) {
+func (f *CFeature) Tag() (tag feature.Tag) {
 	tag = Tag
 	return
 }
 
-func (f *Feature) Build(_ feature.Buildable) (err error) {
-	for _, mount := range maps.SortedKeys(f.setup) {
-		if _, ok := f.mounted[mount]; ok {
-			err = fmt.Errorf(`"%v" already mounted`, mount)
+func (f *CFeature) Build(_ feature.Buildable) (err error) {
+	for _, path := range maps.SortedKeys(f.setup) {
+		if _, ok := f.mounted[path]; ok {
+			err = fmt.Errorf(`"%v" already mounted`, path)
 			return
 		}
-		path := f.setup[mount]
 		var lfs beFs.FileSystem
 		if lfs, err = local.New(path); err != nil {
 			log.FatalF(`error mounting filesystem: %v`, err)
 			return nil
 		}
-		f.mounted[mount] = lfs
-		beFs.RegisterFileSystem(mount, f.mounted[mount])
-		log.DebugF("mounted local menu filesystem on %v to %v", mount, path)
+		f.mounted[path] = lfs
+		mount := f.setup[path]
+		beFs.RegisterFileSystem(mount, f.mounted[path])
+		log.DebugF("mounted local menu filesystem %v to %v", path, mount)
 	}
 	return
 }
 
-func (f *Feature) Startup(ctx *cli.Context) (err error) {
+func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return f.Reload()
 }
 
-func (f *Feature) addMenuFiles(tag language.Tag, bfs beFs.FileSystem) (err error) {
+func (f *CFeature) addMenuFiles(tag language.Tag, bfs beFs.FileSystem) (err error) {
 	var rewrite func(tag language.Tag, in menu.Menu) (out menu.Menu)
 	rewrite = func(tag language.Tag, in menu.Menu) (out menu.Menu) {
 		for _, item := range in {
@@ -144,19 +155,19 @@ func (f *Feature) addMenuFiles(tag language.Tag, bfs beFs.FileSystem) (err error
 	return
 }
 
-func (f *Feature) Reload() (err error) {
+func (f *CFeature) Reload() (err error) {
 	f.menus = make(map[language.Tag]map[string]menu.Menu)
-	for _, mount := range maps.SortedKeys(f.mounted) {
+	for _, path := range maps.SortedKeys(f.mounted) {
 
-		if ee := f.addMenuFiles(language.Und, f.mounted[mount]); ee != nil {
+		if ee := f.addMenuFiles(language.Und, f.mounted[path]); ee != nil {
 			log.ErrorF("error adding language.Und menu files: %v", ee)
 		}
 
-		if dirs, ee := f.mounted[mount].ListDirs("."); ee == nil {
+		if dirs, ee := f.mounted[path].ListDirs("."); ee == nil {
 			log.DebugF("found menu directories: %#v", dirs)
 			for _, dir := range dirs {
 				if tag, tpe := language.Parse(dir); tpe == nil {
-					if dfs, eee := beFs.Wrap(dir, f.mounted[mount]); eee != nil {
+					if dfs, eee := beFs.Wrap(dir, f.mounted[path]); eee != nil {
 						log.ErrorF("error wrapping menu directory: [%v] %v", dir, eee)
 					} else if eeee := f.addMenuFiles(tag, dfs); eeee != nil {
 						log.ErrorF("error adding menu directory: [%v] %v", dir, eeee)
@@ -168,11 +179,7 @@ func (f *Feature) Reload() (err error) {
 	return
 }
 
-func (f *Feature) GetMenus(tag language.Tag) (found map[string]menu.Menu) {
-	if err := f.Reload(); err != nil {
-		log.ErrorF("error reloading menus: %v", err)
-	}
-
+func (f *CFeature) GetMenus(tag language.Tag) (found map[string]menu.Menu) {
 	found = make(map[string]menu.Menu)
 
 	// undefined first so that actual lang can overwrite, leaving Und fallbacks

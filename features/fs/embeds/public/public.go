@@ -34,7 +34,8 @@ import (
 )
 
 var (
-	_ Feature = (*CFeature)(nil)
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
 )
 
 var (
@@ -97,14 +98,6 @@ func (f *CFeature) Tag() (tag feature.Tag) {
 	return
 }
 
-func (f *CFeature) listMountPoints() (mounts []string) {
-	for mount, _ := range f.setup {
-		mounts = append(mounts, mount)
-	}
-	sort.Sort(sortorder.Natural(mounts))
-	return
-}
-
 func (f *CFeature) Build(_ feature.Buildable) (err error) {
 	for _, mount := range f.listMountPoints() {
 		if _, ok := f.mounted[mount]; ok {
@@ -127,7 +120,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 
 func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 	mounts := f.listMountPoints()
-	log.DebugF("including embed public middleware: %v", f.setup)
+	log.DebugF("including embed public middleware: %v", f.listMountPaths())
 	return func(next http.Handler) (this http.Handler) {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			path := bePath.TrimSlash(r.URL.Path)
@@ -150,4 +143,20 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func (f *CFeature) listMountPaths() (mounts []string) {
+	for _, mount := range f.paths {
+		mounts = append(mounts, mount)
+	}
+	sort.Sort(sortorder.Natural(mounts))
+	return
+}
+
+func (f *CFeature) listMountPoints() (mounts []string) {
+	for mount, _ := range f.setup {
+		mounts = append(mounts, mount)
+	}
+	sort.Sort(sortorder.Natural(mounts))
+	return
 }
