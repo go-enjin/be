@@ -18,9 +18,34 @@ import (
 	"github.com/blevesearch/bleve/v2/mapping"
 
 	"github.com/go-enjin/golang-org-x-text/language"
+
+	"github.com/go-enjin/be/pkg/search"
 )
 
+var _ Document = (*CDocument)(nil)
+
+type Document interface {
+	search.Document
+}
+
+type CDocument struct {
+	search.CDocument
+}
+
+func NewTmplDocument(language, url, title string) (doc *CDocument) {
+	doc = new(CDocument)
+	doc.Type = "tmpl"
+	doc.Url = url
+	doc.Title = title
+	doc.Language = language
+	return
+}
+
+func (d *CDocument) Self() interface{} {
+	return d
+}
 func (f *CFeature) NewDocumentMapping(tag language.Tag) (doctype, analyzer string, dm *mapping.DocumentMapping) {
 	doctype = f.Name()
+	analyzer, dm = search.NewDocumentMapping(tag)
 	return
 }

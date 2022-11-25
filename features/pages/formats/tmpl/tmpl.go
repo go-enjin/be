@@ -16,7 +16,9 @@ package tmpl
 
 import (
 	"bytes"
-	"html/template"
+	"fmt"
+	htmlTemplate "html/template"
+	"strings"
 
 	"github.com/blevesearch/bleve/v2/mapping"
 	"github.com/go-enjin/golang-org-x-text/language"
@@ -24,7 +26,8 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/search"
+	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
@@ -87,7 +90,7 @@ func (f *CFeature) Label() (label string) {
 	return
 }
 
-func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, redirect string, err *types.EnjinError) {
+func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html htmlTemplate.HTML, redirect string, err *types.EnjinError) {
 	if tmpl, e := t.NewTextTemplateWithContext("content.tmpl", ctx); e != nil {
 		log.ErrorF("error preparing text template: %v", e)
 		return
@@ -95,7 +98,7 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 		if tt, ee := tmpl.Parse(content); ee == nil {
 			var w bytes.Buffer
 			if ee = tt.Execute(&w, ctx); ee == nil {
-				html = template.HTML(w.Bytes())
+				html = htmlTemplate.HTML(w.Bytes())
 			} else {
 				log.ErrorF("error rendering text template: %v", ee)
 			}
@@ -104,9 +107,38 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 	return
 }
 
-func (f *CFeature) AddSearchDocumentMapping(tag language.Tag, indexMapping *mapping.IndexMappingImpl) {
+func (f *CFeature) SearchDocumentMapping(tag language.Tag) (doctype string, dm *mapping.DocumentMapping) {
+	doctype, _, dm = f.NewDocumentMapping(tag)
+	return
 }
 
-func (f *CFeature) IndexDocument(thing interface{}) (doc search.Document, err error) {
+func (f *CFeature) AddSearchDocumentMapping(tag language.Tag, indexMapping *mapping.IndexMappingImpl) {
+	doctype, _, dm := f.NewDocumentMapping(tag)
+	indexMapping.AddDocumentMapping(doctype, dm)
+}
+
+func (f *CFeature) IndexDocument(thing interface{}) (out interface{}, err error) {
+	pg, _ := thing.(*page.Page) // FIXME: this "thing" avoids package import loops
+
+	var rendered string
+	if strings.HasSuffix(pg.Format, ".tmpl") {
+		var buf bytes.Buffer
+		if tt, e := htmlTemplate.New("content.html.tmpl").Funcs(theme.DefaultFuncMap()).Parse(pg.Content); e != nil {
+			err = fmt.Errorf("error parsing template: %v", e)
+			return
+		} else if e = tt.Execute(&buf, pg.Context); e != nil {
+			err = fmt.Errorf("error executing template: %v", e)
+			return
+		} else {
+			rendered = buf.String()
+		}
+	} else {
+		rendered = pg.Content
+	}
+
+	doc := NewTmplDocument(pg.Language, pg.Url, pg.Title)
+	doc.Contents = append(doc.Contents, rendered)
+
+	out = doc
 	return
 }
