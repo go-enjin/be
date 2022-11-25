@@ -20,11 +20,11 @@ import (
 	"golang.org/x/net/html"
 
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/types/site"
+	"github.com/go-enjin/be/pkg/request/argv"
 )
 
 type EnjinRenderer interface {
-	RequestArgv() (reqArgv *site.RequestArgv)
+	RequestArgv() (reqArgv *argv.RequestArgv)
 	RequestContext() (ctx context.Context)
 
 	RenderNjnTemplate(tag string, data map[string]interface{}) (html template.HTML, err error)
