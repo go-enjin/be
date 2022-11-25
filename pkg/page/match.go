@@ -18,8 +18,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/pageql"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 type MatcherFn func(path string, pg *Page) (found string, ok bool)
@@ -61,18 +61,24 @@ func (p *Page) MatchPrefix(prefix string) (found string, ok bool) {
 	return
 }
 
-func (p *Page) IsRedirection(path string) (ok bool) {
-	if redirection, found := p.Context.Get("Redirect").([]interface{}); found {
-		for _, thing := range redirection {
-			if href, check := thing.(string); check {
-				if ok = path == href; ok {
-					return
+func (p *Page) Redirections() (redirects []string) {
+	if redirect := p.Context.Get("Redirect"); redirect != nil {
+		switch t := redirect.(type) {
+		case string:
+			redirects = append(redirects, t)
+		case []interface{}:
+			for _, v := range t {
+				if r, ok := v.(string); ok {
+					redirects = append(redirects, r)
 				}
-			} else {
-				log.ErrorF("page (%v) redirection setting is not a string: %#v", p.Url, thing)
 			}
 		}
 	}
+	return
+}
+
+func (p *Page) IsRedirection(path string) (ok bool) {
+	ok = beStrings.StringInStrings(path, p.Redirections()...)
 	return
 }
 

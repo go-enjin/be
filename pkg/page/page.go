@@ -29,6 +29,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/forms"
+	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/lang"
 	bePath "github.com/go-enjin/be/pkg/path"
 	beStrings "github.com/go-enjin/be/pkg/strings"
@@ -38,32 +39,36 @@ import (
 type Page struct {
 	gorm.Model
 
-	Type string `json:"type" gorm:"type"`
+	Type   string `json:"type" gorm:"type"`
+	Format string `json:"format" gorm:"type:string"`
 
-	Url         string `json:"url" gorm:"index"`
-	Slug        string `json:"slug"`
-	Path        string `json:"path"`
+	Url  string `json:"url" gorm:"index"`
+	Slug string `json:"slug"`
+	Path string `json:"path"`
+
 	Title       string `json:"title" gorm:"index"`
-	Format      string `json:"format" gorm:"type:string"`
 	Summary     string `json:"summary"`
 	Description string `json:"description"`
-	Layout      string `json:"layout"`
-	Section     string `json:"section"`
-	Archetype   string `json:"archetype"`
-	FrontMatter string `json:"frontMatter"`
-	Language    string `json:"language"`
-	Translates  string `json:"translates"`
-	Content     string `json:"content"`
 
-	Initial context.Context `json:"-" gorm:"-"`
-	Context context.Context `json:"context" gorm:"-"`
-
-	LanguageTag language.Tag `json:"-"`
+	Layout    string `json:"layout"`
+	Section   string `json:"section"`
+	Archetype string `json:"archetype"`
 
 	Permalink    uuid.UUID `json:"permalink"`
 	PermalinkSha string    `json:"-" gorm:"-"`
 
-	formats types.FormatProvider
+	Language    string       `json:"language"`
+	Translates  string       `json:"translates"`
+	LanguageTag language.Tag `json:"-" gorm:"-"`
+
+	Shasum          string `json:"shasum"`
+	Content         string `json:"content"`
+	FrontMatter     string `json:"frontMatter"`
+	FrontMatterType FrontMatterType
+
+	Context context.Context `json:"-" gorm:"-"`
+
+	Formats types.FormatProvider
 	copied  int
 }
 
@@ -84,65 +89,36 @@ func NewFromFile(path, file string, formats types.FormatProvider) (p *Page, err 
 		}
 		updated = spec.ModTime().Unix()
 	}
-	p, err = New(path, string(contents), created, updated, formats)
+	var shasum string
+	if shasum, err = sha.FileHash64(file); err != nil {
+		return
+	}
+	p, err = New(path, string(contents), shasum, created, updated, formats)
 	return
 }
 
-func New(path, raw string, created, updated int64, formats types.FormatProvider) (p *Page, err error) {
+func New(path, raw, shasum string, created, updated int64, formats types.FormatProvider) (p *Page, err error) {
 
 	p = new(Page)
-	p.formats = formats
-	p.Initial = context.New()
+	p.Formats = formats
 	p.Context = context.New()
 
+	p.Shasum = shasum
 	p.Permalink = uuid.Nil
 
 	path = forms.TrimQueryParams(path)
-	path = p.SetFormat(path, p.Initial)
-	p.SetSlugUrl(path, p.Initial)
+	path = p.SetFormat(path)
+	p.SetSlugUrl(path)
 
 	p.CreatedAt = time.Unix(created, 0)
-	p.Initial.SetSpecific("Created", p.CreatedAt)
-
 	p.UpdatedAt = time.Unix(updated, 0)
-	p.Initial.SetSpecific("Updated", p.UpdatedAt)
 
 	// log.DebugF("new page for path: %v - %v - %v", path, slug, p.Url)
 	p.Title = beStrings.TitleCase(strings.Join(strings.Split(p.Slug, "-"), " "))
-	p.Initial.Set("Url", p.Url)
-	p.Initial.Set("Slug", p.Slug)
-	p.Initial.Set("Title", p.Title)
 
 	raw = lang.StripTranslatorComments(raw)
-
-	frontMatter, content, frontMatterType := ParseFrontMatterContent(raw)
-	switch frontMatterType {
-	case TomlMatter:
-		if ctx, ee := ParseToml(frontMatter); ee != nil {
-			err = fmt.Errorf("error parsing page toml front matter: %v", ee)
-		} else {
-			p.Content = content
-			p.parseContext(ctx)
-		}
-	case YamlMatter:
-		if ctx, ee := ParseYaml(frontMatter); ee != nil {
-			err = fmt.Errorf("error parsing page yaml front matter: %v", ee)
-		} else {
-			p.Content = content
-			p.parseContext(ctx)
-		}
-	case JsonMatter:
-		if ctx, ee := ParseJson(frontMatter); ee != nil {
-			err = fmt.Errorf("error parsing page json front matter: %v", ee)
-		} else {
-			p.Content = content
-			p.parseContext(ctx)
-		}
-	default:
-		p.Content = raw
-		p.parseContext(p.Initial)
-	}
-
+	p.FrontMatter, p.Content, p.FrontMatterType = ParseFrontMatterContent(raw)
+	err = p.initFrontMatter()
 	return
 }
 
@@ -151,12 +127,42 @@ func (p *Page) String() string {
 	return "{{" + string(ctx) + "}}" + "\n" + p.Content
 }
 
+func (p *Page) initFrontMatter() (err error) {
+	p.Context.SetSpecific("Url", p.Url)
+	p.Context.SetSpecific("Slug", p.Slug)
+	p.Context.SetSpecific("Title", p.Title)
+	p.Context.SetSpecific("Shasum", p.Shasum)
+	p.Context.SetSpecific("Created", p.CreatedAt)
+	p.Context.SetSpecific("Updated", p.UpdatedAt)
+
+	switch p.FrontMatterType {
+	case TomlMatter:
+		if ctx, ee := ParseToml(p.FrontMatter); ee != nil {
+			err = fmt.Errorf("error parsing page toml front matter: %v", ee)
+		} else {
+			p.parseContext(ctx)
+		}
+	case YamlMatter:
+		if ctx, ee := ParseYaml(p.FrontMatter); ee != nil {
+			err = fmt.Errorf("error parsing page yaml front matter: %v", ee)
+		} else {
+			p.parseContext(ctx)
+		}
+	case JsonMatter:
+		if ctx, ee := ParseJson(p.FrontMatter); ee != nil {
+			err = fmt.Errorf("error parsing page json front matter: %v", ee)
+		} else {
+			p.parseContext(ctx)
+		}
+	default:
+		p.parseContext(context.New())
+	}
+	return
+}
+
 func (p *Page) Copy() (copy *Page) {
 	if p.copied > 0 {
 		p.copied += 1
-		// if p.copied > 1 {
-		// 	log.WarnDF(1, "copied page (%d): %v", p.copied, p.Url)
-		// }
 		return p
 	}
 	copy = &Page{
@@ -178,16 +184,17 @@ func (p *Page) Copy() (copy *Page) {
 		Permalink:    p.Permalink,
 		PermalinkSha: p.PermalinkSha,
 		Content:      p.Content,
-		formats:      p.formats,
+		Formats:      p.Formats,
+		Context:      context.New(),
 		copied:       1,
 	}
 	copy.ID = p.ID
 	copy.CreatedAt = p.CreatedAt
 	copy.UpdatedAt = p.UpdatedAt
 	copy.DeletedAt = p.DeletedAt
-	copy.Initial = p.Initial.Copy()
-	copy.Context = p.Initial.Copy()
+	// copy.Context = p.Context.Copy()
 	// log.WarnDF(1, "copied page: %v", p.Url)
+	_ = copy.initFrontMatter()
 	return
 }
 
@@ -197,6 +204,25 @@ func (p *Page) SetLanguage(tag language.Tag) {
 	p.Context.Set("Language", p.Language)
 }
 
+func (p *Page) SetFormat(filepath string) (path string) {
+	if format, match := p.Formats.MatchFormat(filepath); format != nil {
+		p.Format = match
+		path = strings.TrimSuffix(filepath, "."+match)
+	} else {
+		p.Format = "html"
+		path = strings.TrimSuffix(filepath, ".html")
+	}
+	p.Context.SetSpecific("Format", p.Format)
+	return
+}
+
+func (p *Page) SetSlugUrl(filepath string) {
+	p.Url, p.Section, p.Slug = p.getUrlPathSectionSlug(filepath)
+	p.Context.SetSpecific("Url", p.Url)
+	p.Context.SetSpecific("Section", p.Section)
+	p.Context.SetSpecific("Slug", p.Slug)
+}
+
 func (p *Page) getUrlPathSectionSlug(url string) (path, section, slug string) {
 	path = bePath.TrimSlashes(url)
 	slug = strcase.ToKebab(filepath.Base(path))
@@ -204,27 +230,8 @@ func (p *Page) getUrlPathSectionSlug(url string) (path, section, slug string) {
 	if parts := strings.Split(path, "/"); len(parts) > 0 {
 		section = parts[0]
 	}
-	if path != "" && path != "/" && path[0] != '/' {
+	if path != "" && path[0] != '/' {
 		path = "/" + path
 	}
 	return
-}
-
-func (p *Page) SetFormat(filepath string, ctx context.Context) (path string) {
-	if format, match := p.formats.MatchFormat(filepath); format != nil {
-		p.Format = match
-		path = strings.TrimSuffix(filepath, "."+match)
-	} else {
-		p.Format = "html"
-		path = strings.TrimSuffix(filepath, ".html")
-	}
-	ctx.SetSpecific("Format", p.Format)
-	return
-}
-
-func (p *Page) SetSlugUrl(filepath string, ctx context.Context) {
-	p.Url, p.Section, p.Slug = p.getUrlPathSectionSlug(filepath)
-	ctx.SetSpecific("Url", p.Url)
-	ctx.SetSpecific("Section", p.Section)
-	ctx.SetSpecific("Slug", p.Slug)
 }

@@ -113,14 +113,16 @@ func (p *Page) parseContext(ctx context.Context) {
 
 	p.Type = ctx.String("Type", "page")
 
-	url := ctx.String("Url", p.Url)
-	p.SetSlugUrl(url, ctx)
+	p.SetSlugUrl(ctx.String("Url", p.Url))
 
-	p.SetLanguage(language.Und)
 	if ctxLang := ctx.String("Language", ""); ctxLang != "" {
 		if tag, err := language.Parse(ctxLang); err == nil {
 			p.SetLanguage(tag)
+		} else {
+			p.SetLanguage(language.Und)
 		}
+	} else {
+		p.SetLanguage(language.Und)
 	}
 
 	if ctxTranslates := ctx.String("Translates", ""); ctxTranslates != "" {
@@ -166,8 +168,7 @@ func (p *Page) parseContext(ctx context.Context) {
 
 	// context content is not "source" content, do not populate "from" context,
 	// only set it so that it's current
-	ctx.Set("Content", p.Content)
+	// ctx.Set("Content", p.Content)
 
-	p.Initial.Apply(ctx)
-	p.Context.Apply(p.Initial)
+	p.Context.Apply(ctx)
 }
