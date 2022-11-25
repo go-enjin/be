@@ -22,7 +22,7 @@ import (
 	textTemplate "text/template"
 	"time"
 
-	"github.com/go-enjin/be/pkg/types/site"
+	"github.com/go-enjin/be/pkg/request/argv"
 	"github.com/go-enjin/be/pkg/types/theme-types"
 
 	"github.com/go-enjin/be/pkg/context"
@@ -262,11 +262,11 @@ func (t *Theme) RenderPage(ctx context.Context, p *page.Page) (data []byte, redi
 		}
 	}
 
-	if !p.Context.Bool(site.RequestArgvIgnoredKey, false) {
-		if redirect = ctx.String(site.RequestRedirectKey, ""); redirect != "" {
+	if !p.Context.Bool(argv.RequestArgvIgnoredKey, false) {
+		if redirect = ctx.String(argv.RequestRedirectKey, ""); redirect != "" {
 			return
-		} else if consumed := ctx.Bool(site.RequestArgvConsumedKey, false); !consumed {
-			if reqArgv, ok := ctx.Get(string(site.RequestArgvKey)).(*site.RequestArgv); ok && reqArgv != nil && reqArgv.MustConsume() {
+		} else if consumed := ctx.Bool(argv.RequestArgvConsumedKey, false); !consumed {
+			if reqArgv, ok := ctx.Get(string(argv.RequestArgvKey)).(*argv.RequestArgv); ok && reqArgv != nil && reqArgv.MustConsume() {
 				redirect = p.Url
 				return
 			}
