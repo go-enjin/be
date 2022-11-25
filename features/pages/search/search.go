@@ -18,6 +18,7 @@ package search
 
 import (
 	"html/template"
+	"math"
 	"net/http"
 	"net/url"
 	"strings"
@@ -198,14 +199,11 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 			if results, err := f.search.PerformSearch(reqLangTag, input, numPerPage, pageNumber); err != nil {
 				p.Context.SetSpecific("SiteSearchError", err.Error())
 			} else {
-				p.Context.SetSpecific("SiteSearchResults", results)
-				p.Context.SetSpecific("SiteSearchSize", numPerPage)
-				p.Context.SetSpecific("SiteSearchPage", pageNumber)
-				pages := results.Total / uint64(numPerPage)
-				p.Context.SetSpecific("SiteSearchPages", pages)
+				numPages := int(math.Ceil(float64(results.Total) / float64(numPerPage)))
 				numHits := len(results.Hits)
-				idStart := (pageNumber * numPerPage) + 1
+				idStart := pageNumber*numPerPage + 1
 				idEnd := idStart + numHits - 1
+
 				printer := lang.GetPrinterFromRequest(r)
 				var resultSummary, hitsSummary, pageSummary string
 				switch results.Total {
@@ -222,15 +220,20 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 				switch numHits {
 				case 1:
 					// Search page summary, <number> of <pages>
-					pageSummary = printer.Sprintf("Page %d of %d", pageNumber+1, pages+1)
+					pageSummary = printer.Sprintf("Page %d of %d", pageNumber+1, numPages)
 					// Search hits summary with only one hit, <hit-number> of <total-hits>
 					hitsSummary = printer.Sprintf("Showing #%d of %d", idStart, results.Total)
 				default:
 					// Search page summary, <number> of <pages>
-					pageSummary = printer.Sprintf("Page %d of %d", pageNumber+1, pages+1)
+					pageSummary = printer.Sprintf("Page %d of %d", pageNumber+1, numPages)
 					// Search hits summary with more than one hit, <first-hit-number>-<last-hit-number> of <total-hits>
 					hitsSummary = printer.Sprintf("Showing %d-%d of %d", idStart, idEnd, results.Total)
 				}
+
+				p.Context.SetSpecific("SiteSearchSize", numPerPage)
+				p.Context.SetSpecific("SiteSearchPage", pageNumber)
+				p.Context.SetSpecific("SiteSearchPages", numPages)
+				p.Context.SetSpecific("SiteSearchResults", results)
 				p.Context.SetSpecific("SiteSearchPageSummary", template.HTML(pageSummary))
 				p.Context.SetSpecific("SiteSearchHitsSummary", template.HTML(hitsSummary))
 				p.Context.SetSpecific("SiteSearchResultSummary", template.HTML(resultSummary))
