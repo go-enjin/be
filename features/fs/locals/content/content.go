@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/blevesearch/bleve/v2"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/golang-org-x-text/language"
@@ -33,6 +32,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/pkg/pagecache"
 )
 
 var (
@@ -56,7 +56,7 @@ type CFeature struct {
 	enjin feature.Internals
 
 	setup map[string]string
-	cache *page.Cache
+	cache *pagecache.Cache
 
 	cacheControl string
 }
@@ -105,7 +105,15 @@ func (f *CFeature) Build(_ feature.Buildable) (err error) {
 func (f *CFeature) Setup(enjin feature.Internals) {
 	f.enjin = enjin
 	t, _ := f.enjin.GetTheme()
-	f.cache = page.NewCache(t)
+
+	var ok bool
+	var search pagecache.SearchEnjinFeature
+	for _, feat := range f.enjin.Features() {
+		if search, ok = feat.(pagecache.SearchEnjinFeature); ok {
+			break
+		}
+	}
+	f.cache = pagecache.New(t, f.enjin.SiteLanguageMode(), f.enjin.SiteDefaultLanguage(), search)
 
 	var err error
 	for _, mount := range maps.SortedKeys(f.setup) {
@@ -145,7 +153,6 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 }
 
 func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWriter, r *http.Request) (err error) {
-	f.cache.Rebuild()
 	reqLangTag := lang.GetTag(r)
 	path = forms.SanitizeRequestPath(path)
 	if mount, mpath, pg, e := f.cache.Lookup(reqLangTag, path); e == nil {
@@ -168,72 +175,24 @@ func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWrite
 	return
 }
 
-func (f *CFeature) UpdateSearch(tag language.Tag, index bleve.Index) (err error) {
-	f.cache.Rebuild()
-	allPages := f.cache.ListAll()
-	log.DebugF("locals content search updating %d documents", len(allPages))
-	for _, pg := range allPages {
-		if language.Compare(pg.LanguageTag, tag) {
-			if doc, e := pg.SearchDocument(); e != nil {
-				err = fmt.Errorf("error preparing locals search document: %v", e)
-			} else if doc != nil {
-				pgUrl := pg.Url
-				if !language.Compare(pg.LanguageTag, f.enjin.SiteDefaultLanguage(), language.Und) {
-					langMode := f.enjin.SiteLanguageMode()
-					pgUrl = langMode.ToUrl(f.enjin.SiteDefaultLanguage(), pg.LanguageTag, pg.Url)
-				}
-				if ee := index.Index(pgUrl, doc.Self()); ee != nil {
-					err = fmt.Errorf("error indexing locals search document: %v", ee)
-				} else {
-					log.TraceF("updated locals search index with document: %v", doc.GetUrl())
-				}
-			} else {
-				log.TraceF("skipped locals search index with document: %v", pg.Url)
-			}
-		}
-	}
-	return
-}
-
 func (f *CFeature) FindRedirection(path string) (p *page.Page) {
-	f.cache.Rebuild()
-	path = forms.SanitizeRequestPath(path)
-	if found := f.cache.FindAll(path); len(found) > 0 {
-		for _, pg := range found {
-			if pg.IsRedirection(path) {
-				p = pg
-				return
-			}
-		}
-	}
+	p, _ = f.cache.LookupRedirect(path)
 	return
 }
 
 func (f *CFeature) FindTranslations(path string) (found []*page.Page) {
-	f.cache.Rebuild()
-	path = forms.SanitizeRequestPath(path)
-	found = f.cache.FindAll(path)
+	found = f.cache.LookupTranslations(path)
 	return
 }
 
 func (f *CFeature) FindPage(tag language.Tag, path string) (p *page.Page) {
-	f.cache.Rebuild()
-	path = forms.SanitizeRequestPath(path)
 	if _, _, pg, e := f.cache.Lookup(tag, path); e == nil {
 		p = pg
 	}
 	return
 }
 
-func (f *CFeature) FindPages(path string) (pages []*page.Page) {
-	f.cache.Rebuild()
-	path = forms.SanitizeRequestPath(path)
-	pages = f.cache.FindAllPrefix(path)
-	return
-}
-
-func (f *CFeature) MatchQL(query string) (pages []*page.Page) {
-	f.cache.Rebuild()
-	pages = f.cache.MatchQL(query)
+func (f *CFeature) LookupPrefixed(path string) (pages []*page.Page) {
+	pages = f.cache.LookupPrefix(path)
 	return
 }
