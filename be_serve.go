@@ -339,7 +339,9 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 	}
 
 	w.Header().Set("Content-Type", mime)
-	if value, ok := r.Context().Value("Cache-Control").(string); ok {
+	if reqArgv := argv.GetRequestArgv(r); len(reqArgv.Argv) > 0 {
+		w.Header().Set("Cache-Control", "no-store")
+	} else if value, ok := r.Context().Value("Cache-Control").(string); ok {
 		w.Header().Set("Cache-Control", value)
 	}
 	if value, ok := r.Context().Value("Content-Disposition").(string); ok {
