@@ -27,7 +27,9 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
+	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/pkg/pagecache"
 	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/types/theme-types"
 )
@@ -105,15 +107,14 @@ func (e *Enjin) Context() (ctx context.Context) {
 func (e *Enjin) FindRedirection(url string) (p *page.Page) {
 	for _, f := range e.Features() {
 		if provider, ok := f.(feature.PageProvider); ok {
-			if pg := provider.FindRedirection(url); pg != nil {
-				p = pg.Copy()
+			if p = provider.FindRedirection(url); p != nil {
 				return
 			}
 		}
 	}
 	for _, pg := range e.eb.pages {
 		if pg.IsRedirection(url) {
-			p = pg.Copy()
+			p = pg
 			return
 		}
 	}
@@ -130,7 +131,7 @@ func (e *Enjin) FindTranslations(url string) (pages []*page.Page) {
 	}
 	for _, pg := range e.eb.pages {
 		if _, ok := pg.Match(url); ok {
-			pages = append(pages, pg.Copy())
+			pages = append(pages, pg)
 		}
 	}
 	return
@@ -158,7 +159,7 @@ func (e *Enjin) FindPage(tag language.Tag, url string) (p *page.Page) {
 func (e *Enjin) FindPages(prefix string) (pages []*page.Page) {
 	for _, f := range e.Features() {
 		if provider, ok := f.(feature.PageProvider); ok {
-			pages = append(pages, provider.FindPages(prefix)...)
+			pages = append(pages, provider.LookupPrefixed(prefix)...)
 		}
 	}
 	return
@@ -187,9 +188,21 @@ func (e *Enjin) MatchFormat(filename string) (format types.Format, match string)
 }
 
 func (e *Enjin) MatchQL(query string) (pages []*page.Page) {
+	t, _ := e.GetTheme()
 	for _, f := range e.Features() {
-		if provider, ok := f.(feature.PageProvider); ok {
-			pages = append(pages, provider.MatchQL(query)...)
+		if queryEnjin, ok := f.(pagecache.QueryEnjinFeature); ok {
+			if matches, err := queryEnjin.PerformQuery(query); err != nil {
+				log.ErrorF("error performing enjin query: %v", err)
+			} else {
+				for _, stub := range matches {
+					if p, err := stub.Make(t); err != nil {
+						log.ErrorF("error making page from cache: %v", err)
+					} else {
+						pages = append(pages, p)
+					}
+				}
+			}
+			break
 		}
 	}
 	return
