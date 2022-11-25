@@ -24,6 +24,7 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/request/argv"
 	"github.com/go-enjin/be/pkg/types/site"
 
 	"github.com/go-enjin/be/pkg/feature"
@@ -117,7 +118,7 @@ func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Reque
 
 	if path, ok := e.eb.statusPages[status]; ok {
 		if pg := e.FindPage(reqLangTag, path); pg != nil {
-			pg.Context.SetSpecific(site.RequestArgvIgnoredKey, true)
+			pg.Context.SetSpecific(argv.RequestArgvIgnoredKey, true)
 			if err := e.ServePage(pg, w, r); err != nil {
 				log.DebugF("error serving %v (pages) page: %v - %v", status, path, err)
 			} else {
@@ -227,9 +228,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 
 	ctx.SetSpecific("BaseUrl", net.BaseURL(r))
 	ctx.SetSpecific("LangPrinter", lang.GetPrinterFromRequest(r))
-	ctx.SetSpecific(string(site.RequestArgvKey), site.GetRequestArgv(r))
-
-	ctx.Apply(p.Context.Copy())
+	ctx.SetSpecific(string(argv.RequestArgvKey), argv.GetRequestArgv(r))
 
 	parsedTag := e.eb.defaultLang
 	if v := ctx.Get("Language"); v != nil {

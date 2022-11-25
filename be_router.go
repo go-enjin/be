@@ -28,7 +28,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/net/ip/deny"
-	"github.com/go-enjin/be/pkg/types/site"
+	"github.com/go-enjin/be/pkg/request/argv"
 )
 
 func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
@@ -44,7 +44,7 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 			}
 
 			path := forms.SanitizeRequestPath(r.URL.Path)
-			if reqArgv := site.DecodeHttpRequest(r); reqArgv != nil {
+			if reqArgv := argv.DecodeHttpRequest(r); reqArgv != nil {
 				r = reqArgv.Set(r)
 				path = reqArgv.Path
 				log.TraceF("parsed request argv: %v", reqArgv)

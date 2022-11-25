@@ -27,8 +27,8 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	beNet "github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/net/headers"
+	"github.com/go-enjin/be/pkg/request/argv"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/be/pkg/types/site"
 )
 
 func (e *Enjin) requestFiltersMiddleware(next http.Handler) http.Handler {
@@ -151,9 +151,9 @@ func (e *Enjin) langMiddleware(next http.Handler) http.Handler {
 		ctx = context.WithValue(ctx, lang.LanguagePrinter, printer)
 		ctx = context.WithValue(ctx, lang.LanguageDefault, e.SiteDefaultLanguage())
 
-		if reqArgv, ok := ctx.Value(site.RequestArgvKey).(*site.RequestArgv); ok {
+		if reqArgv, ok := ctx.Value(argv.RequestArgvKey).(*argv.RequestArgv); ok {
 			reqArgv.Language = tag
-			ctx = context.WithValue(ctx, site.RequestArgvKey, reqArgv)
+			ctx = context.WithValue(ctx, argv.RequestArgvKey, reqArgv)
 		}
 
 		if reqPath == "" {
