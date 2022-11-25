@@ -41,7 +41,7 @@ const (
 var (
 	rxPageRequestSplit = regexp.MustCompile(`/:`)
 	rxPageRequestSafe  = regexp.MustCompile(`/:.*$`)
-	rxPageRequestArgv  = regexp.MustCompile(`^(/[^:]*)((?:/:[^/]+)*)(/\d+/\d+/?)?$`)
+	rxPageRequestArgv  = regexp.MustCompile(`^(/[^:]*)?((?:/:[^/]+)*)(/\d+/\d+/?)?$`)
 )
 
 type RequestArgv struct {
