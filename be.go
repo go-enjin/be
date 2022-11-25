@@ -20,12 +20,12 @@ package be
 // TODO: allow/deny requests (atlas-gonnect stuff?)
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"strings"
-	"syscall"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -111,7 +111,9 @@ func (e *Enjin) action(ctx *cli.Context) (err error) {
 		return
 	}
 
-	err = e.startupRootService(ctx)
+	if err = e.startupRootService(ctx); err != nil && err.Error() == "http: Server closed" {
+		err = nil
+	}
 	return
 }
 
@@ -245,26 +247,30 @@ func (e *Enjin) startupHttpListener(listen string, port int, router *chi.Mux) (e
 	e.Notify("web process startup")
 	log.DebugF("web process info:\n%v", e.ListenerString())
 
-	c := make(chan os.Signal, 10)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	var srv http.Server
+
+	idleConnectionsClosed := make(chan struct{})
 	go func() {
-		<-c
+		sigint := make(chan os.Signal, 1)
+		signal.Notify(sigint, os.Interrupt)
+		<-sigint
+		// We received an interrupt signal, shut down.
+		if ee := srv.Shutdown(context.Background()); ee != nil {
+			// Error from closing listeners, or context timeout:
+			log.ErrorF("error shutting down http.Server: %v", ee)
+		}
 		e.Shutdown()
-		os.Exit(0)
+		close(idleConnectionsClosed)
 	}()
 
-	// if len(e.eb.domains) > 0 {
-	// 	log.InfoF("listening for domains: %v", e.eb.domains)
-	// } else {
-	// 	log.InfoF("listening for domains: (any)")
-	// }
-
-	handler := gzip.DefaultHandler().WrapHandler(router)
-	addr := fmt.Sprintf("%s:%d", listen, port)
-	if err = http.ListenAndServe(addr, handler); err != nil {
-		e.NotifyF("http startup error", "%v", err)
-		return
+	srv.Addr = fmt.Sprintf("%s:%d", listen, port)
+	srv.Handler = gzip.DefaultHandler().WrapHandler(router)
+	if err = srv.ListenAndServe(); err != http.ErrServerClosed {
+		// Error starting or closing listener:
+		log.ErrorF("unexpected error listening and serving http: %v", err)
 	}
+
+	<-idleConnectionsClosed
 	return
 }
 
