@@ -33,8 +33,9 @@ import (
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/pkg/pagecache"
+	"github.com/go-enjin/be/pkg/request/argv"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/be/pkg/types/site"
 )
 
 var (
@@ -55,7 +56,8 @@ type CFeature struct {
 	cli   *cli.Context
 	enjin feature.Internals
 
-	path string
+	path   string
+	search pagecache.SearchEnjinFeature
 
 	sync.RWMutex
 }
@@ -92,14 +94,11 @@ func (f *CFeature) Tag() (tag feature.Tag) {
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
 	b.AddCommands(&cli.Command{
-		Name:      "search",
-		Usage:     "search through searchable content",
-		Action:    f.SearchAction,
-		UsageText: globals.BinName + " search -- query string",
-		Description: "All features that are feature.Searchable are indexed" +
-			" and queried using the Bleve text indexing package." +
-			" See: http://blevesearch.com/docs/Query-String-Query/ for more" +
-			"details on how to use the query string.",
+		Name:        "search",
+		Usage:       "search through content",
+		Action:      f.SearchAction,
+		UsageText:   globals.BinName + " search -- query string",
+		Description: "Search for content within an enjin environment",
 		Flags: []cli.Flag{
 			&cli.IntFlag{
 				Name:  "size",
@@ -122,6 +121,15 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 		f.path = "/search"
 	}
 	log.DebugF("using search path: %v", f.path)
+	for _, feat := range f.enjin.Features() {
+		if search, ok := feat.(pagecache.SearchEnjinFeature); ok {
+			f.search = search
+			break
+		}
+	}
+	if f.search == nil {
+		log.FatalF("searching pages requires a pagecache.SearchEnjinFeature")
+	}
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
@@ -155,8 +163,8 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 		}
 
 		// prepare arguments
-		reqArgv := site.GetRequestArgv(r)
-		p.Context.SetSpecific(site.RequestArgvConsumedKey, true)
+		reqArgv := argv.GetRequestArgv(r)
+		p.Context.SetSpecific(argv.RequestArgvConsumedKey, true)
 		reqLangTag := lang.GetTag(r)
 		numPerPage, pageNumber := 10, 0
 		if reqArgv.NumPerPage > -1 {
@@ -187,7 +195,7 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 
 		if input != "" {
 			// perform search
-			if results, err := f.PerformSearch(reqLangTag, input, numPerPage, pageNumber); err != nil {
+			if results, err := f.search.PerformSearch(reqLangTag, input, numPerPage, pageNumber); err != nil {
 				p.Context.SetSpecific("SiteSearchError", err.Error())
 			} else {
 				p.Context.SetSpecific("SiteSearchResults", results)
