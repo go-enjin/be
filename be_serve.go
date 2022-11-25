@@ -129,7 +129,7 @@ func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Reque
 		for _, f := range e.eb.features {
 			if mf, ok := f.(feature.Middleware); ok {
 				if err := mf.ServePath(path, e, w, r); err != nil {
-					log.DebugF("error serving %v (middleware) page: %v - %v", status, path, err)
+					log.DebugF("error serving %v (%v middleware) page: %v - %v", status, f.Tag(), path, err)
 				} else {
 					log.DebugF("served %v (middleware) page: %v", status, path)
 					return
@@ -178,6 +178,7 @@ func (e *Enjin) ServePath(urlPath string, w http.ResponseWriter, r *http.Request
 }
 
 func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) (err error) {
+
 	for _, f := range e.Features() {
 		if ptp, ok := f.(feature.PageTypeProcessor); ok {
 			var pg *page.Page
