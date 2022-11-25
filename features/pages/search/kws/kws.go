@@ -158,24 +158,24 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 
 	var maxScore float64
 	var hits []*bleveSearch.DocumentMatch
-	var count uint64 = 0
 	if size > 0 && pg >= 0 {
+		var count uint64 = 0
 		var start = uint64(pg * size)
 		var end = start + uint64(size)
-		for _, shasum := range sorted {
+		for idx, shasum := range sorted {
+			count = uint64(idx)
 			stub := matches[shasum]
-			count += 1
 			if maxScore < scores[shasum] {
 				maxScore = scores[shasum]
 			}
-			if count >= start && count <= end {
+			if count >= start && count < end {
 				if p, ee := stub.Make(t); ee == nil {
 					id := langMode.ToUrl(fallback, p.LanguageTag, p.Url)
 					hit := &bleveSearch.DocumentMatch{
 						Index:     id,
 						ID:        id,
 						Score:     scores[shasum],
-						HitNumber: count,
+						HitNumber: count + 1,
 						Fields: map[string]interface{}{
 							"url":         id,
 							"title":       p.Title,
@@ -190,7 +190,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 			}
 		}
 	}
-	total := int(count)
+	total := len(sorted)
 	// TODO: populate bleve.SearchResult as much as possible
 	results = &bleve.SearchResult{
 		Status: &bleve.SearchStatus{
@@ -199,7 +199,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 			Successful: total,
 		},
 		Hits:     hits,
-		Total:    count,
+		Total:    uint64(total),
 		Request:  nil,
 		MaxScore: maxScore,
 	}
