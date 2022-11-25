@@ -17,7 +17,6 @@ package html
 import (
 	"bytes"
 	"fmt"
-	"html/template"
 	htmlTemplate "html/template"
 	"strings"
 
@@ -29,7 +28,6 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/search"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/types/theme-types"
@@ -88,8 +86,13 @@ func (f *CFeature) Label() (label string) {
 	return
 }
 
-func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, redirect string, err *types.EnjinError) {
-	html = template.HTML(content)
+func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html htmlTemplate.HTML, redirect string, err *types.EnjinError) {
+	html = htmlTemplate.HTML(content)
+	return
+}
+
+func (f *CFeature) SearchDocumentMapping(tag language.Tag) (doctype string, dm *mapping.DocumentMapping) {
+	doctype, _, dm = f.NewDocumentMapping(tag)
 	return
 }
 
@@ -98,7 +101,7 @@ func (f *CFeature) AddSearchDocumentMapping(tag language.Tag, indexMapping *mapp
 	indexMapping.AddDocumentMapping(doctype, dm)
 }
 
-func (f *CFeature) IndexDocument(thing interface{}) (doc search.Document, err error) {
+func (f *CFeature) IndexDocument(thing interface{}) (out interface{}, err error) {
 	pg, _ := thing.(*page.Page) // FIXME: this "thing" avoids package import loops
 
 	var rendered string
@@ -118,7 +121,7 @@ func (f *CFeature) IndexDocument(thing interface{}) (doc search.Document, err er
 		rendered = pg.Content
 	}
 
-	d := NewHtmlDocument(pg.Language, pg.Url, pg.Title)
+	doc := NewHtmlDocument(pg.Language, pg.Url, pg.Title)
 	var parsed *html.Node
 	if parsed, err = html.Parse(strings.NewReader(rendered)); err != nil {
 		return
@@ -167,12 +170,12 @@ func (f *CFeature) IndexDocument(thing interface{}) (doc search.Document, err er
 					if addLinkNext {
 						addLinkNext = false
 						// log.DebugF("adding html link: %v", data)
-						d.AddLink(data)
+						doc.AddLink(data)
 						contents = beStrings.AppendWithSpace(contents, data)
 					} else if addHeadingNext {
 						addHeadingNext = false
 						// log.DebugF("adding html heading: %v", data)
-						d.AddHeading(data)
+						doc.AddHeading(data)
 					} else {
 						contents = beStrings.AppendWithSpace(contents, data)
 					}
@@ -191,11 +194,11 @@ func (f *CFeature) IndexDocument(thing interface{}) (doc search.Document, err er
 	walk(parsed)
 
 	if !beStrings.Empty(contents) {
-		d.AddContent(contents)
+		doc.AddContent(contents)
 		// log.DebugF("adding html contents:\n%v", contents)
 	}
 
-	doc = d
+	out = doc
 	err = nil
 	return
 }

@@ -63,7 +63,6 @@ import (
 	beForms "github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/search"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/types/theme-types"
@@ -346,15 +345,20 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 	return
 }
 
+func (f *CFeature) SearchDocumentMapping(tag language.Tag) (doctype string, dm *mapping.DocumentMapping) {
+	doctype, _, dm = f.NewDocumentMapping(tag)
+	return
+}
+
 func (f *CFeature) AddSearchDocumentMapping(tag language.Tag, indexMapping *mapping.IndexMappingImpl) {
 	doctype, _, dm := f.NewDocumentMapping(tag)
 	indexMapping.AddDocumentMapping(doctype, dm)
 }
 
-func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error) {
+func (f *CFeature) IndexDocument(p interface{}) (out interface{}, err error) {
 	pg, _ := p.(*page.Page)
 
-	d := NewEnjinDocument(pg.Language, pg.Url, pg.Title)
+	doc := NewEnjinDocument(pg.Language, pg.Url, pg.Title)
 
 	var data []interface{}
 	var rendered string
@@ -411,7 +415,7 @@ func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error)
 							err = fmt.Errorf("error parsing footnote note: %v", err)
 							return
 						}
-						d.AddFootnote(text + ": " + note)
+						doc.AddFootnote(text + ": " + note)
 						contents = beStrings.AppendWithSpace(contents, text)
 					}
 				} else {
@@ -426,7 +430,7 @@ func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error)
 						err = fmt.Errorf("error parsing anchor text: %v", err)
 						return
 					}
-					d.AddLink(text)
+					doc.AddLink(text)
 					contents = beStrings.AppendWithSpace(contents, text)
 				} else {
 					err = fmt.Errorf("anchor text not found: %+v", data)
@@ -435,7 +439,7 @@ func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error)
 			default:
 
 				if linkText, ok := data["link-text"].(string); ok {
-					d.AddLink(linkText)
+					doc.AddLink(linkText)
 				}
 
 				if dataContent, ok := data["content"].(map[string]interface{}); ok {
@@ -446,7 +450,7 @@ func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error)
 							if text, err = walker(headerList); err != nil {
 								err = fmt.Errorf("error walking header list: %v", err)
 							} else if text != "" {
-								d.AddHeading(text)
+								doc.AddHeading(text)
 							}
 						} else {
 							err = fmt.Errorf("invalid header structure: %T %+v", headerData, headerData)
@@ -539,8 +543,8 @@ func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error)
 	if contents, err = walker(data); err != nil {
 		return
 	}
-	d.AddContent(beForms.StripTags(beStrings.StripTmplTags(contents)))
+	doc.AddContent(beForms.StripTags(beStrings.StripTmplTags(contents)))
 
-	doc = d
+	out = doc
 	return
 }

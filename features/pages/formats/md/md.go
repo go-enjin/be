@@ -29,7 +29,6 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/search"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/types/theme-types"
@@ -93,12 +92,17 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 	return
 }
 
+func (f *CFeature) SearchDocumentMapping(tag language.Tag) (doctype string, dm *mapping.DocumentMapping) {
+	doctype, _, dm = f.NewDocumentMapping(tag)
+	return
+}
+
 func (f *CFeature) AddSearchDocumentMapping(tag language.Tag, indexMapping *mapping.IndexMappingImpl) {
 	doctype, _, dm := f.NewDocumentMapping(tag)
 	indexMapping.AddDocumentMapping(doctype, dm)
 }
 
-func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error) {
+func (f *CFeature) IndexDocument(p interface{}) (out interface{}, err error) {
 	pg, _ := p.(*page.Page)
 
 	var rendered string
@@ -120,7 +124,7 @@ func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error)
 
 	rendered = RenderMarkdown(rendered)
 
-	d := NewMarkdownDocument(pg.Language, pg.Url, pg.Title)
+	doc := NewMarkdownDocument(pg.Language, pg.Url, pg.Title)
 	var parsed *html.Node
 	if parsed, err = html.Parse(strings.NewReader(rendered)); err != nil {
 		return
@@ -187,16 +191,16 @@ func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error)
 					if addLinkNext {
 						addLinkNext = false
 						// log.DebugF("adding markdown link: %v", data)
-						d.AddLink(data)
+						doc.AddLink(data)
 						contents = beStrings.AppendWithSpace(contents, data)
 					} else if addHeadingNext {
 						addHeadingNext = false
 						// log.DebugF("adding markdown heading: %v", data)
-						d.AddHeading(data)
+						doc.AddHeading(data)
 					} else if addFootnoteNext {
 						addFootnoteNext = false
 						// log.DebugF("adding markdown footnote: %v", data)
-						d.AddFootnote(data)
+						doc.AddFootnote(data)
 					} else {
 						contents = beStrings.AppendWithSpace(contents, data)
 					}
@@ -216,11 +220,11 @@ func (f *CFeature) IndexDocument(p interface{}) (doc search.Document, err error)
 	walk(parsed)
 
 	if !beStrings.Empty(contents) {
-		d.AddContent(contents)
+		doc.AddContent(contents)
 		// log.DebugF("adding markdown contents:\n%v", contents)
 	}
 
-	doc = d
+	out = doc
 	err = nil
 	return
 }
