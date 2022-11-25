@@ -24,9 +24,12 @@ import (
 
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/pkg/pagecache"
 	"github.com/go-enjin/be/pkg/regexps"
-	"github.com/go-enjin/be/pkg/search/indexes"
+	"github.com/go-enjin/be/pkg/search"
 )
+
+// TODO: update SearchWithin to use pagecache.SearchEnjinFeature
 
 func SearchWithin(input string, numPerPage, pageNumber int, pages []*page.Page, defaultLang, tag language.Tag, langMode lang.Mode) (matches map[string]*page.Page, results *bleve.SearchResult, err error) {
 	var locales []language.Tag
@@ -38,7 +41,7 @@ func SearchWithin(input string, numPerPage, pageNumber int, pages []*page.Page, 
 			locales = append(locales, pg.LanguageTag)
 		}
 		if _, ok := docMaps[pg.Format]; !ok {
-			if doctype, dm, e := pg.SearchMapping(); e != nil {
+			if doctype, dm, e := pagecache.SearchMapping(pg); e != nil {
 				err = fmt.Errorf("error getting page search mapping: %v - %v", pg.Url, e)
 				return
 			} else if dm != nil {
@@ -49,13 +52,13 @@ func SearchWithin(input string, numPerPage, pageNumber int, pages []*page.Page, 
 
 	localeIndexed := make(map[language.Tag]bleve.Index)
 	for _, locale := range locales {
-		if localeIndexed[locale], err = indexes.NewMemOnlyIndexWithDocMaps(locale, docMaps); err != nil {
+		if localeIndexed[locale], err = search.NewMemOnlyIndexWithDocMaps(locale, docMaps); err != nil {
 			return
 		}
 	}
 
 	for _, pg := range pages {
-		if doc, e := pg.SearchDocument(); e != nil {
+		if doc, e := pagecache.SearchDocument(pg); e != nil {
 			err = fmt.Errorf("error preparing search document: %v - %v", pg.Url, e)
 			return
 		} else if doc != nil {
