@@ -19,6 +19,7 @@ package content
 import (
 	"fmt"
 	"net/http"
+	"runtime"
 	"sort"
 
 	"github.com/fvbommel/sortorder"
@@ -152,6 +153,7 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	f.cache.Rebuild()
+	runtime.GC()
 	return
 }
 
