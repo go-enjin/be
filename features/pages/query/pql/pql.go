@@ -17,7 +17,6 @@
 package pql
 
 import (
-	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -87,26 +86,8 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-var RxMatchQLOrderBy = regexp.MustCompile(`ORDER BY \.(.+?)\s*(ASC|DSC|DESC)?\s*$`)
-
 func (f *CFeature) PerformQuery(input string) (stubs []*pagecache.Stub, err error) {
-	// orderBy := "Title"
-	// sortDir := "ASC"
-	// if RxMatchQLOrderBy.MatchString(input) {
-	// 	m := RxMatchQLOrderBy.FindAllStringSubmatch(input, 1)
-	// 	orderBy = strcase.ToCamel(m[0][1])
-	// 	switch strings.ToUpper(m[0][2]) {
-	// 	case "ASC", "":
-	// 	case "DSC", "DESC":
-	// 		sortDir = "DSC"
-	// 	default:
-	// 		log.ErrorF("invalid sort direction specified in PageQL statement: %v", m[0][2])
-	// 	}
-	// 	input = RxMatchQLOrderBy.ReplaceAllString(input, "")
-	// }
-	input = RxMatchQLOrderBy.ReplaceAllString(input, "")
-
-	stubs, err = f.processQuery(input)
+	stubs, err = newMatcherProcess(input, f)
 	return
 }
 
