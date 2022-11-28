@@ -269,3 +269,13 @@ func (c Context) CamelizeKeys() {
 	}
 	c.DeleteKeys(remove...)
 }
+
+func (c Context) Select(keys ...string) (selected map[string]interface{}) {
+	selected = make(map[string]interface{})
+	for _, key := range keys {
+		if v, ok := c[key]; ok {
+			selected[key] = v
+		}
+	}
+	return
+}
