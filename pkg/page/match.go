@@ -93,9 +93,6 @@ func (p *Page) HasTranslation() (ok bool) {
 }
 
 func (p *Page) MatchQL(query string) (ok bool, err error) {
-	if err = pageql.Validate(query); err != nil {
-		return
-	}
 	ok, err = pageql.Match(query, p.Context.Copy())
 	return
 }
