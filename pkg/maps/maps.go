@@ -33,6 +33,8 @@ func ExtractBoolValue(v interface{}) (b bool) {
 	switch t := v.(type) {
 	case int:
 		b = t != 0
+	case uint:
+		b = t != 0
 	case float64:
 		b = t != 0.0
 	case bool:
