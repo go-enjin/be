@@ -32,38 +32,38 @@ type cache struct {
 
 type cacheEntry struct {
 	Query string
-	Expr  *Expression
-	Error error
+	Expr  *Statement
 }
 
-func (c *cache) get(query string) (expr *Expression, err error, ok bool) {
+func (c *cache) get(query string) (stmnt *Statement, ok bool) {
 	c.RLock()
 	defer c.RUnlock()
 	var entry *cacheEntry
 	if entry, ok = c.data[query]; ok {
-		expr = entry.Expr
-		err = entry.Error
+		stmnt = entry.Expr
 		return
 	}
 	return
 }
 
-func (c *cache) set(query string, expr *Expression, err error) {
+func (c *cache) set(query string, expr *Statement) {
 	c.Lock()
 	defer c.Unlock()
 	c.data[query] = &cacheEntry{
 		Query: query,
 		Expr:  expr,
-		Error: err,
 	}
 	return
 }
 
-func Compile(query string) (expr *Expression, err error) {
+func Compile(query string) (stmnt *Statement, err *ParseError) {
+	query = SanitizeQuery(query)
 	var ok bool
-	if expr, err, ok = _cache.get(query); ok {
+	if stmnt, ok = _cache.get(query); ok {
 		return
 	}
-	expr, err = parser.ParseString("pageql", query)
+	if stmnt, err = parseString(query); err == nil {
+		_cache.set(query, stmnt)
+	}
 	return
 }

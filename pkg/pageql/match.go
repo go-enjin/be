@@ -16,113 +16,97 @@ package pageql
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/go-enjin/be/pkg/cmp"
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/regexps"
 )
 
 func Match(query string, ctx context.Context) (matched bool, err error) {
-	var expr *Expression
-	if expr, err = Compile(query); err != nil {
+	var stmnt *Statement
+	if stmnt, err = Compile(query); err != nil {
 		return
 	}
-	matched, err = process(expr, ctx)
+	matched, err = processQuery(stmnt.Expression, ctx)
 	return
 }
 
-func process(expr *Expression, ctx context.Context) (matched bool, err error) {
-	var chained bool
-	if chained, err = ValidateGrouping(expr); err != nil {
-		return
-	}
-
-	if chained {
-		var lhsMatched, rhsMatched bool
-		if lhsMatched, err = process(expr.Lhs.SubExpression, ctx); err != nil {
-			return
-		}
-		if rhsMatched, err = process(expr.Tail[0].Rhs.SubExpression, ctx); err != nil {
-			return
-		}
-		if expr.Tail[0].Op == "AND" {
-			matched = lhsMatched && rhsMatched
-		} else {
-			matched = lhsMatched || rhsMatched
-		}
-		return
-	}
-
-	key := ""
+func processQuery(expr *Expression, ctx context.Context) (matched bool, err error) {
 	switch {
 
-	case expr.Lhs.SubExpression != nil:
-		return process(expr.Lhs.SubExpression, ctx)
+	case expr.Condition != nil:
+		matched, err = processQueryCondition(expr.Condition, ctx)
 
-	case expr.Lhs.ContextKey != nil:
-		key = *expr.Lhs.ContextKey
-		for _, op := range expr.Tail {
-			if matched, err = processOp(key, op, ctx); err != nil || !matched {
-				return
-			}
-		}
+	case expr.Operation != nil:
+		matched, err = processQueryOperation(expr.Operation, ctx)
 
-	default:
-		err = fmt.Errorf("only context keys can be on the left-hand side of an expression")
-		return
 	}
-
 	return
 }
 
-func processOp(key string, op *Operation, ctx context.Context) (matched bool, err error) {
-	switch op.Op {
+func processQueryCondition(cond *Condition, ctx context.Context) (matched bool, err error) {
+	if cond.Left != nil && cond.Right != nil {
+		var leftMatch, rightMatch bool
+		if leftMatch, err = processQuery(cond.Left, ctx); err != nil {
+			return
+		}
+		if rightMatch, err = processQuery(cond.Right, ctx); err != nil {
+			return
+		}
+		switch strings.ToUpper(cond.Type) {
+		case "OR":
+			matched = leftMatch || rightMatch
+		case "AND":
+			matched = leftMatch && rightMatch
+		}
+	}
+	return
+}
+
+func processQueryOperation(op *Operation, ctx context.Context) (matched bool, err error) {
+	switch op.Type {
 
 	case "==":
-		matched, err = processOpRhs(key, op.Rhs, ctx)
+		matched, err = processQueryOperationEquals(*op.Left, op.Right, ctx)
 
 	case "!=":
-		if matched, err = processOpRhs(key, op.Rhs, ctx); err == nil {
+		if matched, err = processQueryOperationEquals(*op.Left, op.Right, ctx); err == nil {
 			matched = !matched
 		}
 
 	default:
-		log.WarnF("uncaught op.Op: %v", op.Op)
+		err = fmt.Errorf(`%v not implemented`, op.Type)
 
 	}
 	return
 }
 
-func processOpRhs(key string, opValue *Value, ctx context.Context) (matched bool, err error) {
+func processQueryOperationEquals(key string, opValue *Value, ctx context.Context) (matched bool, err error) {
 	switch {
+
+	case opValue.ContextKey != nil:
+		lValue := ctx.Get(key)
+		rValue := ctx.Get(*opValue.ContextKey)
+		matched, err = cmp.Compare(lValue, rValue)
 
 	case opValue.Regexp != nil:
 		if value, ok := ctx.Get(key).(string); ok {
 			if rx, e := regexps.Compile(*opValue.Regexp); e != nil {
 				err = fmt.Errorf("error compiling regular expression")
-				return
-			} else if matched = rx.MatchString(value); matched {
-				// log.DebugF("page.%v is a string and does match m!%v!", key, *opValue.Regexp)
-				return
+			} else {
+				matched = rx.MatchString(value)
 			}
 		} else {
-			err = fmt.Errorf("page.%v is %T, expected string", key, ctx.Get(key))
-			return
+			err = fmt.Errorf("page.%v is of type %T, expected string", key, ctx.Get(key))
 		}
 
 	case opValue.String != nil:
 		if value, ok := ctx.Get(key).(string); ok {
-			if matched = value == *opValue.String; matched {
-				// log.DebugF("page.%v is a string and is equal to %v", key, *opValue.String)
-				return
-			}
+			matched = value == *opValue.String
 		} else {
-			err = fmt.Errorf("page.%v is %T, expected string", key, ctx.Get(key))
-			return
+			err = fmt.Errorf("page.%v is of type %T, expected string", key, ctx.Get(key))
 		}
-
-	case opValue.SubExpression != nil:
-		err = fmt.Errorf("sub-expressions are not permitted as comparison values")
 
 	}
 	return
