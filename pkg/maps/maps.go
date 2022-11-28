@@ -274,6 +274,13 @@ func ReverseSortedKeys[V interface{}](data map[string]V) (keys []string) {
 	return
 }
 
+func Keys[V interface{}](data map[string]V) (keys []string) {
+	for key, _ := range data {
+		keys = append(keys, key)
+	}
+	return
+}
+
 func CamelizeKeys[V interface{}](data map[string]V) (camelized map[string]V) {
 	camelized = make(map[string]V)
 	for k, v := range data {
