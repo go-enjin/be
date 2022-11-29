@@ -28,6 +28,7 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/fs"
@@ -143,6 +144,14 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	f.cache.Rebuild()
 	runtime.GC()
+	return
+}
+
+func (f *CFeature) FilterPageContext(themeCtx context.Context, pageCtx context.Context, r *http.Request) (out context.Context) {
+	out = themeCtx
+	totalCached := out.Uint64("SiteTotalPages", 0)
+	totalCached += f.cache.TotalCached
+	out.SetSpecific("SiteTotalPages", totalCached)
 	return
 }
 
