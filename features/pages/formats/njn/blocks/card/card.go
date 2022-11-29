@@ -128,6 +128,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		block["Footer"] = footer
 	}
 
+	block["SiteContext"] = re.RequestContext()
 	return
 }
 

@@ -175,6 +175,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		block["Counter"] = "single"
 	}
 
+	block["SiteContext"] = re.RequestContext()
 	return
 }
 
