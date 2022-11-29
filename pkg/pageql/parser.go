@@ -26,6 +26,11 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
+// TODO: sort out errors with: `(.Title != m!(?i)thing!)` statements, use different regexp open/close markers (ie: ~ or / instead of !)
+// TODO: implement ~= and !~ such that the `m` prefix to regexp is no longer necessary
+// TODO: implement <, >, <=, >= and general numerical comparison supports
+// TODO: eventually implement simple math operations: +, -, /, * and this must support correct operator precedence
+
 var (
 	parser = participle.MustBuild[Statement](
 		participle.Lexer(lexer.MustSimple([]lexer.SimpleRule{
@@ -35,8 +40,8 @@ var (
 			{`Float`, `\b(\d*\.\d+)\b`},
 			{`Number`, `[-+]?\d*\.?\d+([eE][-+]?\d+)?`},
 			{`String`, `'[^']*'|"[^"]*"`},
-			{"Regexp", `/([^/]*)/|\!([^\!]*)\!|@([^@]*)@|\~([^\~]*)\~`},
-			{`Operators`, `<>|!=|<=|>=|~=|!~|[-+*/%,.()=<>]`},
+			{"Regexp", `/(.+?)/|\!(.+?)\!|\@(.+?)\@|\~(.+?)\~`},
+			{`Operators`, `==|!=|[=?.()]`},
 			{"whitespace", `\s+`},
 		})),
 		// UnquoteRegexp("Regexp"),

@@ -16,7 +16,7 @@ package pageql
 
 type Operation struct {
 	Left  *string `parser:"'(' '.' @Ident" json:"left"`
-	Type  string  `parser:"@( ('!' '='|'=' '=') )" json:"type"`
+	Type  string  `parser:"@( '!=' | '!' '=' | '==' | '=' '=' | '~=' | '~' '=' | '!~' | '!' '~' )" json:"type"`
 	Right *Value  `parser:"@@ ')'" json:"right"`
 }
 
