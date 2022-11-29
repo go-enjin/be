@@ -30,11 +30,12 @@ func Match(query string, ctx context.Context) (matched bool, err error) {
 		err = error(pErr)
 		return
 	}
-	matched, err = processQuery(stmnt.Expression, ctx)
+	stmnt = stmnt.Render()
+	matched, err = processQueryExpression(stmnt.Expression, ctx)
 	return
 }
 
-func processQuery(expr *Expression, ctx context.Context) (matched bool, err error) {
+func processQueryExpression(expr *Expression, ctx context.Context) (matched bool, err error) {
 	switch {
 
 	case expr.Condition != nil:
@@ -50,10 +51,10 @@ func processQuery(expr *Expression, ctx context.Context) (matched bool, err erro
 func processQueryCondition(cond *Condition, ctx context.Context) (matched bool, err error) {
 	if cond.Left != nil && cond.Right != nil {
 		var leftMatch, rightMatch bool
-		if leftMatch, err = processQuery(cond.Left, ctx); err != nil {
+		if leftMatch, err = processQueryExpression(cond.Left, ctx); err != nil {
 			return
 		}
-		if rightMatch, err = processQuery(cond.Right, ctx); err != nil {
+		if rightMatch, err = processQueryExpression(cond.Right, ctx); err != nil {
 			return
 		}
 		switch strings.ToUpper(cond.Type) {
