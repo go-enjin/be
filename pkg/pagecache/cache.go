@@ -20,6 +20,7 @@ import (
 	"sync"
 
 	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/gofrs/uuid"
 
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/lang"
@@ -119,6 +120,10 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 		c.All = append(c.All, stub)
 		c.Stubs[mount][p.LanguageTag][file] = stub
 		c.Stubs[mount][p.LanguageTag][p.Url] = stub
+		if p.Permalink != uuid.Nil {
+			c.Stubs[mount][p.LanguageTag]["/"+p.PermalinkSha] = stub
+			c.Stubs[mount][p.LanguageTag]["/"+p.Permalink.String()] = stub
+		}
 		mountCached += 1
 
 		for _, redirect := range p.Redirections() {
