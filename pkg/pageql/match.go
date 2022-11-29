@@ -25,7 +25,9 @@ import (
 
 func Match(query string, ctx context.Context) (matched bool, err error) {
 	var stmnt *Statement
-	if stmnt, err = Compile(query); err != nil {
+	var pErr *ParseError
+	if stmnt, pErr = Compile(query); pErr != nil {
+		err = error(pErr)
 		return
 	}
 	matched, err = processQuery(stmnt.Expression, ctx)
