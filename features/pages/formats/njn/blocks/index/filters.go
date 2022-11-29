@@ -152,7 +152,9 @@ func (f Filters) FilterPages(pages []*page.Page) (filtered []*page.Page) {
 	for _, pg := range pages {
 		count := 0
 		for _, filter := range present {
-			if matched, e := pg.MatchQL(filter.Query); e == nil && matched {
+			if matched, e := pg.MatchQL(filter.Query); e != nil {
+				log.ErrorF("error matching filter: %v - %v", filter.Query, e)
+			} else if matched {
 				count += 1
 			}
 		}
