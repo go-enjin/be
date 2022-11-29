@@ -57,6 +57,7 @@ func (c *cache) set(query string, expr *Statement) {
 }
 
 func Compile(query string) (stmnt *Statement, err *ParseError) {
+	err = nil
 	query = SanitizeQuery(query)
 	var ok bool
 	if stmnt, ok = _cache.get(query); ok {
