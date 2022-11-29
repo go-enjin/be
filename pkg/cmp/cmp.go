@@ -14,7 +14,10 @@
 
 package cmp
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func Compare(a, b interface{}) (same bool, err error) {
 	if fmt.Sprintf("%T", a) != fmt.Sprintf("%T", b) {
@@ -35,6 +38,10 @@ func Compare(a, b interface{}) (same bool, err error) {
 			uint, uint8, uint16, uint32, uint64:
 			same = ta == tb
 		}
+	case time.Time:
+		same = ta.Unix() == b.(time.Time).Unix()
+	case time.Duration:
+		same = ta.String() == b.(time.Duration).String()
 	default:
 		err = fmt.Errorf("unsupported type for comparison: %T", a)
 	}
@@ -88,6 +95,12 @@ func Less(a, b interface{}) (less bool, err error) {
 
 	case uint64:
 		less = ta < b.(uint64)
+
+	case time.Time:
+		less = ta.Before(b.(time.Time))
+
+	case time.Duration:
+		less = ta.Seconds() < b.(time.Duration).Seconds()
 
 	default:
 		err = fmt.Errorf("unsupported type for (less) comparison: %T", a)
