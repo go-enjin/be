@@ -16,7 +16,9 @@ package index
 
 import (
 	"fmt"
+	"html"
 	"html/template"
+	"net/url"
 	"strings"
 
 	"github.com/go-enjin/golang-org-x-text/cases"
@@ -32,6 +34,8 @@ import (
 	"github.com/go-enjin/be/pkg/request/argv"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
+
+// TODO: SearchWithin is way too heavy for quoted.fyi, does not use kws
 
 const (
 	Tag feature.Tag = "NjnIndexBlock"
@@ -125,22 +129,6 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		return
 	}
 
-	var orderBy, sortDir string
-	if orderBy, ok = data["index-order-by"].(string); ok {
-		orderBy = strcase.ToCamel(orderBy)
-	} else {
-		orderBy = "Title"
-	}
-
-	if sortDir, err = maps.ExtractEnumValue("index-sort-dir", true, []string{"ASC", "DSC"}, data); err != nil {
-		return
-	}
-
-	var maxResults int
-	if maxResults, err = maps.ExtractIntValue("index-max-results", data); err != nil {
-		return
-	}
-
 	filters := makeFilters(data)
 
 	reqArgv := re.RequestArgv()
@@ -160,28 +148,32 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 
 	var csqp bool // correct search query paths
 	decArgv := argv.DecomposeHttpRequest(reqArgv.Request)
-	for idx, argv := range decArgv.Argv {
-		for jdx, arg := range argv {
-			if check := strings.HasPrefix(arg, "%28") && strings.HasSuffix(arg, "%29"); check {
-				csqp = check
+	for idx, args := range decArgv.Argv {
+		for jdx, arg := range args {
+			if escCheck := strings.HasPrefix(arg, "%28") && strings.HasSuffix(arg, "%29"); escCheck {
+				csqp = true
 				arg = arg[3 : len(arg)-3]
 				if arg == "" {
 					decArgv.Argv[idx][jdx] = ""
 				} else {
+					arg, _ = url.PathUnescape(arg)
+					arg = html.UnescapeString(arg)
 					decArgv.Argv[idx][jdx] = "(" + arg + ")"
 				}
-			} else if check := arg != "" && arg[0] == '(' && arg[len(arg)-1] == ')'; check {
+			} else if braceCheck := arg != "" && arg[0] == '(' && arg[len(arg)-1] == ')'; braceCheck {
 				arg = arg[1 : len(arg)-1]
 				if arg == "" {
-					csqp = check
+					csqp = true
 					decArgv.Argv[idx][jdx] = ""
 				} else {
+					arg, _ = url.PathUnescape(arg)
+					arg = html.UnescapeString(arg)
 					decArgv.Argv[idx][jdx] = "(" + arg + ")"
 				}
 			}
 		}
 	}
-	if csqp {
+	if csqp || reqArgv.String() != decArgv.String() {
 		redirect = decArgv.String()
 		return
 	}
@@ -215,7 +207,12 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 					}
 				} else if searchEnabled && piece != "" && piece[0] == '(' && piece[len(piece)-1] == ')' {
 					argvSearch = piece[1 : len(piece)-1] // trim '(' and ')'
-					fixArgs = append(fixArgs, "("+argvSearch+")")
+					if unescaped, eee := url.PathUnescape(argvSearch); eee == nil {
+						fixArgs = append(fixArgs, "("+unescaped+")")
+						argvSearch = unescaped
+					} else {
+						log.ErrorF("error unescaping argv search: %v", eee)
+					}
 				} else {
 					// 	fixArgs = append(fixArgs, piece)
 				}
@@ -253,22 +250,14 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		return
 	}
 
-	if err = pageql.Validate(query); err != nil {
-		err = fmt.Errorf("query error: %v - %v", query, err)
+	if _, perr := pageql.Compile(query); perr != nil {
+		err = fmt.Errorf("query error:\n%v", perr.Pretty())
 		return
 	}
 
 	found := f.enjin.MatchQL(query)
-	found = page.SortPages(found, orderBy, sortDir)
-
 	totalFound := len(found)
-
 	found = filters.FilterPages(found)
-
-	if maxResults > 0 && totalFound > maxResults {
-		found = found[:maxResults]
-	}
-
 	totalFiltered := len(found)
 
 	if searchEnabled && argvSearch != "" {
@@ -280,48 +269,41 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		} else {
 			block["SearchWithinTotal"] = totalFiltered
 			block["SearchResults"] = searchResults
-			var updated []*page.Page
-			for _, hit := range searchResults.Hits {
-				if pg, ok := matched[hit.ID]; ok {
-					updated = append(updated, pg)
-				}
-			}
-			totalFiltered = len(updated)
-			block["SearchTotal"] = totalFiltered
 
-			log.DebugF("search found: %d (of %d total) hits for query: %v", len(updated), len(found), argvSearch)
+			var updated []*page.Page
+
 			searchRanked := true
 			if ranked, ok := data["search-ranked"]; ok {
 				searchRanked = maps.ExtractBoolValue(ranked)
 			}
+
 			if searchRanked {
-				found = updated
+				// use the order of .Hits to sort
+				for _, hit := range searchResults.Hits {
+					if pg, ok := matched[hit.ID]; ok {
+						updated = append(updated, pg)
+					}
+				}
 			} else {
-				found = page.SortPages(updated, orderBy, sortDir)
+				// use the already present found order
+				for _, pg := range found {
+					for _, hit := range searchResults.Hits {
+						if hitPg, hitOk := matched[hit.ID]; hitOk && pg.Url == hitPg.Url {
+							updated = append(updated, pg)
+							break
+						}
+					}
+				}
 			}
+
+			totalFiltered = len(updated)
+			block["SearchTotal"] = totalFiltered
+			log.DebugF("search found: %d (of %d total) hits for query: %v", len(updated), len(found), argvSearch)
+			found = updated
 		}
 	}
 
 	totalPages := totalFiltered / numPerPage
-
-	if pageNumber > totalPages {
-		reqArgv.PageNumber = totalPages - 1
-		pageNumber = reqArgv.PageNumber
-		// re.RequestContext().SetSpecific(site.RequestRedirectKey, reqArgv.String())
-		redirect = reqArgv.String()
-		return
-	}
-	if numPerPage > 0 && totalFiltered > 0 {
-		start := pageNumber * numPerPage
-		end := start + numPerPage
-		if start < end && end < totalFiltered {
-			found = found[start:end]
-		} else {
-			found = found[start:]
-		}
-	}
-
-	block["Results"] = found
 
 	var pgntn string
 	if pgntn, ok = data["index-pagination"].(string); ok {
@@ -335,6 +317,37 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	} else {
 		pgntn = "none"
 	}
+
+	if pgntn == "none" {
+		if reqArgv.PageNumber >= 0 || reqArgv.NumPerPage >= 0 {
+			reqArgv.NumPerPage = -1
+			reqArgv.PageNumber = -1
+			redirect = reqArgv.String() + "#" + tag
+			return
+		}
+	}
+
+	if pageNumber > totalPages {
+		reqArgv.PageNumber = totalPages - 1
+		pageNumber = reqArgv.PageNumber
+		redirect = reqArgv.String()
+		return
+	}
+
+	if numPerPage > 0 && totalFiltered > 0 {
+		start := pageNumber * numPerPage
+		end := start + numPerPage
+		if start < end && end < totalFiltered {
+			found = found[start:end]
+		} else {
+			found = found[start:]
+		}
+	}
+
+	block["Results"] = found
+	block["TotalPages"] = totalPages
+	block["TotalFound"] = totalFound
+	block["TotalFiltered"] = totalFiltered
 
 	var builtViews Views
 	for idx, viewKey := range indexViews {
@@ -353,11 +366,11 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		}
 
 		cra := reqArgv.Copy()
-		argv := []string{tag, view.Key}
+		args := []string{tag, view.Key}
 		for _, groups := range viewFilters {
 			for _, filter := range groups {
 				if filter.Present {
-					argv = append(argv, filter.Key)
+					args = append(args, filter.Key)
 				}
 			}
 		}
@@ -365,13 +378,13 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			sfa := cra.Copy()
 			sfa.NumPerPage = -1
 			sfa.PageNumber = -1
-			sfa.Argv = append([][]string{}, argv)
+			sfa.Argv = append([][]string{}, args)
 			view.SearchAction = sfa.String()
 		}
 		if searchEnabled && argvSearch != "" {
-			argv = append(argv, "("+argvSearch+")")
+			args = append(args, "("+argvSearch+")")
 		}
-		cra.Argv = append([][]string{}, argv)
+		cra.Argv = append([][]string{}, args)
 
 		view.Paginate = pgntn
 
@@ -415,7 +428,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	}
 	block["Views"] = builtViews
 
-	log.DebugF("index block found %v (total=%v, max=%v) pages with query: %v", totalFiltered, totalFound, maxResults, query)
+	log.DebugF("index block found %v (total=%v) pages with query: %v", totalFiltered, totalFound, query)
 
 	if heading, ok := re.PrepareBlockHeader(blockDataContent); ok {
 		block["Heading"] = heading
