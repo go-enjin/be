@@ -543,7 +543,7 @@ func (f *CFeature) IndexDocument(p interface{}) (out interface{}, err error) {
 	if contents, err = walker(data); err != nil {
 		return
 	}
-	doc.AddContent(beForms.StripTags(beStrings.StripTmplTags(contents)))
+	doc.AddContent(beForms.StrictPolicy(beStrings.StripTmplTags(contents)))
 
 	out = doc
 	return
