@@ -28,7 +28,7 @@ type PageContextFilterFn = func(ctx context.Context, r *http.Request) (out conte
 type PageContextModifier interface {
 	Feature
 
-	FilterPageContext(tCtx, pCtx context.Context, r *http.Request) (out context.Context)
+	FilterPageContext(themeCtx, pageCtx context.Context, r *http.Request) (themeOut context.Context)
 }
 
 type PageRestrictionHandler interface {
