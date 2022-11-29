@@ -26,8 +26,8 @@ func Sanitize(input string) (sanitized string) {
 	return
 }
 
-func StripTags(input string) (sanitized string) {
-	p := bluemonday.StripTagsPolicy()
+func StrictPolicy(input string) (sanitized string) {
+	p := bluemonday.StrictPolicy()
 	sanitized = p.Sanitize(input)
 	return
 }
