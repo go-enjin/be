@@ -38,6 +38,8 @@ type Mount struct {
 	Point string
 	Path  string
 	FS    fs.FileSystem
+
+	TotalCached uint64
 }
 
 type Cache struct {
@@ -51,6 +53,8 @@ type Cache struct {
 	Formats  types.FormatProvider
 	LangMode lang.Mode
 	Fallback language.Tag
+
+	TotalCached uint64
 
 	search SearchEnjinFeature
 
@@ -98,7 +102,7 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 		return
 	}
 
-	var totalCached, batchCached uint64
+	var totalCached, mountCached uint64
 
 	updateCacheFile := func(mount, file, path, shasum string, tag language.Tag, bfs fs.FileSystem) {
 		var err error
@@ -115,7 +119,7 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 		c.All = append(c.All, stub)
 		c.Stubs[mount][p.LanguageTag][file] = stub
 		c.Stubs[mount][p.LanguageTag][p.Url] = stub
-		batchCached += 1
+		mountCached += 1
 
 		for _, redirect := range p.Redirections() {
 			c.Redirections[redirect] = stub
@@ -131,8 +135,8 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 		}
 
 		log.TraceF("cached [%v/%v] %v mount: %v (%v)", tag, p.Language, mount, path, p.Url)
-		if batchCached > 0 && batchCached%25000 == 0 {
-			log.DebugF("cache %v progress %d pages", bfs.Name(), batchCached)
+		if mountCached > 0 && mountCached%25000 == 0 {
+			log.DebugF("cache %v progress %d pages", bfs.Name(), mountCached)
 		}
 		return
 	}
@@ -158,7 +162,7 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 	// add new pages to cache
 	for mount, mfs := range c.mount {
 		// log.WarnF("processing mount: %v - %v", mount, mfs.FS.Name())
-		batchCached = 0
+		mountCached = 0
 
 		if v, ok := c.Stubs[mount]; !ok || v == nil {
 			c.Stubs[mount] = make(map[language.Tag]map[string]*Stub)
@@ -187,14 +191,17 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 			updateCacheDir(mount, tag, bfs, nil)
 		}
 
-		totalCached += batchCached
-		log.DebugF("cache %v updated %d pages", mfs.FS.Name(), batchCached)
+		totalCached += mountCached
+		mfs.TotalCached += mountCached
+		log.DebugF("cache %v updated %d pages", mfs.FS.Name(), mountCached)
 	}
 
 	if ok = len(errs) == 0; !ok {
 		log.ErrorF("errors (%d) during cache rebuilding: %v", len(errs), errs)
 	}
-	log.DebugF("cache updated %d total pages", batchCached)
+
+	c.TotalCached = totalCached
+	log.DebugF("cache updated %d total pages", totalCached)
 	return
 }
 
