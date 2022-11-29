@@ -67,7 +67,7 @@ func New() MakeFeature {
 }
 
 func (f *CFeature) MountPath(mount, path string) MakeFeature {
-	f.setup[mount] = path
+	f.setup[path] = mount
 	return f
 }
 
