@@ -37,7 +37,7 @@ func (f *CFeature) handleQueryRedirect(r *http.Request) (redirect string, err er
 	for k, v := range r.URL.Query() {
 		switch k {
 		case "nonce":
-			value := forms.StripTags(v[0])
+			value := forms.StrictPolicy(v[0])
 			if vv, e := url.QueryUnescape(value); e != nil {
 				log.ErrorF("error un-escaping url path: %v", e)
 			} else {
@@ -51,7 +51,7 @@ func (f *CFeature) handleQueryRedirect(r *http.Request) (redirect string, err er
 				break
 			}
 		case "query":
-			query = forms.StripTags(v[0])
+			query = forms.StrictPolicy(v[0])
 			if vv, e := url.QueryUnescape(query); e != nil {
 				log.ErrorF("error un-escaping url path: %v", e)
 			} else {

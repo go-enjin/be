@@ -189,7 +189,7 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 			input = cleaned
 		}
 		input = html.UnescapeString(input)
-		input = forms.StripTags(input)
+		input = forms.StrictPolicy(input)
 		p.Context.SetSpecific("SiteSearchQuery", input)
 
 		// log.WarnF("search info: numPerPage=%d, pageNumber=%d, input=%v", numPerPage, pageNumber, reqArgv.Argv)
