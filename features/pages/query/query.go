@@ -24,8 +24,8 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
 )
 
@@ -84,7 +84,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *page.Page, redirect string, processed bool, err error) {
 	// reqArgv := site.GetRequestArgv(r)
 	if p.Type == "query" {
-		if ctxQueries, ok := p.Context.Get("Query").(context.Context); ok {
+		if ctxQueries, ok := p.Context.Get("Query").(map[string]interface{}); ok {
 			queryStrings := make(map[string]string)
 			queryResults := make(map[string][]*page.Page)
 			for k, v := range ctxQueries {
@@ -94,6 +94,7 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 					queryResults[key] = f.enjin.MatchQL(q)
 				} else {
 					err = fmt.Errorf("unexpected query context value structure: %T", v)
+					log.ErrorF("%v", err)
 					return
 				}
 			}
