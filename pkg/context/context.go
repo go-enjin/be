@@ -221,6 +221,24 @@ func (c Context) Int64(key string, def int64) int64 {
 	return def
 }
 
+func (c Context) Uint(key string, def uint) uint {
+	if v := c.Get(key); v != nil {
+		if i, ok := v.(uint); ok {
+			return i
+		}
+	}
+	return def
+}
+
+func (c Context) Uint64(key string, def uint64) uint64 {
+	if v := c.Get(key); v != nil {
+		if i, ok := v.(uint64); ok {
+			return i
+		}
+	}
+	return def
+}
+
 func (c Context) Float64(key string, def float64) float64 {
 	if v := c.Get(key); v != nil {
 		if f, ok := v.(float64); ok {
