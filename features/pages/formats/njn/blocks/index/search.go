@@ -16,9 +16,8 @@ package index
 
 import (
 	"fmt"
+	"html"
 	"net/url"
-
-	"golang.org/x/net/html"
 
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/forms/nonce"
@@ -38,13 +37,12 @@ func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []stri
 		switch k {
 
 		case "nonce":
-			value := forms.StripTags(v[0])
-			if vv, e := url.QueryUnescape(value); e != nil {
+			var value string
+			if vv, e := url.QueryUnescape(v[0]); e != nil {
 				log.ErrorF("error un-escaping url path: %v", e)
 			} else {
-				value = vv
+				value = forms.StrictPolicy(vv)
 			}
-			value = forms.Sanitize(value)
 			if nonce.Validate(nonceKey, value) {
 				foundNonce = true
 			} else {
@@ -53,14 +51,12 @@ func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []stri
 			}
 
 		case "query":
-			query = forms.StripTags(v[0])
-			if vv, e := url.QueryUnescape(query); e != nil {
+			if vv, e := url.QueryUnescape(v[0]); e != nil {
 				log.ErrorF("error un-escaping url path: %v", e)
 			} else {
-				query = vv
+				query = html.UnescapeString(vv)
+				query = forms.StrictPolicy(vv)
 			}
-			query = forms.Sanitize(query)
-			query = html.UnescapeString(query)
 			foundQuery = true
 		}
 		if foundQuery && foundNonce || err != nil {
@@ -105,7 +101,7 @@ func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []stri
 					}
 				}
 				if query != "" {
-					reqArgv.Argv[idx] = append(reqArgv.Argv[idx], "("+url.PathEscape(query)+")")
+					reqArgv.Argv[idx] = append(reqArgv.Argv[idx], "("+query+")")
 				}
 				redirect = reqArgv.String() + "#" + target
 				return
