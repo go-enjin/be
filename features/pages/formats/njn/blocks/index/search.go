@@ -69,9 +69,9 @@ func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []stri
 		err = nil
 		target := blockTag
 		var argvs [][]string
-		for _, argv := range reqArgv.Argv {
+		for _, argvArgs := range reqArgv.Argv {
 			var args []string
-			for _, arg := range argv {
+			for _, arg := range argvArgs {
 				if target == blockTag && beStrings.StringInSlices(arg, viewKeys) {
 					target += "-" + arg
 				}
@@ -87,10 +87,10 @@ func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []stri
 	}
 
 	if foundQuery && foundNonce {
-		for idx, argv := range reqArgv.Argv {
-			if len(argv) > 0 && argv[0] == blockTag {
+		for idx, argvArgs := range reqArgv.Argv {
+			if len(argvArgs) > 0 && argvArgs[0] == blockTag {
 				target := blockTag
-				for jdx, arg := range argv {
+				for jdx, arg := range argvArgs {
 					if target == blockTag && beStrings.StringInSlices(arg, viewKeys) {
 						target += "-" + arg
 					}
