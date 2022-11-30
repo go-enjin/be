@@ -107,6 +107,10 @@ func (f *CFeature) Label() (label string) {
 	return
 }
 
+func (f *CFeature) Prepare(ctx context.Context, content string) (out context.Context, err error) {
+	return
+}
+
 func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, redirect string, err *types.EnjinError) {
 	if text, e := f.RenderOrgMode(content); e != nil {
 		err = types.NewEnjinError(

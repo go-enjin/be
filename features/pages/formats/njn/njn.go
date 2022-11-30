@@ -310,6 +310,10 @@ func (f *CFeature) FindBlock(tagClass feature.NjnClass, blockType string) (block
 	return
 }
 
+func (f *CFeature) Prepare(ctx context.Context, content string) (out context.Context, err error) {
+	return
+}
+
 func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, redirect string, err *types.EnjinError) {
 	var data interface{}
 	if e := json.Unmarshal([]byte(content), &data); e != nil {
