@@ -16,6 +16,7 @@ package pagecache
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
@@ -27,15 +28,17 @@ import (
 
 type Stub struct {
 	Bfs      beFs.FileSystem
+	Point    string
 	Shasum   string
 	Source   string
 	Language language.Tag
 	Fallback language.Tag
 }
 
-func NewStub(bfs beFs.FileSystem, source, shasum string, fallback language.Tag, formats types.FormatProvider) (s *Stub, p *page.Page, err error) {
+func NewStub(bfs beFs.FileSystem, point, source, shasum string, fallback language.Tag, formats types.FormatProvider) (s *Stub, p *page.Page, err error) {
 	s = &Stub{
 		Bfs:      bfs,
+		Point:    point,
 		Shasum:   shasum,
 		Source:   source,
 		Language: fallback,
@@ -72,6 +75,7 @@ func (s *Stub) Make(formats types.FormatProvider) (p *page.Page, err error) {
 		if language.Compare(p.LanguageTag, language.Und) {
 			p.SetLanguage(s.Fallback)
 		}
+		p.SetSlugUrl(strings.ReplaceAll(s.Point+p.Url, "//", "/"))
 		// log.DebugF("made page from %v stub: [%v] %v (%v)", s.Bfs.Name(), p.Language, s.Source, p.Url)
 	} else {
 		err = fmt.Errorf("error: new %v mount page %v - %v", s.Bfs.Name(), path, err)

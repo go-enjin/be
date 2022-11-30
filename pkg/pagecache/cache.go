@@ -105,11 +105,11 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 
 	var totalCached, mountCached uint64
 
-	updateCacheFile := func(mount, file, path, shasum string, tag language.Tag, bfs fs.FileSystem) {
+	updateCacheFile := func(point, mount, file, path, shasum string, tag language.Tag, bfs fs.FileSystem) {
 		var err error
 		var stub *Stub
 		var p *page.Page
-		if stub, p, err = NewStub(bfs, file, shasum, tag, c.Formats); err != nil {
+		if stub, p, err = NewStub(bfs, point, file, shasum, tag, c.Formats); err != nil {
 			errs = append(errs, err)
 			return
 		}
@@ -146,7 +146,7 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 		return
 	}
 
-	updateCacheDir := func(mount string, tag language.Tag, bfs fs.FileSystem, ignore []string) {
+	updateCacheDir := func(point, mount string, tag language.Tag, bfs fs.FileSystem, ignore []string) {
 		if paths, e := bfs.ListAllFiles("."); e == nil {
 			for _, file := range paths {
 				if checkIgnored(file, ignore) {
@@ -154,7 +154,7 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 				}
 				if shasum, ee := bfs.Shasum(file); ee == nil {
 					pgFile := trimPrefixes(file, tag.String())
-					updateCacheFile(mount, file, pgFile, shasum, tag, bfs)
+					updateCacheFile(point, mount, file, pgFile, shasum, tag, bfs)
 				} else {
 					errs = append(errs, fmt.Errorf("error: shasum %v mount %v - %v", mount, file, ee))
 				}
@@ -190,10 +190,10 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 			}
 		}
 
-		updateCacheDir(mount, language.Und, mfs.FS, ignore)
+		updateCacheDir(mfs.Point, mount, language.Und, mfs.FS, ignore)
 		for tag, bfs := range updates {
 			// log.WarnF("updating cache directory: [%v] %v", tag.String(), bfs.Name())
-			updateCacheDir(mount, tag, bfs, nil)
+			updateCacheDir(mfs.Point, mount, tag, bfs, nil)
 		}
 
 		totalCached += mountCached
