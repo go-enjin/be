@@ -28,6 +28,7 @@ type Format interface {
 	Name() (name string)
 	Label() (label string)
 	Extensions() (extensions []string)
+	Prepare(ctx context.Context, content string) (out context.Context, err error)
 	Process(ctx context.Context, t Theme, content string) (html template.HTML, redirect string, err *EnjinError)
 	IndexDocument(pg interface{}) (doc interface{}, err error)
 	NewDocumentMapping(tag language.Tag) (doctype, analyzer string, dm *mapping.DocumentMapping)
