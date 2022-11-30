@@ -23,6 +23,7 @@ import (
 	"github.com/go-enjin/be/features/pages/formats/org"
 	"github.com/go-enjin/be/features/pages/formats/tmpl"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/types/theme-types"
 )
@@ -71,6 +72,7 @@ func (f *CFeature) Defaults() MakeFeature {
 
 func (f *CFeature) AddFormat(formats ...types.Format) MakeFeature {
 	for _, format := range formats {
+		log.DebugF("adding format: %v", format.Label())
 		for _, extn := range format.Extensions() {
 			f.formats[extn] = format
 		}
