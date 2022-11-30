@@ -15,6 +15,7 @@
 package sha
 
 import (
+	"crypto/sha1"
 	"crypto/sha256"
 	"fmt"
 	"io"
@@ -79,5 +80,14 @@ func VerifyFile64(sum, file string) (err error) {
 		err = fmt.Errorf("shasum mismatch %v", file)
 		return
 	}
+	return
+}
+
+func DataHashSha1(data []byte) (shasum string, err error) {
+	h := sha1.New()
+	if _, err = h.Write(data); err != nil {
+		return
+	}
+	shasum = fmt.Sprintf("%x", h.Sum(nil))
 	return
 }
