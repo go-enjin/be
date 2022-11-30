@@ -22,7 +22,18 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/search"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
+
+var (
+	knownSearchPageTypes = []string{"page"}
+)
+
+func RegisterSearchPageType(pgtype string) {
+	if !beStrings.StringInSlices(pgtype, knownSearchPageTypes) {
+		knownSearchPageTypes = append(knownSearchPageTypes, pgtype)
+	}
+}
 
 func SearchMapping(p *page.Page) (doctype string, dm *mapping.DocumentMapping, err error) {
 	if format := p.Formats.GetFormat(p.Format); format != nil {
@@ -34,8 +45,8 @@ func SearchMapping(p *page.Page) (doctype string, dm *mapping.DocumentMapping, e
 }
 
 func SearchDocument(p *page.Page) (doc search.Document, err error) {
-	if pgType := p.Context.String("type", "page"); pgType != "page" {
-		log.TraceF("skipping search index for (not page type): %v", p.Url)
+	if pgType := p.Context.String("type", "page"); !beStrings.StringInSlices(pgType, knownSearchPageTypes) {
+		log.TraceF("skipping search index for (not known search page type): %v", p.Url)
 		return
 	}
 	if pgSearchable := p.Context.String("Searchable", "true"); pgSearchable != "true" {
