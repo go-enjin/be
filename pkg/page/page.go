@@ -113,12 +113,31 @@ func New(path, raw, shasum string, created, updated int64, formats types.FormatP
 	p.CreatedAt = time.Unix(created, 0)
 	p.UpdatedAt = time.Unix(updated, 0)
 
-	// log.DebugF("new page for path: %v - %v - %v", path, slug, p.Url)
 	p.Title = beStrings.TitleCase(strings.Join(strings.Split(p.Slug, "-"), " "))
 
 	raw = lang.StripTranslatorComments(raw)
 	p.FrontMatter, p.Content, p.FrontMatterType = ParseFrontMatterContent(raw)
 	err = p.initFrontMatter()
+
+	if format := formats.GetFormat(p.Format); format != nil {
+		if ctx, e := format.Prepare(p.Context, p.Content); e != nil {
+			err = e
+			return
+		} else if ctx != nil {
+			if v, ok := ctx.Get("Url").(string); ok {
+				if v != p.Url {
+					p.SetSlugUrl(v)
+				}
+			}
+			if v, ok := ctx.Get("Title").(string); ok {
+				p.Title = v
+			}
+			if v, ok := ctx.Get("Description").(string); ok {
+				p.Description = v
+			}
+			p.Context.Apply(ctx)
+		}
+	}
 	return
 }
 
