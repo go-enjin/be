@@ -26,6 +26,7 @@ import (
 	"github.com/maruel/natural"
 
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/regexps"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -278,6 +279,33 @@ func ReverseSortedKeys[V interface{}](data map[string]V) (keys []string) {
 		keys = append(keys, key)
 	}
 	sort.Sort(sort.Reverse(sortorder.Natural(keys)))
+	return
+}
+
+func SortedKeysByLastKeyword[V interface{}](data map[string]V) (keys []string) {
+	lookup := make(map[string]string)
+	for key, _ := range data {
+		keywords := regexps.RxKeywords.FindAllString(key, -1)
+		lookup[key] = keywords[len(keywords)-1]
+		keys = append(keys, key)
+	}
+	sort.Slice(keys, func(i, j int) (less bool) {
+		less = natural.Less(lookup[keys[i]], lookup[keys[j]])
+		return less
+	})
+	return
+}
+
+func SortedKeysByLastName[V interface{}](data map[string]V) (keys []string) {
+	lookup := make(map[string]string)
+	for key, _ := range data {
+		lookup[key] = beStrings.LastName(key)
+		keys = append(keys, key)
+	}
+	sort.Slice(keys, func(i, j int) (less bool) {
+		less = natural.Less(lookup[keys[i]], lookup[keys[j]])
+		return less
+	})
 	return
 }
 
