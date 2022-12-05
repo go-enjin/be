@@ -48,7 +48,7 @@ type CFeature struct {
 	cli   *cli.Context
 	enjin feature.Internals
 
-	index map[string]map[interface{}][]*pagecache.Stub
+	index map[string]map[interface{}]pagecache.Stubs
 
 	sync.RWMutex
 }
@@ -69,7 +69,7 @@ func (f *CFeature) Make() Feature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
-	f.index = make(map[string]map[interface{}][]*pagecache.Stub)
+	f.index = make(map[string]map[interface{}]pagecache.Stubs)
 }
 
 func (f *CFeature) Tag() (tag feature.Tag) {
@@ -91,13 +91,18 @@ func (f *CFeature) PerformQuery(input string) (stubs []*pagecache.Stub, err erro
 	return
 }
 
+func (f *CFeature) PerformSelect(input string) (selected map[string]interface{}, err error) {
+	selected, err = newSelectorProcess(input, f)
+	return
+}
+
 func (f *CFeature) AddToQueryIndex(stub *pagecache.Stub, p *page.Page) (err error) {
 	for k, v := range p.Context {
 		if beStrings.StringInStrings(strings.ToLower(k), "content", "frontmatter") {
 			continue
 		}
 		if _, check := f.index[k]; !check {
-			f.index[k] = make(map[interface{}][]*pagecache.Stub)
+			f.index[k] = make(map[interface{}]pagecache.Stubs)
 		}
 		switch t := v.(type) {
 		case string,
@@ -106,6 +111,14 @@ func (f *CFeature) AddToQueryIndex(stub *pagecache.Stub, p *page.Page) (err erro
 			uint, uint8, uint16, uint32, uint64,
 			time.Time, time.Duration:
 			f.index[k][t] = append(f.index[k][t], stub)
+		case []string:
+			for _, tv := range t {
+				f.index[k][tv] = append(f.index[k][tv], stub)
+			}
+		case []interface{}:
+			for _, tv := range t {
+				f.index[k][tv] = append(f.index[k][tv], stub)
+			}
 		}
 	}
 	return

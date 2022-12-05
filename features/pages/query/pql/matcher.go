@@ -64,7 +64,7 @@ func newMatcherProcess(input string, f *CFeature) (matched []*pagecache.Stub, er
 
 func (m *CMatcher) process() (matched []*pagecache.Stub, err error) {
 	var pErr *pageql.ParseError
-	if m.stmnt, pErr = pageql.Compile(m.input); pErr != nil {
+	if m.stmnt, pErr = pageql.CompileQuery(m.input); pErr != nil {
 		err = error(pErr)
 		return
 	}
@@ -183,11 +183,17 @@ func (m *CMatcher) processQueryCondition(cond *pageql.Condition) (matched []*pag
 
 func (m *CMatcher) processQueryOperation(op *pageql.Operation) (matched []*pagecache.Stub, err error) {
 	switch op.Type {
-	case "==":
+	case "==", "=~":
 		matched, err = m.processOperationEquals(*op.Left, op.Right, true)
 
-	case "!=":
+	case "!=", "!~":
 		matched, err = m.processOperationEquals(*op.Left, op.Right, false)
+
+	// case "=~":
+	// 	matched, err = m.processOperationContains(*op.Left, op.Right, true)
+
+	// case "!~":
+	// 	matched, err = m.processOperationContains(*op.Left, op.Right, false)
 
 	default:
 		err = fmt.Errorf("unsupported operation: %v", op.Type)
@@ -257,3 +263,83 @@ func (m *CMatcher) processOperationEquals(key string, opValue *pageql.Value, inc
 
 	return
 }
+
+// func (m *CMatcher) processOperationContains(key string, opValue *pageql.Value, inclusive bool) (matched []*pagecache.Stub, err error) {
+// 	results := make(map[string]*pagecache.Stub)
+//
+// 	// TODO: implement more than string and regexp comparisons
+//
+// 	switch {
+// 	case opValue.Regexp != nil:
+// 		var rx *regexp.Regexp
+// 		if rx, err = regexps.Compile(*opValue.Regexp); err != nil {
+// 			err = fmt.Errorf("error compiling regular expression: %v", err)
+// 			return
+// 		}
+// 		if allValues, ok := m.feat.index[key]; ok {
+// 			for values, stubs := range allValues {
+// 				if valuesList, ok := values.([]interface{}); ok {
+// 					for _, value := range valuesList {
+// 						switch t := value.(type) {
+// 						case string:
+// 							match := rx.MatchString(t)
+// 							if (inclusive && match) || (!inclusive && !match) {
+// 								for _, stub := range stubs {
+// 									results[stub.Shasum] = stub
+// 									p, _ := stub.Make(m.theme)
+// 									ctx := p.Context.Copy()
+// 									ctx.CamelizeKeys()
+// 									m.cache[stub.Shasum] = ctx.Select(m.stmnt.ContextKeys...)
+// 									// log.WarnF("m.cache[%v] = %v", stub.Shasum, m.cache[stub.Shasum])
+// 								}
+// 							}
+// 						default:
+// 							err = fmt.Errorf("page.%v contains %T, regular expressions expect strings", key, value)
+// 							return
+// 						}
+// 					}
+// 				} else {
+// 					err = fmt.Errorf("page.%v is not a slice, =~ and !~ operators only work with slices", key)
+// 					return
+// 				}
+// 			}
+// 		}
+//
+// 	case opValue.String != nil:
+// 		if allValues, ok := m.feat.index[key]; ok {
+// 			for values, stubs := range allValues {
+// 				var ee error
+// 				var present bool
+// 				if valuesList, ok := values.([]interface{}); ok {
+// 					for _, value := range valuesList {
+// 						if present, ee = cmp.Compare(value, *opValue.String); ee != nil {
+// 							err = ee
+// 							return
+// 						} else if present {
+// 							break
+// 						}
+// 					}
+// 				} else {
+// 					err = fmt.Errorf("page.%v is not a slice, =~ and !~ operators only work with slices", key)
+// 					return
+// 				}
+// 				if (inclusive && present) || (!inclusive && !present) {
+// 					for _, stub := range stubs {
+// 						results[stub.Shasum] = stub
+// 						p, _ := stub.Make(m.theme)
+// 						ctx := p.Context.Copy()
+// 						ctx.CamelizeKeys()
+// 						m.cache[stub.Shasum] = ctx.Select(m.stmnt.ContextKeys...)
+// 					}
+// 				}
+// 			}
+// 		}
+//
+// 	}
+//
+// 	for _, stub := range results {
+// 		matched = append(matched, stub)
+// 	}
+//
+// 	return
+// }
