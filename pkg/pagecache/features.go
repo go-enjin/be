@@ -24,6 +24,7 @@ import (
 
 type QueryEnjinFeature interface {
 	PerformQuery(input string) (stubs []*Stub, err error)
+	PerformSelect(input string) (selected map[string]interface{}, err error)
 	AddToQueryIndex(stub *Stub, p *page.Page) (err error)
 	RemoveFromQueryIndex(tag language.Tag, file, shasum string)
 }
