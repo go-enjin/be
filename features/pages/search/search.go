@@ -47,6 +47,10 @@ var (
 
 const Tag feature.Tag = "PagesSearch"
 
+type ResultsPostProcessor interface {
+	SearchResultsPostProcess(p *page.Page)
+}
+
 type Feature interface {
 	feature.Feature
 }
@@ -241,6 +245,11 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 		}
 
 		// finalize
+		for _, feat := range f.enjin.Features() {
+			if rp, ok := feat.(ResultsPostProcessor); ok {
+				rp.SearchResultsPostProcess(p)
+			}
+		}
 		pg = p
 		redirect = ""
 		processed = true
