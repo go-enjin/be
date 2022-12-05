@@ -24,6 +24,12 @@ func (e *Enjin) String() string {
 	return strcase.ToKebab(e.eb.tag)
 }
 
+func (e *Enjin) ServiceInfo() (listen string, port int) {
+	listen = e.listen
+	port = e.port
+	return
+}
+
 func (e *Enjin) StartupString() string {
 	var domains []string
 	domains = append(domains, e.eb.domains...)

@@ -35,6 +35,7 @@ type Service interface {
 	GetTheme() (t *theme.Theme, err error)
 	ThemeNames() (names []string)
 	ServerName() (name string)
+	ServiceInfo() (listen string, port int)
 
 	ServeRedirect(destination string, w http.ResponseWriter, r *http.Request)
 
