@@ -245,7 +245,7 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 
 func (e *Enjin) startupHttpListener(listen string, port int, router *chi.Mux) (err error) {
 	e.Notify("web process startup")
-	log.DebugF("web process info:\n%v", e.ListenerString())
+	log.DebugF("web process info:\n%v", e.StartupString())
 
 	var srv http.Server
 
