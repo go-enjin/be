@@ -100,8 +100,35 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 			}
 			p.Context.SetSpecific("Query", queryStrings)
 			p.Context.SetSpecific("QueryResults", queryResults)
-			pg = p
 			processed = true
+		}
+		if ctxSelects, ok := p.Context.Get("Select").(map[string]interface{}); ok {
+			selectedStrings := make(map[string]string)
+			selectedValues := make(map[string]interface{})
+			for k, v := range ctxSelects {
+				if q, ok := v.(string); ok {
+					key := strcase.ToCamel(k)
+					selectedStrings[key] = q
+					if selected := f.enjin.SelectQL(q); len(selected) == 1 {
+						for _, only := range selected {
+							selectedValues[key] = only
+							break
+						}
+					} else {
+						selectedValues[key] = selected
+					}
+				} else {
+					err = fmt.Errorf("unexpected select context value structure: %T", v)
+					log.ErrorF("%v", err)
+					return
+				}
+			}
+			p.Context.SetSpecific("Select", selectedStrings)
+			p.Context.SetSpecific("Selected", selectedValues)
+			processed = true
+		}
+		if processed {
+			pg = p
 		}
 	}
 	return
