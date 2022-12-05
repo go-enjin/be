@@ -83,11 +83,7 @@ func VerifyFile64(sum, file string) (err error) {
 	return
 }
 
-func DataHashSha1(data []byte) (shasum string, err error) {
-	h := sha1.New()
-	if _, err = h.Write(data); err != nil {
-		return
-	}
-	shasum = fmt.Sprintf("%x", h.Sum(nil))
+func DataHashSha1(data []byte) (shasum string) {
+	shasum = fmt.Sprintf("%x", sha1.Sum(data))
 	return
 }
