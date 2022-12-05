@@ -118,9 +118,11 @@ func DefaultFuncMap() (funcMap template.FuncMap) {
 		"isPath":   funcs.IsPath,
 		"parseUrl": funcs.ParseUrl,
 
-		"stringsAsList":  funcs.StringsAsList,
-		"reverseStrings": funcs.ReverseStrings,
-		"sortedKeys":     funcs.SortedKeys,
+		"stringsAsList":              funcs.StringsAsList,
+		"reverseStrings":             funcs.ReverseStrings,
+		"sortedKeys":                 funcs.SortedKeys,
+		"sortedFirstLetters":         funcs.SortedFirstLetters,
+		"sortedLastNameFirstLetters": funcs.SortedLastNameFirstLetters,
 
 		"cmpDateFmt": funcs.CompareDateFormats,
 
