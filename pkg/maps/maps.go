@@ -338,3 +338,59 @@ func IsMap(v interface{}) (ok bool) {
 	ok = strings.HasPrefix(fmt.Sprintf("%T", v), "map[")
 	return
 }
+
+func Get(key string, m map[string]interface{}) (value interface{}) {
+	if key != "" && key[0] != '.' {
+		if v, ok := m[key]; ok {
+			value = v
+		}
+		return
+	}
+	keys := strings.Split(key[1:], ".")
+	switch len(keys) {
+	case 0: // nop
+	case 1:
+		value = Get(keys[0], m)
+	default:
+		if v, ok := m[keys[0]]; ok {
+			if vm, ok := v.(map[string]string); ok {
+				value, _ = vm[keys[1]]
+			} else if vm, ok := v.(map[string]interface{}); ok {
+				value = Get("."+strings.Join(keys[1:], "."), vm)
+			}
+		}
+	}
+	return
+}
+
+func TransformMapAnyToString(input map[string]interface{}) (output map[string]string) {
+	output = make(map[string]string)
+	for k, v := range input {
+		switch t := v.(type) {
+		case string:
+			output[k] = t
+		default:
+			output[k] = fmt.Sprintf("%v", t)
+		}
+	}
+	return
+}
+
+func TransformAnyToStringSlice(input interface{}) (output []string, ok bool) {
+	ok = true
+	switch t := input.(type) {
+	case string:
+		output = append(output, t)
+	case []string:
+		output = append(output, t...)
+	case []interface{}:
+		for _, v := range t {
+			if s, check := v.(string); check {
+				output = append(output, s)
+			}
+		}
+	default:
+		ok = false
+	}
+	return
+}
