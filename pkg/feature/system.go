@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/pkg/pagecache"
 	"github.com/go-enjin/be/pkg/types/site"
 
 	"github.com/go-enjin/be/pkg/context"
@@ -56,6 +57,8 @@ type Service interface {
 	ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request)
 
 	MatchQL(query string) (pages []*page.Page)
+	MatchStubsQL(query string) (stubs []*pagecache.Stub)
+	SelectQL(query string) (selected map[string]interface{})
 	FindPage(tag language.Tag, url string) (p *page.Page)
 
 	Notify(tag string)

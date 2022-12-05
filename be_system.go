@@ -207,3 +207,29 @@ func (e *Enjin) MatchQL(query string) (pages []*page.Page) {
 	}
 	return
 }
+
+func (e *Enjin) MatchStubsQL(query string) (stubs []*pagecache.Stub) {
+	for _, f := range e.Features() {
+		if queryEnjin, ok := f.(pagecache.QueryEnjinFeature); ok {
+			var err error
+			if stubs, err = queryEnjin.PerformQuery(query); err != nil {
+				log.ErrorF("error performing enjin query: %v", err)
+			}
+			break
+		}
+	}
+	return
+}
+
+func (e *Enjin) SelectQL(query string) (selected map[string]interface{}) {
+	for _, f := range e.Features() {
+		if queryEnjin, ok := f.(pagecache.QueryEnjinFeature); ok {
+			var err error
+			if selected, err = queryEnjin.PerformSelect(query); err != nil {
+				log.ErrorF("error performing enjin select: %v", err)
+			}
+			break
+		}
+	}
+	return
+}
