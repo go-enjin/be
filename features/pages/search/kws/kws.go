@@ -29,6 +29,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/pagecache"
 	"github.com/go-enjin/be/pkg/regexps"
@@ -43,6 +44,11 @@ var (
 )
 
 const Tag feature.Tag = "PagesSearchKeyword"
+
+type KeywordProvider interface {
+	KnownKeywords() (keywords []string)
+	KeywordStubs(keyword string) (stubs []*pagecache.Stub)
+}
 
 type Feature interface {
 	feature.Feature
@@ -121,8 +127,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 	langMode := f.enjin.SiteLanguageMode()
 	fallback := f.enjin.SiteDefaultLanguage()
 
-	cleaned := regexps.RxKeywordTrims.ReplaceAllString(input, "")
-	keywords := regexps.RxEmptySpace.Split(cleaned, -1)
+	keywords := regexps.RxKeywords.FindAllString(input, -1)
 	matches := make(map[string]*pagecache.Stub)
 	scores := make(map[string]float64)
 	numKeywords := len(keywords)
@@ -135,6 +140,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 	}
 
 	for _, word := range keywords {
+		word = strings.ToLower(word)
 		if stubs, ok := f.keyword[word]; ok {
 			for _, stub := range stubs {
 				matches[stub.Shasum] = stub
@@ -222,8 +228,7 @@ func (f *CFeature) AddToSearchIndex(stub *pagecache.Stub, p *page.Page) (err err
 		f.keyword = make(map[string][]*pagecache.Stub)
 	}
 	for _, content := range doc.GetContents() {
-		cleaned := regexps.RxKeywordTrims.ReplaceAllString(content, "")
-		words := regexps.RxEmptySpace.Split(cleaned, -1)
+		words := regexps.RxKeywords.FindAllString(content, -1)
 		for _, word := range words {
 			lcw := strings.ToLower(word)
 			f.keyword[lcw] = append(f.keyword[lcw], stub)
@@ -237,5 +242,15 @@ func (f *CFeature) AddToSearchIndex(stub *pagecache.Stub, p *page.Page) (err err
 
 func (f *CFeature) RemoveFromSearchIndex(tag language.Tag, file, shasum string) {
 	// panic("implement me")
+	return
+}
+
+func (f *CFeature) KnownKeywords() (keywords []string) {
+	keywords = maps.SortedKeys(f.keyword)
+	return
+}
+
+func (f *CFeature) KeywordStubs(keyword string) (stubs []*pagecache.Stub) {
+	stubs = f.keyword[keyword]
 	return
 }
