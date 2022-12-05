@@ -253,9 +253,14 @@ func SortedKeyLengths[V interface{}](data map[string]V) (keys []string) {
 	for key, _ := range data {
 		keys = append(keys, key)
 	}
-	// longest -> shortest
-	sort.Slice(keys, func(i, j int) bool {
-		return len(keys[i]) > len(keys[j])
+	// longest -> shortest, natsort same lengths
+	sort.Slice(keys, func(i, j int) (less bool) {
+		if il, jl := len(keys[i]), len(keys[j]); il == jl {
+			less = natural.Less(keys[i], keys[j])
+		} else {
+			less = il > jl
+		}
+		return
 	})
 	return
 }
