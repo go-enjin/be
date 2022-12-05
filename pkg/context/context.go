@@ -17,9 +17,12 @@ package context
 import (
 	"fmt"
 	"sort"
+	"strconv"
 
 	"github.com/fvbommel/sortorder"
 	"github.com/iancoleman/strcase"
+
+	"github.com/go-enjin/be/pkg/maps"
 )
 
 type RequestKey string
@@ -97,7 +100,11 @@ func (c Context) SetSpecific(key string, value interface{}) Context {
 // found. Get looks for the key as given first and if not found looks for a
 // CamelCased version of the key and if still not found looks for a kebab-ified
 // version, finally if nothing is found, nil is returned.
-func (c Context) Get(key string) interface{} {
+func (c Context) Get(key string) (value interface{}) {
+	if key != "" && key[0] == '.' {
+		value = maps.Get(key, c)
+		return
+	}
 	if v, ok := c[key]; ok {
 		return v
 	}
@@ -198,6 +205,34 @@ func (c Context) Bool(key string, def bool) bool {
 	if v := c.Get(key); v != nil {
 		if b, ok := v.(bool); ok {
 			return b
+		}
+	}
+	return def
+}
+
+func (c Context) ValueAsInt(key string, def int) int {
+	if v := c.Get(key); v != nil {
+		switch t := v.(type) {
+		case int:
+			return t
+		case int8:
+			return int(t)
+		case int16:
+			return int(t)
+		case int32:
+			return int(t)
+		case int64:
+			return int(t)
+		case float32:
+			return int(t)
+		case float64:
+			return int(t)
+		case string:
+			i, _ := strconv.Atoi(t)
+			return i
+		case []byte:
+			i, _ := strconv.Atoi(string(t))
+			return i
 		}
 	}
 	return def
