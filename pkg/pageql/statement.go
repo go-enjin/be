@@ -105,8 +105,8 @@ func (s *Statement) String() (query string) {
 	return
 }
 
-func Stringify(stmnt *Statement) (out string) {
-	b, _ := json.MarshalIndent(stmnt.Render(), "", "  ")
+func (s *Statement) Stringify() (out string) {
+	b, _ := json.MarshalIndent(s.Render(), "", "  ")
 	out = string(b)
 	return
 }

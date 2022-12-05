@@ -14,21 +14,33 @@
 
 package pageql
 
-type Operation struct {
-	Left  *string `parser:" '(' '.' @Ident" json:"left"`
-	Type  string  `parser:"  ( @'!=' | @'==' | @'=~' | @'!~' )" json:"type"`
-	Right *Value  `parser:"  @@ ')'" json:"right"`
+type Selecting struct {
+	Count      bool   `parser:"( @'COUNT' )?" json:"count,omitempty"`
+	Distinct   bool   `parser:"( @'DISTINCT' )?" json:"distinct,omitempty"`
+	ContextKey string `parser:" '.' @Ident" json:"context-key"`
 }
 
-func (o *Operation) Render() (clone *Operation) {
-	clone = new(Operation)
-	if o.Left != nil {
-		ident := *o.Left
-		clone.Left = &ident
+func (s *Selecting) String() (query string) {
+	if s.Count {
+		query += "COUNT"
 	}
-	clone.Type = o.Type
-	if o.Right != nil {
-		clone.Right = o.Right.Render()
+	if s.Distinct {
+		if query != "" {
+			query += " "
+		}
+		query += "DISTINCT"
 	}
+	if query != "" {
+		query += " "
+	}
+	query += "." + s.ContextKey
+	return
+}
+
+func (s *Selecting) Render() (out *Selecting) {
+	out = new(Selecting)
+	out.Count = s.Count
+	out.Distinct = s.Distinct
+	out.ContextKey = s.ContextKey
 	return
 }

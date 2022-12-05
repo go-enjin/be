@@ -20,51 +20,92 @@ var _cache *cache
 
 func init() {
 	_cache = &cache{
-		data: make(map[string]*cacheEntry),
+		queryData:  make(map[string]*queryDataEntry),
+		selectData: make(map[string]*selectDataEntry),
 	}
 }
 
 type cache struct {
-	data map[string]*cacheEntry
+	queryData  map[string]*queryDataEntry
+	selectData map[string]*selectDataEntry
 
 	sync.RWMutex
 }
 
-type cacheEntry struct {
+type queryDataEntry struct {
 	Query string
 	Expr  *Statement
 }
 
-func (c *cache) get(query string) (stmnt *Statement, ok bool) {
+func (c *cache) getQuery(query string) (stmnt *Statement, ok bool) {
 	c.RLock()
 	defer c.RUnlock()
-	var entry *cacheEntry
-	if entry, ok = c.data[query]; ok {
+	var entry *queryDataEntry
+	if entry, ok = c.queryData[query]; ok {
 		stmnt = entry.Expr
 		return
 	}
 	return
 }
 
-func (c *cache) set(query string, expr *Statement) {
+func (c *cache) setQuery(query string, expr *Statement) {
 	c.Lock()
 	defer c.Unlock()
-	c.data[query] = &cacheEntry{
+	c.queryData[query] = &queryDataEntry{
 		Query: query,
 		Expr:  expr,
 	}
 	return
 }
 
-func Compile(query string) (stmnt *Statement, err *ParseError) {
+func CompileQuery(query string) (stmnt *Statement, err *ParseError) {
 	err = nil
 	query = SanitizeQuery(query)
 	var ok bool
-	if stmnt, ok = _cache.get(query); ok {
+	if stmnt, ok = _cache.getQuery(query); ok {
 		return
 	}
-	if stmnt, err = parseString(query); err == nil {
-		_cache.set(query, stmnt)
+	if stmnt, err = parseQueryString(query); err == nil {
+		_cache.setQuery(query, stmnt)
+	}
+	return
+}
+
+type selectDataEntry struct {
+	Query string
+	Sel   *Selection
+}
+
+func (c *cache) getSelect(query string) (stmnt *Selection, ok bool) {
+	c.RLock()
+	defer c.RUnlock()
+	var entry *selectDataEntry
+	if entry, ok = c.selectData[query]; ok {
+		stmnt = entry.Sel
+		return
+	}
+	return
+}
+
+func (c *cache) setSelect(query string, sel *Selection) {
+	c.Lock()
+	defer c.Unlock()
+	c.selectData[query] = &selectDataEntry{
+		Query: query,
+		Sel:   sel,
+	}
+	return
+}
+
+func CompileSelect(query string) (sel *Selection, err *ParseError) {
+	err = nil
+	query = SanitizeQuery(query)
+	var ok bool
+	if sel, ok = _cache.getSelect(query); ok {
+		return
+	}
+	if sel, err = parseSelectString(query); err == nil {
+		_cache.setSelect(query, sel)
 	}
 	return
 }

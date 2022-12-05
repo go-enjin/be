@@ -26,7 +26,7 @@ import (
 func Match(query string, ctx context.Context) (matched bool, err error) {
 	var stmnt *Statement
 	var pErr *ParseError
-	if stmnt, pErr = Compile(query); pErr != nil {
+	if stmnt, pErr = CompileQuery(query); pErr != nil {
 		err = error(pErr)
 		return
 	}

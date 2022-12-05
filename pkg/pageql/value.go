@@ -17,9 +17,10 @@ package pageql
 import "fmt"
 
 type Value struct {
-	ContextKey *string `parser:"  '.' @Ident" json:"context-key,omitempty"`
-	Regexp     *string `parser:"| 'm' @Regexp" json:"regexp,omitempty"`
-	String     *string `parser:"| @String" json:"string,omitempty"`
+	ContextKey *string `parser:"  ( '.' @Ident )" json:"context-key,omitempty"`
+	Regexp     *string `parser:"| ( 'm' @Regexp )" json:"regexp,omitempty"`
+	String     *string `parser:"| ( @String )" json:"string,omitempty"`
+
 	// Regexp *string `parser:"| ( 'm' '/' @(~'/')+ '/' ) | ( 'm' '!' @(~'!')+ '!' )" json:"regexp,omitempty"`
 	// Number        *float64   `parser:"| @Float | @Int" json:"number,omitempty"`
 	// Bool          *string     `parser:"| ( @'true' | 'false' )" json:"bool,omitempty"`
