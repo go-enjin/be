@@ -250,7 +250,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		return
 	}
 
-	if _, perr := pageql.Compile(query); perr != nil {
+	if _, perr := pageql.CompileQuery(query); perr != nil {
 		err = fmt.Errorf("query error:\n%v", perr.Pretty())
 		return
 	}
