@@ -171,7 +171,7 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 		reqArgv := argv.GetRequestArgv(r)
 		p.Context.SetSpecific(argv.RequestArgvConsumedKey, true)
 		reqLangTag := lang.GetTag(r)
-		numPerPage, pageNumber := 10, 0
+		numPerPage, pageNumber := p.Context.ValueAsInt("DefaultNumPerPage", 10), 0
 		if reqArgv.NumPerPage > -1 {
 			numPerPage = reqArgv.NumPerPage
 		}
@@ -180,11 +180,11 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 		}
 		var input string
 		if len(reqArgv.Argv) > 0 {
-			for idx, argv := range reqArgv.Argv {
+			for idx, args := range reqArgv.Argv {
 				if idx > 0 {
 					input += " "
 				}
-				input += strings.Join(argv, ",")
+				input += strings.Join(args, ",")
 			}
 		}
 		if cleaned, err := url.QueryUnescape(input); err != nil {
