@@ -29,7 +29,6 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
@@ -184,23 +183,28 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 				if idx > 0 {
 					input += " "
 				}
-				input += strings.Join(args, ",")
+				input += strings.Join(args, " ")
 			}
 		}
-		if cleaned, err := url.QueryUnescape(input); err != nil {
+		if cleaned, err := url.PathUnescape(input); err != nil {
 			log.ErrorF("error unescaping input query string: %v", err)
 		} else {
 			input = cleaned
 		}
 		input = html.UnescapeString(input)
-		input = forms.StrictPolicy(input)
-		p.Context.SetSpecific("SiteSearchQuery", input)
+		// input = forms.StrictPolicy(input)
 
-		// log.WarnF("search info: numPerPage=%d, pageNumber=%d, input=%v", numPerPage, pageNumber, reqArgv.Argv)
+		query := f.search.PrepareSearch(reqLangTag, input)
+		queryPath := f.path + "/:" + url.PathEscape(query)
+		if len(reqArgv.Argv) > 0 && reqArgv.String() != queryPath {
+			redirect = queryPath
+			return
+		}
+		p.Context.SetSpecific("SiteSearchQuery", query)
 
 		if input != "" {
 			// perform search
-			if results, err := f.search.PerformSearch(reqLangTag, input, numPerPage, pageNumber); err != nil {
+			if results, err := f.search.PerformSearch(reqLangTag, query, numPerPage, pageNumber); err != nil {
 				p.Context.SetSpecific("SiteSearchError", err.Error())
 			} else {
 				numPages := int(math.Ceil(float64(results.Total) / float64(numPerPage)))
