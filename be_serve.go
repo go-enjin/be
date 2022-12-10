@@ -248,10 +248,12 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	ctx.SetSpecific("Language", parsedTag.String())
 	ctx.SetSpecific("LanguageTag", parsedTag)
 
+	fpcPgCtx := p.Context.Copy()
+	fpcPgCtx.SetSpecific("Content", p.Content)
 	for _, f := range e.eb.features {
 		if s, ok := f.(feature.PageContextModifier); ok {
 			log.DebugF("filtering page context with: %v", f.Tag())
-			ctx = s.FilterPageContext(ctx, p.Context, r)
+			ctx = s.FilterPageContext(ctx, fpcPgCtx, r)
 		}
 	}
 
