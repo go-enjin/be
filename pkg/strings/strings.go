@@ -58,6 +58,15 @@ func StringInStrings(src string, dst ...string) bool {
 	return false
 }
 
+func StringIndexInSlice(src string, dst []string) int {
+	for i, v := range dst {
+		if src == v {
+			return i
+		}
+	}
+	return -1
+}
+
 func StringIndexInStrings(src string, dst ...string) int {
 	for i, v := range dst {
 		if src == v {
