@@ -316,6 +316,13 @@ func Keys[V interface{}](data map[string]V) (keys []string) {
 	return
 }
 
+func AnyKeys[V interface{}](data map[interface{}]V) (keys []interface{}) {
+	for key, _ := range data {
+		keys = append(keys, key)
+	}
+	return
+}
+
 func CamelizeKeys[V interface{}](data map[string]V) (camelized map[string]V) {
 	camelized = make(map[string]V)
 	for k, v := range data {
