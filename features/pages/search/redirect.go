@@ -52,7 +52,7 @@ func (f *CFeature) handleQueryRedirect(r *http.Request) (redirect string, err er
 			}
 		case "query":
 			query = forms.StrictPolicy(v[0])
-			if vv, e := url.QueryUnescape(query); e != nil {
+			if vv, e := url.PathUnescape(query); e != nil {
 				log.ErrorF("error un-escaping url path: %v", e)
 			} else {
 				query = vv
