@@ -75,8 +75,6 @@ type Internals interface {
 	Service
 	site.Enjin
 
-	FindPage(tag language.Tag, url string) (p *page.Page)
-
 	Features() (features []Feature)
 	Pages() (pages map[string]*page.Page)
 	Theme() (theme string)
