@@ -15,6 +15,7 @@
 package context
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"strconv"
@@ -22,6 +23,7 @@ import (
 	"github.com/fvbommel/sortorder"
 	"github.com/iancoleman/strcase"
 
+	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 )
 
@@ -52,15 +54,73 @@ func (c Context) Keys() (keys []string) {
 	return
 }
 
-// TODO: make context.Copy a deeper Copy() or maybe literal types only
+// TODO: make context.Copy a deeper Copy() of maybe literal types only
 
 // Copy makes a duplicate of this Context
 func (c Context) Copy() (ctx Context) {
 	ctx = New()
 	for k, v := range c {
-		if sm, ok := v.(map[string]interface{}); ok {
-			ctx.SetSpecific(k, Context(sm).Copy())
-		} else {
+		switch t := v.(type) {
+		case map[string]bool:
+			m := make(map[string]bool)
+			for tk, tv := range t {
+				m[tk] = tv
+			}
+			ctx.SetSpecific(k, m)
+		case map[string]int:
+			m := make(map[string]int)
+			for tk, tv := range t {
+				m[tk] = tv
+			}
+			ctx.SetSpecific(k, m)
+		case map[string]string:
+			m := make(map[string]string)
+			for tk, tv := range t {
+				m[tk] = tv
+			}
+			ctx.SetSpecific(k, m)
+		case map[string]interface{}:
+			dst := make(map[string]interface{})
+			if encoded, err := json.Marshal(t); err != nil {
+				log.ErrorF("error marshalling map[string]interface{}: %v", err)
+			} else if err = json.Unmarshal(encoded, &dst); err != nil {
+				log.ErrorF("error unmarshalling map[string]interface{}: %v", err)
+			} else {
+				ctx.SetSpecific(k, Context(dst))
+			}
+		case []bool:
+			ctx.SetSpecific(k, t[:])
+		case []string:
+			ctx.SetSpecific(k, t[:])
+		case []float32:
+			ctx.SetSpecific(k, t[:])
+		case []float64:
+			ctx.SetSpecific(k, t[:])
+		case []int:
+			ctx.SetSpecific(k, t[:])
+		case []int8:
+			ctx.SetSpecific(k, t[:])
+		case []int16:
+			ctx.SetSpecific(k, t[:])
+		case []int32:
+			ctx.SetSpecific(k, t[:])
+		case []int64:
+			ctx.SetSpecific(k, t[:])
+		case []uint:
+			ctx.SetSpecific(k, t[:])
+		case []uint8:
+			ctx.SetSpecific(k, t[:])
+		case []uint16:
+			ctx.SetSpecific(k, t[:])
+		case []uint32:
+			ctx.SetSpecific(k, t[:])
+		case []uint64:
+			ctx.SetSpecific(k, t[:])
+		case bool, string, float32, float64,
+			int, int8, int16, int32, int64,
+			uint, uint8, uint16, uint32, uint64:
+			ctx.SetSpecific(k, v)
+		default:
 			ctx.SetSpecific(k, v)
 		}
 	}
