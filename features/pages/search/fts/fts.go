@@ -114,6 +114,11 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
+func (f *CFeature) PrepareSearch(tag language.Tag, input string) (query string) {
+	query = input
+	return
+}
+
 func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (results *bleve.SearchResult, err error) {
 	var list []bleve.Index
 	for _, index := range f.indexes {
