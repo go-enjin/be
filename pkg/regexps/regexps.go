@@ -16,19 +16,12 @@ package regexps
 
 import "regexp"
 
-var RxEmptySpace = regexp.MustCompile(`\s+`)
-var RxLanguageKey = regexp.MustCompile(`language:(\*|[a-z][-a-zA-Z]+)\s*`)
+const KeywordPattern = `[a-zA-Z0-9]+?[-'a-zA-Z0-9]*[a-zA-Z0-9]+?|[a-zA-Z0-9]+`
 
-var RxKeywordPunctuation = regexp.MustCompile(`([-'])`)
-
-const KeywordPattern = `([a-zA-Z0-9]+?[-'a-zA-Z0-9]*[a-zA-Z0-9]+?|[a-zA-Z0-9]+)`
-
-var RxKeyword = regexp.MustCompile(`^` + KeywordPattern + `$`)
-var RxKeywords = regexp.MustCompile(`\b` + KeywordPattern + `\b`)
-
-const PathVarPattern = `\$\{([^}]+)\}`
-
-var RxPathVar = regexp.MustCompile(`^` + PathVarPattern + `$`)
-var RxPathVars = regexp.MustCompile(`\b` + PathVarPattern + `\b`)
-
-var RxNonWord = regexp.MustCompile(`[^a-zA-Z0-9]`)
+var (
+	RxNonWord     = regexp.MustCompile(`[^a-zA-Z0-9]`)
+	RxEmptySpace  = regexp.MustCompile(`\s+`)
+	RxLanguageKey = regexp.MustCompile(`language:(\*|[a-z][-a-zA-Z]+)\s*`)
+	RxKeyword     = regexp.MustCompile(`^(` + KeywordPattern + `)$`)
+	RxKeywords    = regexp.MustCompile(`\b(` + KeywordPattern + `)\b`)
+)
