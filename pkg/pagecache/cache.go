@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/gofrs/uuid"
@@ -104,6 +105,8 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 	}
 
 	var totalCached, mountCached uint64
+	var batchStart time.Time
+	rebuildStart := time.Now()
 
 	updateCacheFile := func(point, mount, file, path, shasum string, tag language.Tag, bfs fs.FileSystem) {
 		var err error
@@ -141,12 +144,14 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 
 		log.TraceF("cached [%v/%v] %v mount: %v (%v)", tag, p.Language, mount, path, p.Url)
 		if mountCached > 0 && mountCached%25000 == 0 {
-			log.DebugF("cache %v progress %d pages", bfs.Name(), mountCached)
+			log.DebugF("cache %v progress %d pages (%v)", bfs.Name(), mountCached, time.Now().Sub(batchStart))
+			batchStart = time.Now()
 		}
 		return
 	}
 
 	updateCacheDir := func(point, mount string, tag language.Tag, bfs fs.FileSystem, ignore []string) {
+		batchStart = time.Now()
 		if paths, e := bfs.ListAllFiles("."); e == nil {
 			for _, file := range paths {
 				if checkIgnored(file, ignore) {
@@ -168,6 +173,7 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 	for mount, mfs := range c.mount {
 		// log.WarnF("processing mount: %v - %v", mount, mfs.FS.Name())
 		mountCached = 0
+		mountStart := time.Now()
 
 		if v, ok := c.Stubs[mount]; !ok || v == nil {
 			c.Stubs[mount] = make(map[language.Tag]map[string]*Stub)
@@ -190,6 +196,7 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 			}
 		}
 
+		batchStart = time.Now()
 		updateCacheDir(mfs.Point, mount, language.Und, mfs.FS, ignore)
 		for tag, bfs := range updates {
 			// log.WarnF("updating cache directory: [%v] %v", tag.String(), bfs.Name())
@@ -198,7 +205,7 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 
 		totalCached += mountCached
 		mfs.TotalCached += mountCached
-		log.DebugF("cache %v updated %d pages", mfs.FS.Name(), mountCached)
+		log.DebugF("cache %v updated %d pages (%v)", mfs.FS.Name(), mountCached, time.Now().Sub(mountStart))
 	}
 
 	if ok = len(errs) == 0; !ok {
@@ -206,7 +213,7 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 	}
 
 	c.TotalCached = totalCached
-	log.DebugF("cache updated %d total pages", totalCached)
+	log.DebugF("cache updated %d total pages (%v)", totalCached, time.Now().Sub(rebuildStart))
 	return
 }
 
