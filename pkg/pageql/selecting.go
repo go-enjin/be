@@ -16,6 +16,7 @@ package pageql
 
 type Selecting struct {
 	Count      bool   `parser:"( @'COUNT' )?" json:"count,omitempty"`
+	Random     bool   `parser:"( @'RANDOM' )?" json:"random,omitempty"`
 	Distinct   bool   `parser:"( @'DISTINCT' )?" json:"distinct,omitempty"`
 	ContextKey string `parser:" '.' @Ident" json:"context-key"`
 }
@@ -23,6 +24,9 @@ type Selecting struct {
 func (s *Selecting) String() (query string) {
 	if s.Count {
 		query += "COUNT"
+	}
+	if s.Random {
+		query += "RANDOM"
 	}
 	if s.Distinct {
 		if query != "" {
@@ -40,6 +44,7 @@ func (s *Selecting) String() (query string) {
 func (s *Selecting) Render() (out *Selecting) {
 	out = new(Selecting)
 	out.Count = s.Count
+	out.Random = s.Random
 	out.Distinct = s.Distinct
 	out.ContextKey = s.ContextKey
 	return

@@ -62,7 +62,7 @@ var (
 
 	selParser = participle.MustBuild[Selection](
 		participle.Lexer(lexer.MustSimple([]lexer.SimpleRule{
-			{`Keyword`, `(?i)\b(SELECT|COUNT|DISTINCT|WITHIN|BY|ORDER|LIMIT|OFFSET|TRUE|FALSE|NULL|IS|NOT|AND|OR|IN|ASC|DSC|DESC)\b`},
+			{`Keyword`, `(?i)\b(SELECT|COUNT|RANDOM|DISTINCT|WITHIN|BY|ORDER|LIMIT|OFFSET|TRUE|FALSE|NULL|IS|NOT|AND|OR|IN|ASC|DSC|DESC)\b`},
 			{`Ident`, Ident},
 			{`Int`, Int},
 			{`Float`, Float},
