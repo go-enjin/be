@@ -96,7 +96,7 @@ func (f *CFeature) PerformSelect(input string) (selected map[string]interface{},
 	return
 }
 
-func (f *CFeature) AddToQueryIndex(stub *pagecache.Stub, p *page.Page) (err error) {
+func (f *CFeature) AddToIndex(stub *pagecache.Stub, p *page.Page) (err error) {
 	for k, v := range p.Context {
 		if beStrings.StringInStrings(strings.ToLower(k), "content", "frontmatter") {
 			continue
@@ -124,7 +124,7 @@ func (f *CFeature) AddToQueryIndex(stub *pagecache.Stub, p *page.Page) (err erro
 	return
 }
 
-func (f *CFeature) RemoveFromQueryIndex(tag language.Tag, file, shasum string) {
-	// panic("implement me")
+func (f *CFeature) RemoveFromIndex(tag language.Tag, file, shasum string) {
+	// TODO: remove page from pql index
 	return
 }
