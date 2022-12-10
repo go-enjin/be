@@ -30,6 +30,7 @@ type QueryEnjinFeature interface {
 }
 
 type SearchEnjinFeature interface {
+	PrepareSearch(tag language.Tag, input string) (query string)
 	PerformSearch(tag language.Tag, input string, size, pg int) (results *bleve.SearchResult, err error)
 	AddToSearchIndex(stub *Stub, p *page.Page) (err error)
 	RemoveFromSearchIndex(tag language.Tag, file, shasum string)
