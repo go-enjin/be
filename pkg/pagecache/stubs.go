@@ -14,7 +14,15 @@
 
 package pagecache
 
+import "math/rand"
+
 type Stubs []*Stub
+
+func (s Stubs) Random() (stub *Stub) {
+	idx := rand.Intn(len(s))
+	stub = s[idx]
+	return
+}
 
 func (s Stubs) GetSource(source string) (found *Stub) {
 	for _, stub := range s {
