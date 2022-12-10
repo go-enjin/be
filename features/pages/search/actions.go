@@ -41,8 +41,8 @@ func (f *CFeature) SearchAction(ctx *cli.Context) (err error) {
 	if v := ctx.Int("pg"); v > 1 {
 		pg = v - 1
 	}
-
-	if results, e := f.search.PerformSearch(language.Und, input, size, pg); e != nil {
+	query := f.search.PrepareSearch(language.Und, input)
+	if results, e := f.search.PerformSearch(language.Und, query, size, pg); e != nil {
 		err = e
 	} else {
 		fmt.Printf("%v\n", results)
