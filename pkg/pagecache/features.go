@@ -23,10 +23,9 @@ import (
 )
 
 type QueryEnjinFeature interface {
+	PageIndexFeature
 	PerformQuery(input string) (stubs []*Stub, err error)
 	PerformSelect(input string) (selected map[string]interface{}, err error)
-	AddToQueryIndex(stub *Stub, p *page.Page) (err error)
-	RemoveFromQueryIndex(tag language.Tag, file, shasum string)
 }
 
 type SearchEnjinFeature interface {
@@ -34,6 +33,11 @@ type SearchEnjinFeature interface {
 	PerformSearch(tag language.Tag, input string, size, pg int) (results *bleve.SearchResult, err error)
 	AddToSearchIndex(stub *Stub, p *page.Page) (err error)
 	RemoveFromSearchIndex(tag language.Tag, file, shasum string)
+}
+
+type PageIndexFeature interface {
+	AddToIndex(stub *Stub, p *page.Page) (err error)
+	RemoveFromIndex(tag language.Tag, file, shasum string)
 }
 
 type SearchDocumentMapperFeature interface {
