@@ -55,8 +55,6 @@ type CFeature struct {
 	cli   *cli.Context
 	enjin feature.Internals
 
-	pql pagecache.QueryEnjinFeature
-
 	indexes map[language.Tag]bleve.Index
 	docMaps map[language.Tag]map[string]*mapping.DocumentMapping
 
@@ -92,12 +90,7 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 	f.enjin = enjin
 	locales := f.enjin.SiteLocales()
 	for _, feat := range f.enjin.Features() {
-		if v, ok := feat.Self().(pagecache.QueryEnjinFeature); ok {
-			if f.pql != nil {
-				log.FatalF("only one pagecache.QueryEnjinFeature per enjin allowed")
-			}
-			f.pql = v
-		} else if v, ok := feat.Self().(pagecache.SearchDocumentMapperFeature); ok {
+		if v, ok := feat.Self().(pagecache.SearchDocumentMapperFeature); ok {
 			for _, tag := range locales {
 				if _, exists := f.docMaps[tag]; !exists {
 					f.docMaps[tag] = make(map[string]*mapping.DocumentMapping)
@@ -120,6 +113,9 @@ func (f *CFeature) PrepareSearch(tag language.Tag, input string) (query string) 
 }
 
 func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (results *bleve.SearchResult, err error) {
+	f.RLock()
+	defer f.RUnlock()
+
 	var list []bleve.Index
 	for _, index := range f.indexes {
 		list = append(list, index)
@@ -199,6 +195,8 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 }
 
 func (f *CFeature) AddToSearchIndex(stub *pagecache.Stub, p *page.Page) (err error) {
+	f.Lock()
+	defer f.Unlock()
 	if f.indexes == nil {
 		f.indexes = make(map[language.Tag]bleve.Index)
 	}
@@ -225,13 +223,25 @@ func (f *CFeature) AddToSearchIndex(stub *pagecache.Stub, p *page.Page) (err err
 	if err = index.Index(pgUrl, doc.Self()); err != nil {
 		return
 	}
-	if f.pql != nil {
-		err = f.pql.AddToQueryIndex(stub, p)
+	for _, feat := range f.enjin.Features() {
+		if indexer, ok := feat.(pagecache.PageIndexFeature); ok {
+			if err = indexer.AddToIndex(stub, p); err != nil {
+				err = fmt.Errorf("error adding to search index feature: %v", err)
+				return
+			}
+		}
 	}
 	return
 }
 
 func (f *CFeature) RemoveFromSearchIndex(tag language.Tag, file, shasum string) {
-	// panic("implement me")
+	f.Lock()
+	defer f.Unlock()
+	// TODO: remove page from full-text-search index
+	for _, feat := range f.enjin.Features() {
+		if indexer, ok := feat.(pagecache.PageIndexFeature); ok {
+			indexer.RemoveFromIndex(tag, file, shasum)
+		}
+	}
 	return
 }
