@@ -16,11 +16,13 @@ package pql
 
 import (
 	"fmt"
+	"math/rand"
 	"regexp"
 	"strings"
 
 	"github.com/go-enjin/be/pkg/cmp"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/pagecache"
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/regexps"
@@ -70,6 +72,7 @@ func (m *CSelector) process() (selected map[string]interface{}, err error) {
 
 func (m *CSelector) processWithoutStatement() (selected map[string]interface{}, err error) {
 
+	// handle distinct and counted values
 	distinct := make(map[string]interface{})
 	for _, sel := range m.sel.Selecting {
 		if !sel.Distinct && !sel.Count {
@@ -90,41 +93,58 @@ func (m *CSelector) processWithoutStatement() (selected map[string]interface{}, 
 				values = append(values, vt)
 			}
 		}
-		if sel.Count {
+
+		switch {
+		case !sel.Count && sel.Random:
+			idx := rand.Intn(len(values))
+			distinct[sel.ContextKey] = values[idx]
+		case sel.Count && sel.Random:
+			if len(values) >= 1 {
+				distinct[sel.ContextKey] = 1
+			} else {
+				distinct[sel.ContextKey] = 0
+			}
+		case sel.Count && !sel.Random:
 			distinct[sel.ContextKey] = len(values)
-		} else if len(values) == 1 {
+		case len(values) == 1:
+			// collapse
 			distinct[sel.ContextKey] = values[0]
-		} else {
+		default:
 			distinct[sel.ContextKey] = values
 		}
 	}
 
-	shasumLookup := make(map[string]map[string]interface{})
+	// handle standard (indistinct and uncounted) and random values
+	simples := make(map[string][]interface{})
+	randoms := make(map[string]interface{})
 	for _, sel := range m.sel.Selecting {
-		if sel.Distinct || sel.Count {
-			continue
-		}
-		for value, stubs := range m.feat.index[sel.ContextKey] {
-			for _, stub := range stubs {
-				if _, exists := shasumLookup[stub.Shasum]; !exists {
-					shasumLookup[stub.Shasum] = make(map[string]interface{})
-				}
-				shasumLookup[stub.Shasum][sel.ContextKey] = value
+		if sel.Random {
+			if values, ok := m.feat.index[sel.ContextKey]; ok {
+				keys := maps.AnyKeys(values)
+				idx := rand.Intn(len(keys))
+				randoms[sel.ContextKey] = keys[idx]
+			}
+		} else if !sel.Distinct && !sel.Count {
+			for value, _ := range m.feat.index[sel.ContextKey] {
+				simples[sel.ContextKey] = append(simples[sel.ContextKey], value)
 			}
 		}
 	}
 
-	selectLookup := make(map[string][]interface{})
-	for _, values := range shasumLookup {
-		for k, v := range values {
-			selectLookup[k] = append(selectLookup[k], v)
-		}
-	}
-
+	// prepare return value
 	selected = make(map[string]interface{})
-	for k, v := range selectLookup {
+
+	// add selected
+	for k, v := range simples {
 		selected[k] = v
 	}
+
+	// add random
+	for k, v := range randoms {
+		selected[k] = v
+	}
+
+	// add distinct
 	for k, v := range distinct {
 		selected[k] = v
 	}
@@ -150,6 +170,10 @@ func (m *CSelector) processWithStatement() (selected map[string]interface{}, err
 			for value, stubs := range m.feat.index[sel.ContextKey] {
 				if pagecache.AnyStubsInStubs(matched, stubs) {
 					switch vt := value.(type) {
+					case []string:
+						for _, vtv := range vt {
+							values = append(values, vtv)
+						}
 					case []interface{}:
 						for _, vtv := range vt {
 							values = append(values, vtv)
@@ -159,38 +183,62 @@ func (m *CSelector) processWithStatement() (selected map[string]interface{}, err
 					}
 				}
 			}
-			if sel.Count {
+			switch {
+			case !sel.Count && sel.Random:
+				idx := rand.Intn(len(values))
+				distinct[sel.ContextKey] = values[idx]
+			case sel.Count && sel.Random:
+				if len(values) >= 1 {
+					distinct[sel.ContextKey] = 1
+				} else {
+					distinct[sel.ContextKey] = 0
+				}
+			case sel.Count && !sel.Random:
 				distinct[sel.ContextKey] = len(values)
-			} else if len(values) == 1 {
+			case len(values) == 1:
+				// collapse
 				distinct[sel.ContextKey] = values[0]
-			} else {
+			default:
 				distinct[sel.ContextKey] = values
 			}
 		}
 
-		// build a map where there is one value per match, for each context-key
+		randoms := make(map[string]interface{})
+		for _, sel := range m.sel.Selecting {
+			if sel.Random && !sel.Distinct {
+				if ctxValues, ok := m.feat.index[sel.ContextKey]; ok {
+					values := maps.AnyKeys(ctxValues)
+					idx := rand.Intn(len(values))
+					randoms[sel.ContextKey] = values[idx]
+				}
+			}
+		}
 
-		lookup := make(map[string][]interface{})
+		// build a map where there is one value per match, for each context-key
+		simples := make(map[string][]interface{})
 		for _, stub := range matched {
 			for _, sel := range m.sel.Selecting {
-				if sel.Distinct || sel.Count {
+				if sel.Distinct || sel.Random || sel.Count {
 					continue
 				}
 				found := false
 				for value, stubs := range m.feat.index[sel.ContextKey] {
 					if found = stubs.HasShasum(stub.Shasum); found {
-						lookup[sel.ContextKey] = append(lookup[sel.ContextKey], value)
+						simples[sel.ContextKey] = append(simples[sel.ContextKey], value)
 						break
 					}
 				}
 				if !found {
-					lookup[sel.ContextKey] = append(lookup[sel.ContextKey], nil)
+					simples[sel.ContextKey] = append(simples[sel.ContextKey], nil)
 				}
 			}
 		}
 
 		selected = make(map[string]interface{})
-		for k, v := range lookup {
+		for k, v := range randoms {
+			selected[k] = v
+		}
+		for k, v := range simples {
 			selected[k] = v
 		}
 		for k, v := range distinct {
