@@ -178,6 +178,10 @@ func (e *Enjin) ServePath(urlPath string, w http.ResponseWriter, r *http.Request
 }
 
 func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) (err error) {
+	if p.Url != "" && p.Url[0] == '!' {
+		err = fmt.Errorf("cannot serve not-path page: %v", p.Url)
+		return
+	}
 
 	for _, f := range e.Features() {
 		if ptp, ok := f.(feature.PageTypeProcessor); ok {
