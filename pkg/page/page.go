@@ -258,5 +258,6 @@ func (p *Page) getUrlPathSectionSlug(url string) (path, section, slug string) {
 	} else {
 		path = "/" + path
 	}
+	path = strings.ReplaceAll(path, "//", "/")
 	return
 }
