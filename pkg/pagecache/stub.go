@@ -23,6 +23,7 @@ import (
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 	types "github.com/go-enjin/be/pkg/types/theme-types"
 )
 
@@ -54,7 +55,7 @@ func (s *Stub) Make(formats types.FormatProvider) (p *page.Page, err error) {
 		return
 	}
 
-	path := trimPrefixes(s.Source, s.Fallback.String())
+	path := beStrings.TrimPrefixes(s.Source, s.Fallback.String())
 	var epoch, created, updated int64
 
 	if epoch, err = s.Bfs.FileCreated(s.Source); err == nil {

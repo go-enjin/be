@@ -28,6 +28,7 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/features/defaults/pgc"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
@@ -49,7 +50,10 @@ var (
 	DefaultCacheControl = "max-age=604800, must-revalidate"
 )
 
-const Tag feature.Tag = "ZipContent"
+const (
+	Tag    feature.Tag = "ZipContent"
+	Bucket string      = "zip-content"
+)
 
 type Feature interface {
 	feature.Middleware
@@ -63,7 +67,7 @@ type CFeature struct {
 
 	paths map[string]string
 	setup map[string]*zipfs.FileSystem
-	cache *pagecache.Cache
+	cache pagecache.CacheEnjinFeature
 
 	cacheControl string
 }
@@ -124,20 +128,22 @@ func (f *CFeature) Build(_ feature.Buildable) (err error) {
 
 func (f *CFeature) Setup(enjin feature.Internals) {
 	f.enjin = enjin
-	t, _ := f.enjin.GetTheme()
-
-	var ok bool
-	var search pagecache.SearchEnjinFeature
 	for _, feat := range f.enjin.Features() {
-		if search, ok = feat.(pagecache.SearchEnjinFeature); ok {
-			break
+		if cef, ok := feat.(pagecache.CacheEnjinFeature); ok {
+			f.cache = cef
 		}
 	}
-	f.cache = pagecache.New(t, f.enjin.SiteLanguageMode(), f.enjin.SiteDefaultLanguage(), search)
+	if f.cache == nil {
+		log.FatalF("enjin is missing a pagecache.CacheEnjinFeature")
+	} else {
+		if err := f.cache.NewCache(Bucket); err != nil {
+			log.FatalF("error creating new cache bucket: %v - %v", Bucket, err)
+		}
+	}
 
 	var err error
 	for _, path := range maps.SortedKeys(f.paths) {
-		if f.cache.Mounted(path) {
+		if f.cache.Mounted(Bucket, path) {
 			log.FatalF(`"%v" already mounted`, path)
 			return
 		}
@@ -147,21 +153,20 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 			return
 		}
 		mount := f.paths[path]
-		f.cache.Mount(mount, path, lfs)
+		f.cache.Mount(Bucket, mount, path, lfs)
 		log.DebugF("mounted zip content filesystem %v to %v", path, mount)
 	}
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
-	f.cache.Rebuild()
-	runtime.GC()
+	f.cache.Rebuild(Bucket)
 	return
 }
 
 func (f *CFeature) FilterPageContext(themeCtx context.Context, pageCtx context.Context, r *http.Request) (out context.Context) {
 	out = themeCtx
 	totalCached := out.Uint64("SiteTotalPages", 0)
-	totalCached += f.cache.TotalCached
+	totalCached += f.cache.TotalCached(Bucket)
 	out.SetSpecific("SiteTotalPages", totalCached)
 	return
 }
@@ -184,7 +189,7 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWriter, r *http.Request) (err error) {
 	reqLangTag := lang.GetTag(r)
 	path = forms.SanitizeRequestPath(path)
-	if mount, mpath, pg, e := f.cache.Lookup(reqLangTag, path); e == nil {
+	if mount, mpath, pg, e := f.cache.Lookup(Bucket, reqLangTag, path); e == nil {
 		var cacheControl string
 		if f.cacheControl == "" {
 			cacheControl = DefaultCacheControl
@@ -205,24 +210,24 @@ func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWrite
 }
 
 func (f *CFeature) FindRedirection(path string) (p *page.Page) {
-	p, _ = f.cache.LookupRedirect(path)
+	p, _ = f.cache.LookupRedirect(Bucket, path)
 	return
 }
 
 func (f *CFeature) FindTranslations(path string) (found []*page.Page) {
-	found = f.cache.LookupTranslations(path)
+	found = f.cache.LookupTranslations(Bucket, path)
 	return
 }
 
 func (f *CFeature) FindPage(tag language.Tag, path string) (p *page.Page) {
-	if _, _, pg, e := f.cache.Lookup(tag, path); e == nil {
+	if _, _, pg, e := f.cache.Lookup(Bucket, tag, path); e == nil {
 		p = pg
 	}
 	return
 }
 
 func (f *CFeature) LookupPrefixed(path string) (pages []*page.Page) {
-	pages = f.cache.LookupPrefix(path)
+	pages = f.cache.LookupPrefix(Bucket, path)
 	return
 }
 

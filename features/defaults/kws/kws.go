@@ -17,7 +17,6 @@
 package kws
 
 import (
-	"fmt"
 	"regexp"
 	"sort"
 	"strings"
@@ -333,14 +332,6 @@ func (f *CFeature) AddToSearchIndex(stub *pagecache.Stub, p *page.Page) (err err
 		for _, word := range words {
 			lcw := strings.ToLower(word)
 			f.keyword[lcw] = append(f.keyword[lcw], stub)
-		}
-	}
-	for _, feat := range f.enjin.Features() {
-		if indexer, ok := feat.(pagecache.PageIndexFeature); ok {
-			if err = indexer.AddToIndex(stub, p); err != nil {
-				err = fmt.Errorf("error adding to search index feature: %v", err)
-				return
-			}
 		}
 	}
 	return

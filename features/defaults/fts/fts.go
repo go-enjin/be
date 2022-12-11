@@ -223,14 +223,6 @@ func (f *CFeature) AddToSearchIndex(stub *pagecache.Stub, p *page.Page) (err err
 	if err = index.Index(pgUrl, doc.Self()); err != nil {
 		return
 	}
-	for _, feat := range f.enjin.Features() {
-		if indexer, ok := feat.(pagecache.PageIndexFeature); ok {
-			if err = indexer.AddToIndex(stub, p); err != nil {
-				err = fmt.Errorf("error adding to search index feature: %v", err)
-				return
-			}
-		}
-	}
 	return
 }
 

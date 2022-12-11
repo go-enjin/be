@@ -19,8 +19,21 @@ import (
 	"github.com/blevesearch/bleve/v2/mapping"
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/page"
 )
+
+type CacheEnjinFeature interface {
+	NewCache(bucket string) (err error)
+	Mounted(bucket, path string) (ok bool)
+	Mount(bucket, mount, path string, mfs fs.FileSystem)
+	Rebuild(bucket string) (ok bool)
+	Lookup(bucket string, tag language.Tag, url string) (mount, path string, p *page.Page, err error)
+	LookupTranslations(bucket, url string) (pgs []*page.Page)
+	LookupRedirect(bucket, url string) (p *page.Page, ok bool)
+	LookupPrefix(bucket, prefix string) (found []*page.Page)
+	TotalCached(bucket string) (count uint64)
+}
 
 type QueryEnjinFeature interface {
 	PageIndexFeature

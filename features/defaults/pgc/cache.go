@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package pagecache
+package pgc
 
 import (
 	"fmt"
@@ -23,10 +23,13 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/gofrs/uuid"
 
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/pkg/pagecache"
+	strings2 "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
@@ -47,10 +50,10 @@ type Mount struct {
 type Cache struct {
 	mount map[string]*Mount
 
-	All          []*Stub
-	Stubs        map[string]map[language.Tag]map[string]*Stub
-	Translations map[string][]*Stub
-	Redirections map[string]*Stub
+	All          []*pagecache.Stub
+	Stubs        map[string]map[language.Tag]map[string]*pagecache.Stub
+	Translations map[string][]*pagecache.Stub
+	Redirections map[string]*pagecache.Stub
 
 	Formats  types.FormatProvider
 	LangMode lang.Mode
@@ -58,17 +61,20 @@ type Cache struct {
 
 	TotalCached uint64
 
-	search SearchEnjinFeature
+	search pagecache.SearchEnjinFeature
+
+	enjin feature.Internals
 
 	sync.RWMutex
 }
 
-func New(formats types.FormatProvider, langMode lang.Mode, fallback language.Tag, search SearchEnjinFeature) (c *Cache) {
+func newCache(enjin feature.Internals, formats types.FormatProvider, langMode lang.Mode, fallback language.Tag, search pagecache.SearchEnjinFeature) (c *Cache) {
 	c = new(Cache)
+	c.enjin = enjin
 	c.mount = make(map[string]*Mount)
-	c.Stubs = make(map[string]map[language.Tag]map[string]*Stub)
-	c.Translations = make(map[string][]*Stub)
-	c.Redirections = make(map[string]*Stub)
+	c.Stubs = make(map[string]map[language.Tag]map[string]*pagecache.Stub)
+	c.Translations = make(map[string][]*pagecache.Stub)
+	c.Redirections = make(map[string]*pagecache.Stub)
 	c.Formats = formats
 	c.LangMode = langMode
 	c.Fallback = fallback
@@ -110,17 +116,20 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 
 	updateCacheFile := func(point, mount, file, path, shasum string, tag language.Tag, bfs fs.FileSystem) {
 		var err error
-		var stub *Stub
+		var stub *pagecache.Stub
 		var p *page.Page
-		if stub, p, err = NewStub(bfs, point, file, shasum, tag); err != nil {
+		if stub, p, err = pagecache.NewStub(bfs, point, file, shasum, tag); err != nil {
 			errs = append(errs, err)
 			return
 		}
-		p, err = stub.Make(c.Formats)
+		if p, err = stub.Make(c.Formats); err != nil {
+			errs = append(errs, err)
+			return
+		}
 		stub.Language = p.LanguageTag
 
 		if _, ok := c.Stubs[mount][p.LanguageTag]; !ok {
-			c.Stubs[mount][p.LanguageTag] = make(map[string]*Stub)
+			c.Stubs[mount][p.LanguageTag] = make(map[string]*pagecache.Stub)
 		}
 		c.All = append(c.All, stub)
 		c.Stubs[mount][p.LanguageTag][file] = stub
@@ -144,6 +153,15 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 			}
 		}
 
+		for _, feat := range c.enjin.Features() {
+			if indexer, ok := feat.(pagecache.PageIndexFeature); ok {
+				if err = indexer.AddToIndex(stub, p); err != nil {
+					err = fmt.Errorf("error adding to search index feature: %v", err)
+					return
+				}
+			}
+		}
+
 		log.TraceF("cached [%v/%v] %v mount: %v (%v)", tag, p.Language, mount, path, p.Url)
 		if mountCached > 0 && mountCached%25000 == 0 {
 			log.DebugF("cache %v progress %d pages (%v)", bfs.Name(), mountCached, time.Now().Sub(batchStart))
@@ -160,7 +178,7 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 					continue
 				}
 				if shasum, ee := bfs.Shasum(file); ee == nil {
-					pgFile := trimPrefixes(file, tag.String())
+					pgFile := strings2.TrimPrefixes(file, tag.String())
 					updateCacheFile(point, mount, file, pgFile, shasum, tag, bfs)
 				} else {
 					errs = append(errs, fmt.Errorf("error: shasum %v mount %v - %v", mount, file, ee))
@@ -178,7 +196,7 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 		mountStart := time.Now()
 
 		if v, ok := c.Stubs[mount]; !ok || v == nil {
-			c.Stubs[mount] = make(map[language.Tag]map[string]*Stub)
+			c.Stubs[mount] = make(map[language.Tag]map[string]*pagecache.Stub)
 		}
 
 		var ignore []string
@@ -225,9 +243,9 @@ func (c *Cache) Lookup(tag language.Tag, url string) (mount, path string, p *pag
 
 	process := func(langTag language.Tag) (mount, path string, p *page.Page, ok bool) {
 		for m, locales := range c.Stubs {
-			var stubs map[string]*Stub
+			var stubs map[string]*pagecache.Stub
 			if stubs, ok = locales[langTag]; ok {
-				var stub *Stub
+				var stub *pagecache.Stub
 				if stub, ok = stubs[url]; ok {
 					if p, err = stub.Make(c.Formats); err != nil {
 						log.ErrorF("error making page from stub: %v", err)
@@ -275,7 +293,7 @@ func (c *Cache) LookupRedirect(url string) (p *page.Page, ok bool) {
 	c.RLock()
 	defer c.RUnlock()
 	var e error
-	var stub *Stub
+	var stub *pagecache.Stub
 	if stub, ok = c.Redirections[url]; ok {
 		p, e = stub.Make(c.Formats)
 		ok = e == nil
@@ -303,21 +321,6 @@ func (c *Cache) LookupPrefix(prefix string) (found []*page.Page) {
 func checkIgnored(file string, ignore []string) (ok bool) {
 	for _, ignored := range ignore {
 		if ok = strings.HasPrefix(file, ignored+"/"); ok {
-			return
-		}
-	}
-	return
-}
-
-func trimPrefixes(value string, prefixes ...string) (trimmed string) {
-	trimmed = value
-	for _, prefix := range prefixes {
-		trimmed = strings.TrimPrefix(trimmed, prefix)
-		if trimmed != "" && trimmed[0] == '/' {
-			trimmed = trimmed[1:]
-		}
-		if trimmed != value {
-			// stop at the first trim
 			return
 		}
 	}
