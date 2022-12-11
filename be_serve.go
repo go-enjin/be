@@ -214,7 +214,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 
 	ctx := e.Context()
 
-	ctx.SetSpecific("SiteInfo", site.Info(e))
+	ctx.SetSpecific("SiteInfo", site.MakeInfo(e))
 	ctx.SetSpecific("SiteEnjin", site.Enjin(e))
 
 	reqLangTag := lang.GetTag(r)

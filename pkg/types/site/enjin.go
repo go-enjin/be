@@ -40,14 +40,23 @@ type Enjin interface {
 	FindPages(prefix string) (pages []*page.Page)
 }
 
-func Info(e Enjin) (info map[string]interface{}) {
-	info = map[string]interface{}{
-		"Tag":         e.SiteTag(),
-		"Name":        e.SiteName(),
-		"TagLine":     e.SiteTagLine(),
-		"Locales":     e.SiteLocales(),
-		"LangMode":    e.SiteLanguageMode(),
-		"DefaultLang": e.SiteDefaultLanguage(),
+type Info struct {
+	Tag         string
+	Name        string
+	TagLine     string
+	Locales     []language.Tag
+	LangMode    lang.Mode
+	DefaultLang language.Tag
+}
+
+func MakeInfo(e Enjin) (info Info) {
+	info = Info{
+		Tag:         e.SiteTag(),
+		Name:        e.SiteName(),
+		TagLine:     e.SiteTagLine(),
+		Locales:     e.SiteLocales(),
+		LangMode:    e.SiteLanguageMode(),
+		DefaultLang: e.SiteDefaultLanguage(),
 	}
 	return
 }
