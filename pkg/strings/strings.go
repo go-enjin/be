@@ -307,3 +307,18 @@ func AppendWithSpace(src, add string) (combined string) {
 	combined += add
 	return
 }
+
+func TrimPrefixes(value string, prefixes ...string) (trimmed string) {
+	trimmed = value
+	for _, prefix := range prefixes {
+		trimmed = strings.TrimPrefix(trimmed, prefix)
+		if trimmed != "" && trimmed[0] == '/' {
+			trimmed = trimmed[1:]
+		}
+		if trimmed != value {
+			// stop at the first trim
+			return
+		}
+	}
+	return
+}
