@@ -35,7 +35,7 @@ type Stub struct {
 	Fallback language.Tag
 }
 
-func NewStub(bfs beFs.FileSystem, point, source, shasum string, fallback language.Tag, formats types.FormatProvider) (s *Stub, p *page.Page, err error) {
+func NewStub(bfs beFs.FileSystem, point, source, shasum string, fallback language.Tag) (s *Stub, p *page.Page, err error) {
 	s = &Stub{
 		Bfs:      bfs,
 		Point:    point,
@@ -44,8 +44,6 @@ func NewStub(bfs beFs.FileSystem, point, source, shasum string, fallback languag
 		Language: fallback,
 		Fallback: fallback,
 	}
-	p, err = s.Make(formats)
-	s.Language = p.LanguageTag
 	return
 }
 

@@ -112,10 +112,12 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 		var err error
 		var stub *Stub
 		var p *page.Page
-		if stub, p, err = NewStub(bfs, point, file, shasum, tag, c.Formats); err != nil {
+		if stub, p, err = NewStub(bfs, point, file, shasum, tag); err != nil {
 			errs = append(errs, err)
 			return
 		}
+		p, err = stub.Make(c.Formats)
+		stub.Language = p.LanguageTag
 
 		if _, ok := c.Stubs[mount][p.LanguageTag]; !ok {
 			c.Stubs[mount][p.LanguageTag] = make(map[string]*Stub)
