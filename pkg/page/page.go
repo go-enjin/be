@@ -243,13 +243,19 @@ func (p *Page) SetSlugUrl(filepath string) {
 }
 
 func (p *Page) getUrlPathSectionSlug(url string) (path, section, slug string) {
+	var notPath bool
+	if notPath = strings.HasPrefix(url, "!"); notPath {
+		url = url[1:]
+	}
 	path = bePath.TrimSlashes(url)
-	slug = strcase.ToKebab(filepath.Base(path))
 	path = strings.ToLower(path)
+	slug = strcase.ToKebab(filepath.Base(path))
 	if parts := strings.Split(path, "/"); len(parts) > 0 {
 		section = parts[0]
 	}
-	if path != "" && path[0] != '/' {
+	if notPath {
+		path = "!" + path
+	} else {
 		path = "/" + path
 	}
 	return
