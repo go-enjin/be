@@ -73,7 +73,9 @@ func (s *Stub) Make(formats types.FormatProvider) (p *page.Page, err error) {
 		if language.Compare(p.LanguageTag, language.Und) {
 			p.SetLanguage(s.Fallback)
 		}
-		p.SetSlugUrl(strings.ReplaceAll(s.Point+p.Url, "//", "/"))
+		if !strings.HasPrefix(p.Url, "!") {
+			p.SetSlugUrl(strings.ReplaceAll(s.Point+p.Url, "//", "/"))
+		}
 		// log.DebugF("made page from %v stub: [%v] %v (%v)", s.Bfs.Name(), p.Language, s.Source, p.Url)
 	} else {
 		err = fmt.Errorf("error: new %v mount page %v - %v", s.Bfs.Name(), path, err)
