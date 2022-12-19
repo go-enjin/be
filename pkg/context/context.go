@@ -92,10 +92,6 @@ func (c Context) Copy() (ctx Context) {
 			ctx.SetSpecific(k, t[:])
 		case []string:
 			ctx.SetSpecific(k, t[:])
-		case []float32:
-			ctx.SetSpecific(k, t[:])
-		case []float64:
-			ctx.SetSpecific(k, t[:])
 		case []int:
 			ctx.SetSpecific(k, t[:])
 		case []int8:
@@ -116,9 +112,15 @@ func (c Context) Copy() (ctx Context) {
 			ctx.SetSpecific(k, t[:])
 		case []uint64:
 			ctx.SetSpecific(k, t[:])
-		case bool, string, float32, float64,
+		case []float32:
+			ctx.SetSpecific(k, t[:])
+		case []float64:
+			ctx.SetSpecific(k, t[:])
+		case bool, string,
 			int, int8, int16, int32, int64,
 			uint, uint8, uint16, uint32, uint64:
+			ctx.SetSpecific(k, t)
+		case float32, float64:
 			ctx.SetSpecific(k, t)
 		default:
 			ctx.SetSpecific(k, t)
