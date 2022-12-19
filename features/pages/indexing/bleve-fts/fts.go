@@ -1,4 +1,4 @@
-//go:build page_search || pages || all
+//go:build bleve_fts || all
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //
@@ -38,15 +38,15 @@ import (
 )
 
 var (
-	_ Feature                      = (*CFeature)(nil)
-	_ MakeFeature                  = (*CFeature)(nil)
-	_ pagecache.SearchEnjinFeature = (*CFeature)(nil)
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
 )
 
-const Tag feature.Tag = "PagesSearchFullText"
+const Tag feature.Tag = "BleveFullTextSearch"
 
 type Feature interface {
 	feature.Feature
+	pagecache.SearchEnjinFeature
 }
 
 type CFeature struct {
