@@ -1,4 +1,4 @@
-//go:build page_search || pages || all
+//go:build stock_pql || pages || all
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //
@@ -27,19 +27,23 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/pagecache"
+	"github.com/go-enjin/be/pkg/pageql/matcher"
+	"github.com/go-enjin/be/pkg/pageql/selector"
 	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/theme"
 )
 
 var (
-	_ Feature                     = (*CFeature)(nil)
-	_ MakeFeature                 = (*CFeature)(nil)
-	_ pagecache.QueryEnjinFeature = (*CFeature)(nil)
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
 )
 
-const Tag feature.Tag = "PagesQueryPQL"
+const Tag feature.Tag = "PagesIndexingPQL"
 
 type Feature interface {
 	feature.Feature
+	pagecache.QueryEnjinFeature
+	pagecache.PageContextProvider
 }
 
 type CFeature struct {
@@ -87,12 +91,16 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *CFeature) PerformQuery(input string) (stubs []*pagecache.Stub, err error) {
-	stubs, err = newMatcherProcess(input, f)
+	stubs, err = matcher.NewProcess(input, f.enjin)
 	return
 }
 
 func (f *CFeature) PerformSelect(input string) (selected map[string]interface{}, err error) {
-	selected, err = newSelectorProcess(input, f)
+	var t *theme.Theme
+	if t, err = f.enjin.GetTheme(); err != nil {
+		return
+	}
+	selected, err = selector.NewProcessWith(input, t, f)
 	return
 }
 
@@ -126,5 +134,10 @@ func (f *CFeature) AddToIndex(stub *pagecache.Stub, p *page.Page) (err error) {
 
 func (f *CFeature) RemoveFromIndex(tag language.Tag, file, shasum string) {
 	// TODO: remove page from pql index
+	return
+}
+
+func (f *CFeature) GetPageContextValueStubs(key string) (valueStubs map[interface{}]pagecache.Stubs, err error) {
+	valueStubs, _ = f.index[key]
 	return
 }
