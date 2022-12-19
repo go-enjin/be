@@ -1,4 +1,4 @@
-//go:build page_search || pages || all
+//go:build stock_kws || pages || all
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //
@@ -45,12 +45,7 @@ var (
 	_ pagecache.SearchEnjinFeature = (*CFeature)(nil)
 )
 
-const Tag feature.Tag = "PagesSearchKeyword"
-
-type KeywordProvider interface {
-	KnownKeywords() (keywords []string)
-	KeywordStubs(keyword string) (stubs pagecache.Stubs)
-}
+const Tag feature.Tag = "PagesIndexingKeyWordSearch"
 
 type Feature interface {
 	feature.Feature
@@ -340,12 +335,6 @@ func (f *CFeature) AddToSearchIndex(stub *pagecache.Stub, p *page.Page) (err err
 func (f *CFeature) RemoveFromSearchIndex(tag language.Tag, file, shasum string) {
 	f.Lock()
 	defer f.Unlock()
-	// TODO: remove page from keyword index
-	for _, feat := range f.enjin.Features() {
-		if indexer, ok := feat.(pagecache.PageIndexFeature); ok {
-			indexer.RemoveFromIndex(tag, file, shasum)
-		}
-	}
 	return
 }
 
