@@ -57,3 +57,12 @@ type SearchDocumentMapperFeature interface {
 	SearchDocumentMapping(tag language.Tag) (doctype string, dm *mapping.DocumentMapping)
 	AddSearchDocumentMapping(tag language.Tag, indexMapping *mapping.IndexMappingImpl)
 }
+
+type KeywordProvider interface {
+	KnownKeywords() (keywords []string)
+	KeywordStubs(keyword string) (stubs Stubs)
+}
+
+type PageContextProvider interface {
+	GetPageContextValueStubs(key string) (valueStubs map[interface{}]Stubs, err error)
+}
