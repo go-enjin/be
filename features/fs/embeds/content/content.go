@@ -20,7 +20,6 @@ import (
 	"embed"
 	"fmt"
 	"net/http"
-	"runtime"
 	"sort"
 
 	"github.com/fvbommel/sortorder"
@@ -28,7 +27,6 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
-	"github.com/go-enjin/be/features/defaults/pgc"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
@@ -148,8 +146,7 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
-	f.cache.Rebuild()
-	runtime.GC()
+	f.cache.Rebuild(Bucket)
 	return
 }
 
