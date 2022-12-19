@@ -1,3 +1,5 @@
+//go:build stock_pgc || pages || all
+
 // Copyright (c) 2022  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,15 +33,15 @@ import (
 )
 
 var (
-	_ Feature                     = (*CFeature)(nil)
-	_ MakeFeature                 = (*CFeature)(nil)
-	_ pagecache.CacheEnjinFeature = (*CFeature)(nil)
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
 )
 
-const Tag feature.Tag = "PageCache"
+const Tag feature.Tag = "PagesCaching"
 
 type Feature interface {
 	feature.Feature
+	pagecache.CacheEnjinFeature
 }
 
 type CFeature struct {

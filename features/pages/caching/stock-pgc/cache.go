@@ -1,3 +1,5 @@
+//go:build stock_pgc || pages || all
+
 // Copyright (c) 2022  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +29,7 @@ import (
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/pagecache"
 	strings2 "github.com/go-enjin/be/pkg/strings"
@@ -115,6 +118,8 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 	rebuildStart := time.Now()
 
 	updateCacheFile := func(point, mount, file, path, shasum string, tag language.Tag, bfs fs.FileSystem) {
+		fileStart := time.Now()
+
 		var err error
 		var stub *pagecache.Stub
 		var p *page.Page
@@ -148,13 +153,18 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 		}
 
 		if c.search != nil {
-			if err = c.search.AddToSearchIndex(stub, p); err != nil {
-				errs = append(errs, fmt.Errorf("error adding page to search index: %v - %v", p.Url, err))
+			// log.WarnF("adding to search index: %v", stub.Source)
+			if ee := c.search.AddToSearchIndex(stub, p); ee != nil {
+				ee = fmt.Errorf("error adding page to search index: %v - %v", p.Url, ee)
+				log.ErrorF("%v", ee)
+				errs = append(errs, ee)
+				return
 			}
 		}
 
 		for _, feat := range c.enjin.Features() {
 			if indexer, ok := feat.(pagecache.PageIndexFeature); ok {
+				// log.WarnF("adding to page index: %v - %v", feat.Tag(), stub.Source)
 				if err = indexer.AddToIndex(stub, p); err != nil {
 					err = fmt.Errorf("error adding to search index feature: %v", err)
 					return
@@ -163,8 +173,17 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 		}
 
 		log.TraceF("cached [%v/%v] %v mount: %v (%v)", tag, p.Language, mount, path, p.Url)
-		if mountCached > 0 && mountCached%25000 == 0 {
-			log.DebugF("cache %v progress %d pages (%v)", bfs.Name(), mountCached, time.Now().Sub(batchStart))
+		delta := time.Now().Sub(fileStart)
+		var reportThreshold uint64
+		if delta.Milliseconds() >= 3 {
+			reportThreshold = 250
+		} else if delta.Milliseconds() >= 2 {
+			reportThreshold = 2500
+		} else {
+			reportThreshold = 25000
+		}
+		if mountCached > 0 && mountCached%reportThreshold == 0 {
+			log.DebugF("cache %v progress %d pages (%v) (last: %v)", bfs.Name(), mountCached, time.Now().Sub(batchStart), delta)
 			batchStart = time.Now()
 		}
 		return
@@ -173,6 +192,7 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 	updateCacheDir := func(point, mount string, tag language.Tag, bfs fs.FileSystem, ignore []string) {
 		batchStart = time.Now()
 		if paths, e := bfs.ListAllFiles("."); e == nil {
+			// log.WarnF("hit: %v", len(paths))
 			for _, file := range paths {
 				if checkIgnored(file, ignore) {
 					continue
@@ -190,7 +210,8 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 	}
 
 	// add new pages to cache
-	for mount, mfs := range c.mount {
+	for _, mount := range maps.SortedKeys(c.mount) {
+		mfs := c.mount[mount]
 		// log.WarnF("processing mount: %v - %v", mount, mfs.FS.Name())
 		mountCached = 0
 		mountStart := time.Now()
@@ -218,7 +239,8 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 
 		batchStart = time.Now()
 		updateCacheDir(mfs.Point, mount, language.Und, mfs.FS, ignore)
-		for tag, bfs := range updates {
+		for _, tag := range lang.SortedLanguageTagKeys(updates) {
+			bfs := updates[tag]
 			// log.WarnF("updating cache directory: [%v] %v", tag.String(), bfs.Name())
 			updateCacheDir(mfs.Point, mount, tag, bfs, nil)
 		}
@@ -228,8 +250,13 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 		log.DebugF("cache %v updated %d pages (%v)", mfs.FS.Name(), mountCached, time.Now().Sub(mountStart))
 	}
 
-	if ok = len(errs) == 0; !ok {
-		log.ErrorF("errors (%d) during cache rebuilding: %v", len(errs), errs)
+	numErrs := len(errs)
+	if ok = numErrs == 0; !ok {
+		if numErrs > 10 {
+			log.ErrorF("errors (%d) during cache rebuilding: (too many to output)\n%v", len(errs), errs[0])
+		} else {
+			log.ErrorF("errors (%d) during cache rebuilding:\n%v", len(errs), errs)
+		}
 	}
 
 	c.TotalCached = totalCached
