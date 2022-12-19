@@ -18,6 +18,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
@@ -69,6 +70,12 @@ type System interface {
 	Service
 
 	Router() (router *chi.Mux)
+}
+
+type RootInternals interface {
+	Internals
+
+	SetupRootEnjin(ctx *cli.Context) (err error)
 }
 
 type Internals interface {
