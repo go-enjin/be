@@ -83,7 +83,7 @@ func (f *CFeature) Context() (ctx context.Context) {
 	return
 }
 
-func (f *CFeature) Build(c Buildable) (err error) {
+func (f *CFeature) Build(b Buildable) (err error) {
 	return
 }
 
