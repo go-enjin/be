@@ -103,7 +103,7 @@ func newIncludedEnjin(eb *EnjinBuilder, parent *Enjin) *Enjin {
 }
 
 func (e *Enjin) action(ctx *cli.Context) (err error) {
-	if err = e.setupRootEnjin(ctx); err != nil {
+	if err = e.SetupRootEnjin(ctx); err != nil {
 		return
 	}
 
@@ -117,7 +117,11 @@ func (e *Enjin) action(ctx *cli.Context) (err error) {
 	return
 }
 
-func (e *Enjin) setupRootEnjin(ctx *cli.Context) (err error) {
+func (e *Enjin) Self() (self interface{}) {
+	return e
+}
+
+func (e *Enjin) SetupRootEnjin(ctx *cli.Context) (err error) {
 	if len(e.eb.theming) == 0 {
 		err = fmt.Errorf("builder error: at least one theme is required")
 		return
