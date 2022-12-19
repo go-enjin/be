@@ -22,6 +22,14 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 )
 
+func SortedLanguageTagKeys[V interface{}](m map[language.Tag]V) (sorted []language.Tag) {
+	for k, _ := range m {
+		sorted = append(sorted, k)
+	}
+	sorted = SortLanguageTags(sorted)
+	return
+}
+
 func SortLanguageTags(tags []language.Tag) (sorted []language.Tag) {
 	lookup := make(map[string]language.Tag)
 	var keys []string
