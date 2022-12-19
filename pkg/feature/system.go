@@ -82,6 +82,8 @@ type Internals interface {
 	Service
 	site.Enjin
 
+	Self() (self interface{})
+
 	Features() (features []Feature)
 	Pages() (pages map[string]*page.Page)
 	Theme() (theme string)
