@@ -90,6 +90,8 @@ func DefaultFuncMap() (funcMap template.FuncMap) {
 		"fsMime":   funcs.FsMime,
 		"fsExists": funcs.FsExists,
 
+		"numberAsInt": funcs.NumberAsInt,
+
 		"add":      funcs.Add,
 		"sub":      funcs.Sub,
 		"mul":      funcs.Mul,
