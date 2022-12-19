@@ -14,6 +14,10 @@
 
 package log
 
+func Error(err error) {
+	ErrorDF(1, "%v", err)
+}
+
 func ErrorF(format string, argv ...interface{}) {
 	ErrorDF(1, format, argv...)
 }
