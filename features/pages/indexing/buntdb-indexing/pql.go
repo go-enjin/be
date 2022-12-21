@@ -1,4 +1,4 @@
-//go:build buntdb_indexing || all
+//go:build buntdb_indexing || buntdb || all
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //
