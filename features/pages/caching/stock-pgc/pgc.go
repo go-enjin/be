@@ -135,8 +135,10 @@ func (f *CFeature) Mount(bucket, mount, path string, mfs fs.FileSystem) {
 
 func (f *CFeature) Rebuild(bucket string) (ok bool) {
 	if cache, exists := f.caches[bucket]; exists {
-		if _, errs := cache.Rebuild(); len(errs) > 0 {
-			log.ErrorF("%d errors during %v rebuild:\n%v", len(errs), bucket, errs)
+		if _, errs := cache.Rebuild(); len(errs) > 10 {
+			log.ErrorF("errors (%d) during cache rebuilding: (too many to output)\n%v", len(errs), errs[0])
+		} else if len(errs) > 0 {
+			log.ErrorF("errors (%d) during cache rebuilding:\n%v", len(errs), errs)
 		}
 	} else {
 		log.FatalF("bucket not found: %v", bucket)
