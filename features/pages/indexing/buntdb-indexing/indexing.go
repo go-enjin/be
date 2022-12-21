@@ -18,7 +18,6 @@ package indexing
 
 import (
 	"fmt"
-	"os"
 	"sync"
 
 	"github.com/blevesearch/bleve/v2/mapping"
@@ -56,7 +55,8 @@ type CFeature struct {
 
 	stubs  map[string]*pagecache.Stub
 	dbpath string
-	buntdb *buntdb.DB
+	kvs    *kvs
+	// buntdb *buntdb.DB
 
 	// useMemCache bool
 	// memCache    map[string]map[string]int
@@ -137,57 +137,34 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if dbpath := ctx.Path("buntdb-path"); dbpath != "" {
 		f.dbpath = dbpath
 	}
-	var db *buntdb.DB
-	if db, err = buntdb.Open(f.dbpath); err != nil {
-		err = fmt.Errorf("error opening buntdb: %v - %v", f.dbpath, err)
+	var cfg *buntdb.Config
+	if f.cliStartup {
+		cfg = &buntdb.Config{AutoShrinkDisabled: true, SyncPolicy: buntdb.Always}
+	}
+	if f.kvs, err = newKvs(f.dbpath, cfg); err != nil {
+		err = fmt.Errorf("error opening buntdb kvs: %v - %v", f.dbpath, err)
 	} else {
-		f.buntdb = db
 		log.DebugF("using buntdb: %v", f.dbpath)
 	}
 	return
 }
 
 func (f *CFeature) Shutdown() {
-	if f.buntdb != nil {
-		if f.dbpath != ":memory:" {
-			// log.DebugF("shrinking buntdb file: %v", f.dbpath)
-			var before int64
-			if info, err := os.Stat(f.dbpath); err != nil {
-				log.ErrorF("error getting file info for: %v - %v", f.dbpath, err)
-			} else {
-				before = info.Size()
-			}
-			if err := f.buntdb.Shrink(); err != nil {
-				log.ErrorF("error shrinking buntdb: %v", err)
-			}
-			if info, err := os.Stat(f.dbpath); err != nil {
-				log.ErrorF("error getting file info for: %v - %v", f.dbpath, err)
-			} else {
-				current := info.Size()
-				switch {
-				case before > current:
-					log.DebugF("%v shrunk %d bytes (current: %v bytes)", f.dbpath, before-current, current)
-				case before < current:
-					log.DebugF("%v grew %d bytes (current: %v bytes)", f.dbpath, current-before, current)
-				default:
-					log.DebugF("%v did not change (current: %v bytes)", f.dbpath, current)
-				}
-			}
-		}
-		if err := f.buntdb.Close(); err != nil {
-			log.ErrorF("error shutting down kws buntdb: %v", err)
-		}
+	if f.cliStartup {
+		f.kvs.ShrinkLogStatsAndClose()
+	} else {
+		f.kvs.Close()
 	}
 }
 
 func (f *CFeature) GetPageContextValueStubs(key string) (valueStubs map[interface{}]pagecache.Stubs, err error) {
 	valueStubs = make(map[interface{}]pagecache.Stubs)
 	valueStubsPattern := fmt.Sprintf("pql:%v:*:value", key)
-	if err = f.buntdb.View(func(tx *buntdb.Tx) (err error) {
+	if err = f.kvs.DB(valueStubsPattern).View(func(tx *buntdb.Tx) (err error) {
 		if err = tx.AscendKeys(valueStubsPattern, func(k, v string) (ok bool) {
 			var idx int
 			var contextKey string
-			if contextKey, idx, _, err = f.parsePqlValueStubsKey(k); err != nil {
+			if contextKey, idx, _, err = parsePqlValueStubsKey(k); err != nil {
 				return
 			}
 			if contextKey != key {
@@ -197,6 +174,7 @@ func (f *CFeature) GetPageContextValueStubs(key string) (valueStubs map[interfac
 
 			var vi kvm.Value
 			if err = vi.UnmarshalBinary([]byte(v)); err != nil {
+				log.Error(err)
 				return
 			}
 
@@ -216,12 +194,14 @@ func (f *CFeature) GetPageContextValueStubs(key string) (valueStubs map[interfac
 
 			var csvStubs string
 			if csvStubs, err = tx.Get(fmt.Sprintf("pql:%v:%d:stubs", key, idx)); err != nil {
+				log.Error(err)
 				return
 			}
 			f.parseCsvInts(csvStubs)
 
 			var shasums []string
-			if shasums, err = f.getShasumsFromIndexesTx(f.parseCsvInts(csvStubs), tx); err != nil {
+			if shasums, err = f.getShasumsFromIndexes(f.parseCsvInts(csvStubs)); err != nil {
+				log.Error(err)
 				return
 			}
 
@@ -236,6 +216,7 @@ func (f *CFeature) GetPageContextValueStubs(key string) (valueStubs map[interfac
 			ok = true
 			return
 		}); err != nil {
+			err = fmt.Errorf("error ascending pattern: %v - %v", err)
 			return
 		}
 		return

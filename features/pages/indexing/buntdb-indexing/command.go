@@ -17,7 +17,6 @@
 package indexing
 
 import (
-	"github.com/tidwall/buntdb"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
@@ -40,9 +39,9 @@ func (f *CFeature) buntdbKwsCommandAction(ctx *cli.Context) (err error) {
 		return
 	}
 
-	if err = f.buntdb.SetConfig(buntdb.Config{AutoShrinkDisabled: true, SyncPolicy: buntdb.Always}); err != nil {
-		return
-	}
+	// if err = f.buntdb.SetConfig(buntdb.Config{AutoShrinkDisabled: true, SyncPolicy: buntdb.Always}); err != nil {
+	// 	return
+	// }
 
 	for _, feat := range f.enjin.Features() {
 		if pp, ok := feat.(feature.PageProvider); ok {

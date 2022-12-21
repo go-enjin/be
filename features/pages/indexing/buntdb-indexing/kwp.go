@@ -31,7 +31,7 @@ func (f *CFeature) KnownKeywords() (keywords []string) {
 	// f.RLock()
 	// defer f.RUnlock()
 	tmp := make(map[string]bool)
-	if err := f.buntdb.View(func(tx *buntdb.Tx) (err error) {
+	if err := f.kvs.DB("contents:").View(func(tx *buntdb.Tx) (err error) {
 		_ = tx.AscendKeys("contents:*", func(k, v string) (ok bool) {
 			word := strings.TrimPrefix(k, "contents:")
 			tmp[word] = true
@@ -50,7 +50,7 @@ func (f *CFeature) KeywordStubs(keyword string) (stubs pagecache.Stubs) {
 	f.RLock()
 	defer f.RUnlock()
 	tmp := make(map[int]bool)
-	if err := f.buntdb.View(func(tx *buntdb.Tx) (err error) {
+	if err := f.kvs.DB("contents:").View(func(tx *buntdb.Tx) (err error) {
 		err = tx.AscendKeys("contents:"+keyword, func(k, v string) (ok bool) {
 			for _, s := range strings.Split(v, ",") {
 				var idx int

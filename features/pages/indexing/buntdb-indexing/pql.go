@@ -44,24 +44,26 @@ func (f *CFeature) RemoveFromIndex(tag language.Tag, file, shasum string) {
 
 func (f *CFeature) PerformQuery(input string) (stubs []*pagecache.Stub, err error) {
 	stubs, err = matcher.NewProcess(input, f.enjin)
-	log.WarnF("matcher processed: %v - %v", len(stubs), input)
+	// log.WarnF("matcher processed: %v - %v", len(stubs), input)
 	return
 }
 
 func (f *CFeature) PerformSelect(input string) (selected map[string]interface{}, err error) {
 	selected, err = selector.NewProcess(input, f.enjin)
-	log.WarnF("selector processed: %v - %v", len(selected), input)
+	// log.WarnF("selector processed: %v - %v", len(selected), input)
 	return
 }
 
 func (f *CFeature) pqlAddToNextIndex(stubIdx int, p *page.Page) (err error) {
-	if f.cliBatch += 1; f.cliBatch >= 500 {
-		if e := f.buntdb.Shrink(); e != nil {
-			log.WarnF("error shrinking buntdb: %v", e)
-		} else {
-			log.DebugF("shrunk buntdb")
+	if f.cliStartup {
+		if f.cliBatch += 1; f.cliBatch >= 2500 {
+			if e := f.kvs.Shrink(); e != nil {
+				log.ErrorF("error shrinking buntdb: %v", e)
+			} else {
+				log.DebugF("shrunk buntdb")
+			}
+			f.cliBatch = 1
 		}
-		f.cliBatch = 1
 	}
 
 	stubIdxStr := strconv.Itoa(stubIdx)
@@ -93,15 +95,12 @@ func (f *CFeature) pqlAddToNextIndex(stubIdx int, p *page.Page) (err error) {
 		thisStubsKey := thisValueKeyPrefix + "stubs"
 		thisValueKey := thisValueKeyPrefix + "value"
 
-		if err = f.buntdb.Update(func(tx *buntdb.Tx) (err error) {
-			sidv, _ := tx.Get(thisStubsKey)
+		if err = f.kvs.DB(thisStubsKey).Update(func(tx *buntdb.Tx) (err error) {
 			var sids []string
-			if sidv != "" {
+			if sidv, _ := tx.Get(thisStubsKey); sidv != "" {
 				sids = strings.Split(sidv, ",")
-				if !beStrings.StringInSlices(stubIdxStr, sids) {
-					sids = append(sids, stubIdxStr)
-				}
-			} else {
+			}
+			if !beStrings.StringInSlices(stubIdxStr, sids) {
 				sids = append(sids, stubIdxStr)
 			}
 			if _, _, err = tx.Set(thisStubsKey, strings.Join(sids, ","), nil); err != nil {

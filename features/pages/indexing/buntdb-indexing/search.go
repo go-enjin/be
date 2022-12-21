@@ -284,7 +284,7 @@ func (f *CFeature) indexStubPage(stub *pagecache.Stub, p *page.Page) (err error)
 	}
 
 	stubIdxStr := strconv.Itoa(stubIdx)
-	if err = f.buntdb.Update(func(tx *buntdb.Tx) (err error) {
+	if err = f.kvs.DB("stub:").Update(func(tx *buntdb.Tx) (err error) {
 		if _, _, err = tx.Set(fmt.Sprintf("stub:%v:index", stub.Shasum), stubIdxStr, nil); err != nil {
 			return
 		}
@@ -313,7 +313,7 @@ func (f *CFeature) indexStubPage(stub *pagecache.Stub, p *page.Page) (err error)
 		return
 	}
 
-	if err = f.buntdb.Update(func(tx *buntdb.Tx) (err error) {
+	if err = f.kvs.DB("contents:").Update(func(tx *buntdb.Tx) (err error) {
 		// update("urls", doc.GetUrl(), tx)
 		// update("titles", doc.GetTitle(), tx)
 		for _, content := range doc.GetContents() {
