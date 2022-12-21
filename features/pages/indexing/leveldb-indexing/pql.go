@@ -43,13 +43,13 @@ func (f *CFeature) RemoveFromIndex(tag language.Tag, file, shasum string) {
 
 func (f *CFeature) PerformQuery(input string) (stubs []*pagecache.Stub, err error) {
 	stubs, err = matcher.NewProcess(input, f.enjin)
-	log.WarnF("matcher processed: %v - %v", len(stubs), input)
+	// log.WarnF("matcher processed: %v - %v", len(stubs), input)
 	return
 }
 
 func (f *CFeature) PerformSelect(input string) (selected map[string]interface{}, err error) {
 	selected, err = selector.NewProcess(input, f.enjin)
-	log.WarnF("selector processed: %v - %v", len(selected), input)
+	// log.WarnF("selector processed: %v - %v", len(selected), input)
 	return
 }
 
