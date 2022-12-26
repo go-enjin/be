@@ -69,8 +69,11 @@ func ToSlug(path string) (slug string) {
 }
 
 func TrimSlash(path string) (clean string) {
-	clean = "/" + TrimSlashes(path)
-	clean = RxDupeSlashes.ReplaceAllString(clean, "/")
+	clean = RxDupeSlashes.ReplaceAllString(path, "/")
+	cleanLen := len(clean)
+	if cleanLen > 0 && clean[cleanLen-1] == '/' {
+		clean = clean[:cleanLen-1]
+	}
 	return
 }
 
