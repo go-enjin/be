@@ -28,8 +28,10 @@ require (
 	github.com/polds/logrus-papertrail-hook v0.0.0-20180214143432-bcfe7b72c1a4
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spkg/zipfs v0.7.1
+	github.com/syndtr/goleveldb v1.0.0
 	github.com/tdewolff/minify/v2 v2.12.0
 	github.com/tg123/go-htpasswd v1.2.0
+	github.com/tidwall/buntdb v1.2.10
 	github.com/urfave/cli/v2 v2.19.2
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	github.com/yookoala/realpath v1.0.0
@@ -105,6 +107,13 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/signalsciences/ac v1.2.0 // indirect
 	github.com/tdewolff/parse/v2 v2.6.4 // indirect
+	github.com/tidwall/btree v1.4.2 // indirect
+	github.com/tidwall/gjson v1.14.3 // indirect
+	github.com/tidwall/grect v0.1.4 // indirect
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.0 // indirect
+	github.com/tidwall/rtred v0.1.2 // indirect
+	github.com/tidwall/tinyqueue v0.1.1 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.etcd.io/bbolt v1.3.5 // indirect
