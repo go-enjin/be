@@ -19,7 +19,6 @@ package content
 import (
 	"fmt"
 	"net/http"
-	"runtime"
 	"sort"
 
 	"github.com/fvbommel/sortorder"
@@ -28,7 +27,6 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
-	"github.com/go-enjin/be/features/defaults/pgc"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
