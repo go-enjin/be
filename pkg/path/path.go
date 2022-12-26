@@ -156,7 +156,7 @@ func ListFiles(path string) (paths []string, err error) {
 	if entries, err = os.ReadDir(path); err == nil {
 		for _, info := range entries {
 			if !info.IsDir() {
-				paths = append(paths, TrimSlashes(Join(path, info.Name())))
+				paths = append(paths, TrimSlash(Join(path, info.Name())))
 			}
 		}
 	}
