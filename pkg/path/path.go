@@ -168,7 +168,7 @@ func ListAllDirs(path string) (paths []string, err error) {
 	var entries []os.DirEntry
 	if entries, err = os.ReadDir(path); err == nil {
 		for _, info := range entries {
-			thisPath := TrimSlashes(Join(path, info.Name()))
+			thisPath := TrimSlash(Join(path, info.Name()))
 			if info.IsDir() {
 				paths = append(paths, thisPath)
 				if subDirs, err := ListAllDirs(thisPath); err == nil && len(subDirs) > 0 {
