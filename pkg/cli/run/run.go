@@ -116,7 +116,13 @@ func MakeCmdFn(exeName string) CmdFn {
 type ExeFn = func(argv ...string) (err error)
 
 func Exe(name string, argv ...string) (status int, err error) {
+	status, err = ExeWithChdir("", name, argv...)
+	return
+}
+
+func ExeWithChdir(path, name string, argv ...string) (status int, err error) {
 	cmd := exec.Command(name, argv...)
+	cmd.Dir = path
 	cmd.Stdin = os.Stdin
 	cmd.Env = os.Environ()
 
@@ -151,6 +157,110 @@ func Exe(name string, argv ...string) (status int, err error) {
 	if err = cmd.Wait(); err != nil {
 		err = fmt.Errorf("exe wait error: %v", err)
 	}
+	return
+}
+
+func ExeWithChdirAndLog(path, name string, argv []string, stdout, stderr string, environ []string) (status int, err error) {
+	cmd := exec.Command(name, argv...)
+	cmd.Dir = path
+	cmd.Stdin = nil
+	cmd.Env = environ
+
+	var o, e io.ReadCloser
+	if o, err = cmd.StdoutPipe(); err != nil {
+		return
+	}
+	if e, err = cmd.StderrPipe(); err != nil {
+		return
+	}
+
+	var outfh, errfh *os.File
+	if outfh, err = os.OpenFile(stdout, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660); err != nil {
+		return
+	}
+	defer outfh.Close()
+	if errfh, err = os.OpenFile(stderr, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660); err != nil {
+		return
+	}
+	defer errfh.Close()
+
+	if err = cmd.Start(); err != nil {
+		err = fmt.Errorf("exe start error: %v", err)
+		return
+	}
+
+	so := bufio.NewScanner(o)
+	se := bufio.NewScanner(e)
+
+	go func() {
+		for so.Scan() {
+			_, _ = outfh.WriteString(so.Text() + "\n")
+		}
+	}()
+
+	go func() {
+		for se.Scan() {
+			_, _ = errfh.WriteString(se.Text() + "\n")
+		}
+	}()
+
+	if err = cmd.Wait(); err != nil {
+		err = fmt.Errorf("exe wait error: %v", err)
+	}
+	return
+}
+
+func Daemonize(path, name string, argv []string, stdout, stderr string, environ []string) (pid int, err error) {
+	cmd := exec.Command(name, argv...)
+	cmd.Dir = path
+	cmd.Stdin = nil
+	cmd.Env = environ
+
+	var o, e io.ReadCloser
+	if o, err = cmd.StdoutPipe(); err != nil {
+		return
+	}
+	if e, err = cmd.StderrPipe(); err != nil {
+		return
+	}
+
+	var outfh, errfh *os.File
+	if outfh, err = os.OpenFile(stdout, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660); err != nil {
+		return
+	}
+	if errfh, err = os.OpenFile(stderr, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660); err != nil {
+		return
+	}
+
+	if err = cmd.Start(); err != nil {
+		_ = outfh.Close()
+		_ = errfh.Close()
+		err = fmt.Errorf("exe start error: %v", err)
+		return
+	}
+
+	so := bufio.NewScanner(o)
+	se := bufio.NewScanner(e)
+
+	go func() {
+		for so.Scan() {
+			_, _ = outfh.WriteString(so.Text() + "\n")
+		}
+	}()
+
+	go func() {
+		for se.Scan() {
+			_, _ = errfh.WriteString(se.Text() + "\n")
+		}
+	}()
+
+	pid = cmd.Process.Pid
+
+	go func() {
+		_ = cmd.Wait()
+		_ = outfh.Close()
+		_ = errfh.Close()
+	}()
 	return
 }
 
