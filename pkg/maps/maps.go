@@ -250,6 +250,13 @@ func DebugWalk(thing map[string]interface{}) (results string) {
 	return
 }
 
+func ValuesSortedByKeys[V interface{}](data map[string]V) (values []V) {
+	for _, k := range SortedKeys(data) {
+		values = append(values, data[k])
+	}
+	return
+}
+
 func SortedKeyLengths[V interface{}](data map[string]V) (keys []string) {
 	for key, _ := range data {
 		keys = append(keys, key)
