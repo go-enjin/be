@@ -14,7 +14,23 @@
 
 package ints
 
-func RemoveIndexFromInt64s(idx int, slice []int64) []int64 {
+func Contains[V int | int8 | int16 | int32 | int64](value V, slice []V) (present bool) {
+	present = IndexOf(value, slice) > -1
+	return
+}
+
+func IndexOf[V int | int8 | int16 | int32 | int64](value V, slice []V) (idx int) {
+	idx = -1
+	for i, v := range slice {
+		if v == value {
+			idx = i
+			break
+		}
+	}
+	return
+}
+
+func RemoveIndex[V int | int8 | int16 | int32 | int64](idx int, slice []V) []V {
 	if idx >= 0 && idx < len(slice) {
 		return append(slice[:idx], slice[idx+1:]...)
 	}
