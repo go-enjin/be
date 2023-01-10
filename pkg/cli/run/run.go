@@ -21,6 +21,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strconv"
 
 	bePath "github.com/go-enjin/be/pkg/path"
 )
@@ -66,8 +67,6 @@ func ExePipe(inputs ...PipeCmd) (status int, err error) {
 	return
 }
 
-type CmdFn = func(argv ...string) (stdout string, stderr string, err error)
-
 func Cmd(name string, argv ...string) (stdout, stderr string, status int, err error) {
 	cmd := exec.Command(name, argv...)
 	cmd.Env = os.Environ()
@@ -100,170 +99,6 @@ func CheckCmd(name string, argv ...string) (stdout string, stderr string, err er
 	return
 }
 
-func MakeCmdFn(exeName string) CmdFn {
-	return func(argv ...string) (stdout string, stderr string, err error) {
-		var status int
-		exeBin := bePath.Which(exeName)
-		if exeBin == "" || !bePath.IsFile(exeBin) {
-			err = fmt.Errorf("%v not found", exeBin)
-		} else if stdout, stderr, status, err = Cmd(exeBin, argv...); err == nil && status != 0 {
-			err = fmt.Errorf("%v exited with status: %d", exeBin, status)
-		}
-		return
-	}
-}
-
-type ExeFn = func(argv ...string) (err error)
-
-func Exe(name string, argv ...string) (status int, err error) {
-	status, err = ExeWithChdir("", name, argv...)
-	return
-}
-
-func ExeWithChdir(path, name string, argv ...string) (status int, err error) {
-	cmd := exec.Command(name, argv...)
-	cmd.Dir = path
-	cmd.Stdin = os.Stdin
-	cmd.Env = os.Environ()
-
-	var o, e io.ReadCloser
-	if o, err = cmd.StdoutPipe(); err != nil {
-		return
-	}
-	if e, err = cmd.StderrPipe(); err != nil {
-		return
-	}
-
-	if err = cmd.Start(); err != nil {
-		err = fmt.Errorf("exe start error: %v", err)
-		return
-	}
-
-	so := bufio.NewScanner(o)
-	se := bufio.NewScanner(e)
-
-	go func() {
-		for so.Scan() {
-			_, _ = os.Stdout.WriteString(CustomExeIndent + so.Text() + "\n")
-		}
-	}()
-
-	go func() {
-		for se.Scan() {
-			_, _ = os.Stderr.WriteString(CustomExeIndent + se.Text() + "\n")
-		}
-	}()
-
-	if err = cmd.Wait(); err != nil {
-		err = fmt.Errorf("exe wait error: %v", err)
-	}
-	return
-}
-
-func ExeWithChdirAndLog(path, name string, argv []string, stdout, stderr string, environ []string) (status int, err error) {
-	cmd := exec.Command(name, argv...)
-	cmd.Dir = path
-	cmd.Stdin = nil
-	cmd.Env = environ
-
-	var o, e io.ReadCloser
-	if o, err = cmd.StdoutPipe(); err != nil {
-		return
-	}
-	if e, err = cmd.StderrPipe(); err != nil {
-		return
-	}
-
-	var outfh, errfh *os.File
-	if outfh, err = os.OpenFile(stdout, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660); err != nil {
-		return
-	}
-	defer outfh.Close()
-	if errfh, err = os.OpenFile(stderr, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660); err != nil {
-		return
-	}
-	defer errfh.Close()
-
-	if err = cmd.Start(); err != nil {
-		err = fmt.Errorf("exe start error: %v", err)
-		return
-	}
-
-	so := bufio.NewScanner(o)
-	se := bufio.NewScanner(e)
-
-	go func() {
-		for so.Scan() {
-			_, _ = outfh.WriteString(so.Text() + "\n")
-		}
-	}()
-
-	go func() {
-		for se.Scan() {
-			_, _ = errfh.WriteString(se.Text() + "\n")
-		}
-	}()
-
-	if err = cmd.Wait(); err != nil {
-		err = fmt.Errorf("exe wait error: %v", err)
-	}
-	return
-}
-
-func Daemonize(path, name string, argv []string, stdout, stderr string, environ []string) (pid int, err error) {
-	cmd := exec.Command(name, argv...)
-	cmd.Dir = path
-	cmd.Stdin = nil
-	cmd.Env = environ
-
-	var o, e io.ReadCloser
-	if o, err = cmd.StdoutPipe(); err != nil {
-		return
-	}
-	if e, err = cmd.StderrPipe(); err != nil {
-		return
-	}
-
-	var outfh, errfh *os.File
-	if outfh, err = os.OpenFile(stdout, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660); err != nil {
-		return
-	}
-	if errfh, err = os.OpenFile(stderr, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660); err != nil {
-		return
-	}
-
-	if err = cmd.Start(); err != nil {
-		_ = outfh.Close()
-		_ = errfh.Close()
-		err = fmt.Errorf("exe start error: %v", err)
-		return
-	}
-
-	so := bufio.NewScanner(o)
-	se := bufio.NewScanner(e)
-
-	go func() {
-		for so.Scan() {
-			_, _ = outfh.WriteString(so.Text() + "\n")
-		}
-	}()
-
-	go func() {
-		for se.Scan() {
-			_, _ = errfh.WriteString(se.Text() + "\n")
-		}
-	}()
-
-	pid = cmd.Process.Pid
-
-	go func() {
-		_ = cmd.Wait()
-		_ = outfh.Close()
-		_ = errfh.Close()
-	}()
-	return
-}
-
 func CheckExe(name string, argv ...string) (err error) {
 	var status int
 	exeBin := bePath.Which(name)
@@ -275,15 +110,161 @@ func CheckExe(name string, argv ...string) (err error) {
 	return
 }
 
-func MakeExeFn(exeName string) ExeFn {
-	return func(argv ...string) (err error) {
-		var status int
-		exeBin := bePath.Which(exeName)
-		if exeBin == "" || !bePath.IsFile(exeBin) {
-			err = fmt.Errorf("%v not found", exeBin)
-		} else if status, err = Exe(exeBin, argv...); err == nil && status != 0 {
-			err = fmt.Errorf("%v exited with status: %d", exeBin, status)
+func Exe(name string, argv ...string) (status int, err error) {
+	if err = ExeWith(&Options{Name: name, Argv: argv}); err != nil {
+		status = 1
+	}
+	return
+}
+
+func ExeWith(options *Options) (err error) {
+	cmd := exec.Command(options.Name, options.Argv...)
+	cmd.Stdin = nil
+	cmd.Dir = options.Path
+	cmd.Env = options.Environ
+
+	var o, e io.ReadCloser
+	var outFH, errFH *os.File
+
+	if o, err = cmd.StdoutPipe(); err != nil {
+		return
+	}
+	if options.Stdout != "" {
+		if outFH, err = os.OpenFile(options.Stdout, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660); err != nil {
+			return
+		}
+		defer outFH.Close()
+	}
+
+	if e, err = cmd.StderrPipe(); err != nil {
+		return
+	}
+	if options.Stderr != "" {
+		if errFH, err = os.OpenFile(options.Stderr, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660); err != nil {
+			return
+		}
+		defer errFH.Close()
+	}
+
+	if err = cmd.Start(); err != nil {
+		err = fmt.Errorf("exe start error: %v", err)
+		return
+	}
+
+	if options.PidFile != "" {
+		if ee := os.WriteFile(options.PidFile, []byte(strconv.Itoa(cmd.Process.Pid)), 0644); ee != nil {
+			_, _ = errFH.WriteString(fmt.Sprintf("error writing pid file: %v - %v\n", options.PidFile, ee))
+		}
+	}
+
+	go func() {
+		so := bufio.NewScanner(o)
+		for so.Scan() {
+			if options.Stdout != "" {
+				_, _ = outFH.WriteString(so.Text() + "\n")
+			} else {
+				_, _ = os.Stdout.WriteString(CustomExeIndent + so.Text() + "\n")
+			}
+		}
+	}()
+
+	go func() {
+		se := bufio.NewScanner(e)
+		for se.Scan() {
+			if options.Stderr != "" {
+				_, _ = errFH.WriteString(se.Text() + "\n")
+			} else {
+				_, _ = os.Stderr.WriteString(CustomExeIndent + se.Text() + "\n")
+			}
+		}
+	}()
+
+	if err = cmd.Wait(); err != nil {
+		err = fmt.Errorf("exe wait error: %v", err)
+	}
+	return
+}
+
+func BackgroundWith(options *Options) (pid int, err error) {
+	cmd := exec.Command(options.Name, options.Argv...)
+	cmd.Dir = options.Path
+	cmd.Stdin = nil
+	cmd.Env = options.Environ
+
+	var o, e io.ReadCloser
+	var outFH, errFH *os.File
+
+	if options.Stdout != "" {
+		if o, err = cmd.StdoutPipe(); err != nil {
+			return
+		}
+		if outFH, err = os.OpenFile(options.Stdout, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660); err != nil {
+			return
+		}
+	}
+
+	if options.Stderr != "" {
+		if e, err = cmd.StderrPipe(); err != nil {
+			if outFH != nil {
+				_ = outFH.Close()
+			}
+			return
+		}
+		if errFH, err = os.OpenFile(options.Stderr, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660); err != nil {
+			if outFH != nil {
+				_ = outFH.Close()
+			}
+			return
+		}
+	}
+
+	if err = cmd.Start(); err != nil {
+		err = fmt.Errorf("exe start error: %v", err)
+		if outFH != nil {
+			_ = outFH.Close()
+		}
+		if errFH != nil {
+			_ = errFH.Close()
 		}
 		return
 	}
+
+	if options.PidFile != "" {
+		if ee := os.WriteFile(options.PidFile, []byte(strconv.Itoa(cmd.Process.Pid)), 0644); ee != nil {
+			_, _ = errFH.WriteString(fmt.Sprintf("error writing pid file: %v - %v\n", options.PidFile, ee))
+		}
+	}
+
+	if options.Stdout != "" {
+		go func() {
+			so := bufio.NewScanner(o)
+			for so.Scan() {
+				_, _ = outFH.WriteString(so.Text() + "\n")
+			}
+		}()
+	}
+
+	if options.Stderr != "" {
+		go func() {
+			se := bufio.NewScanner(e)
+			for se.Scan() {
+				_, _ = errFH.WriteString(se.Text() + "\n")
+			}
+		}()
+	}
+
+	pid = cmd.Process.Pid
+
+	go func() {
+		if err = cmd.Wait(); err != nil {
+			err = fmt.Errorf("exe wait error: %v", err)
+		}
+		if outFH != nil {
+			_ = outFH.Close()
+		}
+		if errFH != nil {
+			_ = errFH.Close()
+		}
+	}()
+	return
 }
