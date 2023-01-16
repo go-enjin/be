@@ -152,7 +152,9 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	// chi needs this for whatever reason, pages can catch before this
 	// so that it's really just a nop and chi actually does something with
 	// the middleware set
-	router.Get("/", e.Serve204)
+	router.Get("/", e.Serve404)
+	router.Put("/", e.Serve404)
+	router.Post("/", e.Serve404)
 
 	return
 }
