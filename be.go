@@ -26,6 +26,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"syscall"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -256,7 +257,7 @@ func (e *Enjin) startupHttpListener(listen string, port int, router *chi.Mux) (e
 	idleConnectionsClosed := make(chan struct{})
 	go func() {
 		sigint := make(chan os.Signal, 1)
-		signal.Notify(sigint, os.Interrupt)
+		signal.Notify(sigint, syscall.SIGINT, syscall.SIGTERM)
 		<-sigint
 		// We received an interrupt signal, shut down.
 		if ee := srv.Shutdown(context.Background()); ee != nil {
