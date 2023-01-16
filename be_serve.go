@@ -24,6 +24,7 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/net/serve"
 	"github.com/go-enjin/be/pkg/request/argv"
 	"github.com/go-enjin/be/pkg/types/site"
 
@@ -43,65 +44,31 @@ func (e *Enjin) ServeRedirect(destination string, w http.ResponseWriter, r *http
 }
 
 func (e *Enjin) Serve204(w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.WriteHeader(http.StatusNoContent)
-
-	// The request was successful and there is no content in the response
-	_, _ = w.Write([]byte("204 - " + printer.Sprintf("No Content")))
+	serve.Serve204(w, r)
 }
 
 func (e *Enjin) Serve401(w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.WriteHeader(http.StatusUnauthorized)
-
-	// The request was rejected due to being an Unauthorized user (or anonymous guest)
-	_, _ = w.Write([]byte("401 - " + printer.Sprintf("Unauthorized")))
+	serve.Serve401(w, r)
 }
 
 func (e *Enjin) ServeBasic401(w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.Header().Set("WWW-Authenticate", "Basic")
-	w.WriteHeader(http.StatusUnauthorized)
-	_, _ = w.Write([]byte("401 - " + printer.Sprintf("Unauthorized")))
+	serve.ServeBasic401(w, r)
 }
 
 func (e *Enjin) Serve403(w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.WriteHeader(http.StatusForbidden)
-
-	// The request was rejected due to being Forbidden to the user (or anonymous guest)
-	_, _ = w.Write([]byte("403 - " + printer.Sprintf("Forbidden")))
+	serve.Serve403(w, r)
 }
 
 func (e *Enjin) Serve404(w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.WriteHeader(http.StatusNotFound)
-
-	// The request was rejected due to the page requested not existing
-	_, _ = w.Write([]byte("404 - " + printer.Sprintf("Not Found")))
+	serve.Serve404(w, r)
 }
 
 func (e *Enjin) Serve405(w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.WriteHeader(http.StatusMethodNotAllowed)
-
-	// The request was rejected due to the method used bin not allowed
-	_, _ = w.Write([]byte("405 - " + printer.Sprintf("Method Not Allowed")))
+	serve.Serve405(w, r)
 }
 
 func (e *Enjin) Serve500(w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.WriteHeader(http.StatusInternalServerError)
-
-	// The request resulted in an internal server error
-	_, _ = w.Write([]byte("500 - " + printer.Sprintf("Internal Server Error")))
+	serve.Serve500(w, r)
 }
 
 func (e *Enjin) ServeNotFound(w http.ResponseWriter, r *http.Request) {
