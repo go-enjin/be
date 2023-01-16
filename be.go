@@ -214,7 +214,7 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 	}
 
 	if len(e.eb.enjins) == 0 {
-		return e.startupHttpListener(e.listen, e.port, e.router)
+		return e.startupRoutedHttpListener(e.listen, e.port, e.router)
 	}
 
 	hr := hostrouter.New()
@@ -246,10 +246,19 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 
 	root := chi.NewRouter()
 	root.Mount("/", hr)
-	return e.startupHttpListener(e.listen, e.port, root)
+	return e.startupRoutedHttpListener(e.listen, e.port, root)
 }
 
-func (e *Enjin) startupHttpListener(listen string, port int, router *chi.Mux) (err error) {
+func (e *Enjin) startupRoutedHttpListener(listen string, port int, router *chi.Mux) (err error) {
+	err = e.startupHandledHttpListener(listen, port, gzip.DefaultHandler().WrapHandler(router))
+	return
+}
+
+func (e *Enjin) startupHandledHttpListener(listen string, port int, handler http.Handler) (err error) {
+	return startupHandledHttpListener(listen, port, handler, e)
+}
+
+func startupHandledHttpListener(listen string, port int, handler http.Handler, e feature.EnjinRunner) (err error) {
 	e.Notify("web process startup")
 	log.DebugF("web process info:\n%v", e.StartupString())
 
@@ -270,7 +279,7 @@ func (e *Enjin) startupHttpListener(listen string, port int, router *chi.Mux) (e
 	}()
 
 	srv.Addr = fmt.Sprintf("%s:%d", listen, port)
-	srv.Handler = gzip.DefaultHandler().WrapHandler(router)
+	srv.Handler = handler
 	if err = srv.ListenAndServe(); err != http.ErrServerClosed {
 		// Error starting or closing listener:
 		log.ErrorF("unexpected error listening and serving http: %v", err)
