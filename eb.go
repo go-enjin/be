@@ -40,7 +40,7 @@ import (
 	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
-var _ feature.Builder = &EnjinBuilder{}
+var _ feature.Builder = (*EnjinBuilder)(nil)
 
 type htmlHeadTag struct {
 	name string
@@ -143,6 +143,7 @@ func (eb *EnjinBuilder) prepareBuild() {
 		log.FatalDF(2, "missing .SiteName")
 	}
 	eb.Set("SiteName", eb.name)
+
 	if eb.copyrightName != "" {
 		eb.Set("CopyrightName", eb.copyrightName)
 	}
