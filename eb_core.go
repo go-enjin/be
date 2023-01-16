@@ -17,7 +17,6 @@ package be
 import (
 	"fmt"
 
-	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
@@ -80,18 +79,12 @@ func (eb *EnjinBuilder) AddCommands(commands ...*cli.Command) feature.Builder {
 }
 
 func (eb *EnjinBuilder) MakeEnvKey(name string) (key string) {
-	key = name
-	if globals.EnvPrefix != "" {
-		key = globals.EnvPrefix + "_" + name
-	}
-	key = strcase.ToScreamingSnake(key)
+	key = globals.MakeEnvKey(name)
 	return
 }
 
 func (eb *EnjinBuilder) MakeEnvKeys(names ...string) (keys []string) {
-	for _, name := range names {
-		keys = append(keys, eb.MakeEnvKey(name))
-	}
+	keys = globals.MakeEnvKeys(names...)
 	return
 }
 
