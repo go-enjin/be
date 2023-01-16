@@ -165,7 +165,7 @@ func (e *Enjin) SetupRootEnjin(ctx *cli.Context) (err error) {
 	if domains := ctx.StringSlice("domain"); domains != nil && len(domains) > 0 {
 		for _, domain := range domains {
 			if domain != "" && !beStrings.StringInStrings(domain, e.eb.domains...) {
-				e.eb.domains = append(e.eb.domains, domains...)
+				e.eb.domains = append(e.eb.domains, domain)
 			}
 		}
 	}
