@@ -112,6 +112,10 @@ func (e *Enjin) action(ctx *cli.Context) (err error) {
 		return
 	}
 
+	if err = e.startupFeatures(ctx); err != nil {
+		return
+	}
+
 	if err = e.startupRootService(ctx); err != nil && err.Error() == "http: Server closed" {
 		err = nil
 	}
@@ -203,10 +207,6 @@ func (e *Enjin) startupFeatures(ctx *cli.Context) (err error) {
 }
 
 func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
-
-	if err = e.startupFeatures(ctx); err != nil {
-		return
-	}
 
 	e.router = chi.NewRouter()
 	if err = e.setupRouter(e.router); err != nil {
