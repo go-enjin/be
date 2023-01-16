@@ -123,10 +123,6 @@ func (e *Enjin) Self() (self interface{}) {
 }
 
 func (e *Enjin) SetupRootEnjin(ctx *cli.Context) (err error) {
-	if len(e.eb.theming) == 0 {
-		err = fmt.Errorf("builder error: at least one theme is required")
-		return
-	}
 
 	e.port = ctx.Int("port")
 	e.listen = ctx.String("listen")
@@ -154,6 +150,11 @@ func (e *Enjin) SetupRootEnjin(ctx *cli.Context) (err error) {
 			log.Config.LogLevel = log.LevelWarn
 			log.Config.Apply()
 		}
+	}
+
+	if len(e.eb.theming) == 0 {
+		err = fmt.Errorf("builder error: at least one theme is required")
+		return
 	}
 
 	middleware.DefaultLogger = func(next http.Handler) http.Handler {
