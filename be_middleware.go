@@ -128,7 +128,7 @@ func (e *Enjin) langMiddleware(next http.Handler) http.Handler {
 				e.Serve404(w, r) // specifically not ServeNotFound()
 				return
 			} else if !e.SiteSupportsLanguage(requested) {
-				log.WarnF("%v language not supported, using default: %v", requested, defaultTag)
+				log.DebugF("%v language not supported, using default: %v", requested, defaultTag)
 				requested = defaultTag
 				reqPath = urlPath
 			}
