@@ -19,6 +19,7 @@ package public
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"sort"
 
 	"github.com/fvbommel/sortorder"
@@ -53,12 +54,15 @@ type CFeature struct {
 	setup   map[string]string
 	mounted map[string]beFs.FileSystem
 
+	dirIndex string
+
 	cacheControl string
 }
 
 type MakeFeature interface {
 	MountPath(mount, path string) MakeFeature
 	SetCacheControl(values string) MakeFeature
+	UseDirIndex(indexFileName string) MakeFeature
 
 	Make() Feature
 }
@@ -76,6 +80,11 @@ func (f *CFeature) MountPath(mount, path string) MakeFeature {
 
 func (f *CFeature) SetCacheControl(values string) MakeFeature {
 	f.cacheControl = values
+	return f
+}
+
+func (f *CFeature) UseDirIndex(indexFileName string) MakeFeature {
+	f.dirIndex = filepath.Base(indexFileName)
 	return f
 }
 
@@ -117,26 +126,55 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
+func (f *CFeature) checkAndServeData(m, path string, s feature.System, w http.ResponseWriter, r *http.Request) (served bool) {
+	if data, mime, filePath, ok := beFs.CheckForFileData(f.mounted[m], path, m); ok {
+		if f.cacheControl == "" && DefaultCacheControl != "" {
+			w.Header().Set("Cache-Control", DefaultCacheControl)
+		} else if f.cacheControl != "" {
+			w.Header().Set("Cache-Control", f.cacheControl)
+		}
+		s.ServeData(data, mime, w, r)
+		log.DebugF("served local %v public: %v (%v)", m, filePath, mime)
+		served = true
+		return
+	}
+	return
+}
+
+func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWriter, r *http.Request) (err error) {
 	mounts := f.listMountPoints()
+	if len(path) > 1 {
+		for _, m := range mounts {
+			if f.checkAndServeData(m, path, s, w, r) {
+				return
+			}
+		}
+	}
+	if f.dirIndex != "" {
+		indexPath := filepath.Join(path, f.dirIndex)
+		if indexPath[0] == '/' {
+			indexPath = "." + indexPath
+		}
+		for _, m := range mounts {
+			if f.mounted[m].Exists(indexPath) {
+				if f.checkAndServeData(m, indexPath, s, w, r) {
+					return
+				}
+			}
+		}
+	}
+	err = fmt.Errorf("path not found")
+	return
+}
+
+func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 	log.DebugF("including local public middleware: %v", f.listMountPaths())
 	return func(next http.Handler) (this http.Handler) {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			path := bePath.TrimSlash(r.URL.Path)
 			path = forms.TrimQueryParams(path)
-			if len(path) > 1 {
-				for _, m := range mounts {
-					if data, mime, filePath, ok := beFs.CheckForFileData(f.mounted[m], path, m); ok {
-						if f.cacheControl == "" && DefaultCacheControl != "" {
-							w.Header().Set("Cache-Control", DefaultCacheControl)
-						} else if f.cacheControl != "" {
-							w.Header().Set("Cache-Control", f.cacheControl)
-						}
-						s.ServeData(data, mime, w, r)
-						log.DebugF("served local %v public: %v (%v)", m, filePath, mime)
-						return
-					}
-				}
+			if err := f.ServePath(path, s, w, r); err == nil {
+				return
 			}
 			// log.DebugF("not local public: %v", path)
 			next.ServeHTTP(w, r)
