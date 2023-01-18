@@ -24,18 +24,13 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 )
 
-type entry struct {
-	value   string
-	expires time.Time
-}
-
 type registry struct {
 	nonce map[string]map[string]time.Time
 
 	sync.RWMutex
 }
 
-var _known = registry{
+var _known = &registry{
 	nonce: make(map[string]map[string]time.Time),
 }
 
@@ -52,6 +47,8 @@ func randomValue() (value string) {
 }
 
 func (r *registry) expire() {
+	r.Lock()
+	defer r.Unlock()
 	now := time.Now()
 	prune := make(map[string][]string)
 	for key, values := range r.nonce {
@@ -86,6 +83,7 @@ func (r *registry) verify(key, value string) (valid bool) {
 func (r *registry) get(key string) (value string) {
 	r.expire()
 	r.Lock()
+	defer r.Unlock()
 	var ok bool
 	var values map[string]time.Time
 	if values, ok = r.nonce[key]; !ok {
@@ -94,7 +92,6 @@ func (r *registry) get(key string) (value string) {
 	}
 	value = randomValue()
 	r.nonce[key][value] = time.Now().Add(time.Hour)
-	r.Unlock()
 	return
 }
 
