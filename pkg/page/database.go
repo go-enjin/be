@@ -65,19 +65,17 @@ func (t *Table) Get(path string) (p *Page, err error) {
 		return
 	}
 
-	p.Initial = context.New()
-	p.Initial.Set("Url", p.Url)
-	p.Initial.Set("Slug", p.Slug)
-	p.Initial.Set("Title", p.Title)
-	p.Initial.Set("Format", p.Format)
-	p.Initial.Set("Summary", p.Summary)
-	p.Initial.Set("Description", p.Description)
-	p.Initial.Set("Archetype", p.Archetype)
-	p.Initial.Set("Section", p.Section)
-	p.Initial.Set("Content", p.Content)
-	p.Initial.Set("Language", p.Language)
-
 	p.Context = context.New()
+	p.Context.Set("Url", p.Url)
+	p.Context.Set("Slug", p.Slug)
+	p.Context.Set("Title", p.Title)
+	p.Context.Set("Format", p.Format)
+	p.Context.Set("Summary", p.Summary)
+	p.Context.Set("Description", p.Description)
+	p.Context.Set("Archetype", p.Archetype)
+	p.Context.Set("Section", p.Section)
+	p.Context.Set("Content", p.Content)
+	p.Context.Set("Language", p.Language)
 
 	frontMatter, _, frontMatterType := ParseFrontMatterContent(p.FrontMatter)
 	switch frontMatterType {
@@ -100,7 +98,7 @@ func (t *Table) Get(path string) (p *Page, err error) {
 			p.parseContext(ctx)
 		}
 	default:
-		p.parseContext(p.Initial)
+		p.parseContext(p.Context)
 	}
 
 	// log.DebugF("%v page.Table got: %v", t.Name, p)
