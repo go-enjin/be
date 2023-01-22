@@ -79,3 +79,11 @@ func Serve500(w http.ResponseWriter, r *http.Request) {
 	// The request resulted in an internal server error
 	_, _ = w.Write([]byte("500 - " + printer.Sprintf("Internal Server Error")))
 }
+
+func Serve503(w http.ResponseWriter, r *http.Request) {
+	printer := lang.GetPrinterFromRequest(r)
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusServiceUnavailable)
+	// The request resulted in a service unavailable error
+	_, _ = w.Write([]byte("503 - " + printer.Sprintf("Service Unavailable")))
+}
