@@ -146,7 +146,7 @@ func ExeWith(options *Options) (err error) {
 	}
 
 	if err = cmd.Start(); err != nil {
-		err = fmt.Errorf("exe start error: %v", err)
+		err = fmt.Errorf("CMD - %v", err)
 		return
 	}
 
@@ -179,7 +179,7 @@ func ExeWith(options *Options) (err error) {
 	}()
 
 	if err = cmd.Wait(); err != nil {
-		err = fmt.Errorf("exe wait error: %v", err)
+		err = fmt.Errorf("CMD - %v", err)
 	}
 	return
 }
@@ -212,7 +212,7 @@ func BackgroundWith(options *Options) (pid int, err error) {
 	}
 
 	if err = cmd.Start(); err != nil {
-		err = fmt.Errorf("exe start error: %v", err)
+		err = fmt.Errorf("CMD - %v", err)
 		return
 	}
 
@@ -244,7 +244,7 @@ func BackgroundWith(options *Options) (pid int, err error) {
 
 	go func() {
 		if err = cmd.Wait(); err != nil {
-			err = fmt.Errorf("exe wait error: %v", err)
+			_, _ = errFH.WriteString(fmt.Sprintf("CMD - %v\n", err))
 		}
 	}()
 	return
