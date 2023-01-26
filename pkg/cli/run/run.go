@@ -23,6 +23,7 @@ import (
 	"os/exec"
 	"strconv"
 
+	"github.com/go-enjin/be/pkg/log/filelogwriter"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -124,26 +125,24 @@ func ExeWith(options *Options) (err error) {
 	cmd.Env = options.Environ
 
 	var o, e io.ReadCloser
-	var outFH, errFH *os.File
+	var outFH, errFH *filelogwriter.FileLogWriter
 
 	if o, err = cmd.StdoutPipe(); err != nil {
 		return
 	}
 	if options.Stdout != "" {
-		if outFH, err = os.OpenFile(options.Stdout, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660); err != nil {
+		if outFH, err = filelogwriter.NewFileLogWriter(options.Stdout); err != nil {
 			return
 		}
-		defer outFH.Close()
 	}
 
 	if e, err = cmd.StderrPipe(); err != nil {
 		return
 	}
 	if options.Stderr != "" {
-		if errFH, err = os.OpenFile(options.Stderr, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660); err != nil {
+		if errFH, err = filelogwriter.NewFileLogWriter(options.Stderr); err != nil {
 			return
 		}
-		defer errFH.Close()
 	}
 
 	if err = cmd.Start(); err != nil {
@@ -192,40 +191,28 @@ func BackgroundWith(options *Options) (pid int, err error) {
 	cmd.Env = options.Environ
 
 	var o, e io.ReadCloser
-	var outFH, errFH *os.File
+	var outFH, errFH *filelogwriter.FileLogWriter
 
 	if options.Stdout != "" {
 		if o, err = cmd.StdoutPipe(); err != nil {
 			return
 		}
-		if outFH, err = os.OpenFile(options.Stdout, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660); err != nil {
+		if outFH, err = filelogwriter.NewFileLogWriter(options.Stdout); err != nil {
 			return
 		}
 	}
 
 	if options.Stderr != "" {
 		if e, err = cmd.StderrPipe(); err != nil {
-			if outFH != nil {
-				_ = outFH.Close()
-			}
 			return
 		}
-		if errFH, err = os.OpenFile(options.Stderr, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660); err != nil {
-			if outFH != nil {
-				_ = outFH.Close()
-			}
+		if errFH, err = filelogwriter.NewFileLogWriter(options.Stderr); err != nil {
 			return
 		}
 	}
 
 	if err = cmd.Start(); err != nil {
 		err = fmt.Errorf("exe start error: %v", err)
-		if outFH != nil {
-			_ = outFH.Close()
-		}
-		if errFH != nil {
-			_ = errFH.Close()
-		}
 		return
 	}
 
@@ -258,12 +245,6 @@ func BackgroundWith(options *Options) (pid int, err error) {
 	go func() {
 		if err = cmd.Wait(); err != nil {
 			err = fmt.Errorf("exe wait error: %v", err)
-		}
-		if outFH != nil {
-			_ = outFH.Close()
-		}
-		if errFH != nil {
-			_ = errFH.Close()
 		}
 	}()
 	return
