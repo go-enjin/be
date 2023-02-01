@@ -109,7 +109,7 @@ func ParseFrontMatterContent(raw string) (matter, content string, matterType Fro
 
 func (p *Page) parseContext(ctx context.Context) {
 	ctx.CamelizeKeys()
-	ctx.DeleteKeys("Path", "Section", "Slug", "Content", "Format")
+	ctx.DeleteKeys("Path", "Section", "Slug", "Content")
 
 	p.Type = ctx.String("Type", "page")
 
@@ -165,6 +165,9 @@ func (p *Page) parseContext(ctx context.Context) {
 
 	p.Archetype = ctx.String("Archetype", p.Archetype)
 	ctx.Set("Archetype", p.Archetype)
+	if format := ctx.String("Format", ""); format != "" {
+		p.Format = format
+	}
 
 	// context content is not "source" content, do not populate "from" context,
 	// only set it so that it's current
