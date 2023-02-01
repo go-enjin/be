@@ -43,40 +43,54 @@ const (
 )
 
 var (
+	// Statement Lexer and Parser
+	stmntLexer  *lexer.StatefulDefinition
+	stmntParser *participle.Parser[Statement]
+
+	// Selection Lexer and Parser
+	selLexer  *lexer.StatefulDefinition
+	selParser *participle.Parser[Selection]
+)
+
+func init() {
+	stmntLexer = lexer.MustSimple([]lexer.SimpleRule{
+		{Name: `Keyword`, Pattern: `(?i)\b(BY|ORDER|LIMIT|OFFSET|TRUE|FALSE|NULL|IS|NOT|AND|OR|IN|ASC|DSC|DESC)\b`},
+		{Name: `Ident`, Pattern: Ident},
+		{Name: `Int`, Pattern: Int},
+		{Name: `Float`, Pattern: Float},
+		{Name: `Number`, Pattern: Number},
+		{Name: `String`, Pattern: String},
+		{Name: `Regexp`, Pattern: Regexp},
+		{Name: `Operators`, Pattern: Operators},
+		{Name: `whitespace`, Pattern: Whitespace},
+	})
 	stmntParser = participle.MustBuild[Statement](
-		participle.Lexer(lexer.MustSimple([]lexer.SimpleRule{
-			{`Keyword`, `(?i)\b(BY|ORDER|LIMIT|OFFSET|TRUE|FALSE|NULL|IS|NOT|AND|OR|IN|ASC|DSC|DESC)\b`},
-			{`Ident`, Ident},
-			{`Int`, Int},
-			{`Float`, Float},
-			{`Number`, Number},
-			{`String`, String},
-			{`Regexp`, Regexp},
-			{`Operators`, Operators},
-			{`whitespace`, Whitespace},
-		})),
+		participle.Lexer(stmntLexer),
 		// UnquoteRegexp("Regexp"),
 		// participle.Unquote("String"),
 		participle.CaseInsensitive("Keyword"),
+		// participle.UseLookahead(2),
 	)
 
+	selLexer = lexer.MustSimple([]lexer.SimpleRule{
+		{Name: `Keyword`, Pattern: `(?i)\b(SELECT|COUNT|RANDOM|DISTINCT|WITHIN|BY|ORDER|LIMIT|OFFSET|TRUE|FALSE|NULL|IS|NOT|AND|OR|IN|ASC|DSC|DESC)\b`},
+		{Name: `Ident`, Pattern: Ident},
+		{Name: `Int`, Pattern: Int},
+		{Name: `Float`, Pattern: Float},
+		{Name: `Number`, Pattern: Number},
+		{Name: `String`, Pattern: String},
+		{Name: `Regexp`, Pattern: Regexp},
+		{Name: `Operators`, Pattern: Operators},
+		{Name: `whitespace`, Pattern: Whitespace},
+	})
 	selParser = participle.MustBuild[Selection](
-		participle.Lexer(lexer.MustSimple([]lexer.SimpleRule{
-			{`Keyword`, `(?i)\b(SELECT|COUNT|RANDOM|DISTINCT|WITHIN|BY|ORDER|LIMIT|OFFSET|TRUE|FALSE|NULL|IS|NOT|AND|OR|IN|ASC|DSC|DESC)\b`},
-			{`Ident`, Ident},
-			{`Int`, Int},
-			{`Float`, Float},
-			{`Number`, Number},
-			{`String`, String},
-			{`Regexp`, Regexp},
-			{`Operators`, Operators},
-			{`whitespace`, Whitespace},
-		})),
+		participle.Lexer(selLexer),
 		// UnquoteRegexp("Regexp"),
 		// participle.Unquote("String"),
 		participle.CaseInsensitive("Keyword"),
+		// participle.UseLookahead(2),
 	)
-)
+}
 
 func SanitizeQuery(query string) (sanitized string) {
 	sanitized = strings.TrimSpace(query)
