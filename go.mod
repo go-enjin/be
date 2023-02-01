@@ -1,9 +1,9 @@
 module github.com/go-enjin/be
 
-go 1.18
+go 1.19
 
 require (
-	github.com/BurntSushi/toml v1.2.0
+	github.com/BurntSushi/toml v1.2.1
 	github.com/abbot/go-http-auth v0.4.0
 	github.com/alecthomas/participle/v2 v2.0.0-beta.5
 	github.com/blevesearch/bleve/v2 v2.3.4
@@ -32,7 +32,7 @@ require (
 	github.com/tdewolff/minify/v2 v2.12.0
 	github.com/tg123/go-htpasswd v1.2.0
 	github.com/tidwall/buntdb v1.2.10
-	github.com/urfave/cli/v2 v2.19.2
+	github.com/urfave/cli/v2 v2.24.2
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	github.com/yookoala/gofast v0.7.0
 	github.com/yookoala/realpath v1.0.0
@@ -49,6 +49,7 @@ require (
 require (
 	github.com/GehirnInc/crypt v0.0.0-20200316065508-bb7000b8a962 // indirect
 	github.com/RoaringBitmap/roaring v0.9.4 // indirect
+	github.com/alecthomas/repr v0.2.0 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/bits-and-blooms/bitset v1.2.0 // indirect
