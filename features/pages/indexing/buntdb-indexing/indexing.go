@@ -216,7 +216,7 @@ func (f *CFeature) GetPageContextValueStubs(key string) (valueStubs map[interfac
 			ok = true
 			return
 		}); err != nil {
-			err = fmt.Errorf("error ascending pattern: %v - %v", err)
+			err = fmt.Errorf("error ascending pattern: %v - %v", valueStubsPattern, err)
 			return
 		}
 		return
