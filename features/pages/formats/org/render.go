@@ -31,7 +31,6 @@ func (f *CFeature) RenderOrgMode(content string) (rendered string, err error) {
 		}
 	}
 	if rendered, err = orgConfig.Parse(input, "./").Write(org.NewHTMLWriter()); err != nil {
-		err = err
 		return
 	}
 	return
