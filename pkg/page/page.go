@@ -77,9 +77,8 @@ func NewFromFile(path, file string, formats types.FormatProvider) (p *Page, err 
 		err = fmt.Errorf("not a file: %v", file)
 		return
 	}
-	path = bePath.CleanWithSlash(forms.TrimQueryParams(path))
 	var contents []byte
-	if contents, err = bePath.ReadFile(path); err != nil {
+	if contents, err = bePath.ReadFile(file); err != nil {
 		return
 	}
 	var created, updated int64
