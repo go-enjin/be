@@ -16,6 +16,7 @@ package pageql
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -32,8 +33,10 @@ func newParseError(query string, participleError error) (e *ParseError) {
 		return
 	}
 	e = &ParseError{
-		err:   participleError,
-		Query: query,
+		err:     participleError,
+		Query:   query,
+		Column:  -1,
+		Message: "",
 	}
 	if parts := strings.Split(e.err.Error(), ":"); len(parts) == 4 {
 		var sCol, sMsg = parts[2], strings.TrimSpace(parts[3])
@@ -53,7 +56,12 @@ func (e *ParseError) Error() (msg string) {
 }
 
 func (e *ParseError) Pretty() (refined string) {
-	indent := strings.Repeat(" ", e.Column-1)
+	if e.Column == -1 {
+		refined = fmt.Sprintf("internal error: %v", e.err.Error())
+		return
+	}
+	col := int(math.Max(float64(e.Column-1), 0))
+	indent := strings.Repeat(" ", col)
 	message := fmt.Sprintf("error: %v", e.Message)
 	refined = fmt.Sprintf("%v\n%v^- %v\n", e.Query, indent, message)
 	return
