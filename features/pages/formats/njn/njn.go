@@ -368,7 +368,7 @@ func (f *CFeature) IndexDocument(p interface{}) (out interface{}, err error) {
 	var rendered string
 	if strings.HasSuffix(pg.Format, ".tmpl") {
 		var buf bytes.Buffer
-		if tt, e := textTemplate.New("content.njn.text").Funcs(theme.DefaultFuncMap()).Parse(pg.Content); e != nil {
+		if tt, e := textTemplate.New("content.njn.text").Funcs(textTemplate.FuncMap(theme.DefaultFuncMap())).Parse(pg.Content); e != nil {
 			err = fmt.Errorf("error parsing template: %v", e)
 			return
 		} else if e = tt.Execute(&buf, pg.Context); e != nil {
