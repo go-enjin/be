@@ -1,11 +1,11 @@
 module github.com/go-enjin/be
 
-go 1.19
+go 1.18
 
 require (
 	github.com/BurntSushi/toml v1.2.1
 	github.com/abbot/go-http-auth v0.4.0
-	github.com/alecthomas/participle/v2 v2.0.0-beta.5.0.20221205101428-1f05da7649a8
+	github.com/alecthomas/participle/v2 v2.0.0-beta.1
 	github.com/blevesearch/bleve/v2 v2.3.4
 	github.com/felixge/httpsnoop v1.0.3
 	github.com/fvbommel/sortorder v1.0.2
@@ -49,7 +49,6 @@ require (
 require (
 	github.com/GehirnInc/crypt v0.0.0-20200316065508-bb7000b8a962 // indirect
 	github.com/RoaringBitmap/roaring v0.9.4 // indirect
-	github.com/alecthomas/repr v0.2.0 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/bits-and-blooms/bitset v1.2.0 // indirect
