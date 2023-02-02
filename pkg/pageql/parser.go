@@ -38,59 +38,51 @@ const (
 	Number     = `[-+]?\d*\.?\d+([eE][-+]?\d+)?`
 	String     = `'[^']*'|"[^"]*"`
 	Regexp     = `/(.+?)/|\!(.+?)\!|\@(.+?)\@|\~(.+?)\~`
-	Operators  = `==|=~|!=|!~|[.,()]`
+	Operators  = `==|=\~|\!=|\!\~|[.,()]`
 	Whitespace = `\s+`
 )
 
 var (
 	// Statement Lexer and Parser
-	stmntLexer  *lexer.StatefulDefinition
-	stmntParser *participle.Parser[Statement]
-
-	// Selection Lexer and Parser
-	selLexer  *lexer.StatefulDefinition
-	selParser *participle.Parser[Selection]
-)
-
-func init() {
 	stmntLexer = lexer.MustSimple([]lexer.SimpleRule{
 		{Name: `Keyword`, Pattern: `(?i)\b(BY|ORDER|LIMIT|OFFSET|TRUE|FALSE|NULL|IS|NOT|AND|OR|IN|ASC|DSC|DESC)\b`},
 		{Name: `Ident`, Pattern: Ident},
-		{Name: `Int`, Pattern: Int},
-		{Name: `Float`, Pattern: Float},
 		{Name: `Number`, Pattern: Number},
+		{Name: `Float`, Pattern: Float},
+		{Name: `Int`, Pattern: Int},
 		{Name: `String`, Pattern: String},
 		{Name: `Regexp`, Pattern: Regexp},
 		{Name: `Operators`, Pattern: Operators},
 		{Name: `whitespace`, Pattern: Whitespace},
 	})
-	stmntParser = participle.MustBuild[Statement](
+	stmntParser = participle.MustBuild(
+		&Statement{},
 		participle.Lexer(stmntLexer),
 		// UnquoteRegexp("Regexp"),
 		// participle.Unquote("String"),
 		participle.CaseInsensitive("Keyword"),
-		// participle.UseLookahead(2),
 	)
 
+	// Selection Lexer and Parser
 	selLexer = lexer.MustSimple([]lexer.SimpleRule{
 		{Name: `Keyword`, Pattern: `(?i)\b(SELECT|COUNT|RANDOM|DISTINCT|WITHIN|BY|ORDER|LIMIT|OFFSET|TRUE|FALSE|NULL|IS|NOT|AND|OR|IN|ASC|DSC|DESC)\b`},
 		{Name: `Ident`, Pattern: Ident},
-		{Name: `Int`, Pattern: Int},
-		{Name: `Float`, Pattern: Float},
 		{Name: `Number`, Pattern: Number},
+		{Name: `Float`, Pattern: Float},
+		{Name: `Int`, Pattern: Number},
 		{Name: `String`, Pattern: String},
 		{Name: `Regexp`, Pattern: Regexp},
 		{Name: `Operators`, Pattern: Operators},
 		{Name: `whitespace`, Pattern: Whitespace},
 	})
-	selParser = participle.MustBuild[Selection](
+	selParser = participle.MustBuild(
+		&Selection{},
 		participle.Lexer(selLexer),
 		// UnquoteRegexp("Regexp"),
 		// participle.Unquote("String"),
 		participle.CaseInsensitive("Keyword"),
-		// participle.UseLookahead(2),
 	)
-}
+)
 
 func SanitizeQuery(query string) (sanitized string) {
 	sanitized = strings.TrimSpace(query)
@@ -100,8 +92,9 @@ func SanitizeQuery(query string) (sanitized string) {
 func parseQueryString(query string) (stmnt *Statement, err *ParseError) {
 	query = SanitizeQuery(query)
 
+	stmnt = &Statement{}
 	var participleError error
-	if stmnt, participleError = stmntParser.ParseString("pageql", query); participleError != nil {
+	if participleError = stmntParser.ParseString("pageql", query, stmnt); participleError != nil && participleError.Error() != "" {
 		err = newParseError(query, participleError)
 		return
 	}
@@ -145,8 +138,9 @@ func parseQueryString(query string) (stmnt *Statement, err *ParseError) {
 func parseSelectString(query string) (sel *Selection, err *ParseError) {
 	query = SanitizeQuery(query)
 
+	sel = &Selection{}
 	var participleError error
-	if sel, participleError = selParser.ParseString("pageql", query); participleError != nil {
+	if participleError = selParser.ParseString("pageql", query, sel); participleError != nil {
 		err = newParseError(query, participleError)
 		return
 	}
