@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/BurntSushi/toml v1.2.1
 	github.com/abbot/go-http-auth v0.4.0
-	github.com/alecthomas/participle/v2 v2.0.0-beta.5
+	github.com/alecthomas/participle/v2 v2.0.0-beta.5.0.20221205101428-1f05da7649a8
 	github.com/blevesearch/bleve/v2 v2.3.4
 	github.com/felixge/httpsnoop v1.0.3
 	github.com/fvbommel/sortorder v1.0.2
