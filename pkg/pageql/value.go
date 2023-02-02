@@ -17,14 +17,12 @@ package pageql
 import "fmt"
 
 type Value struct {
-	ContextKey *string `parser:"  ( '.' @Ident )" json:"context-key,omitempty"`
-	Regexp     *string `parser:"| ( 'm' @Regexp )" json:"regexp,omitempty"`
-	String     *string `parser:"| ( @String )" json:"string,omitempty"`
-
-	// Regexp *string `parser:"| ( 'm' '/' @(~'/')+ '/' ) | ( 'm' '!' @(~'!')+ '!' )" json:"regexp,omitempty"`
-	// Number        *float64   `parser:"| @Float | @Int" json:"number,omitempty"`
-	// Bool          *string     `parser:"| ( @'true' | 'false' )" json:"bool,omitempty"`
-	// Nil           bool        `parser:"| @'nil'" json:"nil,omitempty"`
+	ContextKey *string  `parser:"  ( '.' @Ident )" json:"context-key,omitempty"`
+	Regexp     *string  `parser:"| ( 'm' @Regexp )" json:"regexp,omitempty"`
+	String     *string  `parser:"| ( @String )" json:"string,omitempty"`
+	Number     *float64 `parser:"| ( @Number )" json:"number,omitempty"`
+	Bool       *Boolean `parser:"| @( 'true' | 'false' )" json:"bool,omitempty"`
+	Nil        *Nil     `parser:"| @( 'nil' )" json:"nil,omitempty"`
 }
 
 func (v *Value) Render() (clone *Value) {
@@ -42,6 +40,18 @@ func (v *Value) Render() (clone *Value) {
 		text := *v.String
 		text, _ = UnquoteString(text)
 		clone.String = &text
+	}
+	if v.Number != nil {
+		num := *v.Number
+		clone.Number = &num
+	}
+	if v.Bool != nil {
+		bl := *v.Bool
+		clone.Bool = &bl
+	}
+	if v.Nil != nil {
+		nl := *v.Nil
+		clone.Nil = &nl
 	}
 	return
 }

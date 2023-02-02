@@ -72,6 +72,12 @@ func (s *Statement) String() (query string) {
 				right = *expr.Operation.Right.String
 			case expr.Operation.Right.Regexp != nil:
 				right = "m" + *expr.Operation.Right.Regexp
+			case expr.Operation.Right.Number != nil:
+				right = fmt.Sprintf("%v", *expr.Operation.Right.Number)
+			case expr.Operation.Right.Bool != nil:
+				right = fmt.Sprintf("%v", *expr.Operation.Right.Bool)
+			case expr.Operation.Right.Nil != nil:
+				right = "nil"
 			}
 			query += fmt.Sprintf("(.%s %s %s)", *expr.Operation.Left, expr.Operation.Type, right)
 
