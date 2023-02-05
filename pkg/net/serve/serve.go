@@ -80,6 +80,14 @@ func Serve500(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("500 - " + printer.Sprintf("Internal Server Error")))
 }
 
+func Serve502(w http.ResponseWriter, r *http.Request) {
+	printer := lang.GetPrinterFromRequest(r)
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusBadGateway)
+	// The request resulted in a bad gateway error
+	_, _ = w.Write([]byte("502 - " + printer.Sprintf("Bad Gateway")))
+}
+
 func Serve503(w http.ResponseWriter, r *http.Request) {
 	printer := lang.GetPrinterFromRequest(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
