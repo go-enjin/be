@@ -138,6 +138,26 @@ func IsDir(path string) bool {
 	return false
 }
 
+// List returns a list of directories and files, sorted in natural order with
+// directories grouped before files
+func List(path string) (paths []string, err error) {
+	var d, f []string
+	var entries []os.DirEntry
+	if entries, err = os.ReadDir(path); err == nil {
+		for _, info := range entries {
+			if info.IsDir() {
+				d = append(d, filepath.Clean(filepath.Join(path, info.Name())))
+			} else {
+				f = append(f, filepath.Clean(filepath.Join(path, info.Name())))
+			}
+		}
+	}
+	sort.Sort(sortorder.Natural(d))
+	sort.Sort(sortorder.Natural(f))
+	paths = append(d, f...)
+	return
+}
+
 func ListDirs(path string) (paths []string, err error) {
 	var entries []os.DirEntry
 	if entries, err = os.ReadDir(path); err == nil {
