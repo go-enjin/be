@@ -25,6 +25,7 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/features/pages/formats"
 	beCli "github.com/go-enjin/be/pkg/cli"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
@@ -172,6 +173,16 @@ func (eb *EnjinBuilder) prepareBuild() {
 			eb.theme = k
 			break
 		}
+	}
+
+	var hasFormatProvider bool
+	for _, f := range eb.features {
+		if _, hasFormatProvider = f.(types.FormatProvider); hasFormatProvider {
+			break
+		}
+	}
+	if !hasFormatProvider {
+		eb.AddFeature(formats.New().Make())
 	}
 
 	for _, t := range eb.theming {
