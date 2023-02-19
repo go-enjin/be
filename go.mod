@@ -12,7 +12,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.1
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/hostrouter v0.2.0
-	github.com/go-curses/cdk v0.5.13
+	github.com/go-curses/cdk v0.5.14
 	github.com/go-enjin/github-com-djherbis-times v0.0.0-20221101184323-aeef8854ee8a
 	github.com/go-enjin/golang-org-x-text v0.0.0-20221026190533-d0e9c4fd3b27
 	github.com/goccy/go-json v0.9.11
@@ -128,7 +128,7 @@ require (
 
 require (
 	github.com/gin-gonic/gin v1.8.1 // indirect
-	github.com/go-curses/ctk v0.5.4
+	github.com/go-curses/ctk v0.5.5
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
 	github.com/jackc/pgx/v4 v4.17.2 // indirect
 	github.com/klauspost/compress v1.15.11 // indirect
