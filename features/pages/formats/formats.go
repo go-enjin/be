@@ -81,6 +81,9 @@ func (f *CFeature) AddFormat(formats ...types.Format) MakeFeature {
 }
 
 func (f *CFeature) Make() Feature {
+	if len(f.formats) == 0 {
+		f.AddFormat(tmpl.New().Make())
+	}
 	return f
 }
 
