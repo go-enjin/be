@@ -227,8 +227,8 @@ func (p *Page) SetFormat(filepath string) (path string) {
 		p.Format = match
 		path = strings.TrimSuffix(filepath, "."+match)
 	} else {
-		p.Format = "html"
-		path = strings.TrimSuffix(filepath, ".html")
+		p.Format = "tmpl"
+		path = strings.TrimSuffix(filepath, ".tmpl")
 	}
 	p.Context.SetSpecific("Format", p.Format)
 	return
