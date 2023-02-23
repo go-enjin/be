@@ -128,7 +128,7 @@ require (
 
 require (
 	github.com/gin-gonic/gin v1.8.1 // indirect
-	github.com/go-curses/ctk v0.5.5
+	github.com/go-curses/ctk v0.5.6
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
 	github.com/jackc/pgx/v4 v4.17.2 // indirect
 	github.com/klauspost/compress v1.15.11 // indirect
