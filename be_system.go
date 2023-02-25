@@ -31,6 +31,7 @@ import (
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/pagecache"
 	"github.com/go-enjin/be/pkg/theme"
+	"github.com/go-enjin/be/pkg/types/site"
 	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
@@ -101,6 +102,8 @@ func (e *Enjin) Context() (ctx context.Context) {
 	ctx.Set("Year", now.Year())
 	ctx.Set("Release", globals.BinHash)
 	ctx.Set("Version", globals.Version)
+	ctx.SetSpecific("SiteInfo", site.MakeInfo(e))
+	ctx.SetSpecific("SiteEnjin", site.Enjin(e))
 	return
 }
 

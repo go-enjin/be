@@ -24,15 +24,13 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	beContext "github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/net/serve"
-	"github.com/go-enjin/be/pkg/request/argv"
-	"github.com/go-enjin/be/pkg/types/site"
-
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net"
+	"github.com/go-enjin/be/pkg/net/serve"
 	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/pkg/request/argv"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme"
 )
@@ -178,9 +176,6 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	}
 
 	ctx := e.Context()
-
-	ctx.SetSpecific("SiteInfo", site.MakeInfo(e))
-	ctx.SetSpecific("SiteEnjin", site.Enjin(e))
 
 	reqLangTag := lang.GetTag(r)
 	ctx.SetSpecific("ReqLangTag", reqLangTag)
