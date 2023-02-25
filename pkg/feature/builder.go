@@ -23,7 +23,6 @@ import (
 
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/net/headers"
-	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/theme"
 )
 
@@ -76,9 +75,6 @@ type Builder interface {
 	AddModifyHeadersFn(fn headers.ModifyHeadersFn) Builder
 
 	AddNotifyHook(name string, hook NotifyHook) Builder
-
-	// AddPage includes the given page within the pages enjin middleware
-	AddPage(p *page.Page) Builder
 
 	// AddPageFromString is a convenience wrapper around AddPage
 	AddPageFromString(path, raw string) Builder

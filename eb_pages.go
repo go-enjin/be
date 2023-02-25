@@ -23,12 +23,6 @@ import (
 	"github.com/go-enjin/be/pkg/theme"
 )
 
-func (eb *EnjinBuilder) AddPage(p *page.Page) feature.Builder {
-	eb.pages[p.Url] = p
-	log.InfoF("adding page: %v", p.Url)
-	return eb
-}
-
 func (eb *EnjinBuilder) AddPageFromString(path, raw string) feature.Builder {
 	if eb.theme == "" {
 		log.FatalDF(1, "cannot add pages before theme is set")
