@@ -20,6 +20,7 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/pkg/context"
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
@@ -34,9 +35,10 @@ type Stub struct {
 	Source   string
 	Language language.Tag
 	Fallback language.Tag
+	EnjinCtx context.Context
 }
 
-func NewStub(bfs beFs.FileSystem, point, source, shasum string, fallback language.Tag) (s *Stub, p *page.Page, err error) {
+func NewStub(enjin context.Context, bfs beFs.FileSystem, point, source, shasum string, fallback language.Tag) (s *Stub, p *page.Page, err error) {
 	s = &Stub{
 		Bfs:      bfs,
 		Point:    point,
@@ -44,6 +46,7 @@ func NewStub(bfs beFs.FileSystem, point, source, shasum string, fallback languag
 		Source:   source,
 		Language: fallback,
 		Fallback: fallback,
+		EnjinCtx: enjin,
 	}
 	return
 }
@@ -70,7 +73,7 @@ func (s *Stub) Make(formats types.FormatProvider) (p *page.Page, err error) {
 		log.ErrorF("error getting page last modified epoch: %v", err)
 	}
 
-	if p, err = page.New(path, string(data), s.Shasum, created, updated, formats); err == nil {
+	if p, err = page.New(path, string(data), s.Shasum, created, updated, formats, s.EnjinCtx); err == nil {
 		if language.Compare(p.LanguageTag, language.Und) {
 			p.SetLanguage(s.Fallback)
 		}

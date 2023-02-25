@@ -123,7 +123,7 @@ func (c *Cache) Rebuild() (ok bool, errs []error) {
 		var err error
 		var stub *pagecache.Stub
 		var p *page.Page
-		if stub, p, err = pagecache.NewStub(bfs, point, file, shasum, tag); err != nil {
+		if stub, p, err = pagecache.NewStub(c.enjin.Context(), bfs, point, file, shasum, tag); err != nil {
 			errs = append(errs, err)
 			return
 		}

@@ -15,10 +15,12 @@
 package page
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"strings"
+	textTemplate "text/template"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -33,6 +35,7 @@ import (
 	"github.com/go-enjin/be/pkg/lang"
 	bePath "github.com/go-enjin/be/pkg/path"
 	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/theme/funcs"
 	types "github.com/go-enjin/be/pkg/types/theme-types"
 )
 
@@ -72,7 +75,7 @@ type Page struct {
 	copied  int
 }
 
-func NewFromFile(path, file string, formats types.FormatProvider) (p *Page, err error) {
+func NewFromFile(path, file string, formats types.FormatProvider, enjin context.Context) (p *Page, err error) {
 	if !bePath.IsFile(file) {
 		err = fmt.Errorf("not a file: %v", file)
 		return
@@ -92,11 +95,11 @@ func NewFromFile(path, file string, formats types.FormatProvider) (p *Page, err 
 	if shasum, err = sha.FileHash64(file); err != nil {
 		return
 	}
-	p, err = New(path, string(contents), shasum, created, updated, formats)
+	p, err = New(path, string(contents), shasum, created, updated, formats, enjin)
 	return
 }
 
-func New(path, raw, shasum string, created, updated int64, formats types.FormatProvider) (p *Page, err error) {
+func New(path, raw, shasum string, created, updated int64, formats types.FormatProvider, enjin context.Context) (p *Page, err error) {
 
 	p = new(Page)
 	p.Formats = formats
@@ -116,6 +119,18 @@ func New(path, raw, shasum string, created, updated int64, formats types.FormatP
 
 	raw = lang.StripTranslatorComments(raw)
 	p.FrontMatter, p.Content, p.FrontMatterType = ParseFrontMatterContent(raw)
+	tt := textTemplate.New("front-matter").Funcs(funcs.TextFuncMap())
+	if tt, err = tt.Parse(p.FrontMatter); err != nil {
+		err = fmt.Errorf("error parsing front-matter text tmpl: %v", err)
+		return
+	}
+	var buf bytes.Buffer
+	if err = tt.Execute(&buf, enjin); err != nil {
+		err = fmt.Errorf("error parsing front-matter text tmpl: %v", err)
+		return
+	}
+	p.FrontMatter = buf.String()
+
 	err = p.initFrontMatter()
 
 	if format := formats.GetFormat(p.Format); format != nil {

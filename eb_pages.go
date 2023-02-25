@@ -39,12 +39,9 @@ func (eb *EnjinBuilder) AddPageFromString(path, raw string) feature.Builder {
 		}
 		updated = info.ModTime().Unix()
 	}
-	var err error
-	var shasum string
-	if shasum, err = sha.DataHash64([]byte(raw)); err != nil {
+	if shasum, err := sha.DataHash64([]byte(raw)); err != nil {
 		log.FatalF("error getting shasum for page: %v - %v", path, err)
-	}
-	if p, err := page.New(path, raw, shasum, created, updated, t); err == nil {
+	} else if p, err := page.New(path, raw, shasum, created, updated, t, eb.context); err == nil {
 		eb.pages[p.Url] = p
 		log.DebugF("adding page from string: %v", p.Url)
 	} else {
