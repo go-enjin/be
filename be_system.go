@@ -79,29 +79,29 @@ func (e *Enjin) Prefix() (prefix string) {
 func (e *Enjin) Context() (ctx context.Context) {
 	ctx = e.eb.context.Copy()
 	if e.debug {
-		ctx.Set("Debug", true)
+		ctx.SetSpecific("Debug", true)
 	}
-	ctx.Set("Server", e.ServerName())
-	ctx.Set("Prefix", e.prefix)
+	ctx.SetSpecific("Server", e.ServerName())
+	ctx.SetSpecific("Prefix", e.prefix)
 	if e.production {
-		ctx.Set("PrefixLabel", "")
+		ctx.SetSpecific("PrefixLabel", "")
 	} else {
-		ctx.Set("PrefixLabel", "["+strings.ToUpper(e.prefix)+"] ")
+		ctx.SetSpecific("PrefixLabel", "["+strings.ToUpper(e.prefix)+"] ")
 	}
 	tName := ctx.String("Theme", e.eb.theme)
 	if _, ok := e.eb.theming[tName]; ok {
-		ctx.Set("Theme", tName)
+		ctx.SetSpecific("Theme", tName)
 	} else {
 		if tNames := e.ThemeNames(); len(tNames) > 0 {
-			ctx.Set("Theme", tNames[0])
+			ctx.SetSpecific("Theme", tNames[0])
 		} else {
-			ctx.Set("Theme", "")
+			ctx.SetSpecific("Theme", "")
 		}
 	}
 	now := time.Now()
-	ctx.Set("Year", now.Year())
-	ctx.Set("Release", globals.BinHash)
-	ctx.Set("Version", globals.Version)
+	ctx.SetSpecific("Year", now.Year())
+	ctx.SetSpecific("Release", globals.BinHash)
+	ctx.SetSpecific("Version", globals.Version)
 	ctx.SetSpecific("SiteInfo", site.MakeInfo(e))
 	ctx.SetSpecific("SiteEnjin", site.Enjin(e))
 	return

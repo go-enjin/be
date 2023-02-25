@@ -179,7 +179,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 
 	reqLangTag := lang.GetTag(r)
 	ctx.SetSpecific("ReqLangTag", reqLangTag)
-	ctx.Set("Request", map[string]string{
+	ctx.SetSpecific("Request", map[string]string{
 		"URL":        r.URL.String(),
 		"Path":       r.URL.Path,
 		"Host":       r.Host,
