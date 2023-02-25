@@ -23,8 +23,6 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/language/display"
 	"github.com/go-enjin/golang-org-x-text/message"
-	"github.com/iancoleman/strcase"
-	"github.com/leekchan/gtf"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/log"
@@ -70,83 +68,14 @@ func AddRegisteredTextFuncsToMap(fm *textTemplate.FuncMap) {
 }
 
 func DefaultFuncMap() (funcMap template.FuncMap) {
-	funcMap = template.FuncMap{
-		"toCamel":              strcase.ToCamel,
-		"toLowerCamel":         strcase.ToLowerCamel,
-		"toDelimited":          strcase.ToDelimited,
-		"toScreamingDelimited": strcase.ToScreamingDelimited,
-		"toKebab":              strcase.ToKebab,
-		"toScreamingKebab":     strcase.ToScreamingKebab,
-		"toSnake":              strcase.ToSnake,
-		"toScreamingSnake":     strcase.ToScreamingSnake,
-
-		"asHTML":     funcs.AsHTML,
-		"asHTMLAttr": funcs.AsHTMLAttr,
-		"asCSS":      funcs.AsCSS,
-		"asJS":       funcs.AsJS,
-
-		"fsHash":   funcs.FsHash,
-		"fsUrl":    funcs.FsUrl,
-		"fsMime":   funcs.FsMime,
-		"fsExists": funcs.FsExists,
-
-		"numberAsInt": funcs.NumberAsInt,
-
-		"add":      funcs.Add,
-		"sub":      funcs.Sub,
-		"mul":      funcs.Mul,
-		"div":      funcs.Div,
-		"mod":      funcs.Mod,
-		"addFloat": funcs.AddFloat,
-		"subFloat": funcs.SubFloat,
-		"mulFloat": funcs.MulFloat,
-		"divFloat": funcs.DivFloat,
-
-		"mergeClassNames": funcs.MergeClassNames,
-
-		"unescapeHTML":     funcs.UnescapeHtml,
-		"escapeJsonString": funcs.EscapeJsonString,
-		"escapeHTML":       funcs.EscapeHtml,
-		"escapeUrlPath":    funcs.EscapeUrlPath,
-
-		"element":           funcs.Element,
-		"elementOpen":       funcs.ElementOpen,
-		"elementClose":      funcs.ElementClose,
-		"elementAttributes": funcs.ElementAttributes,
-
-		"Nonce": funcs.Nonce,
-
-		"isUrl":    funcs.IsUrl,
-		"isPath":   funcs.IsPath,
-		"parseUrl": funcs.ParseUrl,
-
-		"stringsAsList":              funcs.StringsAsList,
-		"reverseStrings":             funcs.ReverseStrings,
-		"sortedKeys":                 funcs.SortedKeys,
-		"sortedFirstLetters":         funcs.SortedFirstLetters,
-		"sortedLastNameFirstLetters": funcs.SortedLastNameFirstLetters,
-
-		"cmpDateFmt": funcs.CompareDateFormats,
-
-		"DebugF": funcs.LogDebug,
-		"WarnF":  funcs.LogWarn,
-		"ErrorF": funcs.LogError,
-
-		"CmpLang": funcs.CmpLang,
-	}
-	for k, v := range gtf.GtfFuncMap {
-		funcMap[k] = v
-	}
+	funcMap = funcs.HtmlFuncMap()
 	AddRegisteredHtmlFuncsToMap(&funcMap)
 	return
 }
 
 func (t *Theme) NewTextFuncMapWithContext(ctx context.Context) (fm textTemplate.FuncMap) {
 
-	fm = textTemplate.FuncMap{}
-	for k, v := range t.FuncMap {
-		fm[k] = v
-	}
+	fm = t.FuncMap
 	AddRegisteredTextFuncsToMap(&fm)
 
 	fm["_"] = t.makeUnderscore(ctx)            // translate page content
@@ -157,10 +86,7 @@ func (t *Theme) NewTextFuncMapWithContext(ctx context.Context) (fm textTemplate.
 
 func (t *Theme) NewHtmlFuncMapWithContext(ctx context.Context) (fm template.FuncMap) {
 
-	fm = template.FuncMap{}
-	for k, v := range t.FuncMap {
-		fm[k] = v
-	}
+	fm = t.FuncMap
 	AddRegisteredHtmlFuncsToMap(&fm)
 
 	fm["_"] = t.makeUnderscore(ctx)            // translate page content
