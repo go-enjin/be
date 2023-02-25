@@ -100,6 +100,7 @@ func (e *Enjin) Context() (ctx context.Context) {
 	}
 	now := time.Now()
 	ctx.SetSpecific("Year", now.Year())
+	ctx.SetSpecific("CurrentYear", now.Year())
 	ctx.SetSpecific("Release", globals.BinHash)
 	ctx.SetSpecific("Version", globals.Version)
 	ctx.SetSpecific("SiteInfo", site.MakeInfo(e))

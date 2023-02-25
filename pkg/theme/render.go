@@ -20,7 +20,6 @@ import (
 	htmlTemplate "html/template"
 	"strings"
 	textTemplate "text/template"
-	"time"
 
 	"github.com/go-enjin/be/pkg/request/argv"
 	"github.com/go-enjin/be/pkg/types/theme-types"
@@ -207,8 +206,6 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *htmlT
 }
 
 func (t *Theme) Render(view string, ctx context.Context) (data []byte, err error) {
-	now := time.Now()
-	ctx.Set("CurrentYear", now.Year())
 	var tt *htmlTemplate.Template
 	if tt, err = t.TemplateFromContext(view, ctx); err == nil {
 		log.DebugF("%v theme template used: (%v) %v - \"%v\"", t.Config.Name, view, tt.Name(), ctx.String("Url", "nil"))
