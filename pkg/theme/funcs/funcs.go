@@ -20,15 +20,16 @@ import (
 	"fmt"
 	"html/template"
 	"net/url"
+	"reflect"
+	"sort"
 	"strings"
 	"time"
 
+	"github.com/maruel/natural"
 	"golang.org/x/net/html"
 
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
-	"github.com/go-enjin/be/pkg/page"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -182,38 +183,21 @@ func UnescapeHtml(input interface{}) (out template.HTML) {
 }
 
 func SortedKeys(v interface{}) (keys []string) {
-	if maps.IsMap(v) {
-		switch t := v.(type) {
-		case map[string]interface{}:
-			keys = maps.SortedKeys(t)
-
-		case map[string]string:
-			keys = maps.SortedKeys(t)
-		case map[string]template.HTML:
-			keys = maps.SortedKeys(t)
-		case map[string]template.HTMLAttr:
-			keys = maps.SortedKeys(t)
-		case map[string]template.CSS:
-			keys = maps.SortedKeys(t)
-		case map[string]template.JS:
-			keys = maps.SortedKeys(t)
-
-		case map[string][]string:
-			keys = maps.SortedKeys(t)
-		case map[string][]template.HTML:
-			keys = maps.SortedKeys(t)
-		case map[string][]template.HTMLAttr:
-			keys = maps.SortedKeys(t)
-		case map[string][]template.CSS:
-			keys = maps.SortedKeys(t)
-		case map[string][]template.JS:
-			keys = maps.SortedKeys(t)
-		case map[string][]*page.Page:
-			keys = maps.SortedKeys(t)
-
-		default:
-			log.WarnF("unsupported map type: %T", t)
+	t := reflect.TypeOf(v)
+	switch t.Kind() {
+	case reflect.Map:
+		if kt := t.Key(); kt.Kind() == reflect.String {
+			value := reflect.ValueOf(v)
+			mapKeys := value.MapKeys()
+			for _, k := range mapKeys {
+				keys = append(keys, k.String())
+			}
+			sort.Sort(natural.StringSlice(keys))
+			return
 		}
+		log.WarnF("unsupported sortedKeys map key type: %T", v)
+	default:
+		log.WarnF("unsupported sortedKeys type: %T", v)
 	}
 	return
 }
