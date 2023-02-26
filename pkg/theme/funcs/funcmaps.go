@@ -43,10 +43,14 @@ func HtmlFuncMap() (funcMap htmlTemplate.FuncMap) {
 		"asCSS":      AsCSS,
 		"asJS":       AsJS,
 
-		"fsHash":   FsHash,
-		"fsUrl":    FsUrl,
-		"fsMime":   FsMime,
-		"fsExists": FsExists,
+		"fsHash":         FsHash,
+		"fsUrl":          FsUrl,
+		"fsMime":         FsMime,
+		"fsExists":       FsExists,
+		"fsListFiles":    FsListFiles,
+		"fsListAllFiles": FsListAllFiles,
+		"fsListDirs":     FsListDirs,
+		"fsListAllDirs":  FsListAllDirs,
 
 		"numberAsInt": NumberAsInt,
 
@@ -77,9 +81,13 @@ func HtmlFuncMap() (funcMap htmlTemplate.FuncMap) {
 		"isUrl":    IsUrl,
 		"isPath":   IsPath,
 		"parseUrl": ParseUrl,
+		"baseName": BaseName,
 
+		"splitString":                SplitString,
+		"filterStrings":              FilterStrings,
 		"stringsAsList":              StringsAsList,
 		"reverseStrings":             ReverseStrings,
+		"sortedStrings":              SortedStrings,
 		"sortedKeys":                 SortedKeys,
 		"sortedFirstLetters":         SortedFirstLetters,
 		"sortedLastNameFirstLetters": SortedLastNameFirstLetters,

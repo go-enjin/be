@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/url"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
@@ -113,6 +114,34 @@ func FsMime(path string) (mime string) {
 
 func FsExists(path string) (exists bool) {
 	exists = fs.FileExists(path)
+	return
+}
+
+func FsListFiles(path string) (files []string) {
+	if found, err := fs.ListFiles(path); err == nil {
+		files = found
+	}
+	return
+}
+
+func FsListAllFiles(path string) (files []string) {
+	if found, err := fs.ListAllFiles(path); err == nil {
+		files = found
+	}
+	return
+}
+
+func FsListDirs(path string) (files []string) {
+	if found, err := fs.ListDirs(path); err == nil {
+		files = found
+	}
+	return
+}
+
+func FsListAllDirs(path string) (files []string) {
+	if found, err := fs.ListAllDirs(path); err == nil {
+		files = found
+	}
 	return
 }
 
@@ -222,6 +251,11 @@ func IsPath(value string) (ok bool) {
 	if u, err := url.Parse(value); err == nil {
 		ok = u.Scheme == "" && u.Host == "" && u.Path != ""
 	}
+	return
+}
+
+func BaseName(path string) (name string) {
+	name = filepath.Base(path)
 	return
 }
 

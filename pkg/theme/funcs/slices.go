@@ -15,11 +15,34 @@
 package funcs
 
 import (
+	"regexp"
+	"sort"
 	"strings"
 
+	"github.com/maruel/natural"
+
+	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
+
+func SplitString(v, delim string) (parts []string) {
+	parts = strings.Split(v, delim)
+	return
+}
+
+func FilterStrings(pattern string, values []string) (filtered []string) {
+	if rx, err := regexp.Compile(pattern); err == nil {
+		for _, value := range values {
+			if rx.MatchString(value) {
+				filtered = append(filtered, value)
+			}
+		}
+	} else {
+		log.ErrorF("error compiling filterStrings pattern: m!%v! - %v", pattern, err)
+	}
+	return
+}
 
 func StringsAsList(v ...string) (list []string) {
 	list = v
@@ -30,6 +53,12 @@ func ReverseStrings(v []string) (reversed []string) {
 	for i := len(v) - 1; i >= 0; i-- {
 		reversed = append(reversed, v[i])
 	}
+	return
+}
+
+func SortedStrings(values []string) (sorted []string) {
+	sorted = values[:]
+	sort.Sort(natural.StringSlice(sorted))
 	return
 }
 
