@@ -90,3 +90,59 @@ func FindFileMime(path string) (mime string, err error) {
 	err = fmt.Errorf("%v not found", path)
 	return
 }
+
+func ListFiles(path string) (files []string, err error) {
+	_registry.RLock()
+	defer _registry.RUnlock()
+	for mount, systems := range _registry.registered {
+		p := bePath.TrimPrefix(path, mount)
+		for _, f := range systems {
+			if found, ee := f.ListFiles(p); ee == nil {
+				files = append(files, found...)
+			}
+		}
+	}
+	return
+}
+
+func ListAllFiles(path string) (files []string, err error) {
+	_registry.RLock()
+	defer _registry.RUnlock()
+	for mount, systems := range _registry.registered {
+		p := bePath.TrimPrefix(path, mount)
+		for _, f := range systems {
+			if found, ee := f.ListAllFiles(p); ee == nil {
+				files = append(files, found...)
+			}
+		}
+	}
+	return
+}
+
+func ListDirs(path string) (dirs []string, err error) {
+	_registry.RLock()
+	defer _registry.RUnlock()
+	for mount, systems := range _registry.registered {
+		p := bePath.TrimPrefix(path, mount)
+		for _, f := range systems {
+			if found, ee := f.ListDirs(p); ee == nil {
+				dirs = append(dirs, found...)
+			}
+		}
+	}
+	return
+}
+
+func ListAllDirs(path string) (dirs []string, err error) {
+	_registry.RLock()
+	defer _registry.RUnlock()
+	for mount, systems := range _registry.registered {
+		p := bePath.TrimPrefix(path, mount)
+		for _, f := range systems {
+			if found, ee := f.ListAllDirs(p); ee == nil {
+				dirs = append(dirs, found...)
+			}
+		}
+	}
+	return
+}
