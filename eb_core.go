@@ -52,6 +52,9 @@ func (eb *EnjinBuilder) AddDomains(domains ...string) feature.Builder {
 }
 
 func (eb *EnjinBuilder) AddFeature(f feature.Feature) feature.Builder {
+	if f == nil {
+		return eb
+	}
 	for _, known := range eb.features {
 		if known.Tag() == f.Tag() {
 			return eb
