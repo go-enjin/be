@@ -34,7 +34,6 @@ var (
 )
 
 var (
-	rxSlugfileLine = regexp.MustCompile(`^\s*([^/].+?)\s*$`)
 	rxSlugsumsLine = regexp.MustCompile(`(?ms)^\s*([0-9a-f]{64})\s*([^/].+?)\s*$`)
 )
 
@@ -141,9 +140,8 @@ func ReadSlugfile() (paths []string, err error) {
 		content := string(data)
 		lines := strings.Split(content, "\n")
 		for _, line := range lines {
-			if rxSlugfileLine.MatchString(line) {
-				m := rxSlugfileLine.FindAllStringSubmatch(line, 1)
-				paths = append(paths, m[0][1])
+			if trimmed := strings.TrimSpace(line); trimmed != "" {
+				paths = append(paths, trimmed)
 			}
 		}
 	}
@@ -169,9 +167,51 @@ func BuildSlugMapIgnoring(files ...string) (slugMap ShaMap, err error) {
 		}
 		return
 	}
+	var topFiles, topDirs []string
+	if topFiles, err = bePath.ListFiles("."); err != nil {
+		return
+	}
+	if topDirs, err = bePath.ListDirs("."); err != nil {
+		return
+	}
 	slugMap = make(ShaMap)
 	for _, path := range paths {
 		if isIgnored(path) {
+			continue
+		}
+		if strings.HasPrefix(path, "!") {
+			pattern := strings.TrimSpace(path[1:])
+			var rx *regexp.Regexp
+			if rx, err = regexp.Compile(pattern); err != nil {
+				err = fmt.Errorf("error compiling Slugfile regular expression: %v - %v", pattern, err)
+				return
+			}
+			for _, file := range topFiles {
+				if strings.HasPrefix(file, "./") {
+					file = file[2:]
+				}
+				if rx.MatchString(file) {
+					if slugMap[file], err = sha.FileHash64(file); err != nil {
+						return
+					}
+				}
+			}
+			for _, dir := range topDirs {
+				if strings.HasPrefix(dir, "./") {
+					dir = dir[2:]
+				}
+				if rx.MatchString(dir) {
+					var subPaths []string
+					if subPaths, err = bePath.FindAllFiles(dir, false); err != nil {
+						return
+					}
+					for _, subPath := range subPaths {
+						if slugMap[subPath], err = sha.FileHash64(subPath); err != nil {
+							return
+						}
+					}
+				}
+			}
 			continue
 		}
 		if bePath.IsFile(path) {
