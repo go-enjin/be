@@ -17,6 +17,7 @@ package local
 import (
 	"io/fs"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/go-enjin/github-com-djherbis-times"
@@ -29,6 +30,14 @@ type FileSystem string
 
 func New(path string) (out FileSystem, err error) {
 	if bePath.IsDir(path) {
+		if filepath.IsAbs(path) {
+			var relPath string
+			if relPath, err = filepath.Rel(bePath.Pwd(), path); err != nil {
+				return
+			} else {
+				path = relPath
+			}
+		}
 		out = FileSystem(path)
 		return
 	}
