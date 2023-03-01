@@ -363,7 +363,7 @@ func Pwd() (path string) {
 }
 
 func Mkdir(path string) (err error) {
-	if !IsDir(path) {
+	if !Exists(path) {
 		if err = os.MkdirAll(path, 0770); err != nil {
 			return
 		}
