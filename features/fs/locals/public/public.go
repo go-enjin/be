@@ -112,7 +112,7 @@ func (f *CFeature) Build(_ feature.Buildable) (err error) {
 		path := f.setup[mount]
 		var lfs beFs.FileSystem
 		if lfs, err = local.New(path); err != nil {
-			log.FatalF(`error mounting filesystem: %v`, err)
+			log.FatalF(`error mounting local filesystem on %v to %v: %v`, mount, path, err)
 			return nil
 		}
 		f.mounted[mount] = lfs

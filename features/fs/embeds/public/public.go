@@ -114,7 +114,7 @@ func (f *CFeature) Build(_ feature.Buildable) (err error) {
 			return
 		}
 		if f.mounted[mount], err = beFsEmbed.New(f.paths[mount], f.setup[mount]); err != nil {
-			log.FatalF(`error mounting filesystem: %v`, err)
+			log.FatalF(`error mounting embed filesystem on %v to %v: %v`, mount, path, err)
 			return nil
 		}
 		beFs.RegisterFileSystem(mount, f.mounted[mount])
