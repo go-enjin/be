@@ -400,7 +400,7 @@ func WriteSlugfile(argv ...string) (slugfile string, err error) {
 		files = append(files, strings.TrimSpace(relArg))
 	}
 	sort.Sort(sortorder.Natural(files))
-	contents := strings.Join(files, "\n") + "\n"
+	contents := strings.Join(files, "\n")
 	if err = os.WriteFile(FileName, []byte(contents), 0660); err == nil {
 		slugfile = contents
 	}
