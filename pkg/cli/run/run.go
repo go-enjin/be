@@ -69,8 +69,15 @@ func ExePipe(inputs ...PipeCmd) (status int, err error) {
 }
 
 func Cmd(name string, argv ...string) (stdout, stderr string, status int, err error) {
-	cmd := exec.Command(name, argv...)
-	cmd.Env = os.Environ()
+	stdout, stderr, status, err = CmdWith(&Options{Name: name, Argv: argv})
+	return
+}
+
+func CmdWith(options *Options) (stdout, stderr string, status int, err error) {
+	cmd := exec.Command(options.Name, options.Argv...)
+	cmd.Stdin = nil
+	cmd.Dir = options.Path
+	cmd.Env = options.Environ
 
 	var ob, eb bytes.Buffer
 	cmd.Stdout = &ob
