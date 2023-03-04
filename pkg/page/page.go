@@ -103,7 +103,7 @@ func New(path, raw, shasum string, created, updated int64, formats types.FormatP
 
 	p = new(Page)
 	p.Formats = formats
-	p.Context = context.New()
+	p.Context = enjin.Copy()
 
 	p.Shasum = shasum
 	p.Permalink = uuid.Nil
@@ -125,7 +125,7 @@ func New(path, raw, shasum string, created, updated int64, formats types.FormatP
 		return
 	}
 	var buf bytes.Buffer
-	if err = tt.Execute(&buf, enjin); err != nil {
+	if err = tt.Execute(&buf, p.Context); err != nil {
 		err = fmt.Errorf("error parsing front-matter text tmpl: %v", err)
 		return
 	}
