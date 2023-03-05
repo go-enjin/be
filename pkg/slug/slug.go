@@ -1,4 +1,4 @@
-// Copyright (c) 2022  The Go-Enjin Authors
+// Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -357,7 +357,7 @@ func FinalizeSlugfile(force bool) (slugsums string, removed []string, err error)
 	for _, dir := range unaccounted {
 		if bePath.IsDir(dir) {
 			bePath.ChmodAll(dir)
-			if err = os.Remove(dir); err != nil {
+			if err = os.RemoveAll(dir); err != nil {
 				err = fmt.Errorf("error removing dir: %v - %v", dir, err)
 				return
 			}
