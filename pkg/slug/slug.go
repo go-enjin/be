@@ -17,6 +17,7 @@ package slug
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -26,6 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	bePath "github.com/go-enjin/be/pkg/path"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 var (
@@ -178,6 +180,8 @@ func BuildSlugMapIgnoring(files ...string) (slugMap ShaMap, err error) {
 	for _, path := range paths {
 		if isIgnored(path) {
 			continue
+		} else if beStrings.StringInStrings(filepath.Base(path), ".git", ".gpg") {
+			continue
 		}
 		if strings.HasPrefix(path, "!") {
 			pattern := strings.TrimSpace(path[1:])
@@ -249,6 +253,9 @@ func BuildFileMap() (fileMap map[string]string, err error) {
 	}
 	fileMap = make(ShaMap)
 	for _, path := range paths {
+		if beStrings.StringInStrings(filepath.Base(path), ".git", ".gpg") {
+			continue
+		}
 		path = bePath.TrimRelativeToRoot(path, wd)
 		if bePath.IsFile(path) {
 			if fileMap[path], err = sha.FileHash64(path); err != nil {
