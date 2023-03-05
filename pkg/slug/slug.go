@@ -17,7 +17,6 @@ package slug
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -27,7 +26,6 @@ import (
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	bePath "github.com/go-enjin/be/pkg/path"
-	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 var (
@@ -155,6 +153,13 @@ func BuildSlugMap() (slugMap ShaMap, err error) {
 	return
 }
 
+var rxRestrictedPaths = regexp.MustCompile(`(?:/|^)\.(git|gpg)(?:/|$)`)
+
+func isRestrictedPath(path string) (restricted bool) {
+	restricted = rxRestrictedPaths.MatchString(path)
+	return
+}
+
 func BuildSlugMapIgnoring(files ...string) (slugMap ShaMap, err error) {
 	var paths []string
 	if paths, err = ReadSlugfile(); err != nil {
@@ -180,7 +185,7 @@ func BuildSlugMapIgnoring(files ...string) (slugMap ShaMap, err error) {
 	for _, path := range paths {
 		if isIgnored(path) {
 			continue
-		} else if beStrings.StringInStrings(filepath.Base(path), ".git", ".gpg") {
+		} else if isRestrictedPath(path) {
 			continue
 		}
 		if strings.HasPrefix(path, "!") {
@@ -253,7 +258,7 @@ func BuildFileMap() (fileMap map[string]string, err error) {
 	}
 	fileMap = make(ShaMap)
 	for _, path := range paths {
-		if beStrings.StringInStrings(filepath.Base(path), ".git", ".gpg") {
+		if isRestrictedPath(path) {
 			continue
 		}
 		path = bePath.TrimRelativeToRoot(path, wd)
