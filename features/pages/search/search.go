@@ -17,6 +17,7 @@
 package search
 
 import (
+	"fmt"
 	"html/template"
 	"math"
 	"net/http"
@@ -196,6 +197,9 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 
 		query := f.search.PrepareSearch(reqLangTag, input)
 		queryPath := f.path + "/:" + url.PathEscape(query)
+		if reqArgv.NumPerPage > 0 && reqArgv.PageNumber >= 0 {
+			queryPath += fmt.Sprintf("/%d/%d/", reqArgv.NumPerPage, reqArgv.PageNumber)
+		}
 		if len(reqArgv.Argv) > 0 && reqArgv.String() != queryPath {
 			redirect = queryPath
 			return
