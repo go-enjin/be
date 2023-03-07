@@ -74,8 +74,7 @@ func DefaultFuncMap() (funcMap template.FuncMap) {
 }
 
 func (t *Theme) NewTextFuncMapWithContext(ctx context.Context) (fm textTemplate.FuncMap) {
-
-	fm = t.FuncMap
+	fm = DefaultFuncMap()
 	AddRegisteredTextFuncsToMap(&fm)
 
 	fm["_"] = t.makeUnderscore(ctx)            // translate page content
@@ -85,8 +84,7 @@ func (t *Theme) NewTextFuncMapWithContext(ctx context.Context) (fm textTemplate.
 }
 
 func (t *Theme) NewHtmlFuncMapWithContext(ctx context.Context) (fm template.FuncMap) {
-
-	fm = t.FuncMap
+	fm = DefaultFuncMap()
 	AddRegisteredHtmlFuncsToMap(&fm)
 
 	fm["_"] = t.makeUnderscore(ctx)            // translate page content
