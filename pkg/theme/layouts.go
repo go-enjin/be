@@ -60,7 +60,7 @@ func (l *Layouts) Reload() (err error) {
 
 	for _, path := range paths {
 		name := bePath.Base(path)
-		if exists := l.GetLayout(name); exists != nil {
+		if exists, ok := l.m[name]; ok && exists != nil {
 			if err = exists.Reload(); err != nil {
 				err = fmt.Errorf("%v theme: error reloading %v layout: %v", l.t.Config.Name, name, err)
 				return
@@ -72,7 +72,7 @@ func (l *Layouts) Reload() (err error) {
 			err = fmt.Errorf("error creating new layout: %v - %v", path, e)
 			return
 		} else {
-			l.SetLayout(name, layout)
+			l.m[name] = layout
 			log.TraceF("%v theme: loaded %v layout", l.t.Config.Name, layout.Name)
 		}
 	}
