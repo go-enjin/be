@@ -43,6 +43,9 @@ func NewLayouts(t *Theme) (layouts *Layouts, err error) {
 }
 
 func (l *Layouts) Reload() (err error) {
+	l.Lock()
+	defer l.Unlock()
+
 	var paths []string
 	if paths, err = l.t.FileSystem.ListDirs("layouts"); err != nil {
 		if strings.Contains(err.Error(), "no such file or directory") ||
@@ -94,6 +97,9 @@ func (l *Layouts) SetLayout(name string, layout *Layout) {
 }
 
 func (l *Layouts) NewTemplate(name string, ctx context.Context) (tmpl *template.Template, err error) {
+	l.RLock()
+	defer l.RUnlock()
+
 	if tmpl, err = template.New(name).Parse(`{{/* empty */}}`); err == nil {
 
 		if partials := l.GetLayout("partials"); partials != nil {

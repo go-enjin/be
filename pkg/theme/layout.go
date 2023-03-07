@@ -116,6 +116,9 @@ func (l *Layout) Reload() (err error) {
 }
 
 func (l *Layout) HasKey(key string) bool {
+	l.RLock()
+	defer l.RUnlock()
+
 	for _, k := range l.Keys {
 		if k == key {
 			return true
@@ -143,7 +146,11 @@ func (l *Layout) NewTemplateFrom(parent *Layout, ctx context.Context) (tmpl *tem
 }
 
 func (l *Layout) Apply(tt *template.Template, ctx context.Context) (err error) {
-	tt.Funcs(l.theme.NewHtmlFuncMapWithContext(ctx))
+	l.RLock()
+	defer l.RUnlock()
+
+	fm := l.theme.NewHtmlFuncMapWithContext(ctx)
+	tt.Funcs(fm)
 	for _, name := range maps.SortedKeys(l.cache) {
 		if _, err = tt.New(name).Parse(l.cache[name]); err != nil {
 			err = fmt.Errorf("error parsing cached template: %v - %v", name, err)
