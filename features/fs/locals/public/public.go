@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"regexp"
 	"sort"
 
 	"github.com/fvbommel/sortorder"
@@ -56,12 +57,17 @@ type CFeature struct {
 
 	dirIndex string
 
-	cacheControl string
+	cacheControl      string
+	mountCacheControl map[string]string
+	regexCacheControl map[string]string
+	cachedRegexp      map[string]*regexp.Regexp
 }
 
 type MakeFeature interface {
 	MountPath(mount, path string) MakeFeature
 	SetCacheControl(values string) MakeFeature
+	SetMountCacheControl(mount string, value string) MakeFeature
+	SetRegexCacheControl(pattern string, value string) MakeFeature
 	UseDirIndex(indexFileName string) MakeFeature
 
 	Make() Feature
@@ -83,6 +89,21 @@ func (f *CFeature) SetCacheControl(values string) MakeFeature {
 	return f
 }
 
+func (f *CFeature) SetMountCacheControl(mount string, value string) MakeFeature {
+	f.mountCacheControl[mount] = value
+	return f
+}
+
+func (f *CFeature) SetRegexCacheControl(pattern string, value string) MakeFeature {
+	if compiled, err := regexp.Compile(pattern); err != nil {
+		log.FatalF("error compiling regex cache-control pattern: %v - %v", pattern, err)
+	} else {
+		f.cachedRegexp[pattern] = compiled
+		f.regexCacheControl[pattern] = value
+	}
+	return f
+}
+
 func (f *CFeature) UseDirIndex(indexFileName string) MakeFeature {
 	f.dirIndex = filepath.Base(indexFileName)
 	return f
@@ -96,6 +117,9 @@ func (f *CFeature) Init(this interface{}) {
 	f.CMiddleware.Init(this)
 	f.setup = make(map[string]string)
 	f.mounted = make(map[string]beFs.FileSystem)
+	f.mountCacheControl = make(map[string]string)
+	f.regexCacheControl = make(map[string]string)
+	f.cachedRegexp = make(map[string]*regexp.Regexp)
 }
 
 func (f *CFeature) Tag() (tag feature.Tag) {
@@ -128,11 +152,24 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 
 func (f *CFeature) checkAndServeData(m, path string, s feature.System, w http.ResponseWriter, r *http.Request) (served bool) {
 	if data, mime, filePath, ok := beFs.CheckForFileData(f.mounted[m], path, m); ok {
-		if f.cacheControl == "" && DefaultCacheControl != "" {
-			w.Header().Set("Cache-Control", DefaultCacheControl)
-		} else if f.cacheControl != "" {
-			w.Header().Set("Cache-Control", f.cacheControl)
+		var cacheControlValue string
+		for key, value := range f.regexCacheControl {
+			rx, _ := f.cachedRegexp[key]
+			if rx.MatchString(path) {
+				cacheControlValue = value
+				break
+			}
 		}
+		if cacheControlValue == "" {
+			if values, found := f.mountCacheControl[m]; found {
+				cacheControlValue = values
+			} else if f.cacheControl != "" {
+				cacheControlValue = f.cacheControl
+			} else {
+				cacheControlValue = DefaultCacheControl
+			}
+		}
+		w.Header().Set("Cache-Control", cacheControlValue)
 		s.ServeData(data, mime, w, r)
 		log.DebugF("served local %v public: %v (%v)", m, filePath, mime)
 		served = true
