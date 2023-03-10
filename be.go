@@ -40,6 +40,8 @@ import (
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/gorilla-handlers"
+	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
+	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
 	"github.com/go-enjin/be/pkg/net/ip/deny"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
@@ -68,6 +70,9 @@ type Enjin struct {
 
 	catalog *lang.Catalog
 
+	contentSecurityPolicy *csp.PolicyHandler
+	permissionsPolicy     *permissions.PolicyHandler
+
 	eb  *EnjinBuilder
 	cli *cli.App
 
@@ -85,6 +90,8 @@ func newEnjin(eb *EnjinBuilder) *Enjin {
 			Flags:    eb.flags,
 			Commands: eb.commands,
 		},
+		contentSecurityPolicy: csp.NewPolicyHandler(),
+		permissionsPolicy:     permissions.NewPolicyHandler(),
 	}
 	e.initLocales()
 	e.initConsoles()
