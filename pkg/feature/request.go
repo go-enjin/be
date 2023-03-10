@@ -16,6 +16,9 @@ package feature
 
 import (
 	"net/http"
+
+	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
+	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
 )
 
 type RequestFilterFn = func(r *http.Request) (err error)
@@ -30,4 +33,12 @@ type RequestModifier interface {
 
 type HeadersModifier interface {
 	ModifyHeaders(w http.ResponseWriter, r *http.Request)
+}
+
+type ContentSecurityPolicyModifier interface {
+	ModifyContentSecurityPolicy(policy csp.Policy, r *http.Request) (modified csp.Policy)
+}
+
+type PermissionsPolicyModifier interface {
+	ModifyPermissionsPolicy(policy permissions.Policy, r *http.Request) (modified permissions.Policy)
 }
