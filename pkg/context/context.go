@@ -17,11 +17,13 @@ package context
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"sort"
 	"strconv"
 
 	"github.com/fvbommel/sortorder"
 	"github.com/iancoleman/strcase"
+	"github.com/maruel/natural"
 
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
@@ -42,6 +44,23 @@ func New() (ctx Context) {
 // NewFromMap casts an existing map[string]interface{} as a Context
 func NewFromMap(m map[string]interface{}) Context {
 	return Context(m)
+}
+
+var rxOsEnvironKV = regexp.MustCompile(`^([^=]+?)=(.+?)$`)
+
+// NewFromOsEnviron constructs a new Context from os.Environ() string K=V slices
+func NewFromOsEnviron(slices ...[]string) (c Context) {
+	c = New()
+	for _, slice := range slices {
+		for _, pair := range slice {
+			if rxOsEnvironKV.MatchString(pair) {
+				m := rxOsEnvironKV.FindAllStringSubmatch(pair, 1)
+				key, value := m[0][1], m[0][2]
+				c.SetSpecific(key, value)
+			}
+		}
+	}
+	return
 }
 
 // Keys returns a list of all the map keys in the Context, sorted in natural
@@ -368,6 +387,26 @@ func (c Context) AsMapStrings() (out map[string]string) {
 		default:
 			out[k] = fmt.Sprintf("%v", t)
 		}
+	}
+	return
+}
+
+// AsOsEnviron returns this Context as a transformed []string slice where each
+// key is converted to SCREAMING_SNAKE_CASE and the value is converted to a
+// string (similarly to AsMapStrings) and the key/value pair is concatenated
+// into a single "K=V" string and appended to the output slice, sorted by key in
+// natural order, suitable for use in os.Environ cases.
+func (c Context) AsOsEnviron() (out []string) {
+	data := c.AsMapStrings()
+	var keys []string
+	for k, _ := range data {
+		key := strcase.ToScreamingSnake(k)
+		keys = append(keys, key)
+	}
+	sort.Sort(natural.StringSlice(keys))
+	for _, k := range keys {
+		v := data[k]
+		out = append(out, k+"="+v)
 	}
 	return
 }
