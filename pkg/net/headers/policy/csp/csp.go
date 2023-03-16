@@ -14,9 +14,11 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/serve"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 func StrictContentSecurityPolicy() Policy {
@@ -36,8 +38,9 @@ func DefaultContentSecurityPolicy() Policy {
 }
 
 const (
-	PolicyTag      = "content-security-policy"
-	ReportNonceTag = "content-security-policy-report-nonce"
+	PolicyTag        beContext.RequestKey = "content-security-policy"
+	ReportNonceTag   beContext.RequestKey = "content-security-policy-report-nonce"
+	RequestNonceTags beContext.RequestKey = "content-security-policy-request-nonce-tags"
 )
 
 var (
@@ -47,40 +50,42 @@ var (
 type ModifyPolicyFn = func(policy Policy, r *http.Request) (modified Policy)
 
 type PolicyHandler struct {
-	nonces map[string]time.Time
+	reportNonces map[string]time.Time
+	requestNonce map[string]string
 
 	sync.RWMutex
 }
 
 func NewPolicyHandler() (h *PolicyHandler) {
 	h = &PolicyHandler{
-		nonces: make(map[string]time.Time),
+		reportNonces: make(map[string]time.Time),
+		requestNonce: make(map[string]string),
 	}
 	return
 }
 
-func (h *PolicyHandler) Create() (nonce string) {
+func (h *PolicyHandler) NewReportNonce() (nonce string) {
 	h.Lock()
 	defer h.Unlock()
 	unique, _ := uuid.NewV4()
 	nonce, _ = sha.DataHash10(unique.Bytes())
-	h.nonces[nonce] = time.Now()
+	h.reportNonces[nonce] = time.Now()
 	return
 }
 
-func (h *PolicyHandler) Validate(nonce string) (valid bool) {
+func (h *PolicyHandler) ValidateReportNonce(nonce string) (valid bool) {
 	h.RLock()
 	defer h.RUnlock()
-	_, valid = h.nonces[nonce]
+	_, valid = h.reportNonces[nonce]
 	return
 }
 
-func (h *PolicyHandler) Prune() {
+func (h *PolicyHandler) PruneReportNonces() {
 	h.Lock()
 	defer h.Unlock()
-	for nonce, stamp := range h.nonces {
+	for nonce, stamp := range h.reportNonces {
 		if time.Now().Sub(stamp) >= time.Minute {
-			delete(h.nonces, nonce)
+			delete(h.reportNonces, nonce)
 		}
 	}
 }
@@ -99,13 +104,37 @@ func (h *PolicyHandler) GetRequestPolicy(r *http.Request) (policy Policy) {
 	return
 }
 
+func (h *PolicyHandler) GetRequestNonce(tag string, r *http.Request) (nonce string, modified *http.Request) {
+	var ok bool
+	h.RLock()
+	nonce, ok = h.requestNonce[tag]
+	h.RUnlock()
+	modified = r
+	if !ok {
+		unique, _ := uuid.NewV4()
+		nonce, _ = sha.DataHash64(unique.Bytes())
+		h.Lock()
+		h.requestNonce[tag] = nonce
+		h.Unlock()
+		if v, ok := r.Context().Value(RequestNonceTags).([]string); ok {
+			if !beStrings.StringInSlices(tag, v) {
+				v = append(v, tag)
+				modified = r.Clone(context.WithValue(r.Context(), RequestNonceTags, v))
+			}
+		} else {
+			modified = r.Clone(context.WithValue(r.Context(), RequestNonceTags, []string{tag}))
+		}
+	}
+	return
+}
+
 func (h *PolicyHandler) PrepareRequestMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		h.Prune()
+		h.PruneReportNonces()
 		if strings.HasPrefix(r.URL.Path, "/_/csp-violation-") {
 			pathLen := len(r.URL.Path)
 			nonce := r.URL.Path[pathLen-10:]
-			if h.Validate(nonce) {
+			if h.ValidateReportNonce(nonce) {
 				if r.Method == "POST" {
 					body, _ := io.ReadAll(r.Body)
 					log.WarnF("content-security-policy violation report received: %v", string(body))
@@ -116,7 +145,7 @@ func (h *PolicyHandler) PrepareRequestMiddleware(next http.Handler) http.Handler
 			serve.Serve204(w, r)
 			return
 		}
-		r = r.Clone(context.WithValue(r.Context(), ReportNonceTag, h.Create()))
+		r = r.Clone(context.WithValue(r.Context(), ReportNonceTag, h.NewReportNonce()))
 		r = h.SetRequestPolicy(r, DefaultContentSecurityPolicy())
 		next.ServeHTTP(w, r)
 	})
@@ -140,19 +169,33 @@ func (h *PolicyHandler) ModifyPolicyMiddleware(fn ModifyPolicyFn) (mw func(next 
 	}
 }
 
-func (h *PolicyHandler) FinalizeMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if policy := h.GetRequestPolicy(r); policy != nil {
-			if nonce, ok := r.Context().Value(ReportNonceTag).(string); ok {
-				reportUri := DefaultReportPathPrefix + "-" + nonce
-				value := policy.
-					Set(NewReportUri(reportUri)).
-					Set(NewReportTo("self-endpoint")).
-					Value()
-				w.Header().Set("Reporting-Endpoints", `self-endpoint="`+reportUri+`"`)
-				w.Header().Set("Content-Security-Policy", value)
-			}
+func (h *PolicyHandler) ApplyHeaders(w http.ResponseWriter, r *http.Request) {
+	if policy := h.GetRequestPolicy(r); policy != nil {
+		if nonce, ok := r.Context().Value(ReportNonceTag).(string); ok {
+			reportUri := DefaultReportPathPrefix + "-" + nonce
+			value := policy.
+				Set(NewReportUri(reportUri)).
+				Set(NewReportTo("self-endpoint")).
+				Value()
+			w.Header().Set("Reporting-Endpoints", `self-endpoint="`+reportUri+`"`)
+			w.Header().Set("Content-Security-Policy", value)
+			log.WarnF("setting request content security policy header: %v", value)
+		} else {
+			log.ErrorF("request with content security policy missing nonce: %#+v", policy)
 		}
-		next.ServeHTTP(w, r)
-	})
+	} else {
+		log.WarnF("request missing content security policy context")
+	}
+}
+
+func (h *PolicyHandler) FinalizeRequest(w http.ResponseWriter, r *http.Request) {
+	h.ApplyHeaders(w, r)
+	h.Lock()
+	defer h.Unlock()
+	if v, ok := r.Context().Value(RequestNonceTags).([]string); ok {
+		for _, tag := range v {
+			delete(h.requestNonce, tag)
+		}
+	}
+	return
 }

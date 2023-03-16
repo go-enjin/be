@@ -31,7 +31,7 @@ func NewPolicy(directives ...Directive) (p Policy) {
 func (p *cPolicy) Value() (value string) {
 	for idx, d := range *p {
 		if idx > 0 {
-			value += ";"
+			value += " ; "
 		}
 		value += d.Value()
 	}
@@ -40,7 +40,7 @@ func (p *cPolicy) Value() (value string) {
 
 func (p *cPolicy) Set(d Directive) Policy {
 	data, order := p.makeDataMap()
-	dType := d.Type()
+	dType := d.DirectiveType()
 	if !beStrings.StringInSlices(dType, order) {
 		order = append(order, dType)
 	}
@@ -61,7 +61,7 @@ func (p *cPolicy) Add(d Directive) Policy {
 func (p *cPolicy) makeDataMap() (data map[string][]Directive, order []string) {
 	data = make(map[string][]Directive)
 	for _, d := range *p {
-		dType := d.Type()
+		dType := d.DirectiveType()
 		if !beStrings.StringInSlices(dType, order) {
 			order = append(order, dType)
 		}
@@ -74,7 +74,7 @@ func (p *cPolicy) Collapse() Policy {
 	collapsed := make(cPolicy, 0)
 	data := make(map[string]Directive)
 	for _, d := range *p {
-		dType := d.Type()
+		dType := d.DirectiveType()
 		if dSourceDirective, ok := d.(SourceDirective); ok {
 			if existingSourceDirective, ok := data[dType].(SourceDirective); ok {
 				existingSourceDirective.Append(dSourceDirective.Sources()...)
