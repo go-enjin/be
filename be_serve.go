@@ -78,7 +78,7 @@ func (e *Enjin) ServeInternalServerError(w http.ResponseWriter, r *http.Request)
 }
 
 func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Request) {
-	r = r.WithContext(context.WithValue(r.Context(), ServeStatusResponseKey, status))
+	r = r.Clone(context.WithValue(r.Context(), ServeStatusResponseKey, status))
 	reqLangTag := lang.GetTag(r)
 
 	if path, ok := e.eb.statusPages[status]; ok {
@@ -259,11 +259,11 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	if cacheControl := p.Context.String("CacheControl", ""); cacheControl != "" {
-		r = r.WithContext(context.WithValue(r.Context(), "Cache-Control", cacheControl))
+		r = r.Clone(context.WithValue(r.Context(), "Cache-Control", cacheControl))
 	}
 	mime := ctx.String("ContentType", "text/html; charset=utf-8")
 	contentDisposition := ctx.String("ContentDisposition", "inline")
-	r = r.WithContext(context.WithValue(r.Context(), "Content-Disposition", contentDisposition))
+	r = r.Clone(context.WithValue(r.Context(), "Content-Disposition", contentDisposition))
 	e.ServeData(data, fmt.Sprintf("%v", mime), w, r)
 	return
 }
@@ -337,6 +337,7 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 	} else {
 		status = http.StatusOK
 	}
+
 	w.WriteHeader(status)
 	_, _ = w.Write(data)
 }

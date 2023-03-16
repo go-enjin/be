@@ -35,7 +35,7 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	router.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-			r = r.WithContext(context.WithValue(r.Context(), "enjin-id", e.String()))
+			r = r.Clone(context.WithValue(r.Context(), "enjin-id", e.String()))
 
 			if e.debug {
 				w.Header().Set("Server", fmt.Sprintf("%v/%v-%v", globals.BinName, globals.Version, globals.BinHash))
