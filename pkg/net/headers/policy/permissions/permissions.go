@@ -102,11 +102,12 @@ func (h *PolicyHandler) ModifyPolicyMiddleware(fn ModifyPolicyFn) (mw func(next 
 	}
 }
 
-func (h *PolicyHandler) FinalizeMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if policy := h.GetRequestPolicy(r); policy != nil {
-			w.Header().Set("Permissions-Policy", policy.Value())
-		}
-		next.ServeHTTP(w, r)
-	})
+func (h *PolicyHandler) ApplyHeaders(w http.ResponseWriter, r *http.Request) {
+	if policy := h.GetRequestPolicy(r); policy != nil {
+		w.Header().Set("Permissions-Policy", policy.Value())
+	}
+}
+
+func (h *PolicyHandler) FinalizeRequest(w http.ResponseWriter, r *http.Request) {
+	h.ApplyHeaders(w, r)
 }
