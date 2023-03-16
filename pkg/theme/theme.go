@@ -25,6 +25,8 @@ import (
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
+	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/types/theme-types"
 )
@@ -48,6 +50,8 @@ type Config struct {
 	Authors     []Author
 	Extends     string
 
+	GoogleAnalytics GoogleAnalyticsConfig
+
 	RootStyles  []template.CSS
 	BlockStyles map[string][]template.CSS
 	BlockThemes map[string]map[string]interface{}
@@ -57,7 +61,14 @@ type Config struct {
 
 	CacheControl string
 
+	PermissionsPolicy     []permissions.Directive
+	ContentSecurityPolicy csp.ContentSecurityPolicyConfig
+
 	Context context.Context
+}
+
+type GoogleAnalyticsConfig struct {
+	GTM string
 }
 
 type Archetype struct {
@@ -196,6 +207,28 @@ func (t *Theme) initConfig(ctx context.Context) {
 			author.Name = actx.String("name", "")
 			author.Homepage = actx.String("homepage", "")
 			t.Config.Authors = append(t.Config.Authors, author)
+		}
+	}
+
+	if ctx.Has("google-analytics") {
+		if ga, ok := ctx.Get("google-analytics").(map[string]interface{}); ok {
+			if gtm, ok := ga["gtm"].(string); ok {
+				t.Config.GoogleAnalytics.GTM = gtm
+			}
+		}
+	}
+
+	if ctx.Has("permissions-policy") {
+		log.DebugF("permissions-policy theme config unimplemented")
+	}
+
+	if ctx.Has("content-security-policy") {
+		if ctxCsp, ok := ctx.Get("content-security-policy").(map[string]interface{}); ok {
+			// log.WarnF("theme config has content-security-policy - %#+v", ctxCsp)
+			var ee error
+			if t.Config.ContentSecurityPolicy, ee = csp.ParseContentSecurityPolicyConfig(ctxCsp); ee != nil {
+				log.ErrorF("%v theme errors:\n%v", t.Name, ee)
+			}
 		}
 	}
 
@@ -378,15 +411,18 @@ func (t *Theme) initConfig(ctx context.Context) {
 
 func (t *Theme) GetConfig() (config Config) {
 	config = Config{
-		Name:             t.Config.Name,
-		Parent:           t.Config.Parent,
-		License:          t.Config.License,
-		LicenseLink:      t.Config.LicenseLink,
-		Description:      t.Config.Description,
-		Homepage:         t.Config.Homepage,
-		Authors:          t.Config.Authors,
-		Extends:          t.Config.Extends,
-		FontawesomeLinks: make(map[string]string),
+		Name:                  t.Config.Name,
+		Parent:                t.Config.Parent,
+		License:               t.Config.License,
+		LicenseLink:           t.Config.LicenseLink,
+		Description:           t.Config.Description,
+		Homepage:              t.Config.Homepage,
+		Authors:               t.Config.Authors,
+		Extends:               t.Config.Extends,
+		FontawesomeLinks:      make(map[string]string),
+		GoogleAnalytics:       t.Config.GoogleAnalytics,
+		PermissionsPolicy:     t.Config.PermissionsPolicy,
+		ContentSecurityPolicy: t.Config.ContentSecurityPolicy,
 	}
 
 	config.BlockStyles = make(map[string][]template.CSS)
