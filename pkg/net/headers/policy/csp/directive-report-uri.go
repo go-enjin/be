@@ -6,9 +6,11 @@ package csp
 
 import "fmt"
 
+var _ Directive = (*reportUriDirective)(nil)
+
 type reportUriDirective string
 
-func (d reportUriDirective) Type() string {
+func (d reportUriDirective) DirectiveType() string {
 	return "report-uri"
 }
 

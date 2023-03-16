@@ -6,6 +6,10 @@ package csp
 
 import "fmt"
 
+var _ Source = (*KeywordSource)(nil)
+
+const KeywordSourceType string = "keyword-source"
+
 type KeywordSource string
 
 const (
@@ -19,8 +23,23 @@ const (
 	WasmUnsafeEval KeywordSource = `wasm-unsafe-eval`
 )
 
-func (s KeywordSource) Type() string {
-	return "keyword-source"
+func ParseKeywordSource(input string) (s KeywordSource, ok bool) {
+	if l := len(input); l > 2 {
+		if input[0] == '\'' && input[l-1] == '\'' {
+			input = input[1 : l-1]
+		}
+	}
+	v := KeywordSource(input)
+	if ok = v == None || v == Self || v == UnsafeEval || v == UnsafeHashes ||
+		v == UnsafeInline || v == RequireSample || v == StrictDynamic ||
+		v == WasmUnsafeEval; ok {
+		s = v
+	}
+	return
+}
+
+func (s KeywordSource) SourceType() string {
+	return KeywordSourceType
 }
 
 func (s KeywordSource) Value() (value string) {

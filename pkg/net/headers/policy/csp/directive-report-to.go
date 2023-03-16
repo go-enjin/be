@@ -6,9 +6,11 @@ package csp
 
 import "fmt"
 
+var _ Directive = (*reportToDirective)(nil)
+
 type reportToDirective string
 
-func (d reportToDirective) Type() string {
+func (d reportToDirective) DirectiveType() string {
 	return "report-to"
 }
 

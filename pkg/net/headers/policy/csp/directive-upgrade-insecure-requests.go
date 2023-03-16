@@ -4,9 +4,11 @@
 
 package csp
 
+var _ Directive = (*upgradeInsecureRequestsDirective)(nil)
+
 type upgradeInsecureRequestsDirective string
 
-func (d upgradeInsecureRequestsDirective) Type() string {
+func (d upgradeInsecureRequestsDirective) DirectiveType() string {
 	return string(d)
 }
 

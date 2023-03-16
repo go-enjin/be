@@ -7,17 +7,32 @@ package csp
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/go-enjin/be/pkg/log"
 )
 
+var _ Source = (*SchemeSource)(nil)
+
+const SchemeSourceType string = "scheme-source"
+
 type SchemeSource string
 
 var (
-	rxSchemeSource = regexp.MustCompile(`^\s*([a-z0-9]+[-.a-z0-9]*):?\s*$`)
+	rxSchemeSource = regexp.MustCompile(`^\s*([a-z0-9][-+.a-z0-9]*):\s*$`)
 )
 
+func ParseSchemeSource(input string) (s SchemeSource, ok bool) {
+	if ok = rxSchemeSource.MatchString(input); ok {
+		s = NewSchemeSource(input)
+	}
+	return
+}
+
 func NewSchemeSource(value string) (v SchemeSource) {
+	if !strings.HasSuffix(value, ":") {
+		value += ":"
+	}
 	if rxSchemeSource.MatchString(value) {
 		m := rxSchemeSource.FindAllStringSubmatch(value, 1)
 		v = SchemeSource(m[0][1])
@@ -27,8 +42,8 @@ func NewSchemeSource(value string) (v SchemeSource) {
 	return
 }
 
-func (s SchemeSource) Type() string {
-	return "scheme-source"
+func (s SchemeSource) SourceType() string {
+	return SchemeSourceType
 }
 
 func (s SchemeSource) Value() (value string) {

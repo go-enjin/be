@@ -6,9 +6,14 @@ package csp
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/go-enjin/be/pkg/log"
 )
+
+var _ Source = (*HostSource)(nil)
+
+const HostSourceType string = "host-source"
 
 type HostSource struct {
 	scheme string
@@ -18,8 +23,20 @@ type HostSource struct {
 }
 
 var (
-	rxHostSource = regexp.MustCompile(`^\s*([a-z0-9]+[-.a-z0-9]*:)?(?://)?([^:/\s]+)?(:\d+)?(/.+?)?\s*$`)
+	rxHostSource       = regexp.MustCompile(`^\s*([a-z0-9]+[-.a-z0-9]*:)?(?://)?([^:/\s]+)?(:\d+)?(/.+?)?\s*$`)
+	rxHostSourceDomain = regexp.MustCompile(`^\s*([a-zA-Z0-9][-a-zA-Z0-9]*\\.)+[A-Za-z]{2, 6}\s*$`)
 )
+
+func ParseHostSource(input string) (s HostSource, ok bool) {
+	if ok = rxHostSourceDomain.MatchString(input); ok {
+		s = HostSource{
+			host: strings.TrimSpace(input),
+		}
+	} else if ok = rxHostSource.MatchString(input); ok {
+		s = NewHostSource(input)
+	}
+	return
+}
 
 func NewHostSource(value string) (v HostSource) {
 	if rxHostSource.MatchString(value) {
@@ -40,8 +57,8 @@ func NewHostSource(value string) (v HostSource) {
 	return
 }
 
-func (s HostSource) Type() string {
-	return "host-source"
+func (s HostSource) SourceType() string {
+	return HostSourceType
 }
 
 func (s HostSource) Value() (value string) {

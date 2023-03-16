@@ -5,7 +5,7 @@
 package csp
 
 type Directive interface {
-	Type() string
+	DirectiveType() string
 	Value() string
 }
 
@@ -15,9 +15,11 @@ type SourceDirective interface {
 	Append(sources ...Source)
 }
 
+var _ Directive = (*directive)(nil)
+
 type directive struct {
 	name    string
-	sources []Source
+	sources Sources
 }
 
 func NewGenericSourceDirective(name string, sources ...Source) (d Directive) {
@@ -28,7 +30,7 @@ func NewGenericSourceDirective(name string, sources ...Source) (d Directive) {
 	return
 }
 
-func (d *directive) Type() string {
+func (d *directive) DirectiveType() string {
 	return d.name
 }
 
@@ -38,7 +40,7 @@ func (d *directive) Value() (value string) {
 		value += " " + None.Value()
 		return
 	}
-	for _, s := range d.sources {
+	for _, s := range d.sources.Sort() {
 		value += " " + s.Value()
 	}
 	return

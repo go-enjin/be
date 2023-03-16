@@ -4,6 +4,8 @@
 
 package csp
 
+var _ Directive = (*sandboxDirective)(nil)
+
 type SandboxValue string
 
 const (
@@ -30,7 +32,7 @@ func NewSandbox(values ...SandboxValue) Directive {
 	return sandboxDirective(values)
 }
 
-func (d sandboxDirective) Type() string {
+func (d sandboxDirective) DirectiveType() string {
 	return "sandbox"
 }
 
