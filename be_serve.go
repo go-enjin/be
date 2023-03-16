@@ -28,6 +28,7 @@ import (
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net"
+	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/serve"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/request/argv"
@@ -35,7 +36,12 @@ import (
 	"github.com/go-enjin/be/pkg/theme"
 )
 
-const ServeStatusResponseKey beContext.RequestKey = "ServeStatusResponse"
+const (
+	ServeStatusResponseKey beContext.RequestKey = "ServeStatusResponse"
+
+	DefaultGtmDomain   = "www.googletagmanager.com"
+	DefaultGtmNonceTag = "google-tag-manager"
+)
 
 func (e *Enjin) ServeRedirect(destination string, w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, destination, http.StatusSeeOther)
@@ -190,6 +196,44 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 		"UserAgent":  r.UserAgent(),
 		"Language":   reqLangTag.String(),
 	})
+	ctx.SetSpecific("RequestContext", r.Context())
+
+	var extraImgSrc, extraScriptSrc csp.Sources
+	if len(t.Config.ContentSecurityPolicy.ImgSrc) > 0 {
+		extraImgSrc = extraImgSrc.Append(t.Config.ContentSecurityPolicy.ImgSrc...)
+	}
+	if len(t.Config.ContentSecurityPolicy.ScriptSrc) > 0 {
+		extraScriptSrc = extraImgSrc.Append(t.Config.ContentSecurityPolicy.ScriptSrc...)
+	}
+
+	cspRequestNonces := beContext.New()
+	if t.Config.GoogleAnalytics.GTM != "" {
+		var gtmNonce string
+		gtmNonce, r = e.contentSecurityPolicy.GetRequestNonce(DefaultGtmNonceTag, r)
+		cspRequestNonces.Set(DefaultGtmNonceTag, gtmNonce)
+		extraScriptSrc = extraScriptSrc.Append(csp.NewNonceSource(gtmNonce), csp.NewHostSource(DefaultGtmDomain))
+		extraImgSrc = extraImgSrc.Append(csp.NewHostSource(DefaultGtmDomain))
+		ctx.SetSpecific("GoogleTagManagerHeadScriptNonce", gtmNonce)
+	}
+
+	contentSecurityPolicy := e.contentSecurityPolicy.GetRequestPolicy(r)
+	if len(extraImgSrc) > 0 {
+		contentSecurityPolicy.Add(csp.NewImgSrc(extraImgSrc...))
+	}
+	if len(extraScriptSrc) > 0 {
+		contentSecurityPolicy.Add(csp.NewScriptSrc(extraScriptSrc...))
+	}
+
+	ctx.SetSpecific("RequestPolicy", map[string]interface{}{
+		"Permissions": e.permissionsPolicy.GetRequestPolicy(r),
+		"ContentSecurity": struct {
+			Policy csp.Policy
+			Nonces beContext.Context
+		}{
+			Policy: contentSecurityPolicy,
+			Nonces: cspRequestNonces,
+		},
+	})
 
 	ctx.SetSpecific("BaseUrl", net.BaseURL(r))
 	ctx.SetSpecific("LangPrinter", lang.GetPrinterFromRequest(r))
@@ -264,6 +308,8 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	mime := ctx.String("ContentType", "text/html; charset=utf-8")
 	contentDisposition := ctx.String("ContentDisposition", "inline")
 	r = r.Clone(context.WithValue(r.Context(), "Content-Disposition", contentDisposition))
+	e.permissionsPolicy.FinalizeRequest(w, r)
+	e.contentSecurityPolicy.FinalizeRequest(w, r)
 	e.ServeData(data, fmt.Sprintf("%v", mime), w, r)
 	return
 }

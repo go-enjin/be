@@ -84,6 +84,8 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	// operational security measures
 	router.Use(deny.Middleware)
 	router.Use(e.domainsMiddleware)
+	router.Use(e.permissionsPolicy.PrepareRequestMiddleware)
+	router.Use(e.contentSecurityPolicy.PrepareRequestMiddleware)
 	router.Use(e.requestFiltersMiddleware)
 
 	// theme static files
@@ -111,22 +113,16 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		}
 	}
 
-	router.Use(e.permissionsPolicy.PrepareRequestMiddleware)
-	router.Use(e.contentSecurityPolicy.PrepareRequestMiddleware)
-
 	for _, f := range e.Features() {
 		if ppm, ok := f.(feature.PermissionsPolicyModifier); ok {
-			log.DebugF("including %v use-after modify permissions policy middleware", f.Tag())
+			log.DebugF("including %v modify permissions policy middleware", f.Tag())
 			router.Use(e.permissionsPolicy.ModifyPolicyMiddleware(ppm.ModifyPermissionsPolicy))
 		}
 		if cspm, ok := f.(feature.ContentSecurityPolicyModifier); ok {
-			log.DebugF("including %v use-after modify content security policy middleware", f.Tag())
+			log.DebugF("including %v modify content security policy middleware", f.Tag())
 			router.Use(e.contentSecurityPolicy.ModifyPolicyMiddleware(cspm.ModifyContentSecurityPolicy))
 		}
 	}
-
-	router.Use(e.permissionsPolicy.FinalizeMiddleware)
-	router.Use(e.contentSecurityPolicy.FinalizeMiddleware)
 
 	for _, f := range e.Features() {
 		if proc, ok := f.(feature.Processor); ok {
