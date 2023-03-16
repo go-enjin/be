@@ -179,7 +179,7 @@ func (h *PolicyHandler) ApplyHeaders(w http.ResponseWriter, r *http.Request) {
 				Value()
 			w.Header().Set("Reporting-Endpoints", `self-endpoint="`+reportUri+`"`)
 			w.Header().Set("Content-Security-Policy", value)
-			log.WarnF("setting request content security policy header: %v", value)
+			// log.DebugF("setting request content security policy header: %v", value)
 		} else {
 			log.ErrorF("request with content security policy missing nonce: %#+v", policy)
 		}
