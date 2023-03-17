@@ -176,6 +176,7 @@ func (h *PolicyHandler) ApplyHeaders(w http.ResponseWriter, r *http.Request) {
 			value := policy.
 				Set(NewReportUri(reportUri)).
 				Set(NewReportTo("self-endpoint")).
+				Collapse().
 				Value()
 			w.Header().Set("Reporting-Endpoints", `self-endpoint="`+reportUri+`"`)
 			w.Header().Set("Content-Security-Policy", value)
