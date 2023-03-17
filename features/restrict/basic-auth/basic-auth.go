@@ -357,7 +357,7 @@ func (f *Feature) Startup(ctx *cli.Context) (err error) {
 		for _, env := range environ {
 			if parts := rxSplitEquals.FindStringSubmatch(env); len(parts) == 3 {
 				if name, password, ok := f.parseEnvUser(parts[1], parts[2]); ok {
-					log.DebugF("parsed env user: '%v', '%v'", parts[1], parts[2])
+					// log.DebugF("parsed env user: '%v', '%v'", parts[1], parts[2])
 					f.AddEnvUser(name, password)
 					loadedUsers = append(loadedUsers, name)
 				}
@@ -391,7 +391,7 @@ func (f *Feature) parseEnvUser(key, value string) (name, password string, ok boo
 			name = name[lc:]
 			password = value
 			ok = true
-			log.DebugF("user: %v, pass: %v", name, password)
+			// log.DebugF("user: %v, pass: %v", name, password)
 		}
 	}
 	return
@@ -413,7 +413,7 @@ func (f *Feature) parseEnvGroup(key, value string) (name string, users []string,
 				}
 			}
 			ok = len(users) > 0
-			log.DebugF("group: %v, users: %v", name, users)
+			// log.DebugF("group: %v, users: %v", name, users)
 		}
 	}
 	return
@@ -429,7 +429,7 @@ func (f *Feature) checkRequestIgnored(r *http.Request) (ignore bool) {
 	if len(f.ignorePaths) > 0 {
 		urlPath := forms.TrimQueryParams(r.URL.Path)
 		lup := len(urlPath)
-		log.DebugF("check request ignored: %v - %v", urlPath, f.ignorePaths)
+		// log.DebugF("check request ignored: %v - %v", urlPath, f.ignorePaths)
 		for path, specific := range f.ignorePaths {
 			if specific {
 				if urlPath == path {
@@ -489,7 +489,7 @@ func (f *Feature) RestrictServePage(ctx beContext.Context, w http.ResponseWriter
 	if f.checkRequestIgnored(r) {
 		allow = true
 		ro = r
-		log.DebugF("basic-auth ignoring page: %v", r.URL.Path)
+		// log.DebugF("basic-auth ignoring page: %v", r.URL.Path)
 		return
 	}
 
@@ -504,50 +504,50 @@ func (f *Feature) RestrictServePage(ctx beContext.Context, w http.ResponseWriter
 	}
 
 	reqCtx := f.authenticator.NewContext(context.Background(), r)
-	authInfo := auth.FromContext(reqCtx)
-	authInfo.UpdateHeaders(w.Header())
-	authenticated := authInfo != nil && authInfo.Authenticated
+	var authInfo *auth.Info
+	var authenticated bool
+	if authInfo = auth.FromContext(reqCtx); authInfo != nil {
+		// authInfo.UpdateHeaders(w.Header())
+		authenticated = authInfo != nil && authInfo.Authenticated
+	}
 
-	if len(restricted) > 0 {
-		log.DebugF("page restrictions found: %v", restricted)
+	if f.restrictAllPages {
+		allow = authenticated
+	} else if len(restricted) > 0 {
 		// restricted is a list of group names which the user must have at, least one of in their grouping
 		restricted = beStrings.StringsToKebabs(restricted...)
 		// all users have "public" (anonymous), no auth required
-		if beStrings.StringInStrings("public", restricted...) {
-			allow = true
-		} else if authenticated {
-			// all logged in users also have "user"
-			userGroups := f.groupsProvider(authInfo.Username)
-			for _, restrict := range restricted {
-				if beStrings.StringInStrings(restrict, "user", "users") || beStrings.StringInStrings(restrict, userGroups...) {
-					allow = true
-					break
+		if allow = beStrings.StringInStrings("public", restricted...); !allow {
+			if authInfo != nil && authInfo.Authenticated {
+				userGroups := f.groupsProvider(authInfo.Username)
+				for _, group := range restricted {
+					if allow = beStrings.StringInStrings(group, "user", "users") || beStrings.StringInStrings(group, userGroups...); allow {
+						break
+					}
 				}
 			}
 		}
-	} else {
-		log.DebugF("no page restrictions found")
-		allow = true
 	}
 
 	if allow {
-		if authenticated {
-			log.DebugF("basic-auth allowing %v user page: %v", authInfo.Username, r.URL.Path)
+		if authInfo != nil {
+			co["BasicAuthUsername"] = authInfo.Username
+			ro = r.WithContext(context.WithValue(r.Context(), "BasicAuthUsername", authInfo.Username))
 		} else {
-			log.DebugF("basic-auth allowing %v user page: %v", "anonymous", r.URL.Path)
+			co["BasicAuthUsername"] = "anonymous"
+			ro = r.WithContext(context.WithValue(r.Context(), "BasicAuthUsername", "anonymous"))
 		}
-	} else {
-		log.DebugF("basic-auth denying %v user page: %v", "anonymous", r.URL.Path)
+		ro = ro.WithContext(context.WithValue(ro.Context(), "BasicAuthDenied", false))
+		log.DebugF("basic-auth allowing %v user request: %v", authInfo.Username, r.URL.Path)
+		return
 	}
 
-	if authenticated {
-		co["BasicAuthUsername"] = authInfo.Username
-		ro = r.WithContext(context.WithValue(r.Context(), "BasicAuthUsername", authInfo.Username))
-		ro = ro.WithContext(context.WithValue(ro.Context(), "BasicAuthDenied", false))
-		return
+	if authInfo != nil {
+		authInfo.UpdateHeaders(w.Header())
 	}
 	ro = r.WithContext(context.WithValue(r.Context(), "BasicAuthUsername", "anonymous"))
 	ro = ro.WithContext(context.WithValue(ro.Context(), "BasicAuthDenied", true))
+	log.WarnF("basic-auth prompting %v user request: %v", "anonymous", r.URL.Path)
 	return
 }
 
@@ -555,7 +555,7 @@ func (f *Feature) RestrictServeData(data []byte, mime string, w http.ResponseWri
 	if f.checkRequestIgnored(r) {
 		allow = true
 		out = r
-		log.DebugF("basic-auth ignoring request: %v", r.URL.Path)
+		// log.DebugF("basic-auth ignoring request: %v", r.URL.Path)
 		return
 	}
 
@@ -568,60 +568,60 @@ func (f *Feature) RestrictServeData(data []byte, mime string, w http.ResponseWri
 		return
 	}
 
-	reqCtx := f.authenticator.NewContext(context.Background(), r)
-	authInfo := auth.FromContext(reqCtx)
-	authInfo.UpdateHeaders(w.Header())
+	restricted := f.getRestrictionGroups(r, f.restrictAllData)
 
-	// check restrict-all-data first
-	if f.restrictAllData {
-		allow = authInfo != nil && authInfo.Authenticated
+	reqCtx := f.authenticator.NewContext(context.Background(), r)
+	var authenticated bool
+	var authInfo *auth.Info
+	if authInfo = auth.FromContext(reqCtx); authInfo != nil {
+		// authInfo.UpdateHeaders(w.Header())
+		authenticated = authInfo != nil && authInfo.Authenticated
 	}
 
-	if !allow {
-		// check for any restriction groups
-		if restricted := f.getRestrictionGroups(r, f.restrictAllData); len(restricted) > 0 {
-			if beStrings.StringInStrings("public", restricted...) {
-				// public requires no auth
-				allow = true
-			} else {
-				if authInfo != nil && authInfo.Authenticated {
-					userGroups := f.groupsProvider(authInfo.Username)
-					for _, group := range restricted {
-						if beStrings.StringInStrings(group, "user", "users") || beStrings.StringInStrings(group, userGroups...) {
-							allow = true
-							break
-						}
+	if f.restrictAllData {
+		allow = authenticated
+	} else if len(restricted) > 0 {
+		// restricted is a list of group names which the user must have at, least one of in their grouping
+		restricted = beStrings.StringsToKebabs(restricted...)
+		// all users have "public" (anonymous), no auth required
+		if allow = beStrings.StringInStrings("public", restricted...); !allow {
+			if authInfo != nil && authInfo.Authenticated {
+				userGroups := f.groupsProvider(authInfo.Username)
+				for _, group := range restricted {
+					if allow = beStrings.StringInStrings(group, "user", "users") || beStrings.StringInStrings(group, userGroups...); allow {
+						break
 					}
 				}
 			}
-		} else {
-			// no groups found, default is "public"
-			allow = true
 		}
 	}
 
-	if !allow && len(f.restrictDataMime) > 0 {
+	if len(f.restrictDataMime) > 0 {
 		// check the mime restrictions
 		mime = beStrings.GetBasicMime(mime)
 		for _, rm := range f.restrictDataMime {
 			if mime == rm {
-				allow = authInfo != nil && authInfo.Authenticated
+				allow = authenticated
 				break
 			}
 		}
 	}
 
-	// actually process the allow/deny state
+	// actually process the authenticated/deny state
 
 	if allow {
 		out = r.WithContext(context.WithValue(r.Context(), "BasicAuthUsername", authInfo.Username))
 		out = out.WithContext(context.WithValue(out.Context(), "BasicAuthDenied", false))
-		// log.DebugF("basic-auth allowing %v user request: %v", authInfo.Username, r.URL.Path)
+		log.DebugF("basic-auth allowing %v user request: %v", authInfo.Username, r.URL.Path)
 		return
+	}
+
+	if authInfo != nil {
+		authInfo.UpdateHeaders(w.Header())
 	}
 	out = r.WithContext(context.WithValue(r.Context(), "BasicAuthUsername", "anonymous"))
 	out = out.WithContext(context.WithValue(out.Context(), "BasicAuthDenied", true))
-	log.WarnF("basic-auth denying %v user request: %v", "anonymous", r.URL.Path)
+	log.WarnF("basic-auth prompting %v user request: %v", "anonymous", r.URL.Path)
 	return
 }
 
