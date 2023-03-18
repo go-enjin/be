@@ -203,7 +203,7 @@ func (h *PolicyHandler) ModifyPolicyMiddleware(fn ModifyPolicyFn) (mw func(next 
 func (h *PolicyHandler) PreparePageContext(config ContentSecurityPolicyConfig, ctx beContext.Context, r *http.Request) (pccs *PageContextContentSecurity, modified *http.Request) {
 
 	prepareNonce := func(name string, r *http.Request, p Policy) (m *http.Request) {
-		if p == nil || p.None(name) || p.Unsafe(name) {
+		if p == nil || p.None(name) || (name != "script-src" && p.Unsafe(name)) {
 			m = r
 			return
 		}
