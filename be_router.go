@@ -61,6 +61,8 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	router.Use(middleware.RequestID)
 	router.Use(e.panicMiddleware)
 
+	// request modifier features are expected to modify the request object
+	// in-place, before any further feature processing
 	for _, f := range e.Features() {
 		tag := f.Tag()
 		if rm, ok := f.(feature.RequestModifier); ok {
@@ -75,6 +77,9 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		}
 	}
 
+	// request rewriter features are expected to return a modified request
+	// object, potentially dropping data if requests are modified WithContext
+	// and not Clone
 	for _, f := range e.Features() {
 		tag := f.Tag()
 		if rm, ok := f.(feature.RequestRewriter); ok {
@@ -104,6 +109,9 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	router.Use(e.contentSecurityPolicy.PrepareRequestMiddleware)
 	router.Use(e.requestFiltersMiddleware)
 
+	// header policy modifier features do not block next.ServeHTTP calls and
+	// must happen before blocking middleware features (ones that may not call
+	// next.ServeHTTP having already served the response)
 	for _, f := range e.Features() {
 		if ppm, ok := f.(feature.PermissionsPolicyModifier); ok {
 			log.DebugF("including %v modify permissions policy middleware", f.Tag())
@@ -115,7 +123,7 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		}
 	}
 
-	// theme static files
+	// theme static files [blocking middleware]
 	if t, ee := e.GetTheme(); ee != nil {
 		log.WarnF("not including any theme middleware: %v", ee)
 	} else {
@@ -125,6 +133,8 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		}
 	}
 
+	// potentially blocking middleware features that do not require standard
+	// page rendering or data response facilities
 	for _, f := range e.Features() {
 		if mf, ok := f.(feature.Middleware); ok {
 			if mw := mf.Use(e); mw != nil {
@@ -133,6 +143,8 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		}
 	}
 
+	// header modifier features that happen after potentially blocking features
+	// that did not actually serve a response
 	for _, f := range e.Features() {
 		if hm, ok := f.(feature.HeadersModifier); ok {
 			log.DebugF("including %v use-after modify headers middleware", f.Tag())
@@ -140,6 +152,7 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		}
 	}
 
+	// processor middleware features are potentially blocking
 	for _, f := range e.Features() {
 		if proc, ok := f.(feature.Processor); ok {
 			log.DebugF("including %v processor middleware", f.Tag())
@@ -151,6 +164,7 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		}
 	}
 
+	// route processor middleware features, in order of longest to shortest
 	sortedRoutes := beStrings.SortByLengthDesc(maps.Keys(e.eb.processors))
 	for _, route := range sortedRoutes {
 		log.DebugF("including enjin %v route processor middleware", route)
@@ -167,8 +181,11 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		})
 	}
 
+	// enjin built pages middleware is potentially blocking
 	router.Use(e.pagesMiddleware)
 
+	// middleware features have a final chance to apply enjin changes before
+	// error handling router changes are made
 	for _, f := range e.Features() {
 		if mf, ok := f.(feature.Middleware); ok {
 			if err = mf.Apply(e); err != nil {
@@ -177,6 +194,7 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		}
 	}
 
+	// error handling router changes
 	router.NotFound(e.ServeNotFound)
 	router.MethodNotAllowed(e.Serve405)
 
