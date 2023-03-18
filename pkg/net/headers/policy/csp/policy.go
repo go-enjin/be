@@ -5,6 +5,10 @@
 package csp
 
 import (
+	"sort"
+
+	"github.com/fvbommel/sortorder"
+
 	"github.com/go-enjin/be/pkg/maps"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
@@ -16,8 +20,18 @@ type Policy interface {
 	Add(d Directive) Policy
 	// Value returns a string suitable for use in HTTP header responses
 	Value() string
+	// Find returns all directive instances of named type
+	Find(name string) (found []Directive)
+	// None returns true if Empty or there is only the None source present in the named directive
+	None(name string) (none bool)
+	// Empty returns true if there are no directives present
+	Empty() (empty bool)
+	// Unsafe returns true if any "unsafe" sources are present in the named directive
+	Unsafe(name string) (unsafe bool)
 	// Collapse reduces directives of the same type and places default-src first, returns a new Policy
 	Collapse() Policy
+	// Directives returns the list of directives present
+	Directives() (directives []Directive)
 }
 
 type cPolicy []Directive
@@ -29,7 +43,36 @@ func NewPolicy(directives ...Directive) (p Policy) {
 }
 
 func (p *cPolicy) Value() (value string) {
-	for idx, d := range *p {
+	var sorted []Directive
+	sorted = append(sorted, *p...)
+	sort.Slice(sorted, func(i, j int) (less bool) {
+		a := sorted[i]
+		b := sorted[j]
+		aType := a.DirectiveType()
+		bType := b.DirectiveType()
+		aIsReport := beStrings.StringInStrings(aType, "report-to", "report-uri")
+		bIsReport := beStrings.StringInStrings(bType, "report-to", "report-uri")
+		aIsDefault := aType == "default-src"
+		bIsDefault := bType == "default-src"
+		switch {
+		case aIsDefault && !bIsDefault:
+			less = true
+		case aIsDefault && bIsDefault:
+			less = true
+		case !aIsDefault && bIsDefault:
+			less = false
+		case aIsReport && !bIsReport:
+			less = false
+		case aIsReport && bIsReport:
+			less = sortorder.NaturalLess(aType, bType)
+		case !aIsReport && bIsReport:
+			less = true
+		default:
+			less = sortorder.NaturalLess(aType, bType)
+		}
+		return
+	})
+	for idx, d := range sorted {
 		if idx > 0 {
 			value += " ; "
 		}
@@ -67,6 +110,64 @@ func (p *cPolicy) makeDataMap() (data map[string][]Directive, order []string) {
 		}
 		data[dType] = append(data[dType], d)
 	}
+	return
+}
+
+func (p *cPolicy) Find(name string) (found []Directive) {
+	for _, d := range *p {
+		if d.DirectiveType() == name {
+			found = append(found, d)
+		}
+	}
+	return
+}
+
+func (p *cPolicy) None(name string) (none bool) {
+	found := p.Find(name)
+	if none = len(found) == 0; !none {
+		var notNone bool
+		for _, d := range found {
+			if sd, ok := d.(SourceDirective); ok {
+				sources := sd.Sources()
+				switch len(sources) {
+				case 1:
+					none = sources[0].Value() == None.Value()
+				case 0:
+					none = true
+				default:
+					notNone = true
+				}
+			}
+		}
+		if none && notNone {
+			none = false
+		}
+	}
+	return
+}
+
+func (p *cPolicy) Empty() (empty bool) {
+	empty = len(*p) == 0
+	return
+}
+
+func (p *cPolicy) Unsafe(name string) (unsafe bool) {
+	for _, d := range p.Find(name) {
+		if sd, ok := d.(SourceDirective); ok {
+			for _, src := range sd.Sources() {
+				switch src.Value() {
+				case UnsafeInline.Value(), UnsafeEval.Value(), UnsafeHashes.Value():
+					unsafe = true
+					return
+				}
+			}
+		}
+	}
+	return
+}
+
+func (p *cPolicy) Directives() (directives []Directive) {
+	directives = append(directives, *p...)
 	return
 }
 
