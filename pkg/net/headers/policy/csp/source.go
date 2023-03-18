@@ -28,6 +28,34 @@ func (s Sources) Append(sources ...Source) (modified Sources) {
 	return
 }
 
+func (s Sources) FilterUnsafeInline() (filtered Sources) {
+	var hasNonceHash bool
+	for _, src := range s {
+		srcType := src.SourceType()
+		if hasNonceHash = srcType == NonceSourceType || srcType == HashSourceType; hasNonceHash {
+			break
+		}
+	}
+	for _, src := range s {
+		if hasNonceHash && src.Value() == UnsafeInline.Value() {
+			continue
+		}
+		filtered = append(filtered, src)
+	}
+	return
+}
+
+func (s Sources) Collapse() (collapsed Sources) {
+	check := make(map[string]Source)
+	for _, src := range s {
+		check[src.Value()] = src
+	}
+	for _, src := range check {
+		collapsed = append(collapsed, src)
+	}
+	return
+}
+
 func (s Sources) Sort() (sorted Sources) {
 	sorted = append(sorted, s...)
 	sort.Slice(sorted, func(i, j int) (less bool) {
