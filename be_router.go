@@ -102,6 +102,17 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	router.Use(e.contentSecurityPolicy.PrepareRequestMiddleware)
 	router.Use(e.requestFiltersMiddleware)
 
+	for _, f := range e.Features() {
+		if ppm, ok := f.(feature.PermissionsPolicyModifier); ok {
+			log.DebugF("including %v modify permissions policy middleware", f.Tag())
+			router.Use(e.permissionsPolicy.ModifyPolicyMiddleware(ppm.ModifyPermissionsPolicy))
+		}
+		if cspm, ok := f.(feature.ContentSecurityPolicyModifier); ok {
+			log.DebugF("including %v modify content security policy middleware", f.Tag())
+			router.Use(e.contentSecurityPolicy.ModifyPolicyMiddleware(cspm.ModifyContentSecurityPolicy))
+		}
+	}
+
 	// theme static files
 	if t, ee := e.GetTheme(); ee != nil {
 		log.WarnF("not including any theme middleware: %v", ee)
@@ -124,17 +135,6 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		if hm, ok := f.(feature.HeadersModifier); ok {
 			log.DebugF("including %v use-after modify headers middleware", f.Tag())
 			router.Use(headers.ModifyAfterUseMiddleware(hm.ModifyHeaders))
-		}
-	}
-
-	for _, f := range e.Features() {
-		if ppm, ok := f.(feature.PermissionsPolicyModifier); ok {
-			log.DebugF("including %v modify permissions policy middleware", f.Tag())
-			router.Use(e.permissionsPolicy.ModifyPolicyMiddleware(ppm.ModifyPermissionsPolicy))
-		}
-		if cspm, ok := f.(feature.ContentSecurityPolicyModifier); ok {
-			log.DebugF("including %v modify content security policy middleware", f.Tag())
-			router.Use(e.contentSecurityPolicy.ModifyPolicyMiddleware(cspm.ModifyContentSecurityPolicy))
 		}
 	}
 
