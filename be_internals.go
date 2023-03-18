@@ -3,6 +3,8 @@ package be
 import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/net/headers"
+	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
+	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/theme"
 )
@@ -59,5 +61,15 @@ func (e *Enjin) Transformers() (transformers map[string]feature.TransformOutputF
 
 func (e *Enjin) Slugsums() (enabled bool) {
 	enabled = e.eb.slugsums
+	return
+}
+
+func (e *Enjin) ContentSecurityPolicy() (handler *csp.PolicyHandler) {
+	handler = e.contentSecurityPolicy
+	return
+}
+
+func (e *Enjin) PermissionsPolicy() (handler *permissions.PolicyHandler) {
+	handler = e.permissionsPolicy
 	return
 }
