@@ -38,9 +38,6 @@ import (
 
 const (
 	ServeStatusResponseKey beContext.RequestKey = "ServeStatusResponse"
-
-	DefaultGtmDomain   = "www.googletagmanager.com"
-	DefaultGtmNonceTag = "google-tag-manager"
 )
 
 func (e *Enjin) ServeRedirect(destination string, w http.ResponseWriter, r *http.Request) {
@@ -198,41 +195,11 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	})
 	ctx.SetSpecific("RequestContext", r.Context())
 
-	var extraImgSrc, extraScriptSrc csp.Sources
-	if len(t.Config.ContentSecurityPolicy.ImgSrc) > 0 {
-		extraImgSrc = extraImgSrc.Append(t.Config.ContentSecurityPolicy.ImgSrc...)
-	}
-	if len(t.Config.ContentSecurityPolicy.ScriptSrc) > 0 {
-		extraScriptSrc = extraImgSrc.Append(t.Config.ContentSecurityPolicy.ScriptSrc...)
-	}
-
-	cspRequestNonces := beContext.New()
-	if t.Config.GoogleAnalytics.GTM != "" {
-		var gtmNonce string
-		gtmNonce, r = e.contentSecurityPolicy.GetRequestNonce(DefaultGtmNonceTag, r)
-		cspRequestNonces.Set(DefaultGtmNonceTag, gtmNonce)
-		extraScriptSrc = extraScriptSrc.Append(csp.NewNonceSource(gtmNonce), csp.NewHostSource(DefaultGtmDomain))
-		extraImgSrc = extraImgSrc.Append(csp.NewHostSource(DefaultGtmDomain))
-		ctx.SetSpecific("GoogleTagManagerHeadScriptNonce", gtmNonce)
-	}
-
-	contentSecurityPolicy := e.contentSecurityPolicy.GetRequestPolicy(r)
-	if len(extraImgSrc) > 0 {
-		contentSecurityPolicy.Add(csp.NewImgSrc(extraImgSrc...))
-	}
-	if len(extraScriptSrc) > 0 {
-		contentSecurityPolicy.Add(csp.NewScriptSrc(extraScriptSrc...))
-	}
-
+	var pccs *csp.PageContextContentSecurity
+	pccs, r = e.contentSecurityPolicy.PreparePageContext(t.Config.ContentSecurityPolicy, ctx, r)
 	ctx.SetSpecific("RequestPolicy", map[string]interface{}{
-		"Permissions": e.permissionsPolicy.GetRequestPolicy(r),
-		"ContentSecurity": struct {
-			Policy csp.Policy
-			Nonces beContext.Context
-		}{
-			Policy: contentSecurityPolicy,
-			Nonces: cspRequestNonces,
-		},
+		"Permissions":     e.permissionsPolicy.GetRequestPolicy(r),
+		"ContentSecurity": pccs,
 	})
 
 	ctx.SetSpecific("BaseUrl", net.BaseURL(r))
