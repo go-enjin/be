@@ -22,6 +22,8 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
+	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
 	"github.com/go-enjin/be/pkg/pagecache"
 	"github.com/go-enjin/be/pkg/types/site"
 
@@ -38,6 +40,9 @@ type Service interface {
 	ThemeNames() (names []string)
 	ServerName() (name string)
 	ServiceInfo() (listen string, port int)
+
+	ContentSecurityPolicy() (handler *csp.PolicyHandler)
+	PermissionsPolicy() (handler *permissions.PolicyHandler)
 
 	ServeRedirect(destination string, w http.ResponseWriter, r *http.Request)
 
