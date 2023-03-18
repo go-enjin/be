@@ -40,7 +40,8 @@ func (d *directive) Value() (value string) {
 		value += " " + None.Value()
 		return
 	}
-	for _, s := range d.sources.Sort() {
+	sources := d.sources.FilterUnsafeInline().Collapse()
+	for _, s := range sources.Sort() {
 		value += " " + s.Value()
 	}
 	return
