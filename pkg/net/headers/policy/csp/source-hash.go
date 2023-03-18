@@ -27,11 +27,11 @@ func ParseHashSource(input string) (s HashSource, ok bool) {
 		}
 	}
 	if ok = strings.HasPrefix(input, "sha256-"); ok {
-		s = HashSource{algo: "sha256", hash: input[8:]}
+		s = HashSource{algo: "sha256", hash: input[7:]}
 	} else if ok = strings.HasPrefix(input, "sha384-"); ok {
-		s = HashSource{algo: "sha384", hash: input[8:]}
+		s = HashSource{algo: "sha384", hash: input[7:]}
 	} else if ok = strings.HasPrefix(input, "sha512-"); ok {
-		s = HashSource{algo: "sha512", hash: input[8:]}
+		s = HashSource{algo: "sha512", hash: input[7:]}
 	}
 	return
 }
