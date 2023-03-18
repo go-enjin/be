@@ -26,9 +26,11 @@ import (
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/net/ip/deny"
 	"github.com/go-enjin/be/pkg/request/argv"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
@@ -149,8 +151,10 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		}
 	}
 
-	for route, processor := range e.eb.processors {
+	sortedRoutes := beStrings.SortByLengthDesc(maps.Keys(e.eb.processors))
+	for _, route := range sortedRoutes {
 		log.DebugF("including enjin %v route processor middleware", route)
+		processor := e.eb.processors[route]
 		router.Use(func(next http.Handler) http.Handler {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.URL.Path == route {
