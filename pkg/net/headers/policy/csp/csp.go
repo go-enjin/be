@@ -18,7 +18,6 @@ import (
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/serve"
-	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 func StrictContentSecurityPolicy() Policy {
@@ -38,9 +37,31 @@ func DefaultContentSecurityPolicy() Policy {
 }
 
 const (
-	PolicyTag        beContext.RequestKey = "content-security-policy"
-	ReportNonceTag   beContext.RequestKey = "content-security-policy-report-nonce"
-	RequestNonceTags beContext.RequestKey = "content-security-policy-request-nonce-tags"
+	PolicyTag           beContext.RequestKey = "content-security-policy"
+	ReportNonceTag      beContext.RequestKey = "content-security-policy-report-nonce"
+	RequestNonceDataTag beContext.RequestKey = "content-security-policy-request-nonce-data"
+)
+
+const (
+	RequestDefaultSrcNonceTag     string = "default-src"
+	RequestConnectSrcNonceTag     string = "connect-src"
+	RequestFontSrcNonceTag        string = "font-src"
+	RequestFrameSrcNonceTag       string = "frame-src"
+	RequestImgSrcNonceTag         string = "img-src"
+	RequestManifestSrcNonceTag    string = "manifest-src"
+	RequestMediaSrcNonceTag       string = "media-src"
+	RequestObjectSrcNonceTag      string = "object-src"
+	RequestPrefetchSrcNonceTag    string = "prefetch-src"
+	RequestScriptSrcNonceTag      string = "script-src"
+	RequestScriptSrcElemNonceTag  string = "script-src-elem"
+	RequestScriptSrcAttrNonceTag  string = "script-src-attr"
+	RequestStyleSrcNonceTag       string = "style-src"
+	RequestStyleSrcElemNonceTag   string = "style-src-elem"
+	RequestStyleSrcAttrNonceTag   string = "style-src-attr"
+	RequestWorkerSrcNonceTag      string = "worker-src"
+	RequestBaseUriNonceTag        string = "base-uri"
+	RequestFormActionNonceTag     string = "form-action"
+	RequestFrameAncestorsNonceTag string = "frame-ancestors"
 )
 
 var (
@@ -54,6 +75,13 @@ type PolicyHandler struct {
 	requestNonce map[string]string
 
 	sync.RWMutex
+}
+
+type RequestNonceData map[string]string
+
+type PageContextContentSecurity struct {
+	Policy Policy
+	Nonces beContext.Context
 }
 
 func NewPolicyHandler() (h *PolicyHandler) {
@@ -96,7 +124,7 @@ func (h *PolicyHandler) SetRequestPolicy(r *http.Request, policy Policy) (modifi
 }
 
 func (h *PolicyHandler) GetRequestPolicy(r *http.Request) (policy Policy) {
-	if p, ok := r.Context().Value(PolicyTag).(Policy); ok {
+	if p, ok := r.Context().Value(PolicyTag).(Policy); ok && p != nil {
 		policy = p
 	} else {
 		policy = DefaultContentSecurityPolicy()
@@ -106,25 +134,32 @@ func (h *PolicyHandler) GetRequestPolicy(r *http.Request) (policy Policy) {
 
 func (h *PolicyHandler) GetRequestNonce(tag string, r *http.Request) (nonce string, modified *http.Request) {
 	var ok bool
-	h.RLock()
-	nonce, ok = h.requestNonce[tag]
-	h.RUnlock()
-	modified = r
-	if !ok {
-		unique, _ := uuid.NewV4()
-		nonce, _ = sha.DataHash64(unique.Bytes())
-		h.Lock()
-		h.requestNonce[tag] = nonce
-		h.Unlock()
-		if v, ok := r.Context().Value(RequestNonceTags).([]string); ok {
-			if !beStrings.StringInSlices(tag, v) {
-				v = append(v, tag)
-				modified = r.Clone(context.WithValue(r.Context(), RequestNonceTags, v))
-			}
-		} else {
-			modified = r.Clone(context.WithValue(r.Context(), RequestNonceTags, []string{tag}))
+	var data *RequestNonceData
+	if data, ok = r.Context().Value(RequestNonceDataTag).(*RequestNonceData); ok && data != nil {
+		if nonce, ok = (*data)[tag]; ok && nonce != "" {
+			modified = r
+			return
 		}
 	}
+	if data == nil {
+		m := make(RequestNonceData)
+		data = &m
+	}
+	unique, _ := uuid.NewV4()
+	nonce, _ = sha.DataHash64(unique.Bytes())
+	(*data)[tag] = nonce
+	modified = r.Clone(context.WithValue(r.Context(), RequestNonceDataTag, data))
+	return
+}
+
+func (h *PolicyHandler) GetRequestNonceData(r *http.Request) (data *RequestNonceData, modified *http.Request) {
+	var ok bool
+	if data, ok = r.Context().Value(RequestNonceDataTag).(*RequestNonceData); ok {
+		modified = r
+		return
+	}
+	data = new(RequestNonceData)
+	modified = r.Clone(context.WithValue(r.Context(), RequestNonceDataTag, data))
 	return
 }
 
@@ -156,17 +191,70 @@ func (h *PolicyHandler) ModifyPolicyMiddleware(fn ModifyPolicyFn) (mw func(next 
 		log.DebugF("including modify content security policy middleware")
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if fn != nil {
-				r = h.SetRequestPolicy(
-					r,
-					fn(
-						h.GetRequestPolicy(r),
-						r,
-					),
-				)
+				p := h.GetRequestPolicy(r)
+				m := fn(p, r)
+				r = h.SetRequestPolicy(r, m)
 			}
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func (h *PolicyHandler) PreparePageContext(config ContentSecurityPolicyConfig, ctx beContext.Context, r *http.Request) (pccs *PageContextContentSecurity, modified *http.Request) {
+
+	prepareNonce := func(name string, r *http.Request, p Policy) (m *http.Request) {
+		if p == nil || p.None(name) || p.Unsafe(name) {
+			m = r
+			return
+		}
+		var nonce string
+		key := name + "-nonce-value"
+		nonce, m = h.GetRequestNonce(key, r)
+		ctx.Set(key, nonce)
+		p.Add(&directive{name: name, sources: []Source{NewNonceSource(nonce)}})
+		return
+	}
+
+	contentSecurityPolicy := h.GetRequestPolicy(r)
+	if contentSecurityPolicy != nil {
+		contentSecurityPolicy = config.Apply(contentSecurityPolicy)
+	}
+
+	modified = r
+
+	modified = prepareNonce(RequestDefaultSrcNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestConnectSrcNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestFontSrcNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestFrameSrcNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestImgSrcNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestManifestSrcNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestMediaSrcNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestObjectSrcNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestPrefetchSrcNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestScriptSrcNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestScriptSrcElemNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestScriptSrcAttrNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestStyleSrcNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestStyleSrcElemNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestStyleSrcAttrNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestWorkerSrcNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestBaseUriNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestFormActionNonceTag, modified, contentSecurityPolicy)
+	modified = prepareNonce(RequestFrameAncestorsNonceTag, modified, contentSecurityPolicy)
+
+	var data *RequestNonceData
+	data, modified = h.GetRequestNonceData(modified)
+
+	cspRequestNonces := beContext.New()
+	for tag, nonce := range *data {
+		cspRequestNonces.Set(tag, nonce)
+	}
+
+	pccs = &PageContextContentSecurity{
+		Policy: contentSecurityPolicy,
+		Nonces: cspRequestNonces,
+	}
+	return
 }
 
 func (h *PolicyHandler) ApplyHeaders(w http.ResponseWriter, r *http.Request) {
@@ -191,12 +279,5 @@ func (h *PolicyHandler) ApplyHeaders(w http.ResponseWriter, r *http.Request) {
 
 func (h *PolicyHandler) FinalizeRequest(w http.ResponseWriter, r *http.Request) {
 	h.ApplyHeaders(w, r)
-	h.Lock()
-	defer h.Unlock()
-	if v, ok := r.Context().Value(RequestNonceTags).([]string); ok {
-		for _, tag := range v {
-			delete(h.requestNonce, tag)
-		}
-	}
 	return
 }
