@@ -49,6 +49,36 @@ func (c ConfigError) isEmpty() (empty bool) {
 	return
 }
 
+func (c ContentSecurityPolicyConfig) Apply(policy Policy) (modified Policy) {
+	apply := func(key string, s Sources, p Policy) (m Policy) {
+		if m = p; len(s) > 0 {
+			m = p.Add(&directive{name: key, sources: s})
+		}
+		return
+	}
+	modified = policy
+	modified = apply("default-src", c.DefaultSrc, modified)
+	modified = apply("connect-src", c.ConnectSrc, modified)
+	modified = apply("font-src", c.FontSrc, modified)
+	modified = apply("frame-src", c.FrameSrc, modified)
+	modified = apply("img-src", c.ImgSrc, modified)
+	modified = apply("manifest-src", c.ManifestSrc, modified)
+	modified = apply("media-src", c.MediaSrc, modified)
+	modified = apply("object-src", c.ObjectSrc, modified)
+	modified = apply("prefetch-src", c.PrefetchSrc, modified)
+	modified = apply("script-src", c.ScriptSrc, modified)
+	modified = apply("script-src-elem", c.ScriptSrcElem, modified)
+	modified = apply("script-src-attr", c.ScriptSrcAttr, modified)
+	modified = apply("style-src", c.StyleSrc, modified)
+	modified = apply("style-src-elem", c.StyleSrcElem, modified)
+	modified = apply("style-src-attr", c.StyleSrcAttr, modified)
+	modified = apply("worker-src", c.WorkerSrc, modified)
+	modified = apply("base-uri", c.BaseUri, modified)
+	modified = apply("form-action", c.FormAction, modified)
+	modified = apply("frame-ancestors", c.FrameAncestors, modified)
+	return
+}
+
 func ParseContentSecurityPolicyConfig(ctx map[string]interface{}) (cspc ContentSecurityPolicyConfig, err error) {
 	var cfgErr ConfigError
 	parseSource := func(key string, ctx map[string]interface{}, bucket Sources) (modified Sources) {
