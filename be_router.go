@@ -73,6 +73,20 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		}
 	}
 
+	for _, f := range e.Features() {
+		tag := f.Tag()
+		if rm, ok := f.(feature.RequestRewriter); ok {
+			log.DebugF("including %v request rewriter middleware", tag)
+			router.Use(func(next http.Handler) http.Handler {
+				log.DebugF("using %v request rewriter middleware", tag)
+				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					r = rm.RewriteRequest(w, r)
+					next.ServeHTTP(w, r)
+				})
+			})
+		}
+	}
+
 	// logging after requests modified so proxy and populate ip
 	router.Use(middleware.Logger)
 
