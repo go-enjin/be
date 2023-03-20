@@ -132,3 +132,14 @@ func CheckRequestIpWithList(req *http.Request, list []string) bool {
 	}
 	return false
 }
+
+// IsNetIpPrivate returns true if the IP address given is within any of the
+// local or private network CIDR ranges (not public IP address space)
+func IsNetIpPrivate(ip net.IP) (private bool) {
+	for _, cidr := range PrivateNetworks {
+		if private = cidr.Contains(ip); private {
+			break
+		}
+	}
+	return
+}
