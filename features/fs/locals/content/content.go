@@ -19,6 +19,7 @@ package content
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"sort"
 
 	"github.com/fvbommel/sortorder"
@@ -170,6 +171,11 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 }
 
 func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWriter, r *http.Request) (err error) {
+
+	if v, ee := url.PathUnescape(path); ee == nil {
+		path = v
+	}
+
 	reqLangTag := lang.GetTag(r)
 	path = forms.SanitizeRequestPath(path)
 	if mount, mpath, pg, e := f.cache.Lookup(Bucket, reqLangTag, path); e == nil {

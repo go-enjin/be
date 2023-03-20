@@ -20,6 +20,7 @@ import (
 	"embed"
 	"fmt"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -180,6 +181,11 @@ func (f *CFeature) checkAndServeData(m, path string, s feature.System, w http.Re
 }
 
 func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWriter, r *http.Request) (err error) {
+
+	if v, ee := url.PathUnescape(path); ee == nil {
+		path = v
+	}
+
 	mounts := f.listMountPoints()
 	if len(path) > 1 {
 		for _, m := range mounts {
