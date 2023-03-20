@@ -102,7 +102,9 @@ func newEnjin(eb *EnjinBuilder) *Enjin {
 
 func newIncludedEnjin(eb *EnjinBuilder, parent *Enjin) *Enjin {
 	e := &Enjin{
-		eb: eb,
+		eb:                    eb,
+		contentSecurityPolicy: csp.NewPolicyHandler(),
+		permissionsPolicy:     permissions.NewPolicyHandler(),
 	}
 	e.initLocales()
 	e.initConsoles()
