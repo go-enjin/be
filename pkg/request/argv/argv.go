@@ -65,7 +65,7 @@ func (ra *RequestArgv) MustConsume() (must bool) {
 }
 
 func (ra *RequestArgv) Set(r *http.Request) (req *http.Request) {
-	req = r.WithContext(context.WithValue(r.Context(), RequestArgvKey, ra))
+	req = r.Clone(context.WithValue(r.Context(), RequestArgvKey, ra))
 	return
 }
 
