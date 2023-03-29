@@ -292,6 +292,8 @@ func startupHandledHttpListener(listen string, port int, handler http.Handler, e
 	if err = srv.ListenAndServe(); err != http.ErrServerClosed {
 		// Error starting or closing listener:
 		log.ErrorF("unexpected error listening and serving http: %v", err)
+		close(idleConnectionsClosed)
+		return
 	}
 
 	<-idleConnectionsClosed
