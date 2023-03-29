@@ -20,12 +20,15 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/go-curses/cdk"
-	cenums "github.com/go-curses/cdk/lib/enums"
-	"github.com/go-curses/cdk/log"
-	"github.com/go-curses/ctk"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
+
+	"github.com/go-curses/ctk"
+
+	"github.com/go-curses/cdk"
+	cenums "github.com/go-curses/cdk/lib/enums"
+	cstrings "github.com/go-curses/cdk/lib/strings"
+	"github.com/go-curses/cdk/log"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
@@ -37,6 +40,35 @@ var (
 	ctkDisplay    cdk.Display
 	ctkConsoleTag feature.Tag
 )
+
+// Build Configuration Flags
+// setting these will enable command line flags and their corresponding features
+// use `go build -v -ldflags="-X 'github.com/go-enjin/be.CdkIncludeLogFullPaths=false'"`
+var (
+	CdkIncludeProfiling     = "false"
+	CdkIncludeLogFile       = "false"
+	CdkIncludeLogFormat     = "false"
+	CdkIncludeLogFullPaths  = "false"
+	CdkIncludeLogLevel      = "false"
+	CdkIncludeLogLevels     = "false"
+	CdkIncludeLogTimestamps = "false"
+	CdkIncludeLogOutput     = "false"
+)
+
+var (
+	DefaultConsoleTtyPath = "/dev/tty"
+)
+
+func init() {
+	cdk.Build.Profiling = cstrings.IsTrue(CdkIncludeProfiling)
+	cdk.Build.LogFile = cstrings.IsTrue(CdkIncludeLogFile)
+	cdk.Build.LogFormat = cstrings.IsTrue(CdkIncludeLogFormat)
+	cdk.Build.LogFullPaths = cstrings.IsTrue(CdkIncludeLogFullPaths)
+	cdk.Build.LogLevel = cstrings.IsTrue(CdkIncludeLogLevel)
+	cdk.Build.LogLevels = cstrings.IsTrue(CdkIncludeLogLevels)
+	cdk.Build.LogTimestamps = cstrings.IsTrue(CdkIncludeLogTimestamps)
+	cdk.Build.LogOutput = cstrings.IsTrue(CdkIncludeLogOutput)
+}
 
 func (e *Enjin) initConsoles() {
 	numConsoles := len(e.eb.consoles)
@@ -87,7 +119,7 @@ func (e *Enjin) consoleAction(ctx *cli.Context) (err error) {
 	ctkApp = ctk.NewApplication(
 		globals.BinName, globals.BinName, globals.Summary,
 		globals.Version, globals.BinName, globals.BinName,
-		"/dev/tty",
+		DefaultConsoleTtyPath,
 	)
 
 	ctkApp.Connect(cdk.SignalPrepare, "enjin-consoles-prepare-handler", e.ctkPrepare)
