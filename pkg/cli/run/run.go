@@ -256,3 +256,19 @@ func BackgroundWith(options *Options) (pid int, err error) {
 	}()
 	return
 }
+
+func Interactive(environ []string, dir, name string, argv ...string) (err error) {
+	if len(environ) == 0 {
+		environ = os.Environ()
+	}
+	cmd := exec.Command(name, argv...)
+	cmd.Env = environ
+	cmd.Dir = dir
+	cmd.Path = name
+	cmd.Args = argv
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	return
+}
