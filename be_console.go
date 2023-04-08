@@ -18,6 +18,8 @@ package be
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"sort"
 
 	"github.com/iancoleman/strcase"
@@ -68,6 +70,11 @@ func init() {
 	cdk.Build.LogLevels = cstrings.IsTrue(CdkIncludeLogLevels)
 	cdk.Build.LogTimestamps = cstrings.IsTrue(CdkIncludeLogTimestamps)
 	cdk.Build.LogOutput = cstrings.IsTrue(CdkIncludeLogOutput)
+	if cdk.Build.LogFile {
+		log.DefaultLogPath = filepath.Join(os.TempDir(), globals.BinName+"--console.cdk.log")
+	} else {
+		log.DefaultLogPath = "/dev/null"
+	}
 }
 
 func (e *Enjin) initConsoles() {
