@@ -34,6 +34,17 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
+func AsURL(input interface{}) template.URL {
+	switch v := input.(type) {
+	case string:
+		return template.URL(v)
+	case template.URL:
+		return v
+	default:
+		return template.URL(fmt.Sprintf("%v", v))
+	}
+}
+
 func AsJS(input interface{}) template.JS {
 	switch v := input.(type) {
 	case string:

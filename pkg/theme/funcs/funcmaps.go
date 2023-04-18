@@ -38,6 +38,7 @@ func HtmlFuncMap() (funcMap htmlTemplate.FuncMap) {
 		"toSnake":              strcase.ToSnake,
 		"toScreamingSnake":     strcase.ToScreamingSnake,
 
+		"asURL":      AsURL,
 		"asHTML":     AsHTML,
 		"asHTMLAttr": AsHTMLAttr,
 		"asCSS":      AsCSS,
