@@ -92,6 +92,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		case "normal":
 		case "reverse":
 			pairOrderReversed = true
+		case "mobile-reverse":
 		default:
 			err = fmt.Errorf("unknown pair block order requested: %v", v)
 			return
