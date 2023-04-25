@@ -42,6 +42,22 @@ func NewPolicy(directives ...Directive) (p Policy) {
 	return
 }
 
+func StrictContentSecurityPolicy() Policy {
+	return &cPolicy{
+		NewDefaultSrc(Self, SchemeSource("https")),
+		NewFrameAncestors(None),
+		NewObjectSrc(None),
+	}
+}
+
+func DefaultContentSecurityPolicy() Policy {
+	return &cPolicy{
+		NewDefaultSrc(Self, SchemeSource("https"), SchemeSource("data"), UnsafeInline),
+		NewFrameAncestors(None),
+		NewObjectSrc(None),
+	}
+}
+
 func (p *cPolicy) Value() (value string) {
 	var sorted []Directive
 	sorted = append(sorted, *p...)

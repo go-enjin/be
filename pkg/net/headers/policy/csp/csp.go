@@ -20,22 +20,6 @@ import (
 	"github.com/go-enjin/be/pkg/net/serve"
 )
 
-func StrictContentSecurityPolicy() Policy {
-	return &cPolicy{
-		NewDefaultSrc(Self, SchemeSource("https")),
-		NewFrameAncestors(None),
-		NewObjectSrc(None),
-	}
-}
-
-func DefaultContentSecurityPolicy() Policy {
-	return &cPolicy{
-		NewDefaultSrc(Self, SchemeSource("https"), SchemeSource("data"), UnsafeInline),
-		NewFrameAncestors(None),
-		NewObjectSrc(None),
-	}
-}
-
 const (
 	PolicyTag           beContext.RequestKey = "content-security-policy"
 	ReportNonceTag      beContext.RequestKey = "content-security-policy-report-nonce"
