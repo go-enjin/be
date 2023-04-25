@@ -151,15 +151,15 @@ func (h *PolicyHandler) PrepareRequestMiddleware(next http.Handler) http.Handler
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h.PruneReportNonces()
 		if strings.HasPrefix(r.URL.Path, "/_/csp-violation-") {
-			pathLen := len(r.URL.Path)
-			nonce := r.URL.Path[pathLen-10:]
-			if h.ValidateReportNonce(nonce) {
-				if r.Method == "POST" {
-					body, _ := io.ReadAll(r.Body)
-					log.WarnF("content-security-policy violation report received: %v", string(body))
+			if r.Method == "POST" {
+				body, _ := io.ReadAll(r.Body)
+				pathLen := len(r.URL.Path)
+				nonce := r.URL.Path[pathLen-10:]
+				if h.ValidateReportNonce(nonce) {
+					log.WarnF("content-security-policy violation report received:\n%v", string(body))
+				} else {
+					log.WarnF("content-security-policy violation report received [expired]:\n%v", string(body))
 				}
-			} else {
-				log.WarnF("ignoring csp report, invalid nonce present: %v", r.URL.Path)
 			}
 			serve.Serve204(w, r)
 			return
