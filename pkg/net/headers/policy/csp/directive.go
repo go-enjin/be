@@ -53,9 +53,15 @@ func (d *directive) Sources() (sources []Source) {
 }
 
 func (d *directive) Append(sources ...Source) {
+	var hasNone, hasMore bool
 	for _, src := range sources {
 		var dupe bool
 		for _, dSrc := range d.sources {
+			if !hasNone && dSrc.Value() == "'none'" {
+				hasNone = true
+			} else if !hasMore && dSrc.Value() != "'none'" {
+				hasMore = true
+			}
 			if dupe = dSrc.Value() == src.Value(); dupe {
 				break
 			}
@@ -63,6 +69,15 @@ func (d *directive) Append(sources ...Source) {
 		if !dupe {
 			d.sources = append(d.sources, src)
 		}
+	}
+	if hasNone && hasMore {
+		var tmp Sources
+		for _, dSrc := range d.sources {
+			if dSrc.Value() != "'none'" {
+				tmp = append(tmp, dSrc)
+			}
+		}
+		d.sources = tmp
 	}
 }
 
