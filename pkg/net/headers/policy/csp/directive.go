@@ -40,7 +40,16 @@ func (d *directive) Value() (value string) {
 		value += " " + None.Value()
 		return
 	}
-	sources := d.sources.FilterUnsafeInline().Collapse()
+	var sources Sources
+	if d.name == "frame-ancestors" {
+		// only allow host, scheme, self and none
+		sources = d.sources.
+			FilterAllowedTypes(HostSourceType, SchemeSourceType, KeywordSourceType).
+			FilterAllowedKeywords(None, Self).
+			Collapse()
+	} else {
+		sources = d.sources.FilterUnsafeInline().Collapse()
+	}
 	for _, s := range sources.Sort() {
 		value += " " + s.Value()
 	}
