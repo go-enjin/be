@@ -6,6 +6,7 @@ package csp
 
 import (
 	"sort"
+	"strings"
 
 	"github.com/fvbommel/sortorder"
 )
@@ -23,6 +24,45 @@ func (s Sources) Append(sources ...Source) (modified Sources) {
 		}
 		if !found {
 			modified = append(modified, source)
+		}
+	}
+	return
+}
+
+func (s Sources) FilterAllowedTypes(allowed ...string) (filtered Sources) {
+	isAllowed := func(st string) bool {
+		for _, at := range allowed {
+			if at == st {
+				return true
+			}
+		}
+		return false
+	}
+	for _, src := range s {
+		if isAllowed(src.SourceType()) {
+			filtered = append(filtered, src)
+		}
+	}
+	return
+}
+
+func (s Sources) FilterAllowedKeywords(allowed ...KeywordSource) (filtered Sources) {
+	isAllowed := func(st string) bool {
+		st = strings.ReplaceAll(st, "'", "")
+		for _, at := range allowed {
+			if at == KeywordSource(st) {
+				return true
+			}
+		}
+		return false
+	}
+	for _, src := range s {
+		if src.SourceType() == KeywordSourceType {
+			if isAllowed(src.Value()) {
+				filtered = append(filtered, src)
+			}
+		} else {
+			filtered = append(filtered, src)
 		}
 	}
 	return
