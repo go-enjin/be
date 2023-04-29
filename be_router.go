@@ -95,7 +95,7 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		}
 	}
 
-	// logging after requests modified so proxy and populate ip
+	// logging after requests modified so proxy has a chance to populate ip
 	router.Use(middleware.Logger)
 
 	// these should be request modifiers instead of enjin middleware
