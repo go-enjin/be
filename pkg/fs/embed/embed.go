@@ -41,13 +41,14 @@ func New(path string, efs embed.FS) (out FileSystem, err error) {
 	return
 }
 
-func Wrap(path, wrap string, efs embed.FS) (out FileSystem, err error) {
-	out = FileSystem{
-		path:  path,
-		embed: efs,
-	}
-	return
-}
+// func Wrap(path, wrap string, efs embed.FS) (out FileSystem, err error) {
+// 	out = FileSystem{
+// 		path:  path,
+// 		wrap:  wrap,
+// 		embed: efs,
+// 	}
+// 	return
+// }
 
 func (f FileSystem) Name() (name string) {
 	name = f.path
