@@ -40,10 +40,11 @@ require (
 	golang.org/x/crypto v0.6.0
 	golang.org/x/net v0.8.0
 	gopkg.in/yaml.v3 v3.0.1
-	gorm.io/driver/mysql v1.4.1
-	gorm.io/driver/postgres v1.4.4
-	gorm.io/driver/sqlite v1.4.2
-	gorm.io/gorm v1.24.0
+	gorm.io/datatypes v1.2.0
+	gorm.io/driver/mysql v1.5.0
+	gorm.io/driver/postgres v1.5.0
+	gorm.io/driver/sqlite v1.5.0
+	gorm.io/gorm v1.25.0
 )
 
 require (
@@ -75,20 +76,16 @@ require (
 	github.com/go-curses/terminfo v1.0.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
-	github.com/go-sql-driver/mysql v1.6.0 // indirect
+	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/golang/geo v0.0.0-20210211234256-740aa86cb551 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
-	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
-	github.com/jackc/pgconn v1.13.0 // indirect
-	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
-	github.com/jackc/pgproto3/v2 v2.3.1 // indirect
-	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
-	github.com/jackc/pgtype v1.12.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
+	github.com/jackc/pgx/v5 v5.3.0 // indirect
 	github.com/jackdoe/go-gpmctl v0.0.0-20221007100923-dc00b863cb22 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
@@ -130,7 +127,6 @@ require (
 	github.com/gin-gonic/gin v1.8.1 // indirect
 	github.com/go-curses/ctk v0.5.7
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
-	github.com/jackc/pgx/v4 v4.17.2 // indirect
 	github.com/klauspost/compress v1.15.11 // indirect
 	github.com/mattn/go-sqlite3 v1.14.15 // indirect
 	github.com/onsi/gomega v1.18.1 // indirect
