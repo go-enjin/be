@@ -100,6 +100,11 @@ type Internals interface {
 	Translators() (translators map[string]TranslateOutputFn)
 	Transformers() (transformers map[string]TransformOutputFn)
 	Slugsums() (enabled bool)
+
+	DB(tag string) (db interface{}, err error)
+	MustDB(tag string) (db interface{})
+	SpecificDB(fTag Tag, tag string) (db interface{}, err error)
+	MustSpecificDB(fTag Tag, tag string) (db interface{})
 }
 
 type CanSetupInternals interface {
