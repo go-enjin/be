@@ -24,6 +24,8 @@ import (
 	"github.com/fvbommel/sortorder"
 	"github.com/iancoleman/strcase"
 	"github.com/maruel/natural"
+	"github.com/pelletier/go-toml/v2"
+	"gopkg.in/yaml.v3"
 
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
@@ -431,5 +433,20 @@ func (c Context) Select(keys ...string) (selected map[string]interface{}) {
 			selected[key] = v
 		}
 	}
+	return
+}
+
+func (c Context) AsJSON() (data []byte, err error) {
+	data, err = json.Marshal(c)
+	return
+}
+
+func (c Context) AsTOML() (data []byte, err error) {
+	data, err = toml.Marshal(c)
+	return
+}
+
+func (c Context) AsYAML() (data []byte, err error) {
+	data, err = yaml.Marshal(c)
 	return
 }
