@@ -95,7 +95,7 @@ func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Reque
 			}
 		}
 		for _, f := range e.eb.features {
-			if mf, ok := f.(feature.Middleware); ok {
+			if mf, ok := f.Self().(feature.ServePathFeature); ok {
 				if err := mf.ServePath(path, e, w, r); err == nil {
 					log.DebugRF(r, "served %v (middleware) page: %v", status, path)
 					return
@@ -123,20 +123,20 @@ func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Reque
 
 func (e *Enjin) ServePath(urlPath string, w http.ResponseWriter, r *http.Request) (err error) {
 
+	for _, f := range e.Features() {
+		if mw, ok := f.(feature.ServePathFeature); ok {
+			if err = mw.ServePath(urlPath, e, w, r); err == nil {
+				// middleware found
+				return
+			}
+		}
+	}
+
 	pages := e.Pages()
 	if p, ok := pages[urlPath]; ok {
 		if err = e.ServePage(p, w, r); err == nil {
 			// eb page found
 			return
-		}
-	}
-
-	for _, f := range e.Features() {
-		if mw, ok := f.(feature.Middleware); ok {
-			if err = mw.ServePath(urlPath, e, w, r); err == nil {
-				// middleware found
-				return
-			}
 		}
 	}
 
@@ -238,7 +238,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 			if ctx, r, ok = prh.RestrictServePage(ctx, w, r); !ok {
 				addr, _ := net.GetIpFromRequest(r)
 				log.WarnRF(r, "[restricted] permission denied %v for: %v", addr, r.URL.Path)
-				e.ServeBasic401(w, r)
+				// e.ServeBasic401(w, r)
 				return
 			}
 		}
@@ -277,7 +277,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	r = r.Clone(context.WithValue(r.Context(), "Content-Disposition", contentDisposition))
 	e.permissionsPolicy.FinalizeRequest(w, r)
 	e.contentSecurityPolicy.FinalizeRequest(w, r)
-	e.ServeData(data, fmt.Sprintf("%v", mime), w, r)
+	e.ServeData(data, mime, w, r)
 	return
 }
 
@@ -288,7 +288,7 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 			if r, ok = prh.RestrictServeData(data, mime, w, r); !ok {
 				addr, _ := net.GetIpFromRequest(r)
 				log.WarnRF(r, "[restricted] permission denied %v for: %v", addr, r.URL.Path)
-				e.ServeBasic401(w, r)
+				// e.ServeBasic401(w, r)
 				return
 			}
 		}
