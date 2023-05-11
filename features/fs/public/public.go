@@ -34,11 +34,11 @@ import (
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
-const Tag feature.Tag = "fs-public"
-
 var (
 	DefaultCacheControl = "public, max-age=604800, no-transform, immutable"
 )
+
+const Tag feature.Tag = "fs-public"
 
 var (
 	_ Feature     = (*CFeature)(nil)
