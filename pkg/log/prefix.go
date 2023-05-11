@@ -16,9 +16,12 @@ package log
 
 import (
 	"fmt"
+	"net/http"
 	"regexp"
 	"runtime"
 	"strings"
+
+	"github.com/go-enjin/be/pkg/request"
 )
 
 var (
@@ -26,7 +29,7 @@ var (
 	rxInvalidFuncName = regexp.MustCompile(`^\s*(\d+|func\d+)\s*$`)
 )
 
-func getLogPrefix(depth int) string {
+func getLogPrefix(depth int, r *http.Request) string {
 	depth += 1
 	var file, name string
 	var line int
@@ -50,10 +53,13 @@ func getLogPrefix(depth int) string {
 	if Config.LoggingFormat == FormatText {
 		return "[" + name + "]"
 	}
+	if rid := request.GetRequestID(r); rid != "" {
+		return fmt.Sprintf("[%s] %s:%d [%s]", rid, file, line, name)
+	}
 	return fmt.Sprintf("%s:%d [%s]", file, line, name)
 }
 
-func prefixLogEntry(depth int, format string) string {
+func prefixLogEntry(depth int, format string, r *http.Request) string {
 	depth += 1
-	return fmt.Sprintf("%v %v", getLogPrefix(depth), format)
+	return fmt.Sprintf("%v %v", getLogPrefix(depth, r), format)
 }

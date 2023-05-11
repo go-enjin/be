@@ -24,7 +24,7 @@ func ErrorF(format string, argv ...interface{}) {
 
 func ErrorDF(depth int, format string, argv ...interface{}) {
 	depth += 1
-	logger.Errorf(prefixLogEntry(depth, format), argv...)
+	logger.Errorf(prefixLogEntry(depth, format, nil), argv...)
 }
 
 func WarnF(format string, argv ...interface{}) {
@@ -33,7 +33,7 @@ func WarnF(format string, argv ...interface{}) {
 
 func WarnDF(depth int, format string, argv ...interface{}) {
 	depth += 1
-	logger.Warnf(prefixLogEntry(depth, format), argv...)
+	logger.Warnf(prefixLogEntry(depth, format, nil), argv...)
 }
 
 func InfoF(format string, argv ...interface{}) {
@@ -42,7 +42,7 @@ func InfoF(format string, argv ...interface{}) {
 
 func InfoDF(depth int, format string, argv ...interface{}) {
 	depth += 1
-	logger.Infof(prefixLogEntry(depth, format), argv...)
+	logger.Infof(prefixLogEntry(depth, format, nil), argv...)
 }
 
 func DebugF(format string, argv ...interface{}) {
@@ -51,7 +51,7 @@ func DebugF(format string, argv ...interface{}) {
 
 func DebugDF(depth int, format string, argv ...interface{}) {
 	depth += 1
-	logger.Debugf(prefixLogEntry(depth, format), argv...)
+	logger.Debugf(prefixLogEntry(depth, format, nil), argv...)
 }
 
 func TraceF(format string, argv ...interface{}) {
@@ -60,7 +60,7 @@ func TraceF(format string, argv ...interface{}) {
 
 func TraceDF(depth int, format string, argv ...interface{}) {
 	depth += 1
-	logger.Tracef(prefixLogEntry(depth, format), argv...)
+	logger.Tracef(prefixLogEntry(depth, format, nil), argv...)
 }
 
 func PanicF(format string, argv ...interface{}) {
@@ -69,7 +69,7 @@ func PanicF(format string, argv ...interface{}) {
 
 func PanicDF(depth int, format string, argv ...interface{}) {
 	depth += 1
-	logger.Panicf(prefixLogEntry(depth, format), argv...)
+	logger.Panicf(prefixLogEntry(depth, format, nil), argv...)
 }
 
 func FatalF(format string, argv ...interface{}) {
@@ -78,5 +78,5 @@ func FatalF(format string, argv ...interface{}) {
 
 func FatalDF(depth int, format string, argv ...interface{}) {
 	depth += 1
-	logger.Fatalf(prefixLogEntry(depth, format), argv...)
+	logger.Fatalf(prefixLogEntry(depth, format, nil), argv...)
 }
