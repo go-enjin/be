@@ -32,11 +32,10 @@ var (
 	ErrorDirNotFound = fmt.Errorf(`not found or not an existing directory`)
 )
 
-// Base returns the name of the file without the extension
+// Base returns the name of the file without any extensions
 func Base(path string) (name string) {
 	name = filepath.Base(path)
-	extn := filepath.Ext(name)
-	if extn != "" {
+	for extn := filepath.Ext(name); extn != ""; extn = filepath.Ext(name) {
 		name = name[:len(name)-len(extn)]
 	}
 	return
