@@ -29,6 +29,7 @@ import (
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/pkg/page/matter"
 	"github.com/go-enjin/be/pkg/pagecache"
 	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/types/site"
@@ -141,6 +142,19 @@ func (e *Enjin) FindTranslations(url string) (pages []*page.Page) {
 	return
 }
 
+func (e *Enjin) FindFile(path string) (data []byte, mime string, err error) {
+	for _, f := range e.Features() {
+		if provider, ok := f.(feature.FileProvider); ok {
+			if d, m, ee := provider.FindFile(path); ee == nil {
+				data = d
+				mime = m
+			}
+		}
+	}
+	err = fmt.Errorf("file not found")
+	return
+}
+
 func (e *Enjin) FindPage(tag language.Tag, url string) (p *page.Page) {
 	for _, f := range e.Features() {
 		if provider, ok := f.(feature.PageProvider); ok {
@@ -169,6 +183,15 @@ func (e *Enjin) FindPages(prefix string) (pages []*page.Page) {
 	return
 }
 
+func (e *Enjin) ListFormats() (names []string) {
+	for _, f := range e.Features() {
+		if p, ok := f.(types.FormatProvider); ok {
+			names = append(names, p.ListFormats()...)
+		}
+	}
+	return
+}
+
 func (e *Enjin) GetFormat(name string) (format types.Format) {
 	for _, f := range e.Features() {
 		if p, ok := f.(types.FormatProvider); ok {
@@ -191,15 +214,15 @@ func (e *Enjin) MatchFormat(filename string) (format types.Format, match string)
 	return
 }
 
-func (e *Enjin) MatchQL(query string) (pages []*page.Page) {
+func (e *Enjin) CheckMatchQL(query string) (pages []*page.Page, err error) {
 	t, _ := e.GetTheme()
 	for _, f := range e.Features() {
-		if queryEnjin, ok := f.(pagecache.QueryEnjinFeature); ok {
-			if matches, err := queryEnjin.PerformQuery(query); err != nil {
-				log.ErrorF("error performing enjin query: %v", err)
+		if queryEnjin, ok := f.(pagecache.QueryIndexFeature); ok {
+			if matches, ee := queryEnjin.PerformQuery(query); ee != nil {
+				err = ee
 			} else {
 				for _, stub := range matches {
-					if p, err := stub.Make(t); err != nil {
+					if p, err := page.NewFromPageStub(stub, t); err != nil {
 						log.ErrorF("error making page from cache: %v", err)
 					} else {
 						pages = append(pages, p)
@@ -212,9 +235,30 @@ func (e *Enjin) MatchQL(query string) (pages []*page.Page) {
 	return
 }
 
-func (e *Enjin) MatchStubsQL(query string) (stubs []*pagecache.Stub) {
+func (e *Enjin) MatchQL(query string) (pages []*page.Page) {
+	t, _ := e.GetTheme()
 	for _, f := range e.Features() {
-		if queryEnjin, ok := f.(pagecache.QueryEnjinFeature); ok {
+		if queryEnjin, ok := f.(pagecache.QueryIndexFeature); ok {
+			if matches, err := queryEnjin.PerformQuery(query); err != nil {
+				log.ErrorF("error performing enjin query: %v", err)
+			} else {
+				for _, stub := range matches {
+					if p, err := page.NewFromPageStub(stub, t); err != nil {
+						log.ErrorF("error making page from cache: %v", err)
+					} else {
+						pages = append(pages, p)
+					}
+				}
+			}
+			break
+		}
+	}
+	return
+}
+
+func (e *Enjin) MatchStubsQL(query string) (stubs []*matter.PageStub) {
+	for _, f := range e.Features() {
+		if queryEnjin, ok := f.(pagecache.QueryIndexFeature); ok {
 			var err error
 			if stubs, err = queryEnjin.PerformQuery(query); err != nil {
 				log.ErrorF("error performing enjin query: %v", err)
@@ -225,13 +269,33 @@ func (e *Enjin) MatchStubsQL(query string) (stubs []*pagecache.Stub) {
 	return
 }
 
+func (e *Enjin) CheckMatchStubsQL(query string) (stubs []*matter.PageStub, err error) {
+	for _, f := range e.Features() {
+		if queryEnjin, ok := f.(pagecache.QueryIndexFeature); ok {
+			stubs, err = queryEnjin.PerformQuery(query)
+			break
+		}
+	}
+	return
+}
+
 func (e *Enjin) SelectQL(query string) (selected map[string]interface{}) {
 	for _, f := range e.Features() {
-		if queryEnjin, ok := f.(pagecache.QueryEnjinFeature); ok {
+		if queryEnjin, ok := f.(pagecache.QueryIndexFeature); ok {
 			var err error
 			if selected, err = queryEnjin.PerformSelect(query); err != nil {
 				log.ErrorF("error performing enjin select: %v", err)
 			}
+			break
+		}
+	}
+	return
+}
+
+func (e *Enjin) CheckSelectQL(query string) (selected map[string]interface{}, err error) {
+	for _, f := range e.Features() {
+		if queryEnjin, ok := f.(pagecache.QueryIndexFeature); ok {
+			selected, err = queryEnjin.PerformSelect(query)
 			break
 		}
 	}
