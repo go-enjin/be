@@ -88,16 +88,16 @@ func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Reque
 		if pg := e.FindPage(reqLangTag, path); pg != nil {
 			pg.Context.SetSpecific(argv.RequestArgvIgnoredKey, true)
 			if err := e.ServePage(pg, w, r); err != nil {
-				log.DebugF("error serving %v (pages) page: %v - %v", status, path, err)
+				log.DebugRF(r, "error serving %v (pages) page: %v - %v", status, path, err)
 			} else {
-				log.DebugF("served %v (pages) page: %v", status, path)
+				log.DebugRF(r, "served %v (pages) page: %v", status, path)
 				return
 			}
 		}
 		for _, f := range e.eb.features {
 			if mf, ok := f.(feature.Middleware); ok {
 				if err := mf.ServePath(path, e, w, r); err == nil {
-					log.DebugF("served %v (middleware) page: %v", status, path)
+					log.DebugRF(r, "served %v (middleware) page: %v", status, path)
 					return
 				}
 			}
@@ -116,7 +116,7 @@ func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Reque
 	case 500:
 		e.Serve500(w, r)
 	default:
-		log.WarnF("unsupported status page: %v, serving 404 instead", status)
+		log.WarnRF(r, "unsupported status page: %v, serving 404 instead", status)
 		e.ServeStatusPage(404, w, r)
 	}
 }
@@ -213,11 +213,11 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 				if tag, ee := language.Parse(pageLang); ee == nil {
 					parsedTag = tag
 				} else {
-					log.ErrorF("invalid language tag: %v - %v", pageLang, ee)
+					log.ErrorRF(r, "invalid language tag: %v - %v", pageLang, ee)
 				}
 			}
 		} else {
-			log.ErrorF("page language tag not a string: %T %+v", v, v)
+			log.ErrorRF(r, "page language tag not a string: %T %+v", v, v)
 		}
 	}
 	ctx.SetSpecific("Language", parsedTag.String())
@@ -227,17 +227,17 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	fpcPgCtx.SetSpecific("Content", p.Content)
 	for _, f := range e.eb.features {
 		if s, ok := f.(feature.PageContextModifier); ok {
-			log.DebugF("filtering page context with: %v", f.Tag())
+			log.TraceRF(r, "filtering page context with: %v", f.Tag())
 			ctx = s.FilterPageContext(ctx, fpcPgCtx, r)
 		}
 	}
 
 	for _, f := range e.eb.features {
 		if prh, ok := f.(feature.PageRestrictionHandler); ok {
-			log.DebugF("checking restricted pages with: %v", f.Tag())
+			log.TraceRF(r, "checking restricted pages with: %v", f.Tag())
 			if ctx, r, ok = prh.RestrictServePage(ctx, w, r); !ok {
 				addr, _ := net.GetIpFromRequest(r)
-				log.WarnF("[restricted] permission denied %v for: %v", addr, r.URL.Path)
+				log.WarnRF(r, "[restricted] permission denied %v for: %v", addr, r.URL.Path)
 				e.ServeBasic401(w, r)
 				return
 			}
@@ -250,7 +250,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 			for name, m := range mp.GetMenus(reqLangTag) {
 				camel := strcase.ToCamel(name)
 				allMenus[camel] = m
-				log.DebugF("providing [%v] menu: %v (.SiteMenu.%v)", reqLangTag.String(), name, camel)
+				log.TraceRF(r, "providing [%v] menu: %v (.SiteMenu.%v)", reqLangTag.String(), name, camel)
 			}
 		}
 	}
@@ -262,10 +262,10 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	var data []byte
 	var redirect string
 	if data, redirect, err = t.RenderPage(ctx, p); err != nil {
-		log.ErrorF("error rendering page: %v - %v", p.Url, err)
+		log.ErrorRF(r, "error rendering page: %v - %v", p.Url, err)
 		return
 	} else if redirect != "" {
-		log.DebugF("redirecting from RenderPage: %v - %v", p.Url, redirect)
+		log.DebugRF(r, "redirecting from RenderPage: %v - %v", p.Url, redirect)
 		e.ServeRedirect(redirect, w, r)
 		return
 	}
@@ -284,10 +284,10 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request) {
 	for _, f := range e.eb.features {
 		if prh, ok := f.(feature.DataRestrictionHandler); ok {
-			// log.DebugF("checking restricted data with: %v", f.Tag())
+			// log.TraceRF(r, "checking restricted data with: %v", f.Tag())
 			if r, ok = prh.RestrictServeData(data, mime, w, r); !ok {
 				addr, _ := net.GetIpFromRequest(r)
-				log.WarnF("[restricted] permission denied %v for: %v", addr, r.URL.Path)
+				log.WarnRF(r, "[restricted] permission denied %v for: %v", addr, r.URL.Path)
 				e.ServeBasic401(w, r)
 				return
 			}
@@ -302,14 +302,14 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 	} else {
 		for _, f := range e.eb.features {
 			if v, ok := f.(feature.OutputTranslator); ok {
-				// log.DebugF("checking output filter: %v", f.Tag())
+				// log.TraceRF(r, "checking output filter: %v", f.Tag())
 				if v.CanTranslate(mime) {
 					if d, m, err := v.TranslateOutput(e, data, mime); err == nil {
 						data, mime = d, m
 						basicMime = beStrings.GetBasicMime(mime)
-						log.DebugF("filtered output: %v - %v", f.Tag(), mime)
+						log.DebugRF(r, "filtered output: %v - %v", f.Tag(), mime)
 					} else {
-						log.DebugF("%v error filtering output: %v", f.Tag(), err)
+						log.DebugRF(r, "%v error filtering output: %v", f.Tag(), err)
 					}
 					break
 				}
