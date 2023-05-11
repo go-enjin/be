@@ -33,6 +33,18 @@ type Middleware interface {
 	ServePath(path string, s System, w http.ResponseWriter, r *http.Request) (err error)
 }
 
+type UseMiddleware interface {
+	Use(s System) MiddlewareFn
+}
+
+type ApplyMiddleware interface {
+	Apply(s System) (err error)
+}
+
+type ServePathFeature interface {
+	ServePath(path string, s System, w http.ResponseWriter, r *http.Request) (err error)
+}
+
 var _ Middleware = (*CMiddleware)(nil)
 
 type CMiddleware struct {
