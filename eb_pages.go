@@ -17,7 +17,6 @@ package be
 import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
-	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/theme"
@@ -39,9 +38,7 @@ func (eb *EnjinBuilder) AddPageFromString(path, raw string) feature.Builder {
 		}
 		updated = info.ModTime().Unix()
 	}
-	if shasum, err := sha.DataHash64([]byte(raw)); err != nil {
-		log.FatalF("error getting shasum for page: %v - %v", path, err)
-	} else if p, err := page.New(path, raw, shasum, created, updated, t, eb.context); err == nil {
+	if p, err := page.New(path, raw, created, updated, t, eb.context); err == nil {
 		eb.pages[p.Url] = p
 		log.DebugF("adding page from string: %v", p.Url)
 	} else {
