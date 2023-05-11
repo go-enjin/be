@@ -28,9 +28,9 @@ const NotImplemented Tag = "NotImplemented"
 type Feature interface {
 	Init(this interface{})
 	Tag() (tag Tag)
+	This() (this interface{})
 	Self() (f Feature)
 	Depends() (deps Tags)
-	Context() (ctx context.Context)
 	Build(c Buildable) (err error)
 	Setup(enjin Internals)
 	Startup(ctx *cli.Context) (err error)
@@ -45,16 +45,24 @@ type CFeature struct {
 	this interface{}
 	ctx  context.Context
 
+	FeatureTag Tag
+
+	Enjin Internals
+
 	sync.RWMutex
 }
 
 func (f *CFeature) Init(this interface{}) {
 	f.this = this
 	f.ctx = context.New()
+	f.FeatureTag = NotImplemented
 }
 
 func (f *CFeature) Tag() (tag Tag) {
-	return NotImplemented
+	if f.FeatureTag == NotImplemented {
+		panic("not implemented")
+	}
+	return f.FeatureTag
 }
 
 func (f *CFeature) This() (this interface{}) {
@@ -70,16 +78,10 @@ func (f *CFeature) Self() (self Feature) {
 }
 
 func (f *CFeature) Make() Feature {
-	log.DebugF("making feature: %v", f.Self().Tag())
 	return f.Self()
 }
 
 func (f *CFeature) Depends() (deps Tags) {
-	return
-}
-
-func (f *CFeature) Context() (ctx context.Context) {
-	ctx = f.ctx.Copy()
 	return
 }
 
@@ -88,11 +90,17 @@ func (f *CFeature) Build(b Buildable) (err error) {
 }
 
 func (f *CFeature) Setup(enjin Internals) {
+	f.Enjin = enjin
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	if f.Tag() == NotImplemented {
+		panic("not implemented")
+	}
+	log.DebugDF(1, "%v starting up", f.Tag())
 	return
 }
 
 func (f *CFeature) Shutdown() {
+	log.DebugDF(1, "%v shutting down", f.FeatureTag)
 }
