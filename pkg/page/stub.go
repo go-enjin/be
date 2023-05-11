@@ -1,4 +1,4 @@
-// Copyright (c) 2022  The Go-Enjin Authors
+// Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package pagecache
+package page
 
 import (
 	"fmt"
@@ -20,38 +20,13 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
-	"github.com/go-enjin/be/pkg/context"
-	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/pkg/page/matter"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	types "github.com/go-enjin/be/pkg/types/theme-types"
+	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
-type Stub struct {
-	Bfs      beFs.FileSystem
-	Point    string
-	Shasum   string
-	Source   string
-	Language language.Tag
-	Fallback language.Tag
-	EnjinCtx context.Context
-}
-
-func NewStub(enjin context.Context, bfs beFs.FileSystem, point, source, shasum string, fallback language.Tag) (s *Stub, p *page.Page, err error) {
-	s = &Stub{
-		Bfs:      bfs,
-		Point:    point,
-		Shasum:   shasum,
-		Source:   source,
-		Language: fallback,
-		Fallback: fallback,
-		EnjinCtx: enjin,
-	}
-	return
-}
-
-func (s *Stub) Make(formats types.FormatProvider) (p *page.Page, err error) {
+func NewFromPageStub(s *matter.PageStub, formats types.FormatProvider) (p *Page, err error) {
 	var data []byte
 	if data, err = s.Bfs.ReadFile(s.Source); err != nil {
 		err = fmt.Errorf("error reading %v mount file: %v - %v", s.Bfs.Name(), s.Source, err)
@@ -73,7 +48,7 @@ func (s *Stub) Make(formats types.FormatProvider) (p *page.Page, err error) {
 		log.ErrorF("error getting page last modified epoch: %v", err)
 	}
 
-	if p, err = page.New(path, string(data), s.Shasum, created, updated, formats, s.EnjinCtx); err == nil {
+	if p, err = New(path, string(data), created, updated, formats, s.EnjinCtx); err == nil {
 		if language.Compare(p.LanguageTag, language.Und) {
 			p.SetLanguage(s.Fallback)
 		}

@@ -23,6 +23,8 @@ import (
 	"github.com/go-enjin/be/pkg/cmp"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/pkg/page/matter"
 	"github.com/go-enjin/be/pkg/pagecache"
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/regexps"
@@ -44,7 +46,7 @@ type cMatcher struct {
 	err error
 }
 
-func NewProcess(input string, enjin feature.Internals) (matched []*pagecache.Stub, err error) {
+func NewProcess(input string, enjin feature.Internals) (matched []*matter.PageStub, err error) {
 	var ok bool
 	var t *theme.Theme
 	var f pagecache.PageContextProvider
@@ -60,7 +62,7 @@ func NewProcess(input string, enjin feature.Internals) (matched []*pagecache.Stu
 	return
 }
 
-func NewProcessWith(input string, t *theme.Theme, f pagecache.PageContextProvider) (matched []*pagecache.Stub, err error) {
+func NewProcessWith(input string, t *theme.Theme, f pagecache.PageContextProvider) (matched []*matter.PageStub, err error) {
 	matcher := &cMatcher{
 		feat:    f,
 		theme:   t,
@@ -82,7 +84,7 @@ func NewProcessWith(input string, t *theme.Theme, f pagecache.PageContextProvide
 	return
 }
 
-func (m *cMatcher) process() (matched []*pagecache.Stub, err error) {
+func (m *cMatcher) process() (matched []*matter.PageStub, err error) {
 	var pErr *pageql.ParseError
 	if m.stmnt, pErr = pageql.CompileQuery(m.input); pErr != nil {
 		err = error(pErr)
@@ -145,7 +147,7 @@ func (m *cMatcher) process() (matched []*pagecache.Stub, err error) {
 	return
 }
 
-func (m *cMatcher) processQueryStatement(stmnt *pageql.Statement) (matched []*pagecache.Stub, err error) {
+func (m *cMatcher) processQueryStatement(stmnt *pageql.Statement) (matched []*matter.PageStub, err error) {
 	if stmnt.Expression != nil {
 		if matched, err = m.processQueryExpression(stmnt.Expression); err != nil {
 			return
@@ -154,7 +156,7 @@ func (m *cMatcher) processQueryStatement(stmnt *pageql.Statement) (matched []*pa
 	return
 }
 
-func (m *cMatcher) processQueryExpression(expr *pageql.Expression) (matched []*pagecache.Stub, err error) {
+func (m *cMatcher) processQueryExpression(expr *pageql.Expression) (matched []*matter.PageStub, err error) {
 	switch {
 	case expr.Condition != nil:
 		matched, err = m.processQueryCondition(expr.Condition)
@@ -165,9 +167,9 @@ func (m *cMatcher) processQueryExpression(expr *pageql.Expression) (matched []*p
 	return
 }
 
-func (m *cMatcher) processQueryCondition(cond *pageql.Condition) (matched []*pagecache.Stub, err error) {
+func (m *cMatcher) processQueryCondition(cond *pageql.Condition) (matched []*matter.PageStub, err error) {
 
-	var lhsMatched, rhsMatched []*pagecache.Stub
+	var lhsMatched, rhsMatched []*matter.PageStub
 	if lhsMatched, err = m.processQueryExpression(cond.Left); err != nil {
 		return
 	}
@@ -187,7 +189,7 @@ func (m *cMatcher) processQueryCondition(cond *pageql.Condition) (matched []*pag
 		}
 
 	case "OR":
-		add := make(map[string]*pagecache.Stub)
+		add := make(map[string]*matter.PageStub)
 		for _, stub := range lhsMatched {
 			add[stub.Shasum] = stub
 		}
@@ -201,7 +203,7 @@ func (m *cMatcher) processQueryCondition(cond *pageql.Condition) (matched []*pag
 	return
 }
 
-func (m *cMatcher) processQueryOperation(op *pageql.Operation) (matched []*pagecache.Stub, err error) {
+func (m *cMatcher) processQueryOperation(op *pageql.Operation) (matched []*matter.PageStub, err error) {
 	switch op.Type {
 	case "==", "=~":
 		matched, err = m.processOperationEquals(*op.Left, op.Right, true)
@@ -221,8 +223,8 @@ func (m *cMatcher) processQueryOperation(op *pageql.Operation) (matched []*pagec
 	return
 }
 
-func (m *cMatcher) processOperationEquals(key string, opValue *pageql.Value, inclusive bool) (matched []*pagecache.Stub, err error) {
-	results := make(map[string]*pagecache.Stub)
+func (m *cMatcher) processOperationEquals(key string, opValue *pageql.Value, inclusive bool) (matched []*matter.PageStub, err error) {
+	results := make(map[string]*matter.PageStub)
 
 	// TODO: implement more than string and regexp comparisons
 
@@ -233,55 +235,92 @@ func (m *cMatcher) processOperationEquals(key string, opValue *pageql.Value, inc
 			err = fmt.Errorf("error compiling regular expression: %v", err)
 			return
 		}
-		var values map[interface{}]pagecache.Stubs
-		if values, err = m.feat.GetPageContextValueStubs(key); err != nil {
-			err = fmt.Errorf("error getting context key values: %v", err)
-			return
-		} else {
-			for value, stubs := range values {
-				switch t := value.(type) {
-				case string:
-					match := rx.MatchString(t)
-					if (inclusive && match) || (!inclusive && !match) {
-						for _, stub := range stubs {
-							results[stub.Shasum] = stub
-							p, _ := stub.Make(m.theme)
-							ctx := p.Context.Copy()
-							ctx.CamelizeKeys()
-							m.cache[stub.Shasum] = ctx.Select(m.stmnt.ContextKeys...)
-							// log.WarnF("m.cache[%v] = %v", stub.Shasum, m.cache[stub.Shasum])
-						}
-					}
-				default:
-					err = fmt.Errorf("page.%v is a %T, regular expressions expect strings", key, value)
-					return
+
+		for pair := range m.feat.YieldPageContextValueStubs(key) {
+			switch t := pair.Value.(type) {
+			case string:
+				match := rx.MatchString(t)
+				if (inclusive && match) || (!inclusive && !match) {
+					stub := pair.Stub
+					results[stub.Shasum] = stub
+					p, _ := page.NewFromPageStub(stub, m.theme)
+					ctx := p.Context.Copy()
+					ctx.CamelizeKeys()
+					m.cache[stub.Shasum] = ctx.Select(m.stmnt.ContextKeys...)
+					// log.WarnF("m.cache[%v] = %v", stub.Shasum, m.cache[stub.Shasum])
+				}
+			default:
+				err = fmt.Errorf("page.%v is a %T, regular expressions expect strings", key, pair.Value)
+				return
+			}
+		}
+
+		// var values map[interface{}]matter.PageStubs
+		// if values, err = m.feat.GetPageContextValueStubs(key); err != nil {
+		// 	err = fmt.Errorf("error getting context key values: %v", err)
+		// 	return
+		// } else {
+		// 	for value, stubs := range values {
+		// 		switch t := value.(type) {
+		// 		case string:
+		// 			match := rx.MatchString(t)
+		// 			if (inclusive && match) || (!inclusive && !match) {
+		// 				for _, stub := range stubs {
+		// 					results[stub.Shasum] = stub
+		// 					p, _ := stub.NewFromPageStub(m.theme)
+		// 					ctx := p.Context.Copy()
+		// 					ctx.CamelizeKeys()
+		// 					m.cache[stub.Shasum] = ctx.Select(m.stmnt.ContextKeys...)
+		// 					// log.WarnF("m.cache[%v] = %v", stub.Shasum, m.cache[stub.Shasum])
+		// 				}
+		// 			}
+		// 		default:
+		// 			err = fmt.Errorf("page.%v is a %T, regular expressions expect strings", key, value)
+		// 			return
+		// 		}
+		// 	}
+		// }
+
+	case opValue.String != nil:
+
+		for pair := range m.feat.YieldPageContextValueStubs(key) {
+			if match, ee := cmp.Compare(pair.Value, *opValue.String); ee != nil {
+				err = ee
+				return
+			} else {
+				if (inclusive && match) || (!inclusive && !match) {
+					stub := pair.Stub
+					results[stub.Shasum] = stub
+					p, _ := page.NewFromPageStub(stub, m.theme)
+					ctx := p.Context.Copy()
+					ctx.CamelizeKeys()
+					m.cache[stub.Shasum] = ctx.Select(m.stmnt.ContextKeys...)
 				}
 			}
 		}
 
-	case opValue.String != nil:
-		var values map[interface{}]pagecache.Stubs
-		if values, err = m.feat.GetPageContextValueStubs(key); err != nil {
-			err = fmt.Errorf("error getting context key values: %v", err)
-			return
-		} else {
-			for value, stubs := range values {
-				if match, ee := cmp.Compare(value, *opValue.String); ee != nil {
-					err = ee
-					return
-				} else {
-					if (inclusive && match) || (!inclusive && !match) {
-						for _, stub := range stubs {
-							results[stub.Shasum] = stub
-							p, _ := stub.Make(m.theme)
-							ctx := p.Context.Copy()
-							ctx.CamelizeKeys()
-							m.cache[stub.Shasum] = ctx.Select(m.stmnt.ContextKeys...)
-						}
-					}
-				}
-			}
-		}
+		// var values map[interface{}]matter.PageStubs
+		// if values, err = m.feat.GetPageContextValueStubs(key); err != nil {
+		// 	err = fmt.Errorf("error getting context key values: %v", err)
+		// 	return
+		// } else {
+		// 	for value, stubs := range values {
+		// 		if match, ee := cmp.Compare(value, *opValue.String); ee != nil {
+		// 			err = ee
+		// 			return
+		// 		} else {
+		// 			if (inclusive && match) || (!inclusive && !match) {
+		// 				for _, stub := range stubs {
+		// 					results[stub.Shasum] = stub
+		// 					p, _ := stub.NewFromPageStub(m.theme)
+		// 					ctx := p.Context.Copy()
+		// 					ctx.CamelizeKeys()
+		// 					m.cache[stub.Shasum] = ctx.Select(m.stmnt.ContextKeys...)
+		// 				}
+		// 			}
+		// 		}
+		// 	}
+		// }
 
 	}
 

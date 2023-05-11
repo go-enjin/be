@@ -1,4 +1,4 @@
-// Copyright (c) 2022  The Go-Enjin Authors
+// Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package pagecache
+package matter
 
 import "math/rand"
 
-type Stubs []*Stub
+type PageStubs []*PageStub
 
-func (s Stubs) Random() (stub *Stub) {
+func (s PageStubs) Random() (stub *PageStub) {
 	idx := rand.Intn(len(s))
 	stub = s[idx]
 	return
 }
 
-func (s Stubs) GetSource(source string) (found *Stub) {
+func (s PageStubs) GetSource(source string) (found *PageStub) {
 	for _, stub := range s {
 		if stub.Source == source {
 			found = stub
@@ -34,7 +34,7 @@ func (s Stubs) GetSource(source string) (found *Stub) {
 	return
 }
 
-func (s Stubs) GetShasum(shasum string) (found *Stub) {
+func (s PageStubs) GetShasum(shasum string) (found *PageStub) {
 	for _, stub := range s {
 		if stub.Shasum == shasum {
 			found = stub
@@ -44,7 +44,7 @@ func (s Stubs) GetShasum(shasum string) (found *Stub) {
 	return
 }
 
-func (s Stubs) HasShasum(shasum string) (found bool) {
+func (s PageStubs) HasShasum(shasum string) (found bool) {
 	for _, stub := range s {
 		if found = stub.Shasum == shasum; found {
 			return
@@ -53,7 +53,7 @@ func (s Stubs) HasShasum(shasum string) (found bool) {
 	return
 }
 
-func AnyStubsInStubs(src, tgt Stubs) (found bool) {
+func AnyStubsInStubs(src, tgt PageStubs) (found bool) {
 	for _, stub := range src {
 		if found = tgt.GetShasum(stub.Shasum) != nil; found {
 			return

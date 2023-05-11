@@ -15,12 +15,10 @@
 package page
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"strings"
-	textTemplate "text/template"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -30,18 +28,13 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/hash/sha"
-	"github.com/go-enjin/be/pkg/lang"
+	"github.com/go-enjin/be/pkg/page/matter"
 	bePath "github.com/go-enjin/be/pkg/path"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/be/pkg/theme/funcs"
 	types "github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 type Page struct {
-	gorm.Model
-
 	Type   string `json:"type" gorm:"type"`
 	Format string `json:"format" gorm:"type:string"`
 
@@ -67,12 +60,15 @@ type Page struct {
 	Shasum          string `json:"shasum"`
 	Content         string `json:"content"`
 	FrontMatter     string `json:"frontMatter"`
-	FrontMatterType FrontMatterType
+	FrontMatterType matter.FrontMatterType
+	PageMatter      *matter.PageMatter
 
 	Context context.Context `json:"-" gorm:"-"`
 
 	Formats types.FormatProvider
 	copied  int
+
+	gorm.Model
 }
 
 func NewFromFile(path, file string, formats types.FormatProvider, enjin context.Context) (p *Page, err error) {
@@ -91,47 +87,54 @@ func NewFromFile(path, file string, formats types.FormatProvider, enjin context.
 		}
 		updated = spec.ModTime().Unix()
 	}
-	var shasum string
-	if shasum, err = sha.FileHash64(file); err != nil {
-		return
-	}
-	p, err = New(path, string(contents), shasum, created, updated, formats, enjin)
+	p, err = New(path, string(contents), created, updated, formats, enjin)
 	return
 }
 
-func New(path, raw, shasum string, created, updated int64, formats types.FormatProvider, enjin context.Context) (p *Page, err error) {
+func New(path, raw string, created, updated int64, formats types.FormatProvider, enjin context.Context) (p *Page, err error) {
+	var pm *matter.PageMatter
+	if pm, err = matter.ParsePageMatter(path, time.Unix(created, 0), time.Unix(updated, 0), []byte(raw)); err != nil {
+		return
+	}
+	p, err = NewFromPageMatter(pm, formats, enjin)
+	return
+}
 
+func NewFromPageMatter(pm *matter.PageMatter, formats types.FormatProvider, enjin context.Context) (p *Page, err error) {
 	p = new(Page)
+	p.PageMatter = pm
+	p.Content = pm.Body
 	p.Formats = formats
 	p.Context = enjin.Copy()
 
-	p.Shasum = shasum
+	p.Shasum = pm.Shasum
 	p.Permalink = uuid.Nil
 
-	path = forms.TrimQueryParams(path)
-	path = p.SetFormat(path)
+	path := p.SetFormat(pm.Path)
 	p.SetSlugUrl(path)
 
-	p.CreatedAt = time.Unix(created, 0)
-	p.UpdatedAt = time.Unix(updated, 0)
+	p.CreatedAt = pm.Created
+	p.UpdatedAt = pm.Updated
 
 	p.Title = beStrings.TitleCase(strings.Join(strings.Split(p.Slug, "-"), " "))
 
-	raw = lang.StripTranslatorComments(raw)
-	p.FrontMatter, p.Content, p.FrontMatterType = ParseFrontMatterContent(raw)
-	tt := textTemplate.New("front-matter").Funcs(funcs.TextFuncMap())
-	if tt, err = tt.Parse(p.FrontMatter); err != nil {
-		err = fmt.Errorf("error parsing front-matter text tmpl: %v", err)
-		return
-	}
-	var buf bytes.Buffer
-	if err = tt.Execute(&buf, p.Context); err != nil {
-		err = fmt.Errorf("error parsing front-matter text tmpl: %v", err)
-		return
-	}
-	p.FrontMatter = buf.String()
+	// TODO: figure out how to do front-matter templating again
 
-	err = p.initFrontMatter()
+	// tt := textTemplate.New("front-matter").Funcs(funcmaps.TextFuncMap())
+	// if tt, err = tt.Parse(pm.FrontMatter); err != nil {
+	// 	err = fmt.Errorf("error parsing front-matter text tmpl: %v", err)
+	// 	return
+	// }
+	// var buf bytes.Buffer
+	// if err = tt.Execute(&buf, p.Context); err != nil {
+	// 	err = fmt.Errorf("error parsing front-matter text tmpl: %v", err)
+	// 	return
+	// }
+	// p.FrontMatter = buf.String()
+
+	if err = p.initFrontMatter(); err != nil {
+		return
+	}
 
 	if format := formats.GetFormat(p.Format); format != nil {
 		if ctx, e := format.Prepare(p.Context, p.Content); e != nil {
@@ -152,6 +155,7 @@ func New(path, raw, shasum string, created, updated int64, formats types.FormatP
 			p.Context.Apply(ctx)
 		}
 	}
+
 	return
 }
 
@@ -168,21 +172,26 @@ func (p *Page) initFrontMatter() (err error) {
 	p.Context.SetSpecific("Created", p.CreatedAt)
 	p.Context.SetSpecific("Updated", p.UpdatedAt)
 
+	if p.PageMatter != nil {
+		p.parseContext(p.PageMatter.Matter)
+		return
+	}
+
 	switch p.FrontMatterType {
-	case TomlMatter:
-		if ctx, ee := ParseToml(p.FrontMatter); ee != nil {
+	case matter.TomlMatter:
+		if ctx, ee := matter.ParseToml(p.FrontMatter); ee != nil {
 			err = fmt.Errorf("error parsing page toml front matter: %v", ee)
 		} else {
 			p.parseContext(ctx)
 		}
-	case YamlMatter:
-		if ctx, ee := ParseYaml(p.FrontMatter); ee != nil {
+	case matter.YamlMatter:
+		if ctx, ee := matter.ParseYaml(p.FrontMatter); ee != nil {
 			err = fmt.Errorf("error parsing page yaml front matter: %v", ee)
 		} else {
 			p.parseContext(ctx)
 		}
-	case JsonMatter:
-		if ctx, ee := ParseJson(p.FrontMatter); ee != nil {
+	case matter.JsonMatter:
+		if ctx, ee := matter.ParseJson(p.FrontMatter); ee != nil {
 			err = fmt.Errorf("error parsing page json front matter: %v", ee)
 		} else {
 			p.parseContext(ctx)

@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/pkg/page/matter"
 )
 
 type CacheEnjinFeature interface {
@@ -35,22 +36,21 @@ type CacheEnjinFeature interface {
 	TotalCached(bucket string) (count uint64)
 }
 
-type QueryEnjinFeature interface {
-	PageIndexFeature
-	PerformQuery(input string) (stubs []*Stub, err error)
-	PerformSelect(input string) (selected map[string]interface{}, err error)
-}
-
 type SearchEnjinFeature interface {
 	PrepareSearch(tag language.Tag, input string) (query string)
 	PerformSearch(tag language.Tag, input string, size, pg int) (results *bleve.SearchResult, err error)
-	AddToSearchIndex(stub *Stub, p *page.Page) (err error)
+	AddToSearchIndex(stub *matter.PageStub, p *page.Page) (err error)
 	RemoveFromSearchIndex(tag language.Tag, file, shasum string)
 }
 
 type PageIndexFeature interface {
-	AddToIndex(stub *Stub, p *page.Page) (err error)
+	AddToIndex(stub *matter.PageStub, p *page.Page) (err error)
 	RemoveFromIndex(tag language.Tag, file, shasum string)
+}
+
+type QueryIndexFeature interface {
+	PerformQuery(input string) (stubs []*matter.PageStub, err error)
+	PerformSelect(input string) (selected map[string]interface{}, err error)
 }
 
 type SearchDocumentMapperFeature interface {
@@ -60,9 +60,18 @@ type SearchDocumentMapperFeature interface {
 
 type KeywordProvider interface {
 	KnownKeywords() (keywords []string)
-	KeywordStubs(keyword string) (stubs Stubs)
+	KeywordStubs(keyword string) (stubs matter.PageStubs)
 }
 
 type PageContextProvider interface {
-	GetPageContextValueStubs(key string) (valueStubs map[interface{}]Stubs, err error)
+	YieldPageContextValues(key string) (values chan interface{})
+	YieldPageContextValueStubs(key string) (pairs chan *ValueStubPair)
+
+	// Deprecated: GetPageContextValueStubs
+	// GetPageContextValueStubs(key string) (valueStubs map[interface{}]matter.PageStubs, err error)
+}
+
+type ValueStubPair struct {
+	Value interface{}
+	Stub  *matter.PageStub
 }
