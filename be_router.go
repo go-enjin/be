@@ -25,6 +25,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/globals"
+	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/headers"
@@ -140,6 +141,10 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 			if mw := mf.Use(e); mw != nil {
 				router.Use(mw)
 			}
+		} else if af, ok := f.(feature.UseMiddleware); ok {
+			if mw := af.Use(e); mw != nil {
+				router.Use(mw)
+			}
 		}
 	}
 
@@ -188,6 +193,10 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 			if err = mf.Apply(e); err != nil {
 				return
 			}
+		} else if af, ok := f.(feature.ApplyMiddleware); ok {
+			if err = af.Apply(e); err != nil {
+				return
+			}
 		}
 	}
 
@@ -195,12 +204,48 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	router.NotFound(e.ServeNotFound)
 	router.MethodNotAllowed(e.Serve405)
 
-	// chi needs this for whatever reason, pages can catch before this
-	// so that it's really just a nop and chi actually does something with
-	// the middleware set
-	router.Get("/", e.Serve404)
+	// standard page processing catch-all-not-already-routed
+	router.Get("/*", e.RoutingHTTP)
+	router.Get("/", e.RoutingHTTP)
+
+	// TODO: figure out better ways of protecting content
 	router.Put("/", e.Serve404)
 	router.Post("/", e.Serve404)
 
 	return
+}
+
+func (e *Enjin) RoutingHTTP(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Path
+	tag := lang.GetTag(r)
+	for _, f := range e.Features() {
+		if pp, ok := f.Self().(feature.PageProvider); ok {
+			if pg := pp.FindPage(tag, path); pg != nil {
+				if err := e.ServePage(pg, w, r); err == nil {
+					log.DebugRF(r, "enjin router served provided page: %v", pg.Url)
+					return
+				} else {
+					log.ErrorRF(r, "error serving page: %v - %v", pg.Url, err)
+				}
+			}
+		}
+	}
+	for _, f := range e.Features() {
+		if spf, ok := f.Self().(feature.ServePathFeature); ok {
+			if ee := spf.ServePath(path, e, w, r); ee == nil {
+				log.DebugRF(r, "%v feature served path: %v", f.Tag(), path)
+				return
+			}
+		}
+	}
+	if pg, ok := e.eb.pages[path]; ok {
+		if err := e.ServePage(pg, w, r); err != nil {
+			log.ErrorRF(r, "serve page err: %v", err)
+			e.ServeInternalServerError(w, r)
+		} else {
+			log.DebugRF(r, "enjin router served page: %v", path)
+		}
+		return
+	}
+	e.ServeNotFound(w, r)
 }
