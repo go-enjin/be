@@ -51,7 +51,7 @@ func RemoveFromSlice[T Variables](store KeyValueStore, key interface{}, values .
 	for _, value := range values {
 		lookup[value] = true
 	}
-	if v, e := store.Get(key); e != nil {
+	if v, e := store.Get(key); e == nil {
 		if items, ok := v.([]T); ok {
 			for _, item := range items {
 				if _, remove := lookup[item]; !remove {
@@ -67,7 +67,7 @@ func RemoveFromSlice[T Variables](store KeyValueStore, key interface{}, values .
 func AppendToSlice[T Variables](store KeyValueStore, key interface{}, values ...T) (err error) {
 	var list []T
 	unique := make(map[T]bool)
-	if v, e := store.Get(key); e != nil {
+	if v, e := store.Get(key); e == nil {
 		if items, ok := v.([]T); ok {
 			for _, item := range items {
 				if _, present := unique[item]; !present {
