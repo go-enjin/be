@@ -19,18 +19,31 @@ import (
 )
 
 func BaseURL(r *http.Request) (baseUrl string) {
-	u := r.URL
-	if baseUrl = u.Scheme; baseUrl == "" {
+	if r.URL.Scheme != "" {
+		baseUrl = r.URL.Scheme
+	} else if r.TLS != nil {
 		baseUrl = "https"
+	} else {
+		baseUrl = "http"
 	}
 	baseUrl += "://"
-	if u.Host != "" {
-		baseUrl += u.Host
+	if r.URL.Host != "" {
+		baseUrl += r.URL.Host
+		if portNum := r.URL.Port(); portNum != "" {
+			baseUrl += ":" + portNum
+		}
 	} else {
 		baseUrl += r.Host
 	}
-	if portNum := u.Port(); portNum != "" {
-		baseUrl += ":" + portNum
+	return
+}
+
+func MakeUrl(path string, r *http.Request) (url string) {
+	pathLen := len(path)
+	fullpath := "/"
+	if pathLen > 0 && path[0] != '/' {
+		fullpath = "/" + path
 	}
+	url = BaseURL(r) + fullpath
 	return
 }
