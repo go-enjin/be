@@ -30,7 +30,7 @@ func (t *Theme) Middleware(next http.Handler) http.Handler {
 		var data []byte
 		var mime string
 		if data, err = t.FileSystem.ReadFile(path); err != nil {
-			// log.DebugF("theme statics middleware skip: %v", path)
+			// log.DebugRF(r, "theme statics middleware skip: %v", path)
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -38,13 +38,13 @@ func (t *Theme) Middleware(next http.Handler) http.Handler {
 		w.Header().Set("Content-Type", mime)
 		if t.Config.CacheControl == "" {
 			w.Header().Set("Cache-Control", DefaultCacheControl)
-			// log.WarnF("default cache control: %v", DefaultCacheControl)
+			// log.WarnRF(r, "default cache control: %v", DefaultCacheControl)
 		} else {
 			w.Header().Set("Cache-Control", t.Config.CacheControl)
-			// log.WarnF("custom cache control: %v", t.Config.CacheControl)
+			// log.WarnRF(r, "custom cache control: %v", t.Config.CacheControl)
 		}
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write(data)
-		log.DebugF("%v served: %v (%v)", t.Config.Name, path, mime)
+		log.DebugRF(r, "%v theme served: %v (%v)", t.Name, path, mime)
 	})
 }

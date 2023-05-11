@@ -19,7 +19,7 @@ package theme
 import (
 	"embed"
 
-	beFsEmbed "github.com/go-enjin/be/pkg/fs/embed"
+	beFsEmbed "github.com/go-enjin/be/pkg/fs/drivers/embed"
 	"github.com/go-enjin/be/pkg/log"
 )
 

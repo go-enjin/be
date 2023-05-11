@@ -16,7 +16,7 @@ package theme
 
 import (
 	"github.com/go-enjin/be/pkg/fs"
-	"github.com/go-enjin/be/pkg/fs/local"
+	"github.com/go-enjin/be/pkg/fs/drivers/local"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 

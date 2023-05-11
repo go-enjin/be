@@ -65,7 +65,7 @@ func (l *Layouts) Reload() (err error) {
 				err = fmt.Errorf("%v theme: error reloading %v layout: %v", l.t.Config.Name, name, err)
 				return
 			}
-			log.DebugF("%v theme: reloaded %v layout", l.t.Config.Name, exists.Name)
+			log.TraceF("%v theme: reloaded %v layout", l.t.Config.Name, exists.Name)
 			continue
 		}
 		if layout, e := NewLayout(path, l.t.FileSystem, l.t); e != nil {

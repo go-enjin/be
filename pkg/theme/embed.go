@@ -18,7 +18,7 @@ import (
 	"embed"
 
 	"github.com/go-enjin/be/pkg/fs"
-	beFsEmbed "github.com/go-enjin/be/pkg/fs/embed"
+	beFsEmbed "github.com/go-enjin/be/pkg/fs/drivers/embed"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 

@@ -76,7 +76,7 @@ func (t *Theme) NewTextTemplateWithContext(name string, ctx context.Context) (tm
 		}
 	} else {
 		tmpl = textTemplate.New(name).Funcs(t.NewTextFuncMapWithContext(ctx))
-		log.DebugF("starting %v (text) template from theme %v", name, t.Config.Name)
+		log.TraceF("starting %v (text) template from theme %v", name, t.Config.Name)
 	}
 	return
 }
@@ -88,7 +88,7 @@ func (t *Theme) NewHtmlTemplateWithContext(name string, ctx context.Context) (tm
 		}
 	} else {
 		tmpl = htmlTemplate.New(name).Funcs(t.NewHtmlFuncMapWithContext(ctx))
-		log.DebugF("starting %v (html) template from theme %v", name, t.Config.Name)
+		log.TraceF("starting %v (html) template from theme %v", name, t.Config.Name)
 	}
 	var layoutsTmpl *htmlTemplate.Template
 	if layoutsTmpl, err = t.Layouts.NewTemplate("", ctx); err != nil {
@@ -106,7 +106,11 @@ func (t *Theme) FindLayout(named string) (layout *Layout, name string, ok bool) 
 
 	layout = t.Layouts.GetLayout(name)
 	if ok = layout != nil; ok {
-		log.DebugF("found layout in %v (%v) context: %v", t.Config.Name, t.Config.Parent, name)
+		if t.Config.Parent == "" {
+			log.TraceF("found layout in %v (theme) context: %v", t.Config.Name, name)
+		} else {
+			log.TraceF("found layout in %v (%v) context: %v", t.Config.Name, t.Config.Parent, name)
+		}
 	}
 	return
 }
@@ -199,7 +203,7 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *htmlT
 	if tt = LookupTemplate(tmpl, lookups...); tt == nil {
 		err = fmt.Errorf("%v theme template not found for: archetype=%v, layout=%v, pageFormat=%v, lookups=%v", t.Config.Name, archetype, layoutName, pageFormat, lookups)
 	} else {
-		log.DebugF("lookup success: %v", tt.Name())
+		log.TraceF("lookup success: %v", tt.Name())
 	}
 
 	return
@@ -208,7 +212,7 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *htmlT
 func (t *Theme) Render(view string, ctx context.Context) (data []byte, err error) {
 	var tt *htmlTemplate.Template
 	if tt, err = t.TemplateFromContext(view, ctx); err == nil {
-		log.DebugF("%v theme template used: (%v) %v - \"%v\"", t.Config.Name, view, tt.Name(), ctx.String("Url", "nil"))
+		log.TraceF("%v theme template used: (%v) %v - \"%v\"", t.Config.Name, view, tt.Name(), ctx.String("Url", "nil"))
 		var wr bytes.Buffer
 		if err = tt.Execute(&wr, ctx); err != nil {
 			return
@@ -252,7 +256,7 @@ func (t *Theme) RenderPage(ctx context.Context, p *page.Page) (data []byte, redi
 				return
 			} else {
 				ctx["Content"] = html
-				log.DebugF("page format success: %v", format.Name())
+				log.TraceF("page format success: %v", format.Name())
 			}
 		} else {
 			ctx["Content"] = t.renderErrorPage("Unsupported Page Format", fmt.Sprintf(`Unknown page format specified: "%v"`, p.Format), p.String())

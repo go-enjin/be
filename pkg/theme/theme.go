@@ -17,9 +17,11 @@ package theme
 import (
 	"fmt"
 	"html/template"
+	"sort"
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/fvbommel/sortorder"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/fs"
@@ -139,6 +141,14 @@ func (t *Theme) AddFormatProvider(providers ...types.FormatProvider) {
 	for _, provider := range providers {
 		t.FormatProviders = append(t.FormatProviders, provider)
 	}
+}
+
+func (t *Theme) ListFormats() (names []string) {
+	for _, p := range t.FormatProviders {
+		names = append(names, p.ListFormats()...)
+	}
+	sort.Sort(sortorder.Natural(names))
+	return
 }
 
 func (t *Theme) GetFormat(name string) (format types.Format) {
