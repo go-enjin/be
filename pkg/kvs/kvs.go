@@ -145,7 +145,7 @@ func YieldFlatList[T interface{}](store KeyValueStore, key string) (yield chan T
 	return
 }
 
-func AppendToFlatList(store KeyValueStore, key string, value interface{}) (err error) {
+func AppendToFlatList[T interface{}](store KeyValueStore, key string, value T) (err error) {
 	endKey := MakeFlatListKey(key, "end")
 	endIndex := GetValue[uint64](store, endKey)
 	freeKey := MakeFlatListKey(key, "free")
