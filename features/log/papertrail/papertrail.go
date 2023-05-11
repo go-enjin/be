@@ -24,30 +24,41 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 )
 
-var _ feature.Feature = (*Feature)(nil)
+var (
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
+)
 
-const Tag feature.Tag = "Papertrail"
+const Tag feature.Tag = "log-papertrail"
 
-type Feature struct {
-	feature.CFeature
+type Feature interface {
+	feature.Feature
 }
 
 type MakeFeature interface {
-	feature.MakeFeature
+	Make() Feature
 }
 
-func Make() feature.Feature {
-	f := new(Feature)
+type CFeature struct {
+	feature.CFeature
+}
+
+func Make() Feature {
+	return New().Make()
+}
+
+func New() MakeFeature {
+	f := new(CFeature)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
 }
 
-func (f *Feature) Tag() (tag feature.Tag) {
-	tag = Tag
-	return
+func (f *CFeature) Make() Feature {
+	return f
 }
 
-func (f *Feature) Build(b feature.Buildable) (err error) {
+func (f *CFeature) Build(b feature.Buildable) (err error) {
 	b.AddFlags(
 		&cli.StringFlag{
 			Name:    "papertrail-host",
@@ -65,7 +76,10 @@ func (f *Feature) Build(b feature.Buildable) (err error) {
 	return
 }
 
-func (f *Feature) Startup(ctx *cli.Context) (err error) {
+func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	}
 	ptHost := ctx.String("papertrail-host")
 	ptPort := ctx.Int("papertrail-port")
 	if ptHost == "" || ptPort <= 0 {

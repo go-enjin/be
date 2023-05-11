@@ -25,41 +25,48 @@ import (
 	"github.com/go-enjin/be/pkg/strings"
 )
 
-var _ feature.Feature = (*Feature)(nil)
+var (
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
+)
 
-const Tag feature.Tag = "NotifySlack"
+const Tag feature.Tag = "notify-slack"
 
-type Feature struct {
+type Feature interface {
+	feature.Feature
+}
+
+type MakeFeature interface {
+	Make() Feature
+
+	Add(channel string) MakeFeature
+}
+
+type CFeature struct {
 	feature.CFeature
 
 	channels []string
 }
 
-type MakeFeature interface {
-	feature.MakeFeature
-
-	Add(channel string) MakeFeature
-}
-
 func New() MakeFeature {
-	f := new(Feature)
+	f := new(CFeature)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
 }
 
-func (f *Feature) Add(channel string) MakeFeature {
+func (f *CFeature) Add(channel string) MakeFeature {
 	if !strings.StringInStrings(channel, f.channels...) {
 		f.channels = append(f.channels, channel)
 	}
 	return f
 }
 
-func (f *Feature) Tag() (tag feature.Tag) {
-	tag = Tag
-	return
+func (f *CFeature) Make() Feature {
+	return f
 }
 
-func (f *Feature) Build(b feature.Buildable) (err error) {
+func (f *CFeature) Build(b feature.Buildable) (err error) {
 	b.AddFlags(&cli.StringFlag{
 		Name:    "slack",
 		Usage:   "the unique part of a slack channel webhook URL",
@@ -71,14 +78,17 @@ func (f *Feature) Build(b feature.Buildable) (err error) {
 	return
 }
 
-func (f *Feature) Startup(ctx *cli.Context) (err error) {
+func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	}
 	if channel := ctx.String("slack"); channel != "" {
 		f.Add(channel)
 	}
 	return
 }
 
-func (f *Feature) notifyHook(format string, argv ...interface{}) {
+func (f *CFeature) notifyHook(format string, argv ...interface{}) {
 	for _, channel := range f.channels {
 		if err := notify.SlackF(channel, format, argv...); err != nil {
 			log.ErrorF("error notifying slack: %v", err)

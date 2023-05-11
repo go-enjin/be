@@ -32,15 +32,27 @@ import (
 
 var _minifyInstance = beMinify.NewInstance()
 
-var _ MakeFeature = (*Feature)(nil)
-
-var _ feature.Feature = (*Feature)(nil)
-
-var _ feature.OutputTransformer = (*Feature)(nil)
+var (
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
+)
 
 const Tag feature.Tag = "OutputMinify"
 
-type Feature struct {
+type Feature interface {
+	feature.Feature
+	feature.OutputTransformer
+}
+
+type MakeFeature interface {
+	Make() Feature
+
+	AddMimeType(mime string) MakeFeature
+	SetMimeTypes(mimeTypes ...string) MakeFeature
+	Ignore(paths ...string) MakeFeature
+}
+
+type CFeature struct {
 	feature.CFeature
 
 	mimeTypes []string
@@ -48,33 +60,25 @@ type Feature struct {
 	ignored   []*regexp.Regexp
 }
 
-type MakeFeature interface {
-	feature.MakeFeature
-
-	AddMimeType(mime string) MakeFeature
-	SetMimeTypes(mimeTypes ...string) MakeFeature
-	Ignore(paths ...string) MakeFeature
-}
-
 func New() MakeFeature {
-	f := new(Feature)
+	f := new(CFeature)
 	f.Init(f)
 	return f
 }
 
-func (f *Feature) AddMimeType(mime string) MakeFeature {
+func (f *CFeature) AddMimeType(mime string) MakeFeature {
 	if !beStrings.StringInStrings(mime, f.mimeTypes...) {
 		f.mimeTypes = append(f.mimeTypes, mime)
 	}
 	return f
 }
 
-func (f *Feature) SetMimeTypes(mimeTypes ...string) MakeFeature {
+func (f *CFeature) SetMimeTypes(mimeTypes ...string) MakeFeature {
 	f.mimeTypes = mimeTypes
 	return f
 }
 
-func (f *Feature) Ignore(pathsOrPatterns ...string) MakeFeature {
+func (f *CFeature) Ignore(pathsOrPatterns ...string) MakeFeature {
 	for _, pathOrPattern := range pathsOrPatterns {
 		if !beStrings.StringInStrings(pathOrPattern, f.ignore...) {
 			f.ignore = append(f.ignore, pathOrPattern)
@@ -83,12 +87,11 @@ func (f *Feature) Ignore(pathsOrPatterns ...string) MakeFeature {
 	return f
 }
 
-func (f *Feature) Tag() (tag feature.Tag) {
-	tag = Tag
-	return
+func (f *CFeature) Make() Feature {
+	return f
 }
 
-func (f *Feature) Build(b feature.Buildable) (err error) {
+func (f *CFeature) Build(b feature.Buildable) (err error) {
 	if len(f.mimeTypes) == 0 {
 		f.mimeTypes = []string{
 			"text/css",
@@ -98,7 +101,10 @@ func (f *Feature) Build(b feature.Buildable) (err error) {
 	return
 }
 
-func (f *Feature) Startup(ctx *cli.Context) (err error) {
+func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	}
 	for _, path := range f.ignore {
 		if rx, e := regexp.Compile(path); e != nil {
 			f.ignored = append(f.ignored, nil)
@@ -109,7 +115,7 @@ func (f *Feature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *Feature) CanTransform(mime string, r *http.Request) (ok bool) {
+func (f *CFeature) CanTransform(mime string, r *http.Request) (ok bool) {
 	urlPath := bePath.TrimSlash(forms.TrimQueryParams(r.URL.Path))
 	for idx, rx := range f.ignored {
 		ignore := false
@@ -119,7 +125,7 @@ func (f *Feature) CanTransform(mime string, r *http.Request) (ok bool) {
 			ignore = urlPath == f.ignore[idx]
 		}
 		if ignore {
-			log.TraceF("minify ignoring (path or pattern): (%v) - %v", f.ignore[idx], urlPath)
+			log.TraceRF(r, "minify ignoring (path or pattern): (%v) - %v", f.ignore[idx], urlPath)
 			return
 		}
 	}
@@ -129,14 +135,16 @@ func (f *Feature) CanTransform(mime string, r *http.Request) (ok bool) {
 			switch supported {
 			case mime, basicMime:
 				ok = true
+				log.TraceRF(r, "minify transforming: %v", urlPath)
 				return
 			}
 		}
+		log.TraceRF(r, "minify ignoring (mime type): (%v) - %v", basicMime, urlPath)
 	}
 	return
 }
 
-func (f *Feature) TransformOutput(mime string, input []byte) (output []byte) {
+func (f *CFeature) TransformOutput(mime string, input []byte) (output []byte) {
 	var err error
 	if output, err = _minifyInstance.Bytes(mime, input); err == nil {
 		return

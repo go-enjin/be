@@ -27,11 +27,26 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 )
 
-var _ feature.Feature = (*Feature)(nil)
+var (
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
+)
 
-const Tag feature.Tag = "PagesContext"
+const Tag feature.Tag = "pages-context"
 
-type Feature struct {
+type Feature interface {
+	feature.Feature
+	feature.PageContextModifier
+}
+
+type MakeFeature interface {
+	Make() Feature
+
+	Set(key string, value interface{}) MakeFeature
+	Flag(custom cli.Flag) MakeFeature
+}
+
+type CFeature struct {
 	feature.CFeature
 
 	ctx    context.Context
@@ -40,58 +55,54 @@ type Feature struct {
 	cli *cli.Context
 }
 
-type MakeFeature interface {
-	feature.MakeFeature
-
-	Set(key string, value interface{}) MakeFeature
-	Flag(custom cli.Flag) MakeFeature
-}
-
 func New() MakeFeature {
-	f := new(Feature)
+	f := new(CFeature)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
 }
 
-func (f *Feature) Set(key string, value interface{}) MakeFeature {
-	f.ctx.Set(key, value)
-	return f
-}
-
-func (f *Feature) Flag(custom cli.Flag) MakeFeature {
-	f.custom = append(f.custom, custom)
-	return f
-}
-
-func (f *Feature) Init(this interface{}) {
+func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.ctx = context.New()
 	f.custom = make([]cli.Flag, 0)
 }
 
-func (f *Feature) Tag() (tag feature.Tag) {
-	tag = Tag
-	return
+func (f *CFeature) Set(key string, value interface{}) MakeFeature {
+	f.ctx.Set(key, value)
+	return f
 }
 
-func (f *Feature) Build(b feature.Buildable) (err error) {
+func (f *CFeature) Flag(custom cli.Flag) MakeFeature {
+	f.custom = append(f.custom, custom)
+	return f
+}
+
+func (f *CFeature) Make() Feature {
+	return f
+}
+
+func (f *CFeature) Build(b feature.Buildable) (err error) {
 	if len(f.custom) > 0 {
 		b.AddFlags(f.custom...)
 	}
 	return
 }
 
-func (f *Feature) Startup(ctx *cli.Context) (err error) {
+func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	}
 	f.cli = ctx
 	return
 }
 
-func (f *Feature) FilterPageContext(tCtx context.Context, pCtx context.Context, r *http.Request) (out context.Context) {
+func (f *CFeature) FilterPageContext(tCtx context.Context, pCtx context.Context, r *http.Request) (out context.Context) {
 	out = tCtx.Copy()
 	for _, custom := range f.custom {
 		for _, name := range custom.Names() {
 			out.Set(strcase.ToCamel(name), f.cli.Generic(name))
-			log.DebugF("setting page context: %v => %v", strcase.ToCamel(name), f.cli.Generic(name))
+			log.DebugRF(r, "setting page context: %v => %v", strcase.ToCamel(name), f.cli.Generic(name))
 		}
 	}
 	return

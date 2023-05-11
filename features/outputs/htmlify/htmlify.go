@@ -31,34 +31,39 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
-var _ MakeFeature = (*Feature)(nil)
+var (
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
+)
 
-var _ feature.Feature = (*Feature)(nil)
+const Tag feature.Tag = "outputs-htmlify"
 
-var _ feature.OutputTransformer = (*Feature)(nil)
+type Feature interface {
+	feature.Feature
+	feature.OutputTransformer
+}
 
-const Tag feature.Tag = "OutputHtmlify"
+type MakeFeature interface {
+	Make() Feature
 
-type Feature struct {
+	Ignore(paths ...string) MakeFeature
+}
+
+type CFeature struct {
 	feature.CFeature
 
 	ignore  []string
 	ignored []*regexp.Regexp
 }
 
-type MakeFeature interface {
-	feature.MakeFeature
-
-	Ignore(paths ...string) MakeFeature
-}
-
 func New() MakeFeature {
-	f := new(Feature)
+	f := new(CFeature)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
 }
 
-func (f *Feature) Ignore(pathsOrPatterns ...string) MakeFeature {
+func (f *CFeature) Ignore(pathsOrPatterns ...string) MakeFeature {
 	for _, pathOrPattern := range pathsOrPatterns {
 		if !beStrings.StringInStrings(pathOrPattern, f.ignore...) {
 			f.ignore = append(f.ignore, pathOrPattern)
@@ -67,16 +72,18 @@ func (f *Feature) Ignore(pathsOrPatterns ...string) MakeFeature {
 	return f
 }
 
-func (f *Feature) Tag() (tag feature.Tag) {
-	tag = Tag
+func (f *CFeature) Make() Feature {
+	return f
+}
+
+func (f *CFeature) Build(b feature.Buildable) (err error) {
 	return
 }
 
-func (f *Feature) Build(b feature.Buildable) (err error) {
-	return
-}
-
-func (f *Feature) Startup(ctx *cli.Context) (err error) {
+func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	}
 	for _, path := range f.ignore {
 		if rx, e := regexp.Compile(path); e != nil {
 			f.ignored = append(f.ignored, nil)
@@ -87,7 +94,7 @@ func (f *Feature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *Feature) CanTransform(mime string, r *http.Request) (ok bool) {
+func (f *CFeature) CanTransform(mime string, r *http.Request) (ok bool) {
 	urlPath := bePath.TrimSlash(forms.TrimQueryParams(r.URL.Path))
 	for idx, rx := range f.ignored {
 		ignore := false
@@ -97,7 +104,7 @@ func (f *Feature) CanTransform(mime string, r *http.Request) (ok bool) {
 			ignore = urlPath == f.ignore[idx]
 		}
 		if ignore {
-			log.TraceF("htmlify ignoring (path or pattern): (%v) - %v", f.ignore[idx], urlPath)
+			log.TraceRF(r, "htmlify ignoring (path or pattern): (%v) - %v", f.ignore[idx], urlPath)
 			return
 		}
 	}
@@ -105,14 +112,14 @@ func (f *Feature) CanTransform(mime string, r *http.Request) (ok bool) {
 	switch basicMime {
 	case "text/html":
 		ok = true
-		log.TraceF("htmlify transforming: %v", urlPath)
+		log.TraceRF(r, "htmlify transforming: %v", urlPath)
 	default:
-		log.TraceF("htmlify ignoring (mime type): (%v) - %v", basicMime, urlPath)
+		log.TraceRF(r, "htmlify ignoring (mime type): (%v) - %v", basicMime, urlPath)
 	}
 	return
 }
 
-func (f *Feature) TransformOutput(_ string, input []byte) (output []byte) {
+func (f *CFeature) TransformOutput(_ string, input []byte) (output []byte) {
 	gohtml.Condense = true
 	gohtml.InlineTagMaxLength = 0
 	gohtml.LineWrapMaxSpillover = 0
