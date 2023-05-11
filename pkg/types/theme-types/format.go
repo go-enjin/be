@@ -35,6 +35,7 @@ type Format interface {
 }
 
 type FormatProvider interface {
+	ListFormats() (names []string)
 	GetFormat(name string) (format Format)
 	MatchFormat(filename string) (format Format, match string)
 }
