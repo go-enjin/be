@@ -81,14 +81,26 @@ type Enjin struct {
 }
 
 func newEnjin(eb *EnjinBuilder) *Enjin {
+	var description string
+	if len(eb.notes) > 0 {
+		description += "Feature usage notes:\n\n"
+		for _, tag := range feature.SortedFeatureTags(eb.notes) {
+			notes := eb.notes[tag]
+			description += " * " + tag.String() + ":\n"
+			for _, note := range notes {
+				description += "   * " + strings.TrimSpace(note) + "\n"
+			}
+		}
+	}
 	e := &Enjin{
 		eb: eb,
 		cli: &cli.App{
-			Name:     globals.BinName,
-			Usage:    globals.Summary,
-			Version:  globals.BuildVersion(),
-			Flags:    eb.flags,
-			Commands: eb.commands,
+			Name:        globals.BinName,
+			Usage:       globals.Summary,
+			Version:     globals.BuildVersion(),
+			Description: description,
+			Flags:       eb.flags,
+			Commands:    eb.commands,
 		},
 		contentSecurityPolicy: csp.NewPolicyHandler(),
 		permissionsPolicy:     permissions.NewPolicyHandler(),

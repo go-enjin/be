@@ -65,6 +65,11 @@ func (eb *EnjinBuilder) AddFeature(f feature.Feature) feature.Builder {
 	return eb
 }
 
+func (eb *EnjinBuilder) AddFeatureNotes(tag feature.Tag, notes ...string) feature.Builder {
+	eb.notes[tag] = append(eb.notes[tag], notes...)
+	return eb
+}
+
 func (eb *EnjinBuilder) AddFlags(flags ...cli.Flag) feature.Builder {
 	eb.flags = append(
 		eb.flags,
