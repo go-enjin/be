@@ -279,7 +279,6 @@ func (f *CFeature) YieldPageContextValueStubs(key string) (pairs chan *pagecache
 
 		for value := range f.YieldPageContextValues(key) {
 			if shasums, err := kvs.GetSlice[string](ctxKeyBucket, value); err == nil && len(shasums) > 0 {
-				log.DebugF("found %d shasums for value: %#+v", len(shasums), value)
 				for _, shasum := range shasums {
 					if vStub, eeee := f.pageStubsBucket.Get(shasum); eeee == nil {
 						if stub, ok := vStub.(*matter.PageStub); ok {
