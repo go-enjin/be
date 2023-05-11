@@ -34,10 +34,11 @@ import (
 )
 
 var (
-	_ Feature      = (*CFeature)(nil)
-	_ MakeFeature  = (*CFeature)(nil)
-	_ types.Format = (*CFeature)(nil)
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
 )
+
+const Tag feature.Tag = "pages-formats-html"
 
 type Feature interface {
 	feature.Feature
@@ -55,10 +56,7 @@ type CFeature struct {
 func New() MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
-	return f
-}
-
-func (f *CFeature) Make() Feature {
+	f.FeatureTag = Tag
 	return f
 }
 
@@ -66,9 +64,8 @@ func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 }
 
-func (f *CFeature) Tag() (tag feature.Tag) {
-	tag = "PageFormatHTML"
-	return
+func (f *CFeature) Make() Feature {
+	return f
 }
 
 func (f *CFeature) Name() (name string) {

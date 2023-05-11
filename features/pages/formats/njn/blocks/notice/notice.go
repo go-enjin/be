@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	Tag feature.Tag = "NjnNoticeBlock"
+	Tag feature.Tag = "njn-blocks-notice"
 )
 
 var (
@@ -47,11 +47,8 @@ type CBlock struct {
 func New() (field MakeBlock) {
 	f := new(CBlock)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
-}
-
-func (f *CBlock) Tag() feature.Tag {
-	return Tag
 }
 
 func (f *CBlock) Init(this interface{}) {

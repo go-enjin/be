@@ -38,7 +38,7 @@ import (
 // TODO: SearchWithin is way too heavy for quoted.fyi, does not use kws
 
 const (
-	Tag feature.Tag = "NjnIndexBlock"
+	Tag feature.Tag = "njn-blocks-index"
 )
 
 var (
@@ -63,11 +63,8 @@ type CBlock struct {
 func New() (field MakeBlock) {
 	f := new(CBlock)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
-}
-
-func (f *CBlock) Tag() feature.Tag {
-	return Tag
 }
 
 func (f *CBlock) Init(this interface{}) {

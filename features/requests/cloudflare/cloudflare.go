@@ -32,7 +32,7 @@ var _ feature.Feature = (*Feature)(nil)
 
 var _ feature.RequestFilter = (*Feature)(nil)
 
-const Tag feature.Tag = "RequestCloudflare"
+const Tag feature.Tag = "request-cloudflare"
 
 type Feature struct {
 	feature.CFeature
@@ -50,6 +50,7 @@ type MakeFeature interface {
 func New() MakeFeature {
 	f := new(Feature)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
 }
 
@@ -58,16 +59,14 @@ func (f *Feature) AllowDirect() MakeFeature {
 	return f
 }
 
-func (f *Feature) Tag() (tag feature.Tag) {
-	tag = Tag
-	return
-}
-
 func (f *Feature) Build(b feature.Buildable) (err error) {
 	return
 }
 
 func (f *Feature) Startup(ctx *cli.Context) (err error) {
+	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	}
 	if f.ipRanges, err = cloudflare.GetIpRanges(); err != nil {
 		log.FatalF("error getting cloudflare ip ranges: %v", err)
 	}
@@ -81,7 +80,7 @@ func (f *Feature) FilterRequest(r *http.Request) (err error) {
 	if ip, err = net.GetProxyIpFromRequest(r); err != nil {
 		if f.allowDirect {
 			err = nil
-			log.DebugF("cloudflare allowing direct request from: %v", address)
+			log.DebugRF(r, "cloudflare allowing direct request from: %v", address)
 		}
 		return
 	}
@@ -93,7 +92,7 @@ func (f *Feature) FilterRequest(r *http.Request) (err error) {
 		}
 	}
 	if !found {
-		log.DebugF("all headers: %v", r.Header)
+		log.DebugRF(r, "all headers: %v", r.Header)
 		err = fmt.Errorf("request denied - not from a known cloudflare ip range: %v (%v)", ip, address)
 	}
 	return

@@ -38,7 +38,7 @@ var (
 	_ feature.RequestModifier = (*CFeature)(nil)
 )
 
-const Tag feature.Tag = "PagesRobots"
+const Tag feature.Tag = "pages-robots"
 
 type Feature interface {
 	feature.Middleware
@@ -70,7 +70,12 @@ type MakeFeature interface {
 func New() MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
+}
+
+func (f *CFeature) Init(this interface{}) {
+	f.CMiddleware.Init(this)
 }
 
 func (f *CFeature) AddSitemap(sitemap string) MakeFeature {
@@ -100,15 +105,6 @@ func (f *CFeature) Make() Feature {
 	return f
 }
 
-func (f *CFeature) Init(this interface{}) {
-	f.CMiddleware.Init(this)
-}
-
-func (f *CFeature) Tag() (tag feature.Tag) {
-	tag = Tag
-	return
-}
-
 func (f *CFeature) Build(b feature.Buildable) (err error) {
 	if f.siteMetaTag != "" {
 		b.AddHtmlHeadTag("meta", map[string]string{
@@ -136,6 +132,9 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	}
 	f.cliCtx = ctx
 	if xrt := f.cliCtx.Value("x-robots-tag"); xrt != nil {
 		if xRobotsTag, ok := xrt.(string); ok && xRobotsTag != "" {

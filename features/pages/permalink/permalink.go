@@ -60,22 +60,18 @@ type MakeFeature interface {
 func New() MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
-}
-
-func (f *CFeature) Make() Feature {
-	return f
-}
-
-func (f *CFeature) Tag() (tag feature.Tag) {
-	tag = Tag
-	return
 }
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	page.RegisterMatcherFn(f._permalinkMatcher)
 	theme.RegisterFuncMap("_permalink", f._permalink)
+}
+
+func (f *CFeature) Make() Feature {
+	return f
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
@@ -133,6 +129,9 @@ func (f *CFeature) _parsePath(path string) (permalink string, ok bool) {
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	}
 	f.cli = ctx
 	return
 }
@@ -163,7 +162,7 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 								if err := f.enjin.ServePage(p, w, r); err == nil {
 									return
 								} else {
-									log.ErrorF("error serving permalink page: %v - %v", path, err)
+									log.ErrorRF(r, "error serving permalink page: %v - %v", path, err)
 								}
 							} else {
 								http.Redirect(w, r, dst, http.StatusSeeOther)

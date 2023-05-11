@@ -72,6 +72,7 @@ type MakeFeature interface {
 func New() MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
 }
 
@@ -97,11 +98,6 @@ func (f *CFeature) Init(this interface{}) {
 	f.conns = make(map[string]*gorm.DB)
 }
 
-func (f *CFeature) Tag() (tag feature.Tag) {
-	tag = Tag
-	return
-}
-
 func (f *CFeature) Build(b feature.Buildable) (err error) {
 	log.DebugDF(1, "building gorm db feature")
 	for tag, flags := range f.flags {
@@ -123,6 +119,10 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	}
+
 	config := logger.Config{
 		SlowThreshold:             time.Second,   // Slow SQL threshold
 		LogLevel:                  logger.Silent, // Log level

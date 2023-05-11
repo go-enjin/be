@@ -65,6 +65,7 @@ type MakeFeature interface {
 func New() MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
 }
 
@@ -74,11 +75,6 @@ func (f *CFeature) Make() Feature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
-}
-
-func (f *CFeature) Tag() (tag feature.Tag) {
-	tag = Tag
-	return
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
@@ -104,6 +100,9 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	}
 	f.cli = ctx
 	if v := f.cli.String("google-gtm-id"); v != "" {
 		f.googleGtmId = v

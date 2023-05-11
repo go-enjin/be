@@ -33,7 +33,7 @@ var (
 	_ feature.RequestModifier = (*CFeature)(nil)
 )
 
-const Tag feature.Tag = "HeaderProxy"
+const Tag feature.Tag = "requests-headers-proxy"
 
 type Feature interface {
 	feature.Middleware
@@ -54,7 +54,12 @@ type MakeFeature interface {
 func New() MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
+}
+
+func (f *CFeature) Init(this interface{}) {
+	f.CFeature.Init(this)
 }
 
 // Enable sets the default state to enabled, overridden by --header-proxy
@@ -67,11 +72,6 @@ func (f *CFeature) Make() Feature {
 	return f
 }
 
-func (f *CFeature) Tag() (tag feature.Tag) {
-	tag = Tag
-	return
-}
-
 func (f *CFeature) Build(b feature.Buildable) (err error) {
 	b.AddFlags(&cli.BoolFlag{
 		Name:    "header-proxy",
@@ -82,6 +82,9 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	}
 	if ctx.IsSet("header-proxy") {
 		f.enabled = ctx.Bool("header-proxy")
 	}
@@ -96,7 +99,7 @@ func (f *CFeature) ModifyRequest(w http.ResponseWriter, r *http.Request) {
 				r.RemoteAddr = ip
 			}
 		} else {
-			log.ErrorF("error getting ip from request: %v", err)
+			log.ErrorRF(r, "error getting ip from request: %v", err)
 		}
 	}
 }

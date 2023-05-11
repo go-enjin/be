@@ -45,7 +45,7 @@ var (
 	_ feature.PageTypeProcessor = (*CFeature)(nil)
 )
 
-const Tag feature.Tag = "PagesSearch"
+const Tag feature.Tag = "pages-search"
 
 type ResultsPostProcessor interface {
 	SearchResultsPostProcess(p *page.Page)
@@ -76,7 +76,12 @@ type MakeFeature interface {
 func New() MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
+}
+
+func (f *CFeature) Init(this interface{}) {
+	f.CFeature.Init(this)
 }
 
 func (f *CFeature) SetPath(path string) MakeFeature {
@@ -86,15 +91,6 @@ func (f *CFeature) SetPath(path string) MakeFeature {
 
 func (f *CFeature) Make() Feature {
 	return f
-}
-
-func (f *CFeature) Init(this interface{}) {
-	f.CFeature.Init(this)
-}
-
-func (f *CFeature) Tag() (tag feature.Tag) {
-	tag = Tag
-	return
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
@@ -138,6 +134,9 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	}
 	f.cli = ctx
 	return
 }
@@ -161,7 +160,7 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 					return
 				} else if redirect != "" {
 					processed = true
-					// log.WarnF("redirecting from: %v, to: %v", r.URL.Path, redirect)
+					// log.WarnRF(r, "redirecting from: %v, to: %v", r.URL.Path, redirect)
 					return
 				}
 			}
@@ -188,7 +187,7 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 			}
 		}
 		if cleaned, err := url.PathUnescape(input); err != nil {
-			log.ErrorF("error unescaping input query string: %v", err)
+			log.ErrorRF(r, "error unescaping input query string: %v", err)
 		} else {
 			input = cleaned
 		}

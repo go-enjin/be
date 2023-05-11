@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	Tag feature.Tag = "NjnParagraphField"
+	Tag feature.Tag = "njn-fields-paragraph"
 )
 
 var (
@@ -45,11 +45,8 @@ type CField struct {
 func New() (field MakeField) {
 	f := new(CField)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
-}
-
-func (f *CField) Tag() feature.Tag {
-	return Tag
 }
 
 func (f *CField) Init(this interface{}) {

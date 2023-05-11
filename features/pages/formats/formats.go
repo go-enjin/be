@@ -28,14 +28,16 @@ import (
 	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
+const Tag feature.Tag = "pages-formats"
+
 var (
-	_ Feature              = (*CFeature)(nil)
-	_ MakeFeature          = (*CFeature)(nil)
-	_ types.FormatProvider = (*CFeature)(nil)
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
 )
 
 type Feature interface {
 	feature.Feature
+	types.FormatProvider
 }
 
 type MakeFeature interface {
@@ -56,6 +58,7 @@ type CFeature struct {
 func New() MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
 }
 
@@ -90,11 +93,6 @@ func (f *CFeature) Make() Feature {
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.formats = make(map[string]types.Format)
-}
-
-func (f *CFeature) Tag() (tag feature.Tag) {
-	tag = "PageFormats"
-	return
 }
 
 func (f *CFeature) Setup(enjin feature.Internals) {

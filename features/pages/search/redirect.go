@@ -39,7 +39,7 @@ func (f *CFeature) handleQueryRedirect(r *http.Request) (redirect string, err er
 		case "nonce":
 			value := forms.StrictPolicy(v[0])
 			if vv, e := url.QueryUnescape(value); e != nil {
-				log.ErrorF("error un-escaping url path: %v", e)
+				log.ErrorRF(r, "error un-escaping url path: %v", e)
 			} else {
 				value = vv
 			}
@@ -53,7 +53,7 @@ func (f *CFeature) handleQueryRedirect(r *http.Request) (redirect string, err er
 		case "query":
 			query = forms.StrictPolicy(v[0])
 			if vv, e := url.PathUnescape(query); e != nil {
-				log.ErrorF("error un-escaping url path: %v", e)
+				log.ErrorRF(r, "error un-escaping url path: %v", e)
 			} else {
 				query = vv
 			}
@@ -75,7 +75,7 @@ func (f *CFeature) handleQueryRedirect(r *http.Request) (redirect string, err er
 			query = "/:" + query
 		}
 		redirect = langMode.ToUrl(f.enjin.SiteDefaultLanguage(), tag, f.path+query)
-		// log.DebugF("search redirecting: %v", dst)
+		// log.DebugRF(r, "search redirecting: %v", dst)
 		return
 	}
 

@@ -76,16 +76,17 @@ var (
 	}
 )
 
+const Tag feature.Tag = "pages-formats-njn"
+
 var (
-	_ Feature             = (*CFeature)(nil)
-	_ MakeFeature         = (*CFeature)(nil)
-	_ types.Format        = (*CFeature)(nil)
-	_ feature.EnjinSystem = (*CFeature)(nil)
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
 )
 
 type Feature interface {
 	feature.Feature
 	types.Format
+	feature.EnjinSystem
 }
 
 type MakeFeature interface {
@@ -112,6 +113,7 @@ type CFeature struct {
 func New() MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
 }
 
@@ -240,11 +242,6 @@ func (f *CFeature) Defaults() MakeFeature {
 
 func (f *CFeature) Make() Feature {
 	return f
-}
-
-func (f *CFeature) Tag() (tag feature.Tag) {
-	tag = "PageFormatEnjin"
-	return
 }
 
 func (f *CFeature) Name() (name string) {

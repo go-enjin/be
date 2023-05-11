@@ -38,7 +38,7 @@ var (
 	_ feature.Middleware = (*CFeature)(nil)
 )
 
-const Tag feature.Tag = "PagesSitemap"
+const Tag feature.Tag = "pages-sitemap"
 
 var (
 	DefaultSiteScheme = "https"
@@ -66,6 +66,7 @@ type MakeFeature interface {
 func New() MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
 }
 
@@ -85,11 +86,6 @@ func (f *CFeature) Init(this interface{}) {
 	f.CMiddleware.Init(this)
 }
 
-func (f *CFeature) Tag() (tag feature.Tag) {
-	tag = Tag
-	return
-}
-
 func (f *CFeature) Build(b feature.Buildable) (err error) {
 	return
 }
@@ -99,6 +95,9 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	}
 	f.cli = ctx
 	return
 }
@@ -139,7 +138,7 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 							case "always", "hourly", "daily", "weekly", "monthly", "yearly", "never":
 								found.Context.SetSpecific("SitemapChangeFreq", changeFreq)
 							default:
-								log.ErrorF("error: page has invalid sitemap-change-freq: %v", changeFreq)
+								log.ErrorRF(r, "error: page has invalid sitemap-change-freq: %v", changeFreq)
 								found.Context.Delete("SitemapChangeFreq")
 							}
 						}
