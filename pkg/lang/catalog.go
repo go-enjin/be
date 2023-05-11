@@ -20,10 +20,11 @@ import (
 
 	"github.com/goccy/go-json"
 
-	beFsEmbed "github.com/go-enjin/be/pkg/fs/embed"
-	beFsLocal "github.com/go-enjin/be/pkg/fs/local"
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
+
+	beFsEmbed "github.com/go-enjin/be/pkg/fs/drivers/embed"
+	beFsLocal "github.com/go-enjin/be/pkg/fs/drivers/local"
 
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
