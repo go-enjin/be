@@ -60,7 +60,6 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 
 	router.Use(middleware.RequestID)
 	router.Use(e.panicMiddleware)
-	router.Use(e.dbMiddleware)
 
 	// request modifier features are expected to modify the request object
 	// in-place, before any further feature processing
