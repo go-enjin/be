@@ -23,7 +23,6 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/page/matter"
-	"github.com/go-enjin/be/pkg/strings"
 )
 
 func (f *CFeature) processPageStub(shasum string, stub *matter.PageStub) (err error) {
@@ -82,23 +81,25 @@ func (f *CFeature) processTranslations(lang language.Tag, shasum, translates str
 }
 
 func (f *CFeature) processPageContextValue(key, shasum string, value interface{}) (err error) {
-	ctxBucketName := f.makeCtxValBucketName(key)
-	ctxValueBucket := f.cache.MustBucket(ctxBucketName)
+	// get the specific bucket for the given key
+	ctxKeyedValueBucketName := f.makeCtxValBucketName(key)
+	ctxKeyedValueBucket := f.cache.MustBucket(ctxKeyedValueBucketName)
 
+	// check if this value has been added to the list before
 	var valuePresent bool
-	if shasums, e := kvs.GetSlice[string](ctxValueBucket, value); e == nil {
-		valuePresent = strings.StringInSlices(shasum, shasums)
+	if shasums, e := kvs.GetSlice[string](ctxKeyedValueBucket, value); e == nil {
+		valuePresent = len(shasums) > 0
 	}
 
 	if !valuePresent {
-		if err = kvs.AppendToFlatList(f.contextValueKeyedBucket, key, value); err != nil {
+		if err = kvs.AppendToFlatList[interface{}](f.contextValueKeyedBucket, key, value); err != nil {
 			err = fmt.Errorf("error updating flat list: %v - %v", key, err)
 			return
 		}
 	}
 
-	if e := kvs.AppendToSlice[string](ctxValueBucket, value, shasum); e != nil {
-		err = fmt.Errorf("error appending to bucket string list: %v/%v[%v]=\"%v\" - %v", f.kvcTag, f.kvcName, ctxBucketName, value, err)
+	if e := kvs.AppendToSlice[string](ctxKeyedValueBucket, value, shasum); e != nil {
+		err = fmt.Errorf("error appending to bucket string list: %v/%v[%v]=\"%v\" - %v", f.kvcTag, f.kvcName, ctxKeyedValueBucketName, value, err)
 	}
 	return
 }
