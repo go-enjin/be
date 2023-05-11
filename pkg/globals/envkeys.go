@@ -31,3 +31,18 @@ func MakeEnvKeys(names ...string) (keys []string) {
 	}
 	return
 }
+
+func MakeFlagName(tag, name string) (actual string) {
+	actual = strcase.ToKebab(tag + "-" + name)
+	return
+}
+
+func MakeFlagEnvKey(tag, name string) (actual string) {
+	actual = MakeEnvKey(strcase.ToScreamingSnake(MakeFlagName(tag, name)))
+	return
+}
+
+func MakeFlagEnvKeys(tag, name string) (actual []string) {
+	actual = MakeEnvKeys(strcase.ToScreamingSnake(MakeFlagName(tag, name)))
+	return
+}
