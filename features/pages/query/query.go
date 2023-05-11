@@ -25,7 +25,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/page"
 )
 
@@ -78,63 +78,60 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 	}
 
 	if ctxQueries, ok := p.Context.Get("Query").(map[string]interface{}); ok {
-		queryErrors := make(map[string]error)
-		queryStrings := make(map[string]string)
-		queryResults := make(map[string][]*page.Page)
-		for k, v := range ctxQueries {
-			if q, ok := v.(string); ok {
-				key := strcase.ToCamel(k)
-				queryStrings[key] = q
+		qErrors := make(map[string]error)
+		qInputs := make(map[string]string)
+		qResults := make(map[string][]*page.Page)
+		for _, queryKey := range maps.SortedKeys(ctxQueries) {
+			camelKey := strcase.ToCamel(queryKey)
+			queryInput := ctxQueries[queryKey]
+			if q, ok := queryInput.(string); ok {
+				qInputs[camelKey] = q
 				if matches, e := f.Enjin.CheckMatchQL(q); e != nil {
-					queryErrors[key] = e
+					qErrors[camelKey] = e
 				} else {
-					queryResults[key] = matches
+					qResults[camelKey] = matches
 				}
 			} else {
-				err = fmt.Errorf("unexpected query context value structure: %T", v)
-				log.ErrorRF(r, "%v", err)
-				return
+				qErrors[camelKey] = fmt.Errorf("unexpected query context value structure: %T", queryInput)
 			}
 		}
 
-		if len(queryErrors) > 0 {
-			p.Context.SetSpecific("QueryErrors", queryErrors)
+		if len(qErrors) > 0 {
+			p.Context.SetSpecific("QueryErrors", qErrors)
 		}
-		p.Context.SetSpecific("Query", queryStrings)
-		p.Context.SetSpecific("QueryResults", queryResults)
+		p.Context.SetSpecific("Query", qInputs)
+		p.Context.SetSpecific("QueryResults", qResults)
 		processed = true
 	}
 
 	if ctxSelects, ok := p.Context.Get("Select").(map[string]interface{}); ok {
-		selectedErrors := make(map[string]error)
-		selectedStrings := make(map[string]string)
-		selectedValues := make(map[string]interface{})
-		for k, v := range ctxSelects {
-			if q, ok := v.(string); ok {
-				key := strcase.ToCamel(k)
-				selectedStrings[key] = q
+		sErrors := make(map[string]error)
+		sInputs := make(map[string]string)
+		sResults := make(map[string]interface{})
+		for selectKey, selectInput := range ctxSelects {
+			camelKey := strcase.ToCamel(selectKey)
+			if q, ok := selectInput.(string); ok {
+				sInputs[camelKey] = q
 				if selected, ee := f.Enjin.CheckSelectQL(q); ee != nil {
-					selectedErrors[key] = ee
+					sErrors[camelKey] = ee
 				} else if len(selected) == 1 {
 					for _, only := range selected {
-						selectedValues[key] = only
+						sResults[camelKey] = only
 						break
 					}
 				} else {
-					selectedValues[key] = selected
+					sResults[camelKey] = selected
 				}
 			} else {
-				err = fmt.Errorf("unexpected select context value structure: %T", v)
-				log.ErrorRF(r, "%v", err)
-				return
+				sErrors[camelKey] = fmt.Errorf("unexpected select context value structure: %T", selectInput)
 			}
 		}
 
-		if len(selectedErrors) > 0 {
-			p.Context.SetSpecific("SelectedErrors", selectedErrors)
+		if len(sErrors) > 0 {
+			p.Context.SetSpecific("SelectedErrors", sErrors)
 		}
-		p.Context.SetSpecific("Select", selectedStrings)
-		p.Context.SetSpecific("Selected", selectedValues)
+		p.Context.SetSpecific("Select", sInputs)
+		p.Context.SetSpecific("Selected", sResults)
 		processed = true
 	}
 
