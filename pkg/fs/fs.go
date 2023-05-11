@@ -16,6 +16,7 @@ package fs
 
 import (
 	"io/fs"
+	"time"
 )
 
 type FileSystem interface {
@@ -32,4 +33,5 @@ type FileSystem interface {
 	FileCreated(path string) (created int64, err error)
 	LastModified(path string) (dateTime int64, err error)
 	Exists(path string) (exists bool)
+	FileStats(path string) (mime, shasum string, created, updated time.Time, err error)
 }
