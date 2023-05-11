@@ -181,9 +181,6 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		})
 	}
 
-	// enjin built pages middleware is potentially blocking
-	router.Use(e.pagesMiddleware)
-
 	// middleware features have a final chance to apply enjin changes before
 	// error handling router changes are made
 	for _, f := range e.Features() {

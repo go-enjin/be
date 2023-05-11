@@ -73,24 +73,6 @@ func (e *Enjin) modifyHeadersFn(request *http.Request, headers map[string]string
 	return headers
 }
 
-func (e *Enjin) pagesMiddleware(next http.Handler) http.Handler {
-	log.DebugF("including pages middleware")
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		path := forms.SanitizeRequestPath(r.URL.Path)
-		if pg, ok := e.eb.pages[path]; ok {
-			if err := e.ServePage(pg, w, r); err != nil {
-				log.ErrorF("serve page err: %v", err)
-				e.ServeInternalServerError(w, r)
-			} else {
-				log.DebugF("page served: %v", path)
-			}
-			return
-		}
-		// log.DebugF("not a page: %v, %v", path, e.eb.pages)
-		next.ServeHTTP(w, r)
-	})
-}
-
 func (e *Enjin) redirectionMiddleware(next http.Handler) http.Handler {
 	log.DebugF("including pages middleware")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
