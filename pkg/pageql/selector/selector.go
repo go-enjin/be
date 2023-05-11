@@ -95,27 +95,22 @@ func (m *cSelector) process() (selected map[string]interface{}, err error) {
 			m.lookup[sel.ContextKey][pair.Value] = append(m.lookup[sel.ContextKey][pair.Value], pair.Stub)
 		}
 
-		// if m.lookup[sel.ContextKey], err = m.feat.GetPageContextValueStubs(sel.ContextKey); err != nil {
-		// 	return
-		// }
 	}
 
 	if m.sel.Statement != nil {
+
 		for _, key := range m.sel.Statement.ContextKeys {
 			if _, exists := m.lookup[key]; !exists {
 				for pair := range m.feat.YieldPageContextValueStubs(key) {
 					m.lookup[key][pair.Value] = append(m.lookup[key][pair.Value], pair.Stub)
 				}
-				// if m.lookup[key], err = m.feat.GetPageContextValueStubs(key); err != nil {
-				// 	return
-				// }
 			}
 		}
-		// log.WarnF("sel+stmnt lookup: %d found", len(m.lookup))
+
 		selected, err = m.processWithStatement()
 		return
 	}
-	// log.WarnF("sel lookup: %d found: %#v", len(m.lookup), m.lookup)
+
 	selected, err = m.processWithoutStatement()
 	return
 }
@@ -414,6 +409,10 @@ func (m *cSelector) processOperationEquals(key string, opValue *pageql.Value, in
 				}
 			}
 		}
+
+	default:
+		err = fmt.Errorf("unsupported opValue type case: %#+v", opValue)
+		return
 
 	}
 

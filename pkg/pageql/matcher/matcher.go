@@ -247,39 +247,12 @@ func (m *cMatcher) processOperationEquals(key string, opValue *pageql.Value, inc
 					ctx := p.Context.Copy()
 					ctx.CamelizeKeys()
 					m.cache[stub.Shasum] = ctx.Select(m.stmnt.ContextKeys...)
-					// log.WarnF("m.cache[%v] = %v", stub.Shasum, m.cache[stub.Shasum])
 				}
 			default:
 				err = fmt.Errorf("page.%v is a %T, regular expressions expect strings", key, pair.Value)
 				return
 			}
 		}
-
-		// var values map[interface{}]matter.PageStubs
-		// if values, err = m.feat.GetPageContextValueStubs(key); err != nil {
-		// 	err = fmt.Errorf("error getting context key values: %v", err)
-		// 	return
-		// } else {
-		// 	for value, stubs := range values {
-		// 		switch t := value.(type) {
-		// 		case string:
-		// 			match := rx.MatchString(t)
-		// 			if (inclusive && match) || (!inclusive && !match) {
-		// 				for _, stub := range stubs {
-		// 					results[stub.Shasum] = stub
-		// 					p, _ := stub.NewFromPageStub(m.theme)
-		// 					ctx := p.Context.Copy()
-		// 					ctx.CamelizeKeys()
-		// 					m.cache[stub.Shasum] = ctx.Select(m.stmnt.ContextKeys...)
-		// 					// log.WarnF("m.cache[%v] = %v", stub.Shasum, m.cache[stub.Shasum])
-		// 				}
-		// 			}
-		// 		default:
-		// 			err = fmt.Errorf("page.%v is a %T, regular expressions expect strings", key, value)
-		// 			return
-		// 		}
-		// 	}
-		// }
 
 	case opValue.String != nil:
 
@@ -299,28 +272,9 @@ func (m *cMatcher) processOperationEquals(key string, opValue *pageql.Value, inc
 			}
 		}
 
-		// var values map[interface{}]matter.PageStubs
-		// if values, err = m.feat.GetPageContextValueStubs(key); err != nil {
-		// 	err = fmt.Errorf("error getting context key values: %v", err)
-		// 	return
-		// } else {
-		// 	for value, stubs := range values {
-		// 		if match, ee := cmp.Compare(value, *opValue.String); ee != nil {
-		// 			err = ee
-		// 			return
-		// 		} else {
-		// 			if (inclusive && match) || (!inclusive && !match) {
-		// 				for _, stub := range stubs {
-		// 					results[stub.Shasum] = stub
-		// 					p, _ := stub.NewFromPageStub(m.theme)
-		// 					ctx := p.Context.Copy()
-		// 					ctx.CamelizeKeys()
-		// 					m.cache[stub.Shasum] = ctx.Select(m.stmnt.ContextKeys...)
-		// 				}
-		// 			}
-		// 		}
-		// 	}
-		// }
+	default:
+		err = fmt.Errorf("unsupported opValue type case: %#+v", opValue)
+		return
 
 	}
 
