@@ -37,11 +37,11 @@ func (e *Enjin) requestFiltersMiddleware(next http.Handler) http.Handler {
 		for _, f := range e.eb.features {
 			if rf, ok := f.(feature.RequestFilter); ok {
 				if err := rf.FilterRequest(r); err != nil {
-					log.WarnF("filtering request from: %v - %v", remoteAddr, err)
+					log.WarnRF(r, "filtering request from: %v - %v", remoteAddr, err)
 					e.Serve404(w, r)
 					return
 				} else {
-					log.DebugF("allowing request from: %v", remoteAddr)
+					log.DebugRF(r, "allowing request from: %v", remoteAddr)
 				}
 			}
 		}
@@ -53,7 +53,7 @@ func (e *Enjin) domainsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if len(e.eb.domains) > 0 {
 			if !beStrings.StringInStrings(r.Host, e.eb.domains...) {
-				log.WarnF("rejecting unsupported domain: %v", r.Host)
+				log.WarnRF(r, "rejecting unsupported domain: %v", r.Host)
 				e.ServeNotFound(w, r)
 				return
 			}
@@ -74,7 +74,7 @@ func (e *Enjin) modifyHeadersFn(request *http.Request, headers map[string]string
 }
 
 func (e *Enjin) redirectionMiddleware(next http.Handler) http.Handler {
-	log.DebugF("including pages middleware")
+	log.DebugF("including redirection middleware")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := forms.SanitizeRequestPath(r.URL.Path)
 
@@ -82,7 +82,7 @@ func (e *Enjin) redirectionMiddleware(next http.Handler) http.Handler {
 			langMode := e.SiteLanguageMode()
 			reqLang := lang.GetTag(r)
 			dst := langMode.ToUrl(e.SiteDefaultLanguage(), reqLang, rp.Url)
-			// log.DebugF("redirecting from %v to %v", path, dst)
+			log.DebugRF(r, "redirecting from %v to %v", path, dst)
 			e.ServeRedirect(dst, w, r)
 			return
 		}
@@ -106,11 +106,11 @@ func (e *Enjin) langMiddleware(next http.Handler) http.Handler {
 		} else {
 			var reqOk bool
 			if requested, reqPath, reqOk = langMode.FromRequest(defaultTag, r); !reqOk {
-				log.WarnF("language mode rejecting request: %#v", r)
+				log.WarnRF(r, "language mode rejecting request: %#v", r)
 				e.Serve404(w, r) // specifically not ServeNotFound()
 				return
 			} else if !e.SiteSupportsLanguage(requested) {
-				log.DebugF("%v language not supported, using default: %v", requested, defaultTag)
+				log.DebugRF(r, "%v language not supported, using default: %v", requested, defaultTag)
 				requested = defaultTag
 				reqPath = urlPath
 			}
@@ -157,11 +157,11 @@ func (e *Enjin) panicMiddleware(next http.Handler) http.Handler {
 				n := runtime.Stack(buf, false)
 				buf = buf[:n]
 
-				log.ErrorF("recovering from panic: %v\n(begin stacktrace)\n%s\n(end stacktrace)", err, buf)
+				log.ErrorRF(r, "recovering from panic: %v\n(begin stacktrace)\n%s\n(end stacktrace)", err, buf)
 
 				defer func() {
 					if ee := recover(); ee != nil {
-						log.ErrorF("recovering from secondary panic")
+						log.ErrorRF(r, "recovering from secondary panic")
 						e.Serve500(w, r)
 					}
 				}()
