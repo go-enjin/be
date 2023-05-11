@@ -20,8 +20,8 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
-	embed2 "github.com/go-enjin/be/pkg/fs/embed"
-	"github.com/go-enjin/be/pkg/fs/local"
+	beFsEmbed "github.com/go-enjin/be/pkg/fs/drivers/embed"
+	"github.com/go-enjin/be/pkg/fs/drivers/local"
 	"github.com/go-enjin/be/pkg/lang"
 )
 
@@ -58,7 +58,7 @@ func (eb *EnjinBuilder) AddLocalesLocalFS(path string) feature.Builder {
 }
 
 func (eb *EnjinBuilder) AddLocalesEmbedFS(path string, efs embed.FS) feature.Builder {
-	if f, err := embed2.New(path, efs); err == nil {
+	if f, err := beFsEmbed.New(path, efs); err == nil {
 		eb.localeFiles = append(eb.localeFiles, f)
 	}
 	return eb
