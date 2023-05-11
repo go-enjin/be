@@ -127,7 +127,7 @@ func GetFlatList[T interface{}](store KeyValueStore, key string, value T) (value
 
 func YieldFlatList[T interface{}](store KeyValueStore, key string) (yield chan T) {
 	yield = make(chan T)
-	go func() {
+	go func(store KeyValueStore, key string, yield chan T) {
 		defer close(yield)
 		endKey := MakeFlatListKey(key, "end")
 		endIdx := GetValue[uint64](store, endKey)
@@ -141,7 +141,7 @@ func YieldFlatList[T interface{}](store KeyValueStore, key string) (yield chan T
 			}
 		}
 
-	}()
+	}(store, key, yield)
 	return
 }
 
