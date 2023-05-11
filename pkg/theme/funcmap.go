@@ -25,9 +25,9 @@ import (
 	"github.com/go-enjin/golang-org-x-text/message"
 
 	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/funcmaps"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/theme/funcs"
 	"github.com/go-enjin/be/pkg/types/site"
 )
 
@@ -68,7 +68,7 @@ func AddRegisteredTextFuncsToMap(fm *textTemplate.FuncMap) {
 }
 
 func DefaultFuncMap() (funcMap template.FuncMap) {
-	funcMap = funcs.HtmlFuncMap()
+	funcMap = funcmaps.HtmlFuncMap()
 	AddRegisteredHtmlFuncsToMap(&funcMap)
 	return
 }

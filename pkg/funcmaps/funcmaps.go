@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package funcs
+package funcmaps
 
 import (
 	htmlTemplate "html/template"
@@ -100,6 +100,8 @@ func HtmlFuncMap() (funcMap htmlTemplate.FuncMap) {
 		"ErrorF": LogError,
 
 		"CmpLang": CmpLang,
+
+		"iterate": Iterate,
 	}
 	for k, v := range gtf.GtfFuncMap {
 		funcMap[k] = v

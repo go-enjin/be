@@ -1,4 +1,4 @@
-// Copyright (c) 2022  The Go-Enjin Authors
+// Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package funcs
+package funcmaps
 
 import (
 	"regexp"
@@ -85,5 +85,29 @@ func SortedLastNameFirstLetters(values []interface{}) (firsts []string) {
 		}
 	}
 	firsts = maps.SortedKeys(cache)
+	return
+}
+
+func Iterate(argv ...int) (ch chan int) {
+	ch = make(chan int)
+	var from, inc, to int
+	switch len(argv) {
+	case 0:
+		log.ErrorF("template is trying to iterate over nothing")
+	case 1:
+		from, inc, to = 0, 1, argv[0]
+	case 2:
+		from, inc, to = argv[0], 1, argv[1]
+	default:
+		from, inc, to = argv[0], argv[1], argv[2]
+	}
+	go func() {
+		if to > 0 {
+			for i := from; i < to; i += inc {
+				ch <- i
+			}
+		}
+		close(ch)
+	}()
 	return
 }

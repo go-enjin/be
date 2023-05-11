@@ -1,4 +1,4 @@
-// Copyright (c) 2022  The Go-Enjin Authors
+// Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,11 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package funcs
+package funcmaps
 
-import "github.com/go-enjin/be/pkg/forms/nonce"
+import (
+	"html/template"
 
-func Nonce(name string) (value string) {
-	value = nonce.Make(name)
+	"github.com/go-enjin/be/pkg/log"
+)
+
+func LogDebug(format string, argv ...interface{}) (html template.HTML) {
+	log.DebugDF(2, format, argv...)
+	return
+}
+
+func LogWarn(format string, argv ...interface{}) (html template.HTML) {
+	log.WarnDF(2, format, argv...)
+	return
+}
+
+func LogError(format string, argv ...interface{}) (html template.HTML) {
+	log.ErrorDF(2, format, argv...)
 	return
 }
