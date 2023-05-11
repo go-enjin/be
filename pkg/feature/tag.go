@@ -14,30 +14,39 @@
 
 package feature
 
+import (
+	"github.com/iancoleman/strcase"
+)
+
+// Tag is the primary identifier type for enjin Feature implementations
 type Tag string
 
+// String returns the Tag as a string
 func (t Tag) String() string {
 	return string(t)
 }
 
-type Tags []Tag
-
-func (t Tags) Has(tag Tag) bool {
-	for _, tt := range t {
-		if tag == tt {
-			return true
-		}
-	}
-	return false
+// Camel returns the Tag as a CamelCased string
+func (t Tag) Camel() string {
+	return strcase.ToCamel(string(t))
 }
 
-func (t Tags) Append(tag Tag) Tags {
-	if !t.Has(tag) {
-		return append(t, tag)
-	}
-	return t
+// Kebab returns the Tag as a kebab-cased string
+func (t Tag) Kebab() string {
+	return strcase.ToKebab(string(t))
 }
 
-func (t Tags) Len() int {
-	return len(t)
+// ScreamingKebab returns the Tag as a SCREAMING-KEBAB-CASED string
+func (t Tag) ScreamingKebab() string {
+	return strcase.ToScreamingKebab(string(t))
+}
+
+// Snake returns the tag as a snake_cased string
+func (t Tag) Snake() string {
+	return strcase.ToSnake(string(t))
+}
+
+// ScreamingSnake returns the Tag as a SCREAMING_SNAKE_CASED string
+func (t Tag) ScreamingSnake() string {
+	return strcase.ToScreamingSnake(string(t))
 }
