@@ -105,13 +105,18 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 	}
 }
 
+func (f *CFeature) ListFormats() (names []string) {
+	names = maps.SortedKeyLengths(f.formats)
+	return
+}
+
 func (f *CFeature) GetFormat(extn string) (format types.Format) {
 	format, _ = f.formats[extn]
 	return
 }
 
 func (f *CFeature) MatchFormat(filename string) (format types.Format, match string) {
-	for _, extn := range maps.SortedKeyLengths(f.formats) {
+	for _, extn := range f.ListFormats() {
 		frmt := f.formats[extn]
 		if strings.HasSuffix(filename, "."+extn) {
 			match = extn
