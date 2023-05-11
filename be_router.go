@@ -134,6 +134,8 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		}
 	}
 
+	router.Use(e.userAuthMiddleware)
+
 	// potentially blocking middleware features that do not require standard
 	// page rendering or data response facilities
 	for _, f := range e.Features() {
