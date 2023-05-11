@@ -1,3 +1,5 @@
+//go:build !fs_drivers_local && !fs_drivers && !all
+
 // Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package fs
+package mountable
 
-import "fmt"
-
-type MountPoint struct {
-	Path  string
-	Mount string
-	FS    FileSystem
-}
-
-func (mp MountPoint) String() (info string) {
-	info = fmt.Sprintf("{%v mounted as %v}", mp.Path, mp.Mount)
-	return
+type LocalPathSupport interface {
 }
