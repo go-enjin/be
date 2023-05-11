@@ -17,6 +17,7 @@ package feature
 import (
 	"net/http"
 
+	"github.com/Shopify/gomail"
 	"github.com/go-chi/chi/v5"
 	"github.com/urfave/cli/v2"
 
@@ -24,7 +25,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
-	"github.com/go-enjin/be/pkg/pagecache"
+	"github.com/go-enjin/be/pkg/page/matter"
 	"github.com/go-enjin/be/pkg/types/site"
 
 	"github.com/go-enjin/be/pkg/context"
@@ -63,9 +64,18 @@ type Service interface {
 	ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request)
 
 	MatchQL(query string) (pages []*page.Page)
-	MatchStubsQL(query string) (stubs []*pagecache.Stub)
+	MatchStubsQL(query string) (stubs []*matter.PageStub)
 	SelectQL(query string) (selected map[string]interface{})
+
+	CheckMatchQL(query string) (pages []*page.Page, err error)
+	CheckMatchStubsQL(query string) (stubs []*matter.PageStub, err error)
+	CheckSelectQL(query string) (selected map[string]interface{}, err error)
+
 	FindPage(tag language.Tag, url string) (p *page.Page)
+	FindFile(path string) (data []byte, mime string, err error)
+
+	FindEmailAccount(account string) (emailSender EmailSender)
+	SendEmail(account string, message *gomail.Message) (err error)
 
 	Notify(tag string)
 	NotifyF(tag, format string, argv ...interface{})
