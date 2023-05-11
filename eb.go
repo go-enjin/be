@@ -49,6 +49,7 @@ type htmlHeadTag struct {
 }
 
 type EnjinBuilder struct {
+	notes        map[feature.Tag][]string
 	flags        []cli.Flag
 	commands     cli.Commands
 	pages        map[string]*page.Page
@@ -85,6 +86,7 @@ type EnjinBuilder struct {
 func New() (be *EnjinBuilder) {
 	be = new(EnjinBuilder)
 	be.theme = ""
+	be.notes = make(map[feature.Tag][]string)
 	be.flags = make([]cli.Flag, 0)
 	be.commands = make(cli.Commands, 0)
 	be.pages = make(map[string]*page.Page)
