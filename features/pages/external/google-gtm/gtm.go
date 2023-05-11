@@ -30,15 +30,15 @@ import (
 )
 
 var (
-	_ Feature     = (*CFeature)(nil)
-	_ MakeFeature = (*CFeature)(nil)
-)
-
-const (
-	Tag feature.Tag = "PagesExternalGoogleGTM"
-
 	DefaultGtmDomain   = "www.googletagmanager.com"
 	DefaultGtmNonceTag = "google-tag-manager"
+)
+
+const Tag feature.Tag = "pages-external-google-gtm"
+
+var (
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
 )
 
 type Feature interface {
@@ -53,8 +53,6 @@ type CFeature struct {
 
 	googleGtmId string
 
-	cli   *cli.Context
-	enjin feature.Internals
 	theme *theme.Theme
 }
 
@@ -89,22 +87,21 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 }
 
 func (f *CFeature) Setup(enjin feature.Internals) {
-	f.enjin = enjin
+	f.CFeature.Setup(enjin)
 	var err error
-	if f.theme, err = f.enjin.GetTheme(); err != nil {
-		log.FatalF("error getting enjin theme: %v - %v", f.enjin.SiteName())
+	if f.theme, err = f.Enjin.GetTheme(); err != nil {
+		log.FatalF("error getting enjin theme: %v - %v", f.Enjin.SiteName())
 	}
 
-	theme.RegisterFuncMap("gtmHeadScriptTag", f.GtmHeadScriptTagFn)
 	theme.RegisterFuncMap("gtmNoScriptTag", f.GtmNoScriptTagFn)
+	theme.RegisterFuncMap("gtmHeadScriptTag", f.GtmHeadScriptTagFn)
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CFeature.Startup(ctx); err != nil {
 		return
 	}
-	f.cli = ctx
-	if v := f.cli.String("google-gtm-id"); v != "" {
+	if v := ctx.String("google-gtm-id"); v != "" {
 		f.googleGtmId = v
 		log.DebugF("using google-gtm-id: %v", f.googleGtmId)
 	}
@@ -130,7 +127,7 @@ func (f *CFeature) GetGoogleGtmId(ctx context.Context) (gtmCode string) {
 }
 
 func (f *CFeature) RewriteRequest(w http.ResponseWriter, r *http.Request) (modified *http.Request) {
-	_, modified = f.enjin.ContentSecurityPolicy().GetRequestNonce(DefaultGtmNonceTag, r)
+	_, modified = f.Enjin.ContentSecurityPolicy().GetRequestNonce(DefaultGtmNonceTag, r)
 	return
 }
 
@@ -138,7 +135,7 @@ func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.
 	themeOut = themeCtx
 	gtmCode := f.GetGoogleGtmId(pageCtx)
 	if gtmCode != "" {
-		gtmNonce, _ := f.enjin.ContentSecurityPolicy().GetRequestNonce(DefaultGtmNonceTag, r)
+		gtmNonce, _ := f.Enjin.ContentSecurityPolicy().GetRequestNonce(DefaultGtmNonceTag, r)
 		themeOut.SetSpecific("GoogleTagManagerContainerId", gtmCode)
 		themeOut.SetSpecific("GoogleTagManagerScriptNonce", gtmNonce)
 	}
@@ -146,7 +143,7 @@ func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.
 }
 
 func (f *CFeature) ModifyContentSecurityPolicy(policy csp.Policy, r *http.Request) (modified csp.Policy) {
-	gtmNonce, _ := f.enjin.ContentSecurityPolicy().GetRequestNonce(DefaultGtmNonceTag, r)
+	gtmNonce, _ := f.Enjin.ContentSecurityPolicy().GetRequestNonce(DefaultGtmNonceTag, r)
 	modified = policy.
 		Add(csp.NewImgSrc(csp.NewHostSource(DefaultGtmDomain))).
 		Add(csp.NewScriptSrc(csp.NewNonceSource(gtmNonce), csp.NewHostSource(DefaultGtmDomain))).
