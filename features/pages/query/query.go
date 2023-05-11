@@ -34,7 +34,7 @@ var (
 	_ feature.PageTypeProcessor = (*CFeature)(nil)
 )
 
-const Tag feature.Tag = "PagesQuery"
+const Tag feature.Tag = "pages-query"
 
 type Feature interface {
 	feature.Feature
@@ -42,9 +42,6 @@ type Feature interface {
 
 type CFeature struct {
 	feature.CFeature
-
-	cli   *cli.Context
-	enjin feature.Internals
 
 	sync.RWMutex
 }
@@ -56,6 +53,7 @@ type MakeFeature interface {
 func New() MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
 }
 
@@ -67,69 +65,81 @@ func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 }
 
-func (f *CFeature) Tag() (tag feature.Tag) {
-	tag = Tag
-	return
-}
-
-func (f *CFeature) Setup(enjin feature.Internals) {
-	f.enjin = enjin
-}
-
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
-	f.cli = ctx
+	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	}
 	return
 }
 
 func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *page.Page, redirect string, processed bool, err error) {
-	// reqArgv := site.GetRequestArgv(r)
-	if p.Type == "query" {
-		if ctxQueries, ok := p.Context.Get("Query").(map[string]interface{}); ok {
-			queryStrings := make(map[string]string)
-			queryResults := make(map[string][]*page.Page)
-			for k, v := range ctxQueries {
-				if q, ok := v.(string); ok {
-					key := strcase.ToCamel(k)
-					queryStrings[key] = q
-					queryResults[key] = f.enjin.MatchQL(q)
+	if p.Type != "query" {
+		return
+	}
+
+	if ctxQueries, ok := p.Context.Get("Query").(map[string]interface{}); ok {
+		queryErrors := make(map[string]error)
+		queryStrings := make(map[string]string)
+		queryResults := make(map[string][]*page.Page)
+		for k, v := range ctxQueries {
+			if q, ok := v.(string); ok {
+				key := strcase.ToCamel(k)
+				queryStrings[key] = q
+				if matches, e := f.Enjin.CheckMatchQL(q); e != nil {
+					queryErrors[key] = e
 				} else {
-					err = fmt.Errorf("unexpected query context value structure: %T", v)
-					log.ErrorF("%v", err)
-					return
+					queryResults[key] = matches
 				}
+			} else {
+				err = fmt.Errorf("unexpected query context value structure: %T", v)
+				log.ErrorRF(r, "%v", err)
+				return
 			}
-			p.Context.SetSpecific("Query", queryStrings)
-			p.Context.SetSpecific("QueryResults", queryResults)
-			processed = true
 		}
-		if ctxSelects, ok := p.Context.Get("Select").(map[string]interface{}); ok {
-			selectedStrings := make(map[string]string)
-			selectedValues := make(map[string]interface{})
-			for k, v := range ctxSelects {
-				if q, ok := v.(string); ok {
-					key := strcase.ToCamel(k)
-					selectedStrings[key] = q
-					if selected := f.enjin.SelectQL(q); len(selected) == 1 {
-						for _, only := range selected {
-							selectedValues[key] = only
-							break
-						}
-					} else {
-						selectedValues[key] = selected
+
+		if len(queryErrors) > 0 {
+			p.Context.SetSpecific("QueryErrors", queryErrors)
+		}
+		p.Context.SetSpecific("Query", queryStrings)
+		p.Context.SetSpecific("QueryResults", queryResults)
+		processed = true
+	}
+
+	if ctxSelects, ok := p.Context.Get("Select").(map[string]interface{}); ok {
+		selectedErrors := make(map[string]error)
+		selectedStrings := make(map[string]string)
+		selectedValues := make(map[string]interface{})
+		for k, v := range ctxSelects {
+			if q, ok := v.(string); ok {
+				key := strcase.ToCamel(k)
+				selectedStrings[key] = q
+				if selected, ee := f.Enjin.CheckSelectQL(q); ee != nil {
+					selectedErrors[key] = ee
+				} else if len(selected) == 1 {
+					for _, only := range selected {
+						selectedValues[key] = only
+						break
 					}
 				} else {
-					err = fmt.Errorf("unexpected select context value structure: %T", v)
-					log.ErrorF("%v", err)
-					return
+					selectedValues[key] = selected
 				}
+			} else {
+				err = fmt.Errorf("unexpected select context value structure: %T", v)
+				log.ErrorRF(r, "%v", err)
+				return
 			}
-			p.Context.SetSpecific("Select", selectedStrings)
-			p.Context.SetSpecific("Selected", selectedValues)
-			processed = true
 		}
-		if processed {
-			pg = p
+
+		if len(selectedErrors) > 0 {
+			p.Context.SetSpecific("SelectedErrors", selectedErrors)
 		}
+		p.Context.SetSpecific("Select", selectedStrings)
+		p.Context.SetSpecific("Selected", selectedValues)
+		processed = true
+	}
+
+	if processed {
+		pg = p
 	}
 	return
 }
