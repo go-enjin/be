@@ -15,6 +15,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/felixge/httpsnoop"
+
+	"github.com/go-enjin/be/pkg/request"
 )
 
 // Logging
@@ -26,6 +28,7 @@ type LogFormatterParams struct {
 	TimeStamp  time.Time
 	StatusCode int
 	Size       int
+	Duration   time.Duration
 }
 
 // LogFormatter gives the signature of the formatter function passed to CustomLoggingHandler
@@ -45,7 +48,10 @@ func (h loggingHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	logger, w := makeLogger(w)
 	url := *req.URL
 
+	start := time.Now()
 	h.handler.ServeHTTP(w, req)
+	end := time.Now()
+
 	if req.MultipartForm != nil {
 		req.MultipartForm.RemoveAll()
 	}
@@ -56,6 +62,7 @@ func (h loggingHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		TimeStamp:  t,
 		StatusCode: logger.Status(),
 		Size:       logger.Size(),
+		Duration:   end.Sub(start),
 	}
 
 	h.formatter(h.writer, params)
@@ -142,7 +149,7 @@ func appendQuoted(buf []byte, s string) []byte {
 // buildCommonLogLine builds a log entry for req in Apache Common Log Format.
 // ts is the timestamp with which the entry should be logged.
 // status and size are used to provide the response HTTP status and size.
-func buildCommonLogLine(req *http.Request, url url.URL, ts time.Time, status int, size int) []byte {
+func buildCommonLogLine(req *http.Request, url url.URL, ts time.Time, status int, size int, duration time.Duration) []byte {
 	username := "-"
 	if url.User != nil {
 		if name := url.User.Username(); name != "" {
@@ -167,7 +174,14 @@ func buildCommonLogLine(req *http.Request, url url.URL, ts time.Time, status int
 		uri = url.RequestURI()
 	}
 
-	buf := make([]byte, 0, 3*(len(host)+len(username)+len(req.Method)+len(uri)+len(req.Proto)+50)/2)
+	buf := make([]byte, 0)
+	buf = append(buf, '[')
+	if rid := request.GetRequestID(req); rid != "" {
+		buf = append(buf, rid...)
+	} else {
+		buf = append(buf, "nil"...)
+	}
+	buf = append(buf, ']', ' ')
 	buf = append(buf, host...)
 	buf = append(buf, " - "...)
 	buf = append(buf, username...)
@@ -191,6 +205,9 @@ func buildCommonLogLine(req *http.Request, url url.URL, ts time.Time, status int
 	buf = append(buf, strconv.Itoa(status)...)
 	buf = append(buf, " "...)
 	buf = append(buf, strconv.Itoa(size)...)
+	buf = append(buf, " "...)
+	buf = append(buf, duration.String()...)
+
 	return buf
 }
 
@@ -198,7 +215,7 @@ func buildCommonLogLine(req *http.Request, url url.URL, ts time.Time, status int
 // ts is the timestamp with which the entry should be logged.
 // status and size are used to provide the response HTTP status and size.
 func writeLog(writer io.Writer, params LogFormatterParams) {
-	buf := buildCommonLogLine(params.Request, params.URL, params.TimeStamp, params.StatusCode, params.Size)
+	buf := buildCommonLogLine(params.Request, params.URL, params.TimeStamp, params.StatusCode, params.Size, params.Duration)
 	buf = append(buf, '\n')
 	writer.Write(buf)
 }
@@ -207,7 +224,7 @@ func writeLog(writer io.Writer, params LogFormatterParams) {
 // ts is the timestamp with which the entry should be logged.
 // status and size are used to provide the response HTTP status and size.
 func writeCombinedLog(writer io.Writer, params LogFormatterParams) {
-	buf := buildCommonLogLine(params.Request, params.URL, params.TimeStamp, params.StatusCode, params.Size)
+	buf := buildCommonLogLine(params.Request, params.URL, params.TimeStamp, params.StatusCode, params.Size, params.Duration)
 	buf = append(buf, ` "`...)
 	buf = appendQuoted(buf, params.Request.Referer())
 	buf = append(buf, `" "`...)
@@ -235,13 +252,12 @@ func CombinedLoggingHandler(out io.Writer, h http.Handler) http.Handler {
 //
 // Example:
 //
-//  r := mux.NewRouter()
-//  r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-//  	w.Write([]byte("This is a catch-all route"))
-//  })
-//  loggedRouter := handlers.LoggingHandler(os.Stdout, r)
-//  http.ListenAndServe(":1123", loggedRouter)
-//
+//	r := mux.NewRouter()
+//	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+//		w.Write([]byte("This is a catch-all route"))
+//	})
+//	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
+//	http.ListenAndServe(":1123", loggedRouter)
 func LoggingHandler(out io.Writer, h http.Handler) http.Handler {
 	return loggingHandler{out, h, writeLog}
 }
