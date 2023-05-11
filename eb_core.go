@@ -57,7 +57,7 @@ func (eb *EnjinBuilder) AddFeature(f feature.Feature) feature.Builder {
 	}
 	for _, known := range eb.features {
 		if known.Tag() == f.Tag() {
-			return eb
+			log.FatalDF(1, "duplicated feature tag: %v", f.Tag())
 		}
 	}
 	log.DebugF("adding feature: %v", f.Tag())
@@ -71,10 +71,21 @@ func (eb *EnjinBuilder) AddFeatureNotes(tag feature.Tag, notes ...string) featur
 }
 
 func (eb *EnjinBuilder) AddFlags(flags ...cli.Flag) feature.Builder {
-	eb.flags = append(
-		eb.flags,
-		flags...,
-	)
+	for _, flag := range flags {
+		fNames := flag.Names()
+		var found bool
+		for _, present := range eb.flags {
+			pNames := present.Names()
+			if fNames[0] == pNames[0] {
+				found = true
+			}
+		}
+		if found {
+			log.DebugDF(1, "skipping existing flag: %v", fNames[0])
+		} else {
+			eb.flags = append(eb.flags, flag)
+		}
+	}
 	return eb
 }
 
