@@ -26,35 +26,31 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/lang"
-	"github.com/go-enjin/be/pkg/log"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 var (
-	_ MakeFeature             = (*CFeature)(nil)
-	_ feature.Middleware      = (*CFeature)(nil)
-	_ feature.RequestModifier = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
 )
 
 const Tag feature.Tag = "pages-robots"
 
 type Feature interface {
-	feature.Middleware
+	feature.Feature
+	feature.RequestModifier
+	feature.ApplyMiddleware
 }
 
 type CFeature struct {
-	feature.CMiddleware
-
-	cliCtx *cli.Context
-	enjin  feature.Internals
+	feature.CFeature
 
 	rules    []RuleGroup
 	sitemaps []string
 
 	siteHeader  string
 	siteMetaTag string
+
+	metaRobots string
 }
 
 type MakeFeature interface {
@@ -75,7 +71,7 @@ func New() MakeFeature {
 }
 
 func (f *CFeature) Init(this interface{}) {
-	f.CMiddleware.Init(this)
+	f.CFeature.Init(this)
 }
 
 func (f *CFeature) AddSitemap(sitemap string) MakeFeature {
@@ -127,45 +123,34 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	return
 }
 
-func (f *CFeature) Setup(enjin feature.Internals) {
-	f.enjin = enjin
-}
-
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CFeature.Startup(ctx); err != nil {
 		return
 	}
-	f.cliCtx = ctx
-	if xrt := f.cliCtx.Value("x-robots-tag"); xrt != nil {
+	if xrt := ctx.Value("x-robots-tag"); xrt != nil {
 		if xRobotsTag, ok := xrt.(string); ok && xRobotsTag != "" {
 			f.siteHeader = xRobotsTag
 		}
 	}
-	return
-}
-
-func pruneRobotsFromHtmlHeadTags(existing []template.HTML) (found []template.HTML) {
-	for _, mt := range existing {
-		if !strings.Contains(string(mt), `name="robots"`) {
-			found = append(found, mt)
-		}
+	if mr := ctx.Value("meta-robots"); mr != nil {
+		f.metaRobots, _ = mr.(string)
 	}
 	return
 }
 
 func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.Request) (out context.Context) {
 	out = themeCtx
-	if mr := f.cliCtx.Value("meta-robots"); mr != nil {
-		if metaRobots, ok := mr.(string); ok && metaRobots != "" {
-			var found []template.HTML
-			if existing, ok := out.Get("HtmlHeadTags").([]template.HTML); ok {
-				found = pruneRobotsFromHtmlHeadTags(existing)
-			}
-			found = append(found, template.HTML(fmt.Sprintf(`<meta name="robots" content="%s"/>`, metaRobots)))
-			out.SetSpecific("HtmlHeadTags", found)
-			return
+
+	if f.metaRobots != "" {
+		var found []template.HTML
+		if existing, ok := out.Get("HtmlHeadTags").([]template.HTML); ok {
+			found = pruneRobotsFromHtmlHeadTags(existing)
 		}
+		found = append(found, template.HTML(fmt.Sprintf(`<meta name="robots" content="%s"/>`, f.metaRobots)))
+		out.SetSpecific("HtmlHeadTags", found)
+		return
 	}
+
 	if pr := out.Get("Robots"); pr != nil {
 		if pgRobots, ok := pr.(string); ok {
 			var found []template.HTML
@@ -185,37 +170,33 @@ func (f *CFeature) ModifyRequest(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
-	log.DebugF("including page robots middleware")
-
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			path := forms.SanitizeRequestPath(r.URL.Path)
-			if _, p, ok := lang.ParseLangPath(path); ok {
-				path = p
+func (f *CFeature) Apply(s feature.System) (err error) {
+	s.Router().Get("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
+		var contents string
+		for idx, rule := range f.rules {
+			if idx > 0 {
+				contents += "\n"
 			}
-
-			if path == "/robots.txt" && len(f.rules) > 0 {
-				var contents string
-				for idx, rule := range f.rules {
-					if idx > 0 {
-						contents += "\n"
-					}
-					contents += rule.String()
-				}
-				if len(f.sitemaps) > 0 {
-					if contents != "" {
-						contents += "\n"
-					}
-					for _, sitemap := range f.sitemaps {
-						contents += "Sitemap: " + sitemap + "\n"
-					}
-				}
-				f.enjin.ServeData([]byte(contents), "text/plain", w, r)
-				return
+			contents += rule.String()
+		}
+		if len(f.sitemaps) > 0 {
+			if contents != "" {
+				contents += "\n"
 			}
+			for _, sitemap := range f.sitemaps {
+				contents += "Sitemap: " + sitemap + "\n"
+			}
+		}
+		f.Enjin.ServeData([]byte(contents), "text/plain", w, r)
+	})
+	return
+}
 
-			next.ServeHTTP(w, r)
-		})
+func pruneRobotsFromHtmlHeadTags(existing []template.HTML) (found []template.HTML) {
+	for _, mt := range existing {
+		if !strings.Contains(string(mt), `name="robots"`) {
+			found = append(found, mt)
+		}
 	}
+	return
 }
