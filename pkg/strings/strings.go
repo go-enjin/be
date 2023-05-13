@@ -76,6 +76,29 @@ func StringIndexInStrings(src string, dst ...string) int {
 	return -1
 }
 
+func RemoveValueFromSlice(value string, slice *[]string) (modified bool) {
+	var found []int
+	for jdx, v := range *slice {
+		if v == value {
+			found = append(found, jdx)
+		}
+	}
+	for _, rdx := range found {
+		size := len(*slice)
+		if rdx < size && rdx >= 0 {
+			if rdx == 0 {
+				*slice = (*slice)[1:]
+			} else if rdx < size-1 {
+				*slice = (*slice)[:size-1]
+			} else {
+				*slice = append((*slice)[:rdx], (*slice)[rdx:]...)
+			}
+		}
+	}
+	modified = modified || len(found) > 0
+	return
+}
+
 func RemoveIndexFromStrings(idx int, slice []string) []string {
 	if idx >= 0 && idx < len(slice) {
 		if idx == 0 {
