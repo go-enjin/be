@@ -17,8 +17,6 @@
 package locale
 
 import (
-	"sync"
-
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
@@ -45,8 +43,6 @@ type MakeFeature interface {
 
 type CFeature struct {
 	mountable.CFeature[MakeFeature]
-
-	sync.RWMutex
 }
 
 func New() MakeFeature {

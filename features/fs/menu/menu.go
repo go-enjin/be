@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"sync"
 
 	"github.com/fvbommel/sortorder"
 	"github.com/go-enjin/golang-org-x-text/language"
@@ -56,8 +55,6 @@ type MakeFeature interface {
 
 type CFeature struct {
 	mountable.CFeature[MakeFeature]
-
-	sync.RWMutex
 }
 
 func New() MakeFeature {

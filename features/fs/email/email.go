@@ -22,7 +22,6 @@ import (
 	htmlTemplate "html/template"
 	"path/filepath"
 	"strings"
-	"sync"
 	textTemplate "text/template"
 
 	"github.com/Shopify/gomail"
@@ -58,8 +57,6 @@ type MakeFeature interface {
 
 type CFeature struct {
 	mountable.CFeature[MakeFeature]
-
-	sync.RWMutex
 }
 
 func New() MakeFeature {

@@ -18,18 +18,17 @@ package content
 
 import (
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/mountable"
+	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/pagecache"
 )
 
 const Tag feature.Tag = "fs-content"
@@ -63,12 +62,10 @@ type CFeature struct {
 	indexProviderTags  feature.Tags
 	searchProviderTags feature.Tags
 
-	indexProviders  []pagecache.PageIndexFeature
-	searchProviders []pagecache.SearchEnjinFeature
+	indexProviders  []indexing.PageIndexFeature
+	searchProviders []indexing.SearchEnjinFeature
 
 	cache kvs.KeyValueCache
-
-	sync.RWMutex
 }
 
 func New() MakeFeature {
@@ -132,7 +129,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 
 	for _, ef := range f.Enjin.Features() {
 		if f.indexProviderTags.Has(ef.Tag()) {
-			if pip, ok := ef.Self().(pagecache.PageIndexFeature); ok {
+			if pip, ok := ef.Self().(indexing.PageIndexFeature); ok {
 				f.indexProviders = append(f.indexProviders, pip)
 			} else {
 				err = fmt.Errorf("%v feature is not a pagecache.PageIndexFeature", ef.Tag())
@@ -140,7 +137,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 			}
 		}
 		if f.searchProviderTags.Has(ef.Tag()) {
-			if sep, ok := ef.Self().(pagecache.SearchEnjinFeature); ok {
+			if sep, ok := ef.Self().(indexing.SearchEnjinFeature); ok {
 				f.searchProviders = append(f.searchProviders, sep)
 			} else {
 				err = fmt.Errorf("%v feature is not a pagecache.SearchEnjinFeature", ef.Tag())
@@ -168,7 +165,9 @@ func (f *CFeature) PopulateIndexes() (err error) {
 	start := time.Now()
 	var total int
 
-	theme, _ := f.Enjin.GetTheme()
+	log.DebugF("%v feature adding pages to: %v", f.Tag(), append(f.indexProviderTags, f.searchProviderTags...))
+
+	theme := f.Enjin.MustGetTheme()
 	for _, point := range maps.SortedKeys(f.MountPoints) {
 		for _, mp := range f.MountPoints[point] {
 			if files, ee := mp.ROFS.ListAllFiles("."); ee == nil {
