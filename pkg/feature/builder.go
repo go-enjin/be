@@ -15,8 +15,6 @@
 package feature
 
 import (
-	"embed"
-
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/golang-org-x-text/language"
@@ -36,9 +34,6 @@ type Builder interface {
 	SiteDefaultLanguage(tag language.Tag) Builder
 	SiteSupportedLanguages(tags ...language.Tag) Builder
 	SiteLanguageDisplayNames(names map[language.Tag]string) Builder
-
-	AddLocalesLocalFS(path string) Builder
-	AddLocalesEmbedFS(path string, efs embed.FS) Builder
 
 	// Set a custom context key with value
 	Set(key string, value interface{}) Builder
@@ -91,15 +86,6 @@ type Builder interface {
 
 	// SetTheme configures the default theme
 	SetTheme(name string) Builder
-
-	// AddThemes is a convenience wrapper include all themes in the given path
-	AddThemes(path string) Builder
-
-	// EmbedTheme is a wrapper around AddTheme for an embed.FS theme
-	EmbedTheme(name, path string, tfs embed.FS) Builder
-
-	// EmbedThemes is a wrapper to include all themes in the given embed.FS
-	EmbedThemes(path string, fs embed.FS) Builder
 
 	// HotReload enables or disables hot-reloading theme templates and content files
 	HotReload(enabled bool) Builder
