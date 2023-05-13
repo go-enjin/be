@@ -15,16 +15,12 @@
 package lang
 
 import (
-	"embed"
 	"fmt"
 
 	"github.com/goccy/go-json"
 
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
-
-	beFsEmbed "github.com/go-enjin/be/pkg/fs/drivers/embed"
-	beFsLocal "github.com/go-enjin/be/pkg/fs/drivers/local"
 
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
@@ -44,18 +40,6 @@ func NewCatalog() (c *Catalog) {
 		table: make(map[language.Tag]*dictionaries),
 	}
 	return
-}
-
-func (c *Catalog) IncludeEmbed(tag language.Tag, path string, efs embed.FS) {
-	if bfs, err := beFsEmbed.New(path, efs); err == nil {
-		c.AddLocalesFromFS(tag, bfs)
-	}
-}
-
-func (c *Catalog) IncludeLocal(tag language.Tag, path string) {
-	if bfs, err := beFsLocal.New(path); err == nil {
-		c.AddLocalesFromFS(tag, bfs)
-	}
 }
 
 func (c *Catalog) AddLocalesFromJsonBytes(tag language.Tag, src string, contents []byte) {
