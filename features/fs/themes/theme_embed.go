@@ -28,20 +28,22 @@ import (
 type EmbedSupport interface {
 	// EmbedTheme constructs an embedded theme.Theme instance and adds it to the
 	// enjin during the build phase
-	EmbedTheme(name, path string, tfs embed.FS) MakeFeature
+	EmbedTheme(path string, tfs embed.FS) MakeFeature
 
 	// EmbedThemes constructs all embedded theme.Theme instances and adds them
 	// to the enjin during the build phase
 	EmbedThemes(path string, fs embed.FS) MakeFeature
 }
 
-func (f *CFeature) EmbedTheme(name, path string, tfs embed.FS) MakeFeature {
+func (f *CFeature) EmbedTheme(path string, tfs embed.FS) MakeFeature {
 	var err error
-	log.DebugDF(1, "embedding theme: %v", name)
-	if f.themes[name], err = theme.NewEmbed(path, tfs); err != nil {
-		delete(f.themes, name)
-		log.FatalDF(1, "error embedding theme: %v", err)
+	var t *theme.Theme
+	if t, err = theme.NewEmbed(path, tfs); err != nil {
+		log.FatalF("error loading embed theme: %v", err)
+	} else {
+		log.DebugF("loaded embed theme: %v", t.Name)
 	}
+	f.AddTheme(t)
 	return f
 }
 
@@ -53,8 +55,7 @@ func (f *CFeature) EmbedThemes(path string, fs embed.FS) MakeFeature {
 	}
 	for _, info := range entries {
 		p := bePath.TrimSlashes(path + "/" + info.Name())
-		name := bePath.Base(info.Name())
-		f.EmbedTheme(name, p, fs)
+		f.EmbedTheme(p, fs)
 	}
 	return f
 }
