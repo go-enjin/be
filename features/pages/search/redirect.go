@@ -67,14 +67,14 @@ func (f *CFeature) handleQueryRedirect(r *http.Request) (redirect string, err er
 		}
 	}
 
-	langMode := f.enjin.SiteLanguageMode()
+	langMode := f.Enjin.SiteLanguageMode()
 
 	if ok := err == nil && foundQuery && foundNonce; ok {
 		query = url.PathEscape(query)
 		if query != "" {
 			query = "/:" + query
 		}
-		redirect = langMode.ToUrl(f.enjin.SiteDefaultLanguage(), tag, f.path+query)
+		redirect = langMode.ToUrl(f.Enjin.SiteDefaultLanguage(), tag, f.path+query)
 		// log.DebugRF(r, "search redirecting: %v", dst)
 		return
 	}
@@ -82,6 +82,6 @@ func (f *CFeature) handleQueryRedirect(r *http.Request) (redirect string, err er
 	if err != nil {
 		log.TraceF("error handling search redirect: %v", err)
 	}
-	redirect = langMode.ToUrl(f.enjin.SiteDefaultLanguage(), tag, f.path)
+	redirect = langMode.ToUrl(f.Enjin.SiteDefaultLanguage(), tag, f.path)
 	return
 }

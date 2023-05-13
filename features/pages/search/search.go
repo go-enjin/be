@@ -31,21 +31,24 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
+	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/pagecache"
 	"github.com/go-enjin/be/pkg/request/argv"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 var (
-	_ Feature                   = (*CFeature)(nil)
-	_ MakeFeature               = (*CFeature)(nil)
-	_ feature.PageTypeProcessor = (*CFeature)(nil)
+	DefaultSearchPath = "/search"
 )
 
 const Tag feature.Tag = "pages-search"
+
+var (
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
+)
 
 type ResultsPostProcessor interface {
 	SearchResultsPostProcess(p *page.Page)
@@ -53,38 +56,41 @@ type ResultsPostProcessor interface {
 
 type Feature interface {
 	feature.Feature
+	feature.PageTypeProcessor
 }
 
 type CFeature struct {
 	feature.CFeature
 
-	cli   *cli.Context
-	enjin feature.Internals
-
 	path   string
-	search pagecache.SearchEnjinFeature
+	search indexing.SearchEnjinFeature
 
 	sync.RWMutex
 }
 
 type MakeFeature interface {
-	SetPath(path string) MakeFeature
+	SetSearchPath(path string) MakeFeature
 
 	Make() Feature
 }
 
 func New() MakeFeature {
+	return NewTagged(Tag)
+}
+
+func NewTagged(tag feature.Tag) MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
-	f.FeatureTag = Tag
+	f.FeatureTag = tag
 	return f
 }
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+	f.path = DefaultSearchPath
 }
 
-func (f *CFeature) SetPath(path string) MakeFeature {
+func (f *CFeature) SetSearchPath(path string) MakeFeature {
 	f.path = path
 	return f
 }
@@ -117,13 +123,15 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 }
 
 func (f *CFeature) Setup(enjin feature.Internals) {
-	f.enjin = enjin
+	f.CFeature.Setup(enjin)
+
 	if f.path == "" {
 		f.path = "/search"
 	}
+
 	log.DebugF("using search path: %v", f.path)
-	for _, feat := range f.enjin.Features() {
-		if search, ok := feat.(pagecache.SearchEnjinFeature); ok {
+	for _, feat := range f.Enjin.Features() {
+		if search, ok := feat.(indexing.SearchEnjinFeature); ok {
 			f.search = search
 			break
 		}
@@ -137,9 +145,12 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CFeature.Startup(ctx); err != nil {
 		return
 	}
-	f.cli = ctx
 	return
 }
+
+// func (f *CFeature) Apply(s feature.System) (err error) {
+// 	return
+// }
 
 func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.Request) (out context.Context) {
 	out = themeCtx
@@ -252,7 +263,7 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 		}
 
 		// finalize
-		for _, feat := range f.enjin.Features() {
+		for _, feat := range f.Enjin.Features() {
 			if rp, ok := feat.(ResultsPostProcessor); ok {
 				rp.SearchResultsPostProcess(p)
 			}
