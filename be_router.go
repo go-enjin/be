@@ -69,7 +69,6 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		if rm, ok := f.(feature.RequestModifier); ok {
 			log.DebugF("including %v request modifier middleware", tag)
 			router.Use(func(next http.Handler) http.Handler {
-				log.DebugF("using %v request modifier middleware", tag)
 				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					rm.ModifyRequest(w, r)
 					next.ServeHTTP(w, r)
@@ -86,7 +85,6 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		if rm, ok := f.(feature.RequestRewriter); ok {
 			log.DebugF("including %v request rewriter middleware", tag)
 			router.Use(func(next http.Handler) http.Handler {
-				log.DebugF("using %v request rewriter middleware", tag)
 				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					r = rm.RewriteRequest(w, r)
 					next.ServeHTTP(w, r)
@@ -128,6 +126,7 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	if t, ee := e.GetTheme(); ee != nil {
 		log.WarnF("not including any theme middleware: %v", ee)
 	} else {
+		log.DebugF("including %v theme middleware", t.Name)
 		router.Use(t.Middleware)
 		if tp := t.GetParent(); tp != nil {
 			router.Use(tp.Middleware)
@@ -139,11 +138,8 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	// potentially blocking middleware features that do not require standard
 	// page rendering or data response facilities
 	for _, f := range e.Features() {
-		if mf, ok := f.(feature.Middleware); ok {
-			if mw := mf.Use(e); mw != nil {
-				router.Use(mw)
-			}
-		} else if af, ok := f.(feature.UseMiddleware); ok {
+		if af, ok := f.(feature.UseMiddleware); ok {
+			log.DebugF("including %v use middleware", f.Tag())
 			if mw := af.Use(e); mw != nil {
 				router.Use(mw)
 			}
@@ -191,11 +187,8 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	// middleware features have a final chance to apply enjin changes before
 	// error handling router changes are made
 	for _, f := range e.Features() {
-		if mf, ok := f.(feature.Middleware); ok {
-			if err = mf.Apply(e); err != nil {
-				return
-			}
-		} else if af, ok := f.(feature.ApplyMiddleware); ok {
+		if af, ok := f.(feature.ApplyMiddleware); ok {
+			log.DebugF("including %v apply middleware", f.Tag())
 			if err = af.Apply(e); err != nil {
 				return
 			}

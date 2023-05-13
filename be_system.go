@@ -27,10 +27,10 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
+	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/page/matter"
-	"github.com/go-enjin/be/pkg/pagecache"
 	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/types/site"
 	"github.com/go-enjin/be/pkg/types/theme-types"
@@ -61,6 +61,14 @@ func (e *Enjin) GetTheme() (t *theme.Theme, err error) {
 	if t, ok = e.eb.theming[name]; !ok {
 		err = fmt.Errorf(`theme not found: "%v" %v`, name, e.ThemeNames())
 		return
+	}
+	return
+}
+
+func (e *Enjin) MustGetTheme() (t *theme.Theme) {
+	var err error
+	if t, err = e.GetTheme(); err != nil {
+		log.FatalDF(1, "error getting enjin theme: %v", err)
 	}
 	return
 }
@@ -217,7 +225,7 @@ func (e *Enjin) MatchFormat(filename string) (format types.Format, match string)
 func (e *Enjin) CheckMatchQL(query string) (pages []*page.Page, err error) {
 	t, _ := e.GetTheme()
 	for _, f := range e.Features() {
-		if queryEnjin, ok := f.(pagecache.QueryIndexFeature); ok {
+		if queryEnjin, ok := f.(indexing.QueryIndexFeature); ok {
 			if matches, ee := queryEnjin.PerformQuery(query); ee != nil {
 				err = ee
 			} else {
@@ -238,7 +246,7 @@ func (e *Enjin) CheckMatchQL(query string) (pages []*page.Page, err error) {
 func (e *Enjin) MatchQL(query string) (pages []*page.Page) {
 	t, _ := e.GetTheme()
 	for _, f := range e.Features() {
-		if queryEnjin, ok := f.(pagecache.QueryIndexFeature); ok {
+		if queryEnjin, ok := f.(indexing.QueryIndexFeature); ok {
 			if matches, err := queryEnjin.PerformQuery(query); err != nil {
 				log.ErrorF("error performing enjin query: %v", err)
 			} else {
@@ -258,7 +266,7 @@ func (e *Enjin) MatchQL(query string) (pages []*page.Page) {
 
 func (e *Enjin) MatchStubsQL(query string) (stubs []*matter.PageStub) {
 	for _, f := range e.Features() {
-		if queryEnjin, ok := f.(pagecache.QueryIndexFeature); ok {
+		if queryEnjin, ok := f.(indexing.QueryIndexFeature); ok {
 			var err error
 			if stubs, err = queryEnjin.PerformQuery(query); err != nil {
 				log.ErrorF("error performing enjin query: %v", err)
@@ -271,7 +279,7 @@ func (e *Enjin) MatchStubsQL(query string) (stubs []*matter.PageStub) {
 
 func (e *Enjin) CheckMatchStubsQL(query string) (stubs []*matter.PageStub, err error) {
 	for _, f := range e.Features() {
-		if queryEnjin, ok := f.(pagecache.QueryIndexFeature); ok {
+		if queryEnjin, ok := f.(indexing.QueryIndexFeature); ok {
 			stubs, err = queryEnjin.PerformQuery(query)
 			break
 		}
@@ -281,7 +289,7 @@ func (e *Enjin) CheckMatchStubsQL(query string) (stubs []*matter.PageStub, err e
 
 func (e *Enjin) SelectQL(query string) (selected map[string]interface{}) {
 	for _, f := range e.Features() {
-		if queryEnjin, ok := f.(pagecache.QueryIndexFeature); ok {
+		if queryEnjin, ok := f.(indexing.QueryIndexFeature); ok {
 			var err error
 			if selected, err = queryEnjin.PerformSelect(query); err != nil {
 				log.ErrorF("error performing enjin select: %v", err)
@@ -294,7 +302,7 @@ func (e *Enjin) SelectQL(query string) (selected map[string]interface{}) {
 
 func (e *Enjin) CheckSelectQL(query string) (selected map[string]interface{}, err error) {
 	for _, f := range e.Features() {
-		if queryEnjin, ok := f.(pagecache.QueryIndexFeature); ok {
+		if queryEnjin, ok := f.(indexing.QueryIndexFeature); ok {
 			selected, err = queryEnjin.PerformSelect(query)
 			break
 		}

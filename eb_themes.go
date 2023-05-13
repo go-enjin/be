@@ -15,13 +15,10 @@
 package be
 
 import (
-	"embed"
-	"os"
-
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/theme"
+	types "github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 func (eb *EnjinBuilder) SetTheme(name string) feature.Builder {
@@ -39,57 +36,10 @@ func (eb *EnjinBuilder) AddTheme(t *theme.Theme) feature.Builder {
 		eb.localeFiles = append(eb.localeFiles, lfs)
 		log.DebugF("including %v theme locales", t.Name)
 	}
-	return eb
-}
-
-func (eb *EnjinBuilder) AddThemes(path string) feature.Builder {
-	var err error
-	var paths []string
-	if paths, err = bePath.ListDirs(path); err != nil {
-		log.FatalF("error listing path: %v", err)
-		return nil
-	}
-	for _, p := range paths {
-		name := bePath.Base(p)
-		log.DebugF("loading theme: %v", p)
-		if eb.theming[name], err = theme.NewLocal(p); err != nil {
-			delete(eb.theming, name)
-			log.FatalF("error loading theme: %v", err)
-			return nil
+	for _, f := range eb.features {
+		if fp, ok := f.This().(types.FormatProvider); ok {
+			eb.theming[t.Name].FormatProviders = append(eb.theming[t.Name].FormatProviders, fp)
 		}
-		if lfs, ok := eb.theming[name].Locales(); ok {
-			eb.localeFiles = append(eb.localeFiles, lfs)
-			log.DebugF("including %v theme locales", name)
-		}
-	}
-	return eb
-}
-
-func (eb *EnjinBuilder) EmbedTheme(name, path string, tfs embed.FS) feature.Builder {
-	var err error
-	log.DebugF("embedding theme: %v", name)
-	if eb.theming[name], err = theme.NewEmbed(path, tfs); err != nil {
-		delete(eb.theming, name)
-		log.FatalF("error embedding theme: %v", err)
-		return nil
-	}
-	if lfs, ok := eb.theming[name].Locales(); ok {
-		eb.localeFiles = append(eb.localeFiles, lfs)
-		log.DebugF("including %v theme locales", name)
-	}
-	return eb
-}
-
-func (eb *EnjinBuilder) EmbedThemes(path string, fs embed.FS) feature.Builder {
-	var err error
-	var entries []os.DirEntry
-	if entries, err = fs.ReadDir(path); err != nil {
-		log.FatalF("error reading path: %v", err)
-	}
-	for _, info := range entries {
-		p := bePath.TrimSlashes(path + "/" + info.Name())
-		name := bePath.Base(info.Name())
-		eb.EmbedTheme(name, p, fs)
 	}
 	return eb
 }

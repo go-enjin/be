@@ -15,13 +15,9 @@
 package be
 
 import (
-	"embed"
-
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
-	beFsEmbed "github.com/go-enjin/be/pkg/fs/drivers/embed"
-	"github.com/go-enjin/be/pkg/fs/drivers/local"
 	"github.com/go-enjin/be/pkg/lang"
 )
 
@@ -46,20 +42,6 @@ func (eb *EnjinBuilder) SiteLanguageDisplayNames(names map[language.Tag]string) 
 	}
 	for tag, name := range names {
 		eb.localeNames[tag] = name
-	}
-	return eb
-}
-
-func (eb *EnjinBuilder) AddLocalesLocalFS(path string) feature.Builder {
-	if f, err := local.New(path); err == nil {
-		eb.localeFiles = append(eb.localeFiles, f)
-	}
-	return eb
-}
-
-func (eb *EnjinBuilder) AddLocalesEmbedFS(path string, efs embed.FS) feature.Builder {
-	if f, err := beFsEmbed.New(path, efs); err == nil {
-		eb.localeFiles = append(eb.localeFiles, f)
 	}
 	return eb
 }
