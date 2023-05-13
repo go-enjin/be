@@ -38,6 +38,7 @@ type Service interface {
 	Prefix() (prefix string)
 	Context() (ctx context.Context)
 	GetTheme() (t *theme.Theme, err error)
+	MustGetTheme() (t *theme.Theme)
 	ThemeNames() (names []string)
 	ServerName() (name string)
 	ServiceInfo() (listen string, port int)
