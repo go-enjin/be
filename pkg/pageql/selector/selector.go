@@ -22,11 +22,11 @@ import (
 
 	"github.com/go-enjin/be/pkg/cmp"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/page/matter"
-	"github.com/go-enjin/be/pkg/pagecache"
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/regexps"
 	"github.com/go-enjin/be/pkg/theme"
@@ -34,7 +34,7 @@ import (
 
 type cSelector struct {
 	input  string
-	feat   pagecache.PageContextProvider
+	feat   indexing.PageContextProvider
 	theme  *theme.Theme
 	sel    *pageql.Selection
 	cache  map[string]map[string]interface{}
@@ -46,12 +46,12 @@ type cSelector struct {
 func NewProcess(input string, enjin feature.Internals) (selected map[string]interface{}, err error) {
 	var ok bool
 	var t *theme.Theme
-	var f pagecache.PageContextProvider
+	var f indexing.PageContextProvider
 	if t, err = enjin.GetTheme(); err != nil {
 		return
 	}
 	for _, feat := range enjin.Features() {
-		if f, ok = feat.(pagecache.PageContextProvider); ok {
+		if f, ok = feat.(indexing.PageContextProvider); ok {
 			break
 		}
 	}
@@ -59,7 +59,7 @@ func NewProcess(input string, enjin feature.Internals) (selected map[string]inte
 	return
 }
 
-func NewProcessWith(input string, t *theme.Theme, f pagecache.PageContextProvider) (selected map[string]interface{}, err error) {
+func NewProcessWith(input string, t *theme.Theme, f indexing.PageContextProvider) (selected map[string]interface{}, err error) {
 	matcher := &cSelector{
 		feat:   f,
 		theme:  t,
