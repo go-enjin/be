@@ -1,4 +1,4 @@
-//go:build fs_drivers_embed || fs_drivers || all
+//go:build driver_fs_embed || drivers_fs || embeds || all
 
 // Copyright (c) 2023  The Go-Enjin Authors
 //
@@ -19,7 +19,7 @@ package mountable
 import (
 	"embed"
 
-	beFsEmbed "github.com/go-enjin/be/pkg/fs/drivers/embed"
+	beFsEmbed "github.com/go-enjin/be/drivers/fs/embed"
 	"github.com/go-enjin/be/pkg/log"
 )
 

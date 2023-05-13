@@ -1,4 +1,4 @@
-//go:build !fs_drivers_local && !fs_drivers && !all
+//go:build !driver_fs_local && !drivers_fs && !locals && !all
 
 // Copyright (c) 2023  The Go-Enjin Authors
 //
@@ -16,5 +16,5 @@
 
 package mountable
 
-type LocalPathSupport interface {
+type LocalPathSupport[MakeTypedFeature interface{}] interface {
 }

@@ -1,4 +1,4 @@
-//go:build fs_drivers_local || fs_drivers || all
+//go:build driver_fs_local || drivers_fs || locals || all
 
 // Copyright (c) 2023  The Go-Enjin Authors
 //
@@ -17,7 +17,7 @@
 package mountable
 
 import (
-	"github.com/go-enjin/be/pkg/fs/drivers/local"
+	"github.com/go-enjin/be/drivers/fs/local"
 	"github.com/go-enjin/be/pkg/log"
 )
 

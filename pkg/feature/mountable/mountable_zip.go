@@ -1,4 +1,4 @@
-//go:build fs_drivers_zip || fs_drivers || all
+//go:build driver_fs_zip || drivers_fs || zips || all
 
 // Copyright (c) 2023  The Go-Enjin Authors
 //
@@ -19,7 +19,7 @@ package mountable
 import (
 	"github.com/spkg/zipfs"
 
-	"github.com/go-enjin/be/pkg/fs/drivers/zip"
+	"github.com/go-enjin/be/drivers/fs/zip"
 	"github.com/go-enjin/be/pkg/log"
 )
 

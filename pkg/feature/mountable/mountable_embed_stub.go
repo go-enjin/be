@@ -1,4 +1,4 @@
-//go:build !fs_drivers_embed && !fs_drivers && !all
+//go:build !driver_fs_embed && !drivers_fs && !embeds && !all
 
 // Copyright (c) 2023  The Go-Enjin Authors
 //
@@ -16,5 +16,5 @@
 
 package mountable
 
-type EmbedPathSupport[MakeT interface{}] interface {
+type EmbedPathSupport[MakeTypedFeature interface{}] interface {
 }
