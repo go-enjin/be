@@ -26,21 +26,20 @@ import (
 	"github.com/go-enjin/be/pkg/net"
 )
 
-var (
-	_ Feature                 = (*CFeature)(nil)
-	_ MakeFeature             = (*CFeature)(nil)
-	_ feature.Middleware      = (*CFeature)(nil)
-	_ feature.RequestModifier = (*CFeature)(nil)
-)
-
 const Tag feature.Tag = "requests-headers-proxy"
 
+var (
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
+)
+
 type Feature interface {
-	feature.Middleware
+	feature.Feature
+	feature.RequestModifier
 }
 
 type CFeature struct {
-	feature.CMiddleware
+	feature.CFeature
 
 	enabled bool
 }
@@ -103,13 +102,3 @@ func (f *CFeature) ModifyRequest(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
-
-// func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
-// 	// TODO: figure out how to re-use chi middleware.RealIP
-// 	return func(next http.Handler) (this http.Handler) {
-// 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// 			middleware.RealIP(next)
-// 			return
-// 		})
-// 	}
-// }
