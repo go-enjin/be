@@ -62,6 +62,11 @@ func New() MakeFeature {
 	return f
 }
 
+func (f *CFeature) Init(this interface{}) {
+	f.CFeature.Init(this)
+	f.formats = make(map[string]types.Format)
+}
+
 func (f *CFeature) Defaults() MakeFeature {
 	f.AddFormat(
 		md.New().Make(),
@@ -88,11 +93,6 @@ func (f *CFeature) Make() Feature {
 		f.AddFormat(tmpl.New().Make())
 	}
 	return f
-}
-
-func (f *CFeature) Init(this interface{}) {
-	f.CFeature.Init(this)
-	f.formats = make(map[string]types.Format)
 }
 
 func (f *CFeature) Setup(enjin feature.Internals) {

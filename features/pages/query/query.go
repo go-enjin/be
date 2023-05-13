@@ -30,14 +30,15 @@ import (
 )
 
 var (
-	_ MakeFeature               = (*CFeature)(nil)
-	_ feature.PageTypeProcessor = (*CFeature)(nil)
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
 )
 
 const Tag feature.Tag = "pages-query"
 
 type Feature interface {
 	feature.Feature
+	feature.PageTypeProcessor
 }
 
 type CFeature struct {
