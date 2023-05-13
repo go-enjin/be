@@ -15,13 +15,9 @@
 package page
 
 import (
-	"fmt"
-
 	"github.com/go-enjin/golang-org-x-text/language"
-	"github.com/gofrs/uuid"
 
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -48,25 +44,12 @@ func (p *Page) parseContext(ctx context.Context) {
 	p.SetSlugUrl(ctx.String("Url", p.Url))
 
 	if ctxPermalinkId := ctx.String("Permalink", ""); ctxPermalinkId != "" {
-		if id, e := uuid.FromString(ctxPermalinkId); e != nil {
-			log.ErrorF("error parsing permalink id: %v - %v", ctxPermalinkId, e)
-		} else if sum, ee := sha.DataHash10([]byte(ctxPermalinkId)); ee != nil {
-			log.ErrorF("error getting permalink sha: %v - %v", id, ee)
-		} else {
-			p.Permalink = id
-			p.PermalinkSha = sum
-			ctx.SetSpecific("Permalink", id)
-			ctx.SetSpecific("PermalinkSha", sum)
-			ctx.SetSpecific("Permalinked", true)
-			ctx.SetSpecific("PermalinkUrl", fmt.Sprintf("%v-%v", p.Url, p.PermalinkSha))
-			ctx.SetSpecific("PermalinkLongUrl", fmt.Sprintf("%v-%v", p.Url, p.Permalink))
+		if err := p.SetPermalink(ctxPermalinkId); err != nil {
+			log.ErrorF("error setting permalink: %v - %v", err)
+			_ = p.SetPermalink("")
 		}
 	} else {
-		ctx.SetSpecific("Permalink", p.Permalink)
-		ctx.SetSpecific("PermalinkSha", "")
-		ctx.SetSpecific("Permalinked", false)
-		ctx.SetSpecific("PermalinkUrl", p.Url)
-		ctx.SetSpecific("PermalinkLongUrl", p.Url)
+		_ = p.SetPermalink("")
 	}
 
 	p.Title = ctx.String("Title", p.Title)

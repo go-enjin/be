@@ -28,6 +28,7 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/page/matter"
 	bePath "github.com/go-enjin/be/pkg/path"
 	beStrings "github.com/go-enjin/be/pkg/strings"
@@ -263,6 +264,41 @@ func (p *Page) SetSlugUrl(filepath string) {
 	p.Context.SetSpecific("Url", p.Url)
 	p.Context.SetSpecific("Section", p.Section)
 	p.Context.SetSpecific("Slug", p.Slug)
+}
+
+func (p *Page) SetPermalink(value string) (err error) {
+	if value == "" {
+		p.Context.SetSpecific("LongLink", p.Url)
+		p.Context.SetSpecific("ShortLink", p.Url)
+		p.Context.SetSpecific("Permalink", "")
+		p.Context.SetSpecific("Permalinked", false)
+		p.Context.SetSpecific("PermalinkUrl", p.Url)
+		p.Context.SetSpecific("PermalinkSha", "")
+		p.Context.SetSpecific("PermalinkLongUrl", p.Url)
+		return
+	}
+
+	if id, e := uuid.FromString(value); e != nil {
+		err = fmt.Errorf("error parsing permalink id: %v - %v", value, e)
+		return
+	} else if sum, ee := sha.DataHash10(id.Bytes()); ee != nil {
+		err = fmt.Errorf("error getting permalink sha: %v - %v", id, ee)
+		return
+	} else {
+		p.Permalink = id
+		p.PermalinkSha = sum
+		p.Context.SetSpecific("LongLink", "/"+p.Permalink.String())
+		p.Context.SetSpecific("ShortLink", "/"+p.PermalinkSha)
+		p.Context.SetSpecific("Permalink", id)
+		p.Context.SetSpecific("Permalinked", true)
+		p.Context.SetSpecific("PermalinkSha", sum)
+		if p.Url == "/" {
+			p.Context.SetSpecific("PermalinkUrl", p.Url+p.PermalinkSha)
+		} else {
+			p.Context.SetSpecific("PermalinkUrl", p.Url+"-"+p.PermalinkSha)
+		}
+	}
+	return
 }
 
 func (p *Page) getUrlPathSectionSlug(url string) (path, section, slug string) {
