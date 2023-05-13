@@ -27,6 +27,11 @@ func init() {
 	gob.Register(&PageStub{})
 }
 
+type ValueStubPair struct {
+	Value interface{}
+	Stub  *PageStub
+}
+
 type PageStub struct {
 	Bfs      fs.FileSystem
 	Point    string
