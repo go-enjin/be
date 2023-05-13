@@ -20,11 +20,12 @@ import (
 	"github.com/blevesearch/bleve/v2"
 	"github.com/blevesearch/bleve/v2/mapping"
 	"github.com/blevesearch/bleve/v2/search/highlight/format/html"
+
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	indexing "github.com/go-enjin/be/pkg/indexing/search"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/pagecache"
 	"github.com/go-enjin/be/pkg/regexps"
 	"github.com/go-enjin/be/pkg/search"
 )
@@ -41,7 +42,7 @@ func SearchWithin(input string, numPerPage, pageNumber int, pages []*page.Page, 
 			locales = append(locales, pg.LanguageTag)
 		}
 		if _, ok := docMaps[pg.Format]; !ok {
-			if doctype, dm, e := pagecache.SearchMapping(pg); e != nil {
+			if doctype, dm, e := indexing.SearchMapping(pg); e != nil {
 				err = fmt.Errorf("error getting page search mapping: %v - %v", pg.Url, e)
 				return
 			} else if dm != nil {
@@ -58,7 +59,7 @@ func SearchWithin(input string, numPerPage, pageNumber int, pages []*page.Page, 
 	}
 
 	for _, pg := range pages {
-		if doc, e := pagecache.SearchDocument(pg); e != nil {
+		if doc, e := indexing.SearchDocument(pg); e != nil {
 			err = fmt.Errorf("error preparing search document: %v - %v", pg.Url, e)
 			return
 		} else if doc != nil {
