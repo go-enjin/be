@@ -15,14 +15,16 @@
 package theme
 
 import (
+	"bytes"
 	"fmt"
-	"html/template"
+	htmlTemplate "html/template"
 	"sync"
 	textTemplate "text/template"
 
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/language/display"
 	"github.com/go-enjin/golang-org-x-text/message"
+	"github.com/iancoleman/strcase"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/funcmaps"
@@ -49,7 +51,7 @@ func GetFuncMap(key string) (fn interface{}, ok bool) {
 	return
 }
 
-func AddRegisteredHtmlFuncsToMap(fm *template.FuncMap) {
+func AddRegisteredHtmlFuncsToMap(fm *htmlTemplate.FuncMap) {
 	_knownFuncMutex.RLock()
 	defer _knownFuncMutex.RUnlock()
 	for key, fn := range _knownFuncMap {
@@ -67,7 +69,7 @@ func AddRegisteredTextFuncsToMap(fm *textTemplate.FuncMap) {
 	return
 }
 
-func DefaultFuncMap() (funcMap template.FuncMap) {
+func DefaultFuncMap() (funcMap htmlTemplate.FuncMap) {
 	funcMap = funcmaps.HtmlFuncMap()
 	AddRegisteredHtmlFuncsToMap(&funcMap)
 	return
@@ -83,14 +85,42 @@ func (t *Theme) NewTextFuncMapWithContext(ctx context.Context) (fm textTemplate.
 	return
 }
 
-func (t *Theme) NewHtmlFuncMapWithContext(ctx context.Context) (fm template.FuncMap) {
+func (t *Theme) NewHtmlFuncMapWithContext(ctx context.Context) (fm htmlTemplate.FuncMap) {
 	fm = DefaultFuncMap()
 	AddRegisteredHtmlFuncsToMap(&fm)
 
 	fm["_"] = t.makeUnderscore(ctx)            // translate page content
 	fm["__"] = t.makeUnderscoreUnderscore(ctx) // translate page paths
 	fm["_tag"] = t.makeUnderscoreTag(ctx)      // render language tag in native language
+
+	fm["featurePartials"] = t.makeFeaturePartials(ctx)
 	return
+}
+
+func (t *Theme) makeFeaturePartials(ctx context.Context) func(block, position string) (output string) {
+	return func(block, position string) (output string) {
+		block = strcase.ToKebab(block)
+		position = strcase.ToKebab(position)
+		baseName := block + "-" + position + "_"
+
+		if tmpls, ok := registeredPartials[block][position]; ok {
+
+			for name, tmpl := range tmpls {
+				if tt, err := htmlTemplate.New(baseName + name).Funcs(t.NewHtmlFuncMapWithContext(ctx)).Parse(tmpl); err != nil {
+					log.ErrorF("error parsing feature partials template: %v - %v", name, err)
+				} else {
+					var buf bytes.Buffer
+					if err = tt.Execute(&buf, ctx); err != nil {
+						log.ErrorF("error executing feature partials template: %v - %v", name, err)
+					} else {
+						output += buf.String()
+					}
+				}
+			}
+
+		}
+		return
+	}
 }
 
 func (t *Theme) makeUnderscoreTag(ctx context.Context) func(tag language.Tag) (name string) {

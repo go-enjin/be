@@ -1,3 +1,5 @@
+//go:build driver_fs_local || drivers_fs || drivers || locals || all
+
 // Copyright (c) 2022  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +17,8 @@
 package theme
 
 import (
+	"github.com/go-enjin/be/drivers/fs/local"
 	"github.com/go-enjin/be/pkg/fs"
-	"github.com/go-enjin/be/pkg/fs/drivers/local"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
