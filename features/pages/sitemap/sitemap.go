@@ -26,16 +26,13 @@ import (
 	"golang.org/x/net/html"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/page"
 )
 
 var (
-	_ MakeFeature        = (*CFeature)(nil)
-	_ feature.Middleware = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
 )
 
 const Tag feature.Tag = "pages-sitemap"
@@ -45,14 +42,12 @@ var (
 )
 
 type Feature interface {
-	feature.Middleware
+	feature.Feature
+	feature.ApplyMiddleware
 }
 
 type CFeature struct {
-	feature.CMiddleware
-
-	cli   *cli.Context
-	enjin feature.Internals
+	feature.CFeature
 
 	domain string
 }
@@ -83,22 +78,17 @@ func (f *CFeature) Make() Feature {
 }
 
 func (f *CFeature) Init(this interface{}) {
-	f.CMiddleware.Init(this)
+	f.CFeature.Init(this)
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
 	return
 }
 
-func (f *CFeature) Setup(enjin feature.Internals) {
-	f.enjin = enjin
-}
-
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CFeature.Startup(ctx); err != nil {
 		return
 	}
-	f.cli = ctx
 	return
 }
 
@@ -108,80 +98,66 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 // 	return
 // }
 
-func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
-	log.DebugF("including page sitemap middleware")
+func (f *CFeature) Apply(s feature.System) (err error) {
+	s.Router().Get("/sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
+		langMode := f.Enjin.SiteLanguageMode()
+		defaultTag := f.Enjin.SiteDefaultLanguage()
 
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			langMode := f.enjin.SiteLanguageMode()
-			defaultTag := f.enjin.SiteDefaultLanguage()
+		var domain string
+		if domain = f.domain; domain == "" {
+			domain = DefaultSiteScheme + "://" + r.Host
+		}
 
-			path := forms.SanitizeRequestPath(r.URL.Path)
-			if _, p, ok := lang.ParseLangPath(path); ok {
-				path = p
+		pages := make(map[string]*page.Page)
+		for _, found := range f.Enjin.FindPages("/") {
+			if ignored := found.Context.String("SitemapIgnored", "false"); ignored != "true" {
+				priority := found.Context.Float64("SitemapPriority", 0.5)
+				found.Context.SetSpecific("SitemapPriority", priority)
+				if changeFreq := found.Context.String("SitemapChangeFreq", ""); changeFreq != "" {
+					switch changeFreq {
+					case "always", "hourly", "daily", "weekly", "monthly", "yearly", "never":
+						found.Context.SetSpecific("SitemapChangeFreq", changeFreq)
+					default:
+						log.ErrorRF(r, "error: page has invalid sitemap-change-freq: %v", changeFreq)
+						found.Context.Delete("SitemapChangeFreq")
+					}
+				}
+
+				tag := found.LanguageTag
+				if language.Compare(tag, language.Und) {
+					tag = defaultTag
+				}
+
+				fullUrl := langMode.ToUrl(defaultTag, tag, found.Url)
+				if !strings.HasPrefix(fullUrl, "http") && domain != "" {
+					fullUrl = domain + fullUrl
+				}
+
+				pages[fullUrl] = found
 			}
+		}
 
-			if path == "/sitemap.xml" {
+		var contents string
+		contents += `<?xml version="1.0" encoding="UTF-8"?>` + "\n"
+		contents += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n"
 
-				var domain string
-				if domain = f.domain; domain == "" {
-					domain = DefaultSiteScheme + "://" + r.Host
-				}
-
-				pages := make(map[string]*page.Page)
-				for _, found := range f.enjin.FindPages("/") {
-					if ignored := found.Context.String("SitemapIgnored", "false"); ignored != "true" {
-						priority := found.Context.Float64("SitemapPriority", 0.5)
-						found.Context.SetSpecific("SitemapPriority", priority)
-						if changeFreq := found.Context.String("SitemapChangeFreq", ""); changeFreq != "" {
-							switch changeFreq {
-							case "always", "hourly", "daily", "weekly", "monthly", "yearly", "never":
-								found.Context.SetSpecific("SitemapChangeFreq", changeFreq)
-							default:
-								log.ErrorRF(r, "error: page has invalid sitemap-change-freq: %v", changeFreq)
-								found.Context.Delete("SitemapChangeFreq")
-							}
-						}
-
-						tag := found.LanguageTag
-						if language.Compare(tag, language.Und) {
-							tag = defaultTag
-						}
-
-						fullUrl := langMode.ToUrl(defaultTag, tag, found.Url)
-						if !strings.HasPrefix(fullUrl, "http") && domain != "" {
-							fullUrl = domain + fullUrl
-						}
-
-						pages[fullUrl] = found
-					}
-				}
-
-				var contents string
-				contents += `<?xml version="1.0" encoding="UTF-8"?>` + "\n"
-				contents += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n"
-
-				for _, fullUrl := range maps.SortedKeys(pages) {
-					pg := pages[fullUrl]
-					contents += "\t<url>\n"
-					contents += "\t\t<loc>" + html.EscapeString(fullUrl) + "</loc>\n"
-					contents += "\t\t<lastmod>" + pg.UpdatedAt.Format("2006-01-02") + "</lastmod>\n"
-					if priority := pg.Context.Float64("SitemapPriority", -1.0); priority >= 0.0 {
-						contents += fmt.Sprintf("\t\t<priority>%0.1f</priority>\n", priority)
-					}
-					if changeFreq := pg.Context.String("SitemapChangeFreq", ""); changeFreq != "" {
-						contents += fmt.Sprintf("\t\t<changefreq>%s</changefreq>\n", changeFreq)
-					}
-					contents += "\t</url>\n"
-				}
-
-				contents += `</urlset>`
-
-				f.enjin.ServeData([]byte(contents), "application/xml", w, r)
-				return
+		for _, fullUrl := range maps.SortedKeys(pages) {
+			pg := pages[fullUrl]
+			contents += "\t<url>\n"
+			contents += "\t\t<loc>" + html.EscapeString(fullUrl) + "</loc>\n"
+			contents += "\t\t<lastmod>" + pg.UpdatedAt.Format("2006-01-02") + "</lastmod>\n"
+			if priority := pg.Context.Float64("SitemapPriority", -1.0); priority >= 0.0 {
+				contents += fmt.Sprintf("\t\t<priority>%0.1f</priority>\n", priority)
 			}
+			if changeFreq := pg.Context.String("SitemapChangeFreq", ""); changeFreq != "" {
+				contents += fmt.Sprintf("\t\t<changefreq>%s</changefreq>\n", changeFreq)
+			}
+			contents += "\t</url>\n"
+		}
 
-			next.ServeHTTP(w, r)
-		})
-	}
+		contents += `</urlset>`
+
+		f.Enjin.ServeData([]byte(contents), "application/xml", w, r)
+	})
+	return
 }
