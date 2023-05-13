@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/gofrs/uuid"
 	"github.com/urfave/cli/v2"
 
@@ -29,28 +30,28 @@ import (
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
+	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/theme"
 )
 
 var (
-	_ MakeFeature        = (*CFeature)(nil)
-	_ feature.Middleware = (*CFeature)(nil)
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
 
 	rxPermalinkRoot   = regexp.MustCompile(`^/([0-9a-f]{10}|[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})/??$`)
 	rxPermalinkedSlug = regexp.MustCompile(`-([0-9a-f]{10})$`)
 )
 
-const Tag feature.Tag = "PagesPermalink"
+const Tag feature.Tag = "pages-permalink"
 
 type Feature interface {
-	feature.Middleware
+	feature.Feature
+	feature.UseMiddleware
+	feature.PageContextModifier
 }
 
 type CFeature struct {
-	feature.CMiddleware
-
-	cli   *cli.Context
-	enjin feature.Internals
+	feature.CFeature
 }
 
 type MakeFeature interface {
@@ -78,8 +79,96 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	return
 }
 
-func (f *CFeature) Setup(enjin feature.Internals) {
-	f.enjin = enjin
+func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	}
+	return
+}
+
+func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.Request) (out context.Context) {
+	out = themeCtx
+	out.SetSpecific("SitePermalinkable", true)
+	return
+}
+
+func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			path := forms.TrimQueryParams(r.URL.Path)
+			if _, p, ok := lang.ParseLangPath(path); ok {
+				path = p
+			}
+
+			if permalink, ok := f._parsePath(path); ok {
+				permalinkPath := bePath.CleanWithSlash(permalink)
+
+				log.DebugF("permalink detected: %v", permalinkPath)
+
+				reqTag := lang.GetTag(r)
+				defTag := f.Enjin.SiteDefaultLanguage()
+				var checkTags []language.Tag
+				if reqTag != defTag {
+					checkTags = append(checkTags, reqTag)
+				} else if defTag != language.Und {
+					checkTags = append(checkTags, defTag)
+				}
+				checkTags = append(checkTags, language.Und)
+
+				for _, checkTag := range checkTags {
+					if p := f.Enjin.FindPage(checkTag, permalinkPath); p != nil {
+						destination := p.Url
+						if p.Url != "/" {
+							destination += "-"
+						}
+						destination += p.PermalinkSha
+
+						if path != destination {
+							http.Redirect(w, r, destination, http.StatusSeeOther)
+							return
+						}
+						if err := f.Enjin.ServePage(p, w, r); err == nil {
+							return
+						} else {
+							log.ErrorRF(r, "error serving permalink page: [%v] %v - %v", p.Language, path, err)
+						}
+					} else {
+						log.ErrorF("permalinked page not found [%v]", checkTag)
+					}
+				}
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func (f *CFeature) _parsePath(path string) (permalink string, ok bool) {
+	if ok = rxPermalinkRoot.MatchString(path); ok {
+		m := rxPermalinkRoot.FindAllStringSubmatch(path, 1)
+		permalink = m[0][1]
+		log.TraceDF(1, "found permalink root: %v - %v", path, permalink)
+	} else if ok = rxPermalinkedSlug.MatchString(path); ok {
+		m := rxPermalinkedSlug.FindAllStringSubmatch(path, 1)
+		permalink = m[0][1]
+		log.TraceDF(1, "found permalink slug: %v - %v", path, permalink)
+	}
+	return
+}
+
+func (f *CFeature) _permalink(permalink uuid.UUID) (url string) {
+	if permalink != uuid.Nil {
+		url = "/" + permalink.String()
+		for _, tag := range f.Enjin.SiteLocales() {
+			if f.Enjin.SiteSupportsLanguage(tag) {
+				if p := f.Enjin.FindPage(tag, url); p != nil {
+					url = p.Url + "-" + p.PermalinkSha
+					return
+				}
+			}
+		}
+	}
+	return
 }
 
 func (f *CFeature) _permalinkMatcher(path string, p *page.Page) (found string, ok bool) {
@@ -98,82 +187,4 @@ func (f *CFeature) _permalinkMatcher(path string, p *page.Page) (found string, o
 		}
 	}
 	return
-}
-
-func (f *CFeature) _permalink(permalink uuid.UUID) (url string) {
-	if permalink != uuid.Nil {
-		url = "/" + permalink.String()
-		for _, tag := range f.enjin.SiteLocales() {
-			if f.enjin.SiteSupportsLanguage(tag) {
-				if p := f.enjin.FindPage(tag, url); p != nil {
-					url = p.Url + "-" + p.PermalinkSha
-					return
-				}
-			}
-		}
-	}
-	return
-}
-
-func (f *CFeature) _parsePath(path string) (permalink string, ok bool) {
-	if ok = rxPermalinkRoot.MatchString(path); ok {
-		m := rxPermalinkRoot.FindAllStringSubmatch(path, 1)
-		permalink = m[0][1]
-		log.TraceDF(1, "found permalink root: %v - %v", path, permalink)
-	} else if ok = rxPermalinkedSlug.MatchString(path); ok {
-		m := rxPermalinkedSlug.FindAllStringSubmatch(path, 1)
-		permalink = m[0][1]
-		log.TraceDF(1, "found permalink slug: %v - %v", path, permalink)
-	}
-	return
-}
-
-func (f *CFeature) Startup(ctx *cli.Context) (err error) {
-	if err = f.CFeature.Startup(ctx); err != nil {
-		return
-	}
-	f.cli = ctx
-	return
-}
-
-func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.Request) (out context.Context) {
-	out = themeCtx
-	out.SetSpecific("SitePermalinkable", true)
-	return
-}
-
-func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
-	log.DebugF("including page permalink middleware")
-
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			path := forms.TrimQueryParams(r.URL.Path)
-			if _, p, ok := lang.ParseLangPath(path); ok {
-				path = p
-			}
-
-			if permalink, ok := f._parsePath(path); ok {
-				permalinkPath := "/" + permalink
-				for _, tag := range f.enjin.SiteLocales() {
-					if f.enjin.SiteSupportsLanguage(tag) {
-						if p := f.enjin.FindPage(tag, permalinkPath); p != nil {
-							dst := p.Url + "-" + p.PermalinkSha
-							if path == dst {
-								if err := f.enjin.ServePage(p, w, r); err == nil {
-									return
-								} else {
-									log.ErrorRF(r, "error serving permalink page: %v - %v", path, err)
-								}
-							} else {
-								http.Redirect(w, r, dst, http.StatusSeeOther)
-								return
-							}
-						}
-					}
-				}
-			}
-
-			next.ServeHTTP(w, r)
-		})
-	}
 }
