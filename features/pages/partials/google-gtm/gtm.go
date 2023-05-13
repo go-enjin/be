@@ -93,6 +93,8 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 		log.FatalF("error getting enjin theme: %v - %v", f.Enjin.SiteName())
 	}
 
+	theme.RegisterPartialHeadTail("gtmHeadScriptTmpl", HeadScriptTmpl)
+	theme.RegisterPartialBodyHead("gtmBodyHeadScriptTmpl", HeadScriptTmpl)
 	theme.RegisterFuncMap("gtmNoScriptTag", f.GtmNoScriptTagFn)
 	theme.RegisterFuncMap("gtmHeadScriptTag", f.GtmHeadScriptTagFn)
 }
