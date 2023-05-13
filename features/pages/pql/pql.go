@@ -23,33 +23,19 @@ import (
 	"time"
 
 	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/gofrs/uuid"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/page/matter"
-	"github.com/go-enjin/be/pkg/pagecache"
 	"github.com/go-enjin/be/pkg/pageql/matcher"
 	"github.com/go-enjin/be/pkg/pageql/selector"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-)
-
-var (
-	AlwaysIgnorePageIndexKeys = []string{"content", "frontmatter"}
-	DefaultPageIndexKeys      = []string{"type", "language", "url", "title", "description"}
-)
-
-const (
-	gAllUrlsBucketName           = "page_urls_all"
-	gPageUrlsBucketName          = "page_urls"
-	gPageStubsBucketName         = "page_stubs"
-	gPageRedirectionsBucketName  = "page_redirections"
-	gPageTranslationsBucketName  = "page_translations"
-	gPageTranslatedByBucketName  = "page_translated_by"
-	gPageContextValuesBucketName = "page_context_values"
 )
 
 var (
@@ -62,15 +48,27 @@ const Tag feature.Tag = "pages-pql"
 type Feature interface {
 	feature.Feature
 	feature.PageProvider
-	pagecache.PageIndexFeature
-	pagecache.QueryIndexFeature
-	pagecache.PageContextProvider
+	indexing.PageIndexFeature
+	indexing.QueryIndexFeature
+	indexing.PageContextProvider
 }
 
 type MakeFeature interface {
 	Make() Feature
 
-	SetKVC(tag feature.Tag, name string) MakeFeature
+	// SetKeyValueCache Specifies the feature.KeyValueCaches tag and
+	// feature.KeyValueCache name to use for storing runtime data
+	SetKeyValueCache(tag feature.Tag, name string) MakeFeature
+
+	// IncludeContextKeys appends to the list of page context keys to index,
+	// by default the following keys are included:
+	//   "Type", "Language", "Url", "Title", "Description"
+	IncludeContextKeys(keys ...string) MakeFeature
+
+	// SetIncludedContextKeys overwrites the list of context keys to index, use
+	// this instead of IncludeContextKeys when needing to remove one or more of
+	// the default list of inclusions
+	SetIncludedContextKeys(keys ...string) MakeFeature
 }
 
 type CFeature struct {
@@ -81,8 +79,8 @@ type CFeature struct {
 
 	cache kvs.KeyValueCache
 
-	indexPageKeys  []string
-	ignorePageKeys []string
+	excludeContextKeys []string
+	includeContextKeys []string
 
 	allUrlsBucket           kvs.KeyValueStore
 	pageUrlsBucket          kvs.KeyValueStore
@@ -110,13 +108,32 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
-	f.indexPageKeys = DefaultPageIndexKeys
+	f.includeContextKeys = BaseIncludeContextKeys()
 	f.translationsBucket = make(map[language.Tag]kvs.KeyValueStore)
 }
 
-func (f *CFeature) SetKVC(tag feature.Tag, name string) MakeFeature {
+func (f *CFeature) SetKeyValueCache(tag feature.Tag, name string) MakeFeature {
 	f.kvcTag = tag
 	f.kvcName = name
+	return f
+}
+
+func (f *CFeature) SetIncludedContextKeys(keys ...string) MakeFeature {
+	for _, key := range keys {
+		if !beStrings.StringInSlices(key, f.includeContextKeys) {
+			f.includeContextKeys = append(f.includeContextKeys)
+		}
+	}
+	return f
+}
+
+func (f *CFeature) IncludeContextKeys(keys ...string) MakeFeature {
+	f.includeContextKeys = nil
+	for _, key := range keys {
+		if !beStrings.StringInSlices(key, f.includeContextKeys) {
+			f.includeContextKeys = append(f.includeContextKeys, strcase.ToCamel(key))
+		}
+	}
 	return f
 }
 
@@ -126,7 +143,7 @@ func (f *CFeature) Make() Feature {
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
 	if f.kvcTag == "" || f.kvcName == "" {
-		err = fmt.Errorf("%v feature requires a KeyValueCache, use f.SetKVC(tag,name) during enjin build process", f.Tag())
+		err = fmt.Errorf("%v feature requires a KeyValueCache, use f.SetKeyValueCache(tag,name) during enjin build process", f.Tag())
 		return
 	}
 	return
@@ -223,12 +240,33 @@ func (f *CFeature) AddToIndex(stub *matter.PageStub, p *page.Page) (err error) {
 		}
 	}
 
+	if p.Permalink != uuid.Nil {
+		permalinkUrl := "/" + p.Permalink.String()
+		if err = f.processPageUrl(permalinkUrl, p.Shasum); err != nil {
+			return
+		}
+		if err = f.processTranslations(p.LanguageTag, p.Shasum, permalinkUrl); err != nil {
+			return
+		}
+	}
+
+	if p.PermalinkSha != "" {
+		permalinkUrl := "/" + p.PermalinkSha
+		if err = f.processPageUrl(permalinkUrl, p.Shasum); err != nil {
+			return
+		}
+		if err = f.processTranslations(p.LanguageTag, p.Shasum, permalinkUrl); err != nil {
+			return
+		}
+	}
+
 	for pCtxKey, pCtxValue := range p.Context {
 
 		kebab := strcase.ToKebab(pCtxKey)
-		if beStrings.StringInSlices(kebab, AlwaysIgnorePageIndexKeys, f.ignorePageKeys) {
+
+		if beStrings.StringInSlices(kebab, MustExcludeContextKeys(), AlwaysExcludeContextKeys, f.excludeContextKeys) {
 			continue
-		} else if !beStrings.StringInSlices(kebab, f.indexPageKeys) {
+		} else if !beStrings.StringInSlices(kebab, AlwaysIncludeContextKeys, f.includeContextKeys) {
 			continue
 		}
 
@@ -270,8 +308,8 @@ func (f *CFeature) YieldPageContextValues(key string) (values chan interface{}) 
 	return
 }
 
-func (f *CFeature) YieldPageContextValueStubs(key string) (pairs chan *pagecache.ValueStubPair) {
-	pairs = make(chan *pagecache.ValueStubPair)
+func (f *CFeature) YieldPageContextValueStubs(key string) (pairs chan *matter.ValueStubPair) {
+	pairs = make(chan *matter.ValueStubPair)
 	go func() {
 		defer close(pairs)
 		ctxKeyBucketName := f.makeCtxValBucketName(key)
@@ -282,7 +320,7 @@ func (f *CFeature) YieldPageContextValueStubs(key string) (pairs chan *pagecache
 				for _, shasum := range shasums {
 					if vStub, eeee := f.pageStubsBucket.Get(shasum); eeee == nil {
 						if stub, ok := vStub.(*matter.PageStub); ok {
-							pairs <- &pagecache.ValueStubPair{
+							pairs <- &matter.ValueStubPair{
 								Value: value,
 								Stub:  stub,
 							}
