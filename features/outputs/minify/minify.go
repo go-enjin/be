@@ -1,4 +1,4 @@
-//go:build minify || outputs || all
+//go:build output_minify || outputs || minify || all
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //
@@ -30,14 +30,12 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
-var _minifyInstance = beMinify.NewInstance()
+const Tag feature.Tag = "outputs-minify"
 
 var (
 	_ Feature     = (*CFeature)(nil)
 	_ MakeFeature = (*CFeature)(nil)
 )
-
-const Tag feature.Tag = "OutputMinify"
 
 type Feature interface {
 	feature.Feature
@@ -60,9 +58,12 @@ type CFeature struct {
 	ignored   []*regexp.Regexp
 }
 
+var _minifyInstance = beMinify.NewInstance()
+
 func New() MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
+	f.FeatureTag = Tag
 	return f
 }
 

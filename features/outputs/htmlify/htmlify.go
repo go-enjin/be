@@ -1,4 +1,4 @@
-//go:build htmlify || outputs || all
+//go:build output_htmlify || outputs || htmlify || all
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //
@@ -31,12 +31,12 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
+const Tag feature.Tag = "outputs-htmlify"
+
 var (
 	_ Feature     = (*CFeature)(nil)
 	_ MakeFeature = (*CFeature)(nil)
 )
-
-const Tag feature.Tag = "outputs-htmlify"
 
 type Feature interface {
 	feature.Feature
