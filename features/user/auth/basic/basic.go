@@ -447,6 +447,7 @@ func (f *CFeature) RestrictServePage(pgCtx beContext.Context, w http.ResponseWri
 		return
 	}
 
+	allow = true
 	return
 }
 
@@ -516,6 +517,14 @@ func (f *CFeature) isRequestProtected(r *http.Request) (group string, protected 
 }
 
 func (f *CFeature) isRequestIgnored(path string) (ignored bool) {
+	if f.protectAll == "" {
+		// not all are restricted
+		if ignored = len(f.protectedPaths) == 0; ignored {
+			// and no protections specified
+			return
+		}
+	}
+
 	for _, rx := range f.ignoredPaths {
 		if rx.MatchString(path) {
 			ignored = true
