@@ -237,7 +237,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 			log.TraceRF(r, "checking restricted pages with: %v", f.Tag())
 			if ctx, r, ok = prh.RestrictServePage(ctx, w, r); !ok {
 				addr, _ := net.GetIpFromRequest(r)
-				log.WarnRF(r, "[restricted] permission denied %v for: %v", addr, r.URL.Path)
+				log.WarnRF(r, "%v feature denied %v access to: %v", f.Tag(), addr, r.URL.Path)
 				// e.ServeBasic401(w, r)
 				return
 			}
