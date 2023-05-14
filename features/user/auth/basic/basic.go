@@ -65,7 +65,8 @@ type MakeFeature interface {
 	Ignore(patterns ...string) MakeFeature
 	Protect(pattern, group string) MakeFeature
 	ProtectAll(group string) MakeFeature
-	AddBypassIP(addresses ...net.IP) MakeFeature
+	AddBypassIP(ip ...string) MakeFeature
+	AddBypassCIDR(cidr ...string) MakeFeature
 }
 
 type CFeature struct {
@@ -74,14 +75,19 @@ type CFeature struct {
 	cliCtx *cli.Context
 	enjin  feature.Internals
 
+	cacheControl string
+
 	realm          string
 	logoutPath     string
 	redirectPath   string
 	protectAll     string
-	bypassAddrs    []net.IP
-	cacheControl   string
 	ignoredPaths   []*regexp.Regexp
 	protectedPaths []*protectedPath
+
+	bypassAddrs    []string
+	bypassingIPs   []net.IP
+	bypassCIDRs    []string
+	bypassingCIDRs []*net.IPNet
 
 	upNames          []string
 	gpNames          []string
@@ -176,8 +182,13 @@ func (f *CFeature) ProtectAll(group string) MakeFeature {
 	return f
 }
 
-func (f *CFeature) AddBypassIP(addresses ...net.IP) MakeFeature {
-	f.bypassAddrs = append(f.bypassAddrs, addresses...)
+func (f *CFeature) AddBypassIP(ip ...string) MakeFeature {
+	f.bypassAddrs = append(f.bypassAddrs, ip...)
+	return f
+}
+
+func (f *CFeature) AddBypassCIDR(cidr ...string) MakeFeature {
+	f.bypassCIDRs = append(f.bypassCIDRs, cidr...)
 	return f
 }
 
@@ -220,6 +231,12 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 			EnvVars:  globals.MakeFlagEnvKeys(category, "BYPASS_ADDRS"),
 			Category: category,
 		},
+		&cli.StringSliceFlag{
+			Name:     globals.MakeFlagName(category, "bypass-cidrs"),
+			Usage:    "space separated list of CIDR ranges which bypass protections",
+			EnvVars:  globals.MakeFlagEnvKeys(category, "BYPASS_CIDRS"),
+			Category: category,
+		},
 		&cli.StringFlag{
 			Name:     globals.MakeFlagName(category, "auth-cache-control"),
 			Usage:    "specify logged in session cache-control header",
@@ -240,30 +257,65 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
+	report := func(conditional bool, format string, argv ...interface{}) {
+		if conditional {
+			log.DebugDF(1, format, argv...)
+		}
+	}
+
 	f.cliCtx = ctx
 	if flagName := globals.MakeFlagName(f.Tag().String(), "realm"); ctx.IsSet(flagName) {
 		if v, ok := ctx.Value(flagName).(string); ok {
-			f.realm = v
+			if v == "" && f.realm == "" {
+				f.realm = "-"
+			} else {
+				f.realm = v
+			}
 		}
 	}
+	if f.realm == "-" {
+		report(true, "realm set to: (auto)")
+	} else {
+		report(f.realm != "", "realm set to: %v", f.realm)
+	}
+
 	if flagName := globals.MakeFlagName(f.Tag().String(), "protect-all"); ctx.IsSet(flagName) {
 		if v, ok := ctx.Value(flagName).(string); ok {
 			f.protectAll = v
 		}
 	}
+	report(f.protectAll != "", `all requests require access group of: "%v"`, f.protectAll)
+
 	if flagName := globals.MakeFlagName(f.Tag().String(), "bypass-addrs"); ctx.IsSet(flagName) {
 		if v, ok := ctx.Value(flagName).([]string); ok {
 			for _, list := range v {
 				for _, s := range strings.Split(list, " ") {
 					if parsed := net.ParseIP(s); parsed != nil {
-						f.bypassAddrs = append(f.bypassAddrs, parsed)
+						f.bypassingIPs = append(f.bypassingIPs, parsed)
 					} else {
-						log.WarnF("skipping --basic-bypass-addrs, not an IP: \"%v\"", s)
+						log.ErrorF("error parsing --%v [%v]: not a net.IP address", flagName, s)
 					}
 				}
 			}
 		}
 	}
+	report(len(f.bypassingIPs) > 0, "bypassing with %d IP addresses: %+v", len(f.bypassingIPs), f.bypassingIPs)
+
+	if flagName := globals.MakeFlagName(f.Tag().String(), "bypass-cidrs"); ctx.IsSet(flagName) {
+		if v, ok := ctx.Value(flagName).([]string); ok {
+			for _, list := range v {
+				for _, s := range strings.Split(list, " ") {
+					if _, ipNet, ee := net.ParseCIDR(s); ee == nil {
+						f.bypassingCIDRs = append(f.bypassingCIDRs, ipNet)
+					} else {
+						log.ErrorF("error parsing --%v [%v]: not a valid CIDR notation", flagName, s)
+					}
+				}
+			}
+		}
+	}
+	report(len(f.bypassingCIDRs) > 0, "bypassing with %d IP ranges: %+v", len(f.bypassingCIDRs), f.bypassingCIDRs)
+
 	if flagName := globals.MakeFlagName(f.Tag().String(), "auth-cache-control"); ctx.IsSet(flagName) {
 		if v, ok := ctx.Value(flagName).(string); ok {
 			f.cacheControl = v
@@ -477,8 +529,14 @@ func (f *CFeature) isRequestBypassed(r *http.Request) (bypass bool) {
 	if len(f.bypassAddrs) > 0 {
 		if ip, err := beNet.ParseIpFromRequest(r); err == nil {
 
-			for _, safe := range f.bypassAddrs {
+			for _, safe := range f.bypassingIPs {
 				if bypass = ip.Equal(safe); bypass {
+					return
+				}
+			}
+
+			for _, safe := range f.bypassingCIDRs {
+				if bypass = safe.Contains(ip); bypass {
 					return
 				}
 			}
