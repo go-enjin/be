@@ -203,28 +203,28 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	category := f.Tag().String()
 	b.AddFlags(
 		&cli.StringFlag{
-			Name:     globals.MakeFlagName(f.Tag().String(), "realm"),
+			Name:     globals.MakeFlagName(category, "realm"),
 			Usage:    "specify the basic auth realm",
-			EnvVars:  globals.MakeFlagEnvKeys(f.Tag().String(), "REALM"),
+			EnvVars:  globals.MakeFlagEnvKeys(category, "REALM"),
 			Category: category,
 		},
 		&cli.StringFlag{
-			Name:     globals.MakeFlagName(f.Tag().String(), "protect-all"),
+			Name:     globals.MakeFlagName(category, "protect-all"),
 			Usage:    "specify group required for all requests",
-			EnvVars:  globals.MakeFlagEnvKeys(f.Tag().String(), "PROTECT_ALL"),
+			EnvVars:  globals.MakeFlagEnvKeys(category, "PROTECT_ALL"),
 			Category: category,
 		},
 		&cli.StringSliceFlag{
-			Name:     globals.MakeFlagName(f.Tag().String(), "bypass-addrs"),
+			Name:     globals.MakeFlagName(category, "bypass-addrs"),
 			Usage:    "space separated list of IPs which bypass protections",
-			EnvVars:  globals.MakeFlagEnvKeys(f.Tag().String(), "BYPASS_ADDRS"),
+			EnvVars:  globals.MakeFlagEnvKeys(category, "BYPASS_ADDRS"),
 			Category: category,
 		},
 		&cli.StringFlag{
-			Name:     globals.MakeFlagName(f.Tag().String(), "auth-cache-control"),
+			Name:     globals.MakeFlagName(category, "auth-cache-control"),
 			Usage:    "specify logged in session cache-control header",
 			Value:    "no-store",
-			EnvVars:  globals.MakeFlagEnvKeys(f.Tag().String(), "AUTH_CACHE_CONTROL"),
+			EnvVars:  globals.MakeFlagEnvKeys(category, "AUTH_CACHE_CONTROL"),
 			Category: category,
 		},
 	)
@@ -297,7 +297,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	for fpk, fpv := range foundPatterns {
 		if fgv, ok := foundGroups[fpk]; ok {
 			f.Protect(fpv, fgv)
-			log.DebugF(`protecting path for group "%v": "%v"`, fgv, fpv)
+			log.DebugF(`"%v" group required for access to: "%v"`, fgv, fpv)
 		} else {
 			brokenPairs = append(brokenPairs, fpk)
 		}
@@ -315,33 +315,33 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 
 	for _, ef := range f.enjin.Features() {
-		eftag := ef.Tag().String()
+		efTag := ef.Tag().String()
 		for _, upName := range f.upNames {
-			if eftag == upName {
+			if efTag == upName {
 				if upf, ok := ef.Self().(userbase.UsersProvider); ok {
 					f.usersProviders = append(f.usersProviders, upf)
 				} else {
-					err = fmt.Errorf("%v feature is not a userbase.UsersProvider", eftag)
+					err = fmt.Errorf("%v feature is not a userbase.UsersProvider", efTag)
 					return
 				}
 			}
 		}
 		for _, gpName := range f.gpNames {
-			if eftag == gpName {
+			if efTag == gpName {
 				if gpf, ok := ef.Self().(userbase.GroupsProvider); ok {
 					f.groupsProviders = append(f.groupsProviders, gpf)
 				} else {
-					err = fmt.Errorf("%v feature is not a userbase.GroupsProvider", eftag)
+					err = fmt.Errorf("%v feature is not a userbase.GroupsProvider", efTag)
 					return
 				}
 			}
 		}
 		for _, spName := range f.spNames {
-			if eftag == spName {
+			if efTag == spName {
 				if spf, ok := ef.Self().(userbase.SecretsProvider); ok {
 					f.secretsProviders = append(f.secretsProviders, spf)
 				} else {
-					err = fmt.Errorf("%v feature is not a userbase.SecretsProvider", eftag)
+					err = fmt.Errorf("%v feature is not a userbase.SecretsProvider", efTag)
 					return
 				}
 			}
