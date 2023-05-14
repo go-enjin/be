@@ -108,14 +108,16 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	tag := f.Tag().String()
 	b.AddFlags(
 		&cli.StringSliceFlag{
-			Name:    globals.MakeFlagName(tag, "htpasswd"),
-			Usage:   "include one or more htpasswd files",
-			EnvVars: globals.MakeFlagEnvKeys(tag, "HTPASSWD"),
+			Name:     globals.MakeFlagName(tag, "htpasswd"),
+			Usage:    "include one or more htpasswd files",
+			EnvVars:  globals.MakeFlagEnvKeys(tag, "HTPASSWD"),
+			Category: tag,
 		},
 		&cli.StringSliceFlag{
-			Name:    globals.MakeFlagName(tag, "htgroups"),
-			Usage:   "include one or more htgroups files",
-			EnvVars: globals.MakeFlagEnvKeys(tag, "HTGROUPS"),
+			Name:     globals.MakeFlagName(tag, "htgroups"),
+			Usage:    "include one or more htgroups files",
+			EnvVars:  globals.MakeFlagEnvKeys(tag, "HTGROUPS"),
+			Category: tag,
 		},
 	)
 	return

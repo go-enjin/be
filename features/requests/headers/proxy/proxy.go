@@ -73,9 +73,10 @@ func (f *CFeature) Make() Feature {
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
 	b.AddFlags(&cli.BoolFlag{
-		Name:    "header-proxy",
-		Usage:   "rewrite req.RemoteAddr to take proxy headers into account",
-		EnvVars: b.MakeEnvKeys("HEADER_PROXY"),
+		Name:     "header-proxy",
+		Usage:    "rewrite req.RemoteAddr to take proxy headers into account",
+		EnvVars:  b.MakeEnvKeys("HEADER_PROXY"),
+		Category: f.Tag().String(),
 	})
 	return
 }

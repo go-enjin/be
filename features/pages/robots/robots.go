@@ -108,16 +108,19 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 			"content": f.siteMetaTag,
 		})
 	}
+	category := f.Tag().String()
 	b.AddFlags(
 		&cli.StringFlag{
-			Name:    "meta-robots",
-			Usage:   "set a site-wide <meta name=\"robots\"/> head tag",
-			EnvVars: b.MakeEnvKeys("META_ROBOTS"),
+			Name:     "meta-robots",
+			Usage:    "set a site-wide <meta name=\"robots\"/> head tag",
+			EnvVars:  b.MakeEnvKeys("META_ROBOTS"),
+			Category: category,
 		},
 		&cli.StringFlag{
-			Name:    "x-robots-tag",
-			Usage:   "set a site-wide X-Robots-Tag response header",
-			EnvVars: b.MakeEnvKeys("X_ROBOTS_TAG"),
+			Name:     "x-robots-tag",
+			Usage:    "set a site-wide X-Robots-Tag response header",
+			EnvVars:  b.MakeEnvKeys("X_ROBOTS_TAG"),
+			Category: category,
 		},
 	)
 	return

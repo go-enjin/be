@@ -59,18 +59,21 @@ func (f *CFeature) Make() Feature {
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
+	category := f.Tag().String()
 	b.AddFlags(
 		&cli.StringFlag{
-			Name:    "papertrail-host",
-			Usage:   "custom papertrail hostname",
-			EnvVars: b.MakeEnvKeys("PAPERTRAIL_HOST"),
-			Value:   "",
+			Name:     "papertrail-host",
+			Usage:    "custom papertrail hostname",
+			EnvVars:  b.MakeEnvKeys("PAPERTRAIL_HOST"),
+			Value:    "",
+			Category: category,
 		},
 		&cli.IntFlag{
-			Name:    "papertrail-port",
-			Usage:   "custom papertrail port",
-			EnvVars: b.MakeEnvKeys("PAPERTRAIL_PORT"),
-			Value:   -1,
+			Name:     "papertrail-port",
+			Usage:    "custom papertrail port",
+			EnvVars:  b.MakeEnvKeys("PAPERTRAIL_PORT"),
+			Value:    -1,
+			Category: category,
 		},
 	)
 	return

@@ -68,11 +68,12 @@ func (f *CFeature) Make() Feature {
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
 	b.AddFlags(&cli.StringFlag{
-		Name:    "slack",
-		Usage:   "the unique part of a slack channel webhook URL",
-		Aliases: []string{"S"},
-		EnvVars: b.MakeEnvKeys("SLACK"),
-		Value:   "",
+		Name:     "slack",
+		Usage:    "the unique part of a slack channel webhook URL",
+		Aliases:  []string{"S"},
+		EnvVars:  b.MakeEnvKeys("SLACK"),
+		Value:    "",
+		Category: f.Tag().String(),
 	})
 	b.AddNotifyHook("slack", f.notifyHook)
 	return

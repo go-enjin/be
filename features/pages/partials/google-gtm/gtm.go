@@ -34,7 +34,7 @@ var (
 	DefaultGtmNonceTag = "google-tag-manager"
 )
 
-const Tag feature.Tag = "pages-external-google-gtm"
+const Tag feature.Tag = "google-tag-manager"
 
 var (
 	_ Feature     = (*CFeature)(nil)
@@ -78,9 +78,10 @@ func (f *CFeature) Init(this interface{}) {
 func (f *CFeature) Build(b feature.Buildable) (err error) {
 	b.AddFlags(
 		&cli.StringFlag{
-			Name:    "google-gtm-id",
-			Usage:   "specify the GTM ID (overrides theme)",
-			EnvVars: b.MakeEnvKeys("GOOGLE_GTM_ID"),
+			Name:     "google-gtm-id",
+			Usage:    "specify the GTM ID (overrides theme)",
+			EnvVars:  b.MakeEnvKeys("GOOGLE_GTM_ID"),
+			Category: f.Tag().String(),
 		},
 	)
 	return
