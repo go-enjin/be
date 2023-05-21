@@ -17,121 +17,163 @@
 package local
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-enjin/github-com-djherbis-times"
 
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/hash/sha"
+	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/page/matter"
 	bePath "github.com/go-enjin/be/pkg/path"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
-type CFileSystem string
+var (
+	DefaultDirMode  fs.FileMode = 0770
+	DefaultFileMode fs.FileMode = 0660
+)
 
-func New(path string) (out beFs.FileSystem, err error) {
+type FileSystem struct {
+	origin string
+	root   string
+
+	sync.RWMutex
+}
+
+func New(origin string, path string) (out *FileSystem, err error) {
 	if bePath.IsDir(path) {
 		if filepath.IsAbs(path) {
 			var relPath string
 			if relPath, err = filepath.Rel(bePath.Pwd(), path); err != nil {
+				err = fmt.Errorf("unable to find relative path: %v - %v", path, err)
 				return
 			} else {
 				path = relPath
 			}
 		}
-		out = CFileSystem(path)
+		out = &FileSystem{origin: origin, root: path}
 		return
 	}
-	err = bePath.ErrorDirNotFound
+	err = fmt.Errorf("error constructing FileSystem: %v - %v", bePath.ErrorDirNotFound, path)
 	return
 }
 
-func (f CFileSystem) Name() (name string) {
-	name = string(f)
+func (f *FileSystem) Name() (name string) {
+	f.RLock()
+	defer f.RUnlock()
+
+	name = f.root
 	return
 }
 
-func (f CFileSystem) realpath(path string) (out string) {
-	out = bePath.SafeConcatRelPath(string(f), path)
-	return
-}
+func (f *FileSystem) Exists(path string) (exists bool) {
+	f.RLock()
+	defer f.RUnlock()
 
-func (f CFileSystem) pruneEntries(paths []string) (pruned []string) {
-	rp := strings.TrimPrefix(string(f), "/")
-	for _, entry := range paths {
-		entry = strings.TrimPrefix(entry, "/")
-		entry = strings.TrimPrefix(entry, rp)
-		entry = strings.TrimPrefix(entry, "/")
-		pruned = append(pruned, entry)
-	}
-	return
-}
+	realpath := f.realpath(path)
 
-func (f CFileSystem) Exists(path string) (exists bool) {
-	_, err := os.Stat(f.realpath(path))
+	_, err := os.Stat(realpath)
 	exists = err == nil
+
+	log.DebugF("local exists=%v: %v", exists, realpath)
+
 	return
 }
 
-func (f CFileSystem) Open(path string) (file fs.File, err error) {
+func (f *FileSystem) Open(path string) (file fs.File, err error) {
+	f.RLock()
+	defer f.RUnlock()
+
 	file, err = os.Open(f.realpath(path))
 	return
 }
 
-func (f CFileSystem) ListDirs(path string) (paths []string, err error) {
+func (f *FileSystem) ListDirs(path string) (paths []string, err error) {
+	f.RLock()
+	defer f.RUnlock()
+
 	if paths, err = bePath.ListDirs(f.realpath(path)); err == nil {
-		paths = f.pruneEntries(paths)
+		paths = beFs.PruneRootFrom(f.root, paths)
 	}
 	return
 }
 
-func (f CFileSystem) ListFiles(path string) (paths []string, err error) {
+func (f *FileSystem) ListFiles(path string) (paths []string, err error) {
+	f.RLock()
+	defer f.RUnlock()
+
 	if paths, err = bePath.ListFiles(f.realpath(path)); err == nil {
-		paths = f.pruneEntries(paths)
+		paths = beFs.PruneRootFrom(f.root, paths)
 	}
 	return
 }
 
-func (f CFileSystem) ListAllDirs(path string) (paths []string, err error) {
+func (f *FileSystem) ListAllDirs(path string) (paths []string, err error) {
+	f.RLock()
+	defer f.RUnlock()
+
 	if paths, err = bePath.ListAllDirs(f.realpath(path)); err == nil {
-		paths = f.pruneEntries(paths)
+		paths = beFs.PruneRootFrom(f.root, paths)
 	}
 	return
 }
 
-func (f CFileSystem) ListAllFiles(path string) (paths []string, err error) {
+func (f *FileSystem) ListAllFiles(path string) (paths []string, err error) {
+	f.RLock()
+	defer f.RUnlock()
+
 	if paths, err = bePath.ListAllFiles(f.realpath(path)); err == nil {
-		paths = f.pruneEntries(paths)
+		paths = beFs.PruneRootFrom(f.root, paths)
 	}
 	return
 }
 
-func (f CFileSystem) ReadDir(path string) (paths []fs.DirEntry, err error) {
+func (f *FileSystem) ReadDir(path string) (paths []fs.DirEntry, err error) {
+	f.RLock()
+	defer f.RUnlock()
+
 	paths, err = os.ReadDir(f.realpath(path))
 	return
 }
 
-func (f CFileSystem) ReadFile(path string) (content []byte, err error) {
+func (f *FileSystem) ReadFile(path string) (content []byte, err error) {
+	f.RLock()
+	defer f.RUnlock()
+
 	content, err = os.ReadFile(f.realpath(path))
 	return
 }
 
-func (f CFileSystem) MimeType(path string) (mime string, err error) {
+func (f *FileSystem) MimeType(path string) (mime string, err error) {
+	f.RLock()
+	defer f.RUnlock()
+
 	if mime, err = bePath.Mime(f.realpath(path)); err != nil {
 		mime = "application/octet-stream"
 	}
 	return
 }
 
-func (f CFileSystem) Shasum(path string) (shasum string, err error) {
+func (f *FileSystem) Shasum(path string) (shasum string, err error) {
+	f.RLock()
+	defer f.RUnlock()
+
 	shasum, err = sha.FileHash10(f.realpath(path))
 	return
 }
 
-func (f CFileSystem) FileCreated(path string) (created int64, err error) {
+func (f *FileSystem) FileCreated(path string) (created int64, err error) {
+	f.RLock()
+	defer f.RUnlock()
+
 	var info times.Timespec
 	if info, err = times.Stat(f.realpath(path)); err == nil && info.HasBirthTime() {
 		created = info.BirthTime().Unix()
@@ -139,7 +181,10 @@ func (f CFileSystem) FileCreated(path string) (created int64, err error) {
 	return
 }
 
-func (f CFileSystem) LastModified(path string) (updated int64, err error) {
+func (f *FileSystem) LastModified(path string) (updated int64, err error) {
+	f.RLock()
+	defer f.RUnlock()
+
 	var info times.Timespec
 	if info, err = times.Stat(f.realpath(path)); err == nil && info.HasBirthTime() {
 		updated = info.ModTime().Unix()
@@ -147,7 +192,10 @@ func (f CFileSystem) LastModified(path string) (updated int64, err error) {
 	return
 }
 
-func (f CFileSystem) FileStats(path string) (mime, shasum string, created, updated time.Time, err error) {
+func (f *FileSystem) FileStats(path string) (mime, shasum string, created, updated time.Time, err error) {
+	f.RLock()
+	defer f.RUnlock()
+
 	realpath := f.realpath(path)
 	if mime, err = f.MimeType(realpath); err != nil {
 		return
@@ -166,27 +214,51 @@ func (f CFileSystem) FileStats(path string) (mime, shasum string, created, updat
 	return
 }
 
-func (f CFileSystem) MakeDir(path string, perm os.FileMode) (err error) {
-	err = os.Mkdir(f.realpath(path), perm)
+func (f *FileSystem) FindFilePath(prefix string, extensions ...string) (path string, err error) {
+	f.RLock()
+	defer f.RUnlock()
+
+	realpath := f.realpath(prefix)
+	if filepath.Ext(realpath) != "" {
+		if bePath.IsFile(realpath) {
+			path = beFs.PruneRootFrom(f.root, realpath)
+			return
+		}
+	}
+
+	sort.Sort(beStrings.SortByLengthDesc(extensions))
+
+	realpath = strings.TrimSuffix(realpath, "/")
+	var paths []string
+	for _, extension := range extensions {
+		paths = append(paths, realpath+"."+extension)
+	}
+
+	for _, p := range paths {
+		if bePath.IsFile(p) {
+			path = beFs.PruneRootFrom(f.root, p)
+			return
+		}
+	}
+
+	err = os.ErrNotExist
 	return
 }
 
-func (f CFileSystem) MakeDirAll(path string, perm os.FileMode) (err error) {
-	err = os.MkdirAll(f.realpath(path), perm)
-	return
-}
+func (f *FileSystem) ReadPageMatter(path string) (pm *matter.PageMatter, err error) {
+	f.RLock()
+	defer f.RUnlock()
 
-func (f CFileSystem) WriteFile(path string, data []byte, perm os.FileMode) (err error) {
-	err = os.WriteFile(path, data, perm)
-	return
-}
+	if f.Exists(path) {
+		var data []byte
+		if data, err = f.ReadFile(path); err != nil {
+			return
+		}
+		_, _, created, updated, _ := f.FileStats(path)
+		pm, err = matter.ParsePageMatter(f.origin, path, created, updated, data)
+		return
+	}
 
-func (f CFileSystem) Remove(path string) (err error) {
-	err = os.Remove(path)
-	return
-}
-
-func (f CFileSystem) RemoveAll(path string) (err error) {
-	err = os.RemoveAll(path)
+	err = os.ErrNotExist
 	return
 }
