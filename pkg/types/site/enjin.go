@@ -19,6 +19,7 @@ import (
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
 
 	"github.com/go-enjin/be/pkg/lang"
+	pkgLangCatalog "github.com/go-enjin/be/pkg/lang/catalog"
 
 	"github.com/go-enjin/be/pkg/page"
 )
@@ -28,7 +29,7 @@ type Enjin interface {
 	SiteName() (name string)
 	SiteTagLine() (tagLine string)
 	SiteLocales() (locales []language.Tag)
-	SiteLangCatalog() (c *lang.Catalog)
+	SiteLangCatalog() (c *pkgLangCatalog.Catalog)
 	SiteLanguageMode() (mode lang.Mode)
 	SiteLanguageCatalog() (c catalog.Catalog)
 	SiteDefaultLanguage() (tag language.Tag)
