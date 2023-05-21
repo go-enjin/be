@@ -53,8 +53,6 @@ type CFeature struct {
 	feature.CFeature
 
 	formats map[string]types.Format
-
-	enjin feature.Internals
 }
 
 func New() MakeFeature {
@@ -100,7 +98,7 @@ func (f *CFeature) Make() Feature {
 }
 
 func (f *CFeature) Setup(enjin feature.Internals) {
-	f.enjin = enjin
+	f.CFeature.Setup(enjin)
 	for _, name := range maps.SortedKeys(f.formats) {
 		format := f.formats[name]
 		if this, ok := format.This().(feature.CanSetupInternals); ok {
