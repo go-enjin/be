@@ -37,7 +37,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
-	"github.com/go-enjin/be/pkg/lang"
+	"github.com/go-enjin/be/pkg/lang/catalog"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/gorilla-handlers"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
@@ -68,7 +68,7 @@ type Enjin struct {
 
 	debug bool
 
-	catalog *lang.Catalog
+	catalog *catalog.Catalog
 
 	contentSecurityPolicy *csp.PolicyHandler
 	permissionsPolicy     *permissions.PolicyHandler

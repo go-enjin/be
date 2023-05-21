@@ -19,11 +19,12 @@ import (
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
 
 	"github.com/go-enjin/be/pkg/lang"
+	pkgLangCatalog "github.com/go-enjin/be/pkg/lang/catalog"
 	"github.com/go-enjin/be/pkg/log"
 )
 
 func (e *Enjin) initLocales() {
-	e.catalog = lang.NewCatalog()
+	e.catalog = pkgLangCatalog.NewCatalog()
 	for _, f := range e.eb.localeFiles {
 		e.catalog.AddLocalesFromFS(e.eb.defaultLang, f)
 	}
@@ -43,7 +44,7 @@ func (e *Enjin) SiteLanguageMode() (mode lang.Mode) {
 	return
 }
 
-func (e *Enjin) SiteLangCatalog() (c *lang.Catalog) {
+func (e *Enjin) SiteLangCatalog() (c *pkgLangCatalog.Catalog) {
 	c = e.catalog
 	return
 }
