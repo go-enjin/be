@@ -14,28 +14,8 @@
 
 package userbase
 
-import "net/http"
-
-type AuthProvider interface {
-	AuthenticateRequest(w http.ResponseWriter, r *http.Request) (handled bool, modified *http.Request)
-}
-
-type UsersProvider interface {
-	AddUser(user *User) (err error)
-	GetUser(id string) (user *User, err error)
-}
-
-type GroupsProvider interface {
-	AddUserToGroup(id string, groups ...string) (err error)
-	IsUserInGroup(id string, group string) (present bool)
-	GetUserGroups(id string) (groups []string)
-}
-
 type SecretsProvider interface {
+	// GetUserSecret returns the user's password hash, returns "" if the user
+	// secret is not found
 	GetUserSecret(id string) (hash string)
-}
-
-type UserProfilesProvider interface {
-	AddUserProfile(u *User) (p *Profile, err error)
-	GetUserProfile(u *User) (p *Profile, err error)
 }

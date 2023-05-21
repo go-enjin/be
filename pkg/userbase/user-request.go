@@ -34,17 +34,3 @@ func SetCurrentUser(u *User, r *http.Request) (modified *http.Request) {
 	modified = r.Clone(context.WithValue(r.Context(), CurrentUserKey, u))
 	return
 }
-
-const CurrentUserProfileKey beContext.RequestKey = "current-user-profile"
-
-func GetCurrentUserProfile(r *http.Request) (u *Profile) {
-	if v := r.Context().Value(CurrentUserProfileKey); v != nil {
-		u, _ = v.(*Profile)
-	}
-	return
-}
-
-func SetCurrentUserProfile(u *Profile, r *http.Request) (modified *http.Request) {
-	modified = r.Clone(context.WithValue(r.Context(), CurrentUserProfileKey, u))
-	return
-}

@@ -14,19 +14,49 @@
 
 package userbase
 
+import (
+	"fmt"
+
+	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/pkg/page/matter"
+	types "github.com/go-enjin/be/pkg/types/theme-types"
+)
+
 type User struct {
-	ID    string
-	Name  string
-	Email string
-	Image string
+	page.Page
+	AuthUser
+
+	Origin string `json:"origin"`
+
+	Groups  Groups  `json:"-"`
+	Actions Actions `json:"-"`
 }
 
-func NewUser(id, name, email, image string) (user *User) {
-	user = &User{
-		ID:    id,
-		Name:  name,
-		Email: email,
-		Image: image,
+func NewUserFromPageMatter(user *AuthUser, pm *matter.PageMatter, formats types.FormatProvider, enjin beContext.Context) (u *User, err error) {
+	var pg *page.Page
+	if pg, err = page.NewFromPageMatter(pm, formats, enjin); err != nil {
+		err = fmt.Errorf("error creating page from given page matter: %v", err)
+		return
 	}
+	rid, eid := user.RID, user.EID
+	pg.Context.SetSpecific("RID", rid)
+	pg.Context.SetSpecific("EID", eid)
+	pg.PageMatter.Matter.SetSpecific("RID", rid)
+	pg.PageMatter.Matter.SetSpecific("EID", eid)
+	u = &User{
+		Origin:   pm.Origin,
+		Page:     *pg,
+		AuthUser: *user,
+	}
+	return
+}
+
+func (u *User) AsPage() *page.Page {
+	return &u.Page
+}
+
+func (u *User) Can(action Action) (allowed bool) {
+	allowed = u.Actions.Has(action)
 	return
 }
