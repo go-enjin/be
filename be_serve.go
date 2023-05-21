@@ -16,6 +16,7 @@ package be
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -140,6 +141,16 @@ func (e *Enjin) ServePath(urlPath string, w http.ResponseWriter, r *http.Request
 		}
 	}
 
+	return
+}
+
+func (e *Enjin) ServeJSON(v interface{}, w http.ResponseWriter, r *http.Request) (err error) {
+	var data []byte
+	if data, err = json.Marshal(v); err != nil {
+		return
+	}
+	// log.DebugRDF(r, 1, "serving json: %v", string(data))
+	e.ServeData(data, "application/json", w, r)
 	return
 }
 
