@@ -23,7 +23,6 @@ import (
 
 var (
 	RxDupeSlashes   = regexp.MustCompile(`/+`)
-	RxBothSlashes   = regexp.MustCompile(`^\s*/?(.+?)/?\s*$`)
 	RxSlashDotSlash = regexp.MustCompile(`/\./`)
 )
 
@@ -35,7 +34,9 @@ func CleanWithSlash(path string) (clean string) {
 
 func CleanWithSlashes(path string) (clean string) {
 	clean = CleanWithSlash(path)
-	clean += "/"
+	if clean != "/" {
+		clean += "/"
+	}
 	return
 }
 
@@ -82,7 +83,8 @@ func TrimSlashes(path string) (clean string) {
 		return
 	}
 	clean = strings.TrimSpace(path)
-	clean = RxBothSlashes.ReplaceAllString(clean, "$1")
+	clean = strings.TrimPrefix(clean, "/")
+	clean = strings.TrimSuffix(clean, "/")
 	clean = filepath.Clean(clean)
 	return
 }
@@ -90,32 +92,18 @@ func TrimSlashes(path string) (clean string) {
 func SafeConcatRelPath(root string, paths ...string) (out string) {
 	var outs []string
 	for _, path := range paths {
-		if v := TrimSlashes(path); v != "" {
+		if v := TrimSlashes(path); v != "" && v != "." {
 			outs = append(outs, v)
 		}
 	}
 	out = strings.Join(outs, "/")
 	root = TrimSlashes(root)
-	if rl := len(root); rl > 0 {
-		if ol := len(out); ol > rl {
-			if out[:rl] == root {
-				out = out[rl+1:]
-			}
-		}
-	}
-	out = root + "/" + TrimSlashes(out)
+	out = strings.TrimPrefix(out, root)
+	out = root + "/" + out
 	out = RxDupeSlashes.ReplaceAllString(out, "/")
-	lout := len(out)
-	if lout >= 2 {
-		if out[:2] == "/." {
-			out = out[2:]
-		} else if out[lout-2:] == "/." {
-			out = out[:lout-2]
-		} else if out[lout-1:] == "/" {
-			out = out[:lout-1]
-		}
-	}
-	out = RxSlashDotSlash.ReplaceAllString(out, "/")
+	out = strings.TrimPrefix(out, "./")
+	out = strings.TrimPrefix(out, "/")
+	out = filepath.Clean(out)
 	return
 }
 
