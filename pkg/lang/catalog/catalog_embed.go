@@ -1,5 +1,3 @@
-//go:build driver_fs_local || drivers_fs || drivers || locals || all
-
 // Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,16 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lang
+//go:build driver_fs_embed || drivers_fs || drivers || embeds || all
+
+package catalog
 
 import (
+	"embed"
+
 	"github.com/go-enjin/golang-org-x-text/language"
 
-	beFsLocal "github.com/go-enjin/be/drivers/fs/local"
+	beFsEmbed "github.com/go-enjin/be/drivers/fs/embed"
 )
 
-func (c *Catalog) IncludeLocal(tag language.Tag, path string) {
-	if bfs, err := beFsLocal.New(path); err == nil {
+func (c *Catalog) IncludeEmbed(tag language.Tag, path string, efs embed.FS) {
+	if bfs, err := beFsEmbed.New("lang-catalog", path, efs); err == nil {
 		c.AddLocalesFromFS(tag, bfs)
 	}
 }

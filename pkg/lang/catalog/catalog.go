@@ -1,4 +1,4 @@
-// Copyright (c) 2022  The Go-Enjin Authors
+// Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lang
+package catalog
 
 import (
 	"fmt"
@@ -23,6 +23,7 @@ import (
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
 
 	"github.com/go-enjin/be/pkg/fs"
+	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -102,7 +103,7 @@ func (c *Catalog) LocaleTags() (tags []language.Tag) {
 	for tag, _ := range c.table {
 		tags = append(tags, tag)
 	}
-	tags = SortLanguageTags(tags)
+	tags = lang.SortLanguageTags(tags)
 	return
 }
 
@@ -110,7 +111,7 @@ func (c *Catalog) LocaleTagsWithDefault(d language.Tag) (tags []language.Tag) {
 	for tag, _ := range c.table {
 		tags = append(tags, tag)
 	}
-	tags = SortLanguageTags(tags)
+	tags = lang.SortLanguageTags(tags)
 	found := -1
 	for idx, tag := range tags {
 		if language.Compare(d, tag) {
