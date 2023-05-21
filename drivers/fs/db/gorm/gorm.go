@@ -14,32 +14,44 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package embed
+package gorm
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/fs"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/fvbommel/sortorder"
 	times "github.com/go-enjin/github-com-djherbis-times"
 	"gorm.io/gorm"
 
+	beContext "github.com/go-enjin/be/pkg/context"
+	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
+	"github.com/go-enjin/be/pkg/page/matter"
 	bePath "github.com/go-enjin/be/pkg/path"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
-type CFileSystem struct {
+type DBFileSystem struct {
+	origin string
+
 	path string
 	wrap string
 
 	table string
 	db    *gorm.DB
+
+	sync.RWMutex
 }
 
-func New(path, table string, db *gorm.DB) (f CFileSystem, err error) {
+func New(origin string, path, table string, db *gorm.DB) (out *DBFileSystem, err error) {
 	if db == nil {
 		err = fmt.Errorf("db arugment can not be nil")
 		return
@@ -48,86 +60,36 @@ func New(path, table string, db *gorm.DB) (f CFileSystem, err error) {
 	case "", "-", "nil":
 		table = "be_filesystem"
 	}
-	f = CFileSystem{
-		path:  path,
-		wrap:  "",
-		table: table,
-		db:    db,
+	out = &DBFileSystem{
+		origin: origin,
+		path:   path,
+		wrap:   "",
+		table:  table,
+		db:     db,
 	}
-	err = f.tx().AutoMigrate(&File{})
+	err = out.tx().AutoMigrate(&File{})
 	return
 }
 
-func (f CFileSystem) tx() (tx *gorm.DB) {
-	tx = f.db.Scopes(func(tx *gorm.DB) *gorm.DB {
-		if f.table != "" {
-			return tx.Table(f.table)
-		}
-		return tx
-	})
-	return
-}
-
-func (f CFileSystem) Name() (name string) {
+func (f *DBFileSystem) Name() (name string) {
 	name = f.path
 	return
 }
 
-func (f CFileSystem) realpath(path string) (out string) {
-	out = bePath.SafeConcatRelPath(f.path, path)
-	return
-}
-
-func (f CFileSystem) pruneEntries(paths []string) (pruned []string) {
-	rp := f.path
-	for _, entry := range paths {
-		if strings.HasPrefix(entry, rp) {
-			if entry = entry[len(rp):]; entry != "" && entry[0] == '/' {
-				entry = entry[1:]
-			}
-		}
-		pruned = append(pruned, entry)
-	}
-	return
-}
-
-func (f CFileSystem) getEntry(path string) (entry *File, err error) {
-	realpath := f.realpath(path)
-	entry = &File{}
-	if err = f.tx().Where(`path = ?`, realpath).First(entry).Error; err != nil {
-		entry = nil
-	}
-	return
-}
-
-func (f CFileSystem) getStub(path string) (stub *entryStub, err error) {
-	realpath := f.realpath(path)
-	stub = &entryStub{}
-	if err = f.tx().Where(`path = ?`, realpath).First(stub).Error; err != nil {
-		stub = nil
-	}
-	return
-}
-
-func (f CFileSystem) getStamp(path string) (stamp *entryStamp, err error) {
-	realpath := f.realpath(path)
-	stamp = &entryStamp{}
-	if err = f.tx().Where(`path = ?`, realpath).First(stamp).Error; err != nil {
-		stamp = nil
-	}
-	return
-}
-
-func (f CFileSystem) Exists(path string) (exists bool) {
-	if entry, err := f.getEntry(path); err == nil {
+func (f *DBFileSystem) Exists(path string) (exists bool) {
+	f.RLock()
+	defer f.RUnlock()
+	if entry, err := f.getEntryUnsafe(path); err == nil {
 		exists = entry != nil && entry.ID > 0
 	}
 	return
 }
 
-func (f CFileSystem) Open(path string) (file fs.File, err error) {
+func (f *DBFileSystem) Open(path string) (file fs.File, err error) {
+	f.RLock()
+	defer f.RUnlock()
 	var entry *File
-	if entry, err = f.getEntry(path); err != nil {
+	if entry, err = f.getEntryUnsafe(path); err != nil {
 		return
 	} else if entry == nil {
 		err = fs.ErrNotExist
@@ -141,7 +103,9 @@ func (f CFileSystem) Open(path string) (file fs.File, err error) {
 	return
 }
 
-func (f CFileSystem) ListDirs(path string) (paths []string, err error) {
+func (f *DBFileSystem) ListDirs(path string) (paths []string, err error) {
+	f.RLock()
+	defer f.RUnlock()
 	realpath := f.realpath(path)
 	var stubs []entryStub
 	if err = f.tx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(stubs).Error; err != nil {
@@ -151,7 +115,7 @@ func (f CFileSystem) ListDirs(path string) (paths []string, err error) {
 		if stub.Mime == InodeDirectoryMimeType {
 			// not sub-directories
 			if isDirectChild(realpath, stub.Path) {
-				paths = append(paths, stub.Path)
+				paths = append(paths, beFs.PruneRootFrom(f.path, stub.Path))
 			}
 		}
 	}
@@ -159,7 +123,9 @@ func (f CFileSystem) ListDirs(path string) (paths []string, err error) {
 	return
 }
 
-func (f CFileSystem) ListFiles(path string) (paths []string, err error) {
+func (f *DBFileSystem) ListFiles(path string) (paths []string, err error) {
+	f.RLock()
+	defer f.RUnlock()
 	realpath := f.realpath(path)
 	var stubs []entryStub
 	if err = f.tx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(stubs).Error; err != nil {
@@ -168,7 +134,7 @@ func (f CFileSystem) ListFiles(path string) (paths []string, err error) {
 	for _, stub := range stubs {
 		if stub.Mime != InodeDirectoryMimeType {
 			if isDirectChild(realpath, stub.Path) {
-				paths = append(paths, stub.Path)
+				paths = append(paths, beFs.PruneRootFrom(f.path, stub.Path))
 			}
 		}
 	}
@@ -176,7 +142,9 @@ func (f CFileSystem) ListFiles(path string) (paths []string, err error) {
 	return
 }
 
-func (f CFileSystem) ListAllDirs(path string) (paths []string, err error) {
+func (f *DBFileSystem) ListAllDirs(path string) (paths []string, err error) {
+	f.RLock()
+	defer f.RUnlock()
 	realpath := f.realpath(path)
 	var stubs []entryStub
 	if err = f.tx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(stubs).Error; err != nil {
@@ -184,14 +152,16 @@ func (f CFileSystem) ListAllDirs(path string) (paths []string, err error) {
 	}
 	for _, stub := range stubs {
 		if stub.Mime == InodeDirectoryMimeType {
-			paths = append(paths, stub.Path)
+			paths = append(paths, beFs.PruneRootFrom(f.path, stub.Path))
 		}
 	}
 	sort.Sort(sortorder.Natural(paths))
 	return
 }
 
-func (f CFileSystem) ListAllFiles(path string) (paths []string, err error) {
+func (f *DBFileSystem) ListAllFiles(path string) (paths []string, err error) {
+	f.RLock()
+	defer f.RUnlock()
 	realpath := f.realpath(path)
 	var stubs []entryStub
 	if err = f.tx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(stubs).Error; err != nil {
@@ -199,14 +169,16 @@ func (f CFileSystem) ListAllFiles(path string) (paths []string, err error) {
 	}
 	for _, stub := range stubs {
 		if stub.Mime != "" && stub.Mime != InodeDirectoryMimeType {
-			paths = append(paths, stub.Path)
+			paths = append(paths, beFs.PruneRootFrom(f.path, stub.Path))
 		}
 	}
 	sort.Sort(sortorder.Natural(paths))
 	return
 }
 
-func (f CFileSystem) ReadDir(path string) (paths []fs.DirEntry, err error) {
+func (f *DBFileSystem) ReadDir(path string) (paths []fs.DirEntry, err error) {
+	f.RLock()
+	defer f.RUnlock()
 	realpath := f.realpath(path)
 	var entries []*File
 	if err = f.tx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(entries).Error; err != nil {
@@ -228,9 +200,11 @@ func (f CFileSystem) ReadDir(path string) (paths []fs.DirEntry, err error) {
 	return
 }
 
-func (f CFileSystem) ReadFile(path string) (content []byte, err error) {
+func (f *DBFileSystem) ReadFile(path string) (content []byte, err error) {
+	f.RLock()
+	defer f.RUnlock()
 	var entry *File
-	if entry, err = f.getEntry(path); err != nil {
+	if entry, err = f.getEntryUnsafe(path); err != nil {
 		return
 	} else if entry != nil && entry.ID > 0 {
 		content = entry.Content
@@ -240,9 +214,11 @@ func (f CFileSystem) ReadFile(path string) (content []byte, err error) {
 	return
 }
 
-func (f CFileSystem) MimeType(path string) (mime string, err error) {
+func (f *DBFileSystem) MimeType(path string) (mime string, err error) {
+	f.RLock()
+	defer f.RUnlock()
 	var stub *entryStub
-	if stub, err = f.getStub(path); err != nil {
+	if stub, err = f.getStubUnsafe(path); err != nil {
 		return
 	} else if stub.Mime != "" && stub.Mime != InodeDirectoryMimeType {
 		mime = stub.Mime
@@ -252,9 +228,11 @@ func (f CFileSystem) MimeType(path string) (mime string, err error) {
 	return
 }
 
-func (f CFileSystem) Shasum(path string) (shasum string, err error) {
+func (f *DBFileSystem) Shasum(path string) (shasum string, err error) {
+	f.RLock()
+	defer f.RUnlock()
 	var stub *entryStub
-	if stub, err = f.getStub(path); err != nil {
+	if stub, err = f.getStubUnsafe(path); err != nil {
 		return
 	} else if stub.Mime != "" && stub.Mime != InodeDirectoryMimeType {
 		shasum = stub.Shasum
@@ -264,9 +242,11 @@ func (f CFileSystem) Shasum(path string) (shasum string, err error) {
 	return
 }
 
-func (f CFileSystem) FileCreated(path string) (created int64, err error) {
+func (f *DBFileSystem) FileCreated(path string) (created int64, err error) {
+	f.RLock()
+	defer f.RUnlock()
 	var stamp *entryStamp
-	if stamp, err = f.getStamp(path); err != nil {
+	if stamp, err = f.getStampUnsafe(path); err != nil {
 		return
 	} else if stamp != nil {
 		created = stamp.CreatedAt.Unix()
@@ -276,9 +256,11 @@ func (f CFileSystem) FileCreated(path string) (created int64, err error) {
 	return
 }
 
-func (f CFileSystem) LastModified(path string) (modTime int64, err error) {
+func (f *DBFileSystem) LastModified(path string) (modTime int64, err error) {
+	f.RLock()
+	defer f.RUnlock()
 	var stamp *entryStamp
-	if stamp, err = f.getStamp(path); err != nil {
+	if stamp, err = f.getStampUnsafe(path); err != nil {
 		return
 	} else if stamp != nil {
 		modTime = stamp.UpdatedAt.Unix()
@@ -288,7 +270,9 @@ func (f CFileSystem) LastModified(path string) (modTime int64, err error) {
 	return
 }
 
-func (f CFileSystem) FileStats(path string) (mime, shasum string, created, updated time.Time, err error) {
+func (f *DBFileSystem) FileStats(path string) (mime, shasum string, created, updated time.Time, err error) {
+	f.RLock()
+	defer f.RUnlock()
 	if mime, err = f.MimeType(path); err != nil {
 		return
 	}
@@ -306,65 +290,71 @@ func (f CFileSystem) FileStats(path string) (mime, shasum string, created, updat
 	return
 }
 
-// func (f CFileSystem) Mkdir(path string) (err error) {
-// 	var entry *File
-// 	if entry, err = f.getEntry(path); err == nil {
-// 		if entry.Mime == InodeDirectoryMimeType {
-// 			// err = fmt.Errorf("directory exists already")
-// 			return
-// 		}
-// 		err = fmt.Errorf("path is a File")
-// 	} else {
-// 		entry = &File{
-// 			Path:    path,
-// 			Mime:    InodeDirectoryMimeType,
-// 			Shasum:  "",
-// 			Content: []byte{},
-// 			Context: []byte{},
-// 		}
-// 		err = f.tx().Save(entry).Error
-// 	}
-// 	return
-// }
-//
-// func (f CFileSystem) Rmdir(path string) (err error) {
-// 	// must return an error if there are any children
-// 	return
-// }
-//
-// func (f CFileSystem) RmdirAll(path string) (err error) {
-// 	// delete all things with the prefix of `#{path}/%`
-// 	return
-// }
-//
-// func (f CFileSystem) WriteFile(path, mime string, content []byte, ctx []byte) (err error) {
-// 	var shasum string
-// 	if shasum, err = sha.DataHash64(content); err != nil {
-// 		return
-// 	}
-// 	var entry *File
-// 	if entry, err = f.getEntry(path); err != nil {
-// 		err = nil
-// 		entry = &File{
-// 			Path:    path,
-// 			Mime:    mime,
-// 			Shasum:  shasum,
-// 			Content: content,
-// 			Context: ctx,
-// 		}
-// 	} else {
-// 		entry.Path = path
-// 		entry.Mime = mime
-// 		entry.Shasum = shasum
-// 		entry.Content = content
-// 		entry.Context = ctx
-// 	}
-// 	err = f.tx().Save(entry).Error
-// 	return
-// }
-//
-// func (f CFileSystem) DeleteFile(path string) (err error) {
-// 	realpath := f.realpath(path)
-// 	err = f.tx().Where(`path = ?`, realpath).Delete(&File{}).Error
-// 	return
-// }
+func (f *DBFileSystem) FindFilePath(prefix string, extensions ...string) (path string, err error) {
+	f.RLock()
+	defer f.RUnlock()
+
+	realpath := f.realpath(prefix)
+	if filepath.Ext(realpath) != "" {
+		if bePath.IsFile(realpath) {
+			path = beFs.PruneRootFrom(f.path, realpath)
+			return
+		}
+	}
+
+	sort.Sort(beStrings.SortByLengthDesc(extensions))
+
+	realpath = strings.TrimSuffix(realpath, "/")
+	var paths []string
+	for _, extension := range extensions {
+		paths = append(paths, realpath+"."+extension)
+	}
+
+	var entry File
+	if err = f.tx().Where("path IN (?)", paths).Order("path DESC").First(&entry).Error; err != nil {
+		err = os.ErrNotExist
+		return
+	}
+
+	path = beFs.PruneRootFrom(f.path, entry.Path)
+	return
+}
+
+func (f *DBFileSystem) ReadPageMatter(path string) (pm *matter.PageMatter, err error) {
+	f.RLock()
+
+	var entry *File
+	if entry, err = f.getEntryUnsafe(path); err != nil {
+		f.RUnlock()
+		return
+	}
+
+	var entryCtxData []byte
+	if entryCtxData, err = entry.Context.MarshalJSON(); err != nil {
+		err = fmt.Errorf("error marshalling json from gorm.File.Context: %v - %v", path, err)
+		f.RUnlock()
+		return
+	}
+	var entryCtx beContext.Context
+	if err = json.Unmarshal(entryCtxData, &entryCtx); err != nil {
+		err = fmt.Errorf("error unmarshalling json from gorm.File.Context data: %v - %v", path, err)
+		f.RUnlock()
+		return
+	}
+
+	fmType := matter.JsonMatter
+	if v, ok := entryCtx.Get("FrontMatterType").(matter.FrontMatterType); ok {
+		fmType = v
+	}
+
+	contents := matter.MakeFrontMatterStanza(fmType, entryCtx)
+	contents += "\n"
+	contents += string(entry.Content)
+
+	f.RUnlock()
+
+	_, _, created, updated, _ := f.FileStats(path)
+	pm, err = matter.ParsePageMatter(f.origin, path, created, updated, []byte(contents))
+	return
+
+}

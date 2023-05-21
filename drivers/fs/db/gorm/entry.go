@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package embed
+package gorm
 
 import (
 	"io"
@@ -41,32 +41,32 @@ type entryStub struct {
 }
 
 type entryStamp struct {
-	CreatedAt time.Time      `gorm:"column:created,index"`
-	UpdatedAt time.Time      `gorm:"column:updated,index"`
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted,index"`
+	CreatedAt time.Time      `gorm:"column:created"`
+	UpdatedAt time.Time      `gorm:"column:updated"`
+	DeletedAt gorm.DeletedAt `gorm:"column:deleted"`
 }
 
 type File struct {
 	ID uint `gorm:"primaryKey"`
 
 	// Path is the full URL path to this filesystem entry, including File name
-	Path string `gorm:"not null,unique,uniqueIndex"`
+	Path string `gorm:"not null;unique;index"`
 
 	// Mime is the mimetype of this filesystem entry
-	Mime string `gorm:"not null"`
+	Mime string `gorm:"not null;index"`
 
 	// Shasum is the SHA-256 sum of the content
-	Shasum string
+	Shasum string `gorm:"not null;index"`
 
 	// Content is the binary data of the File
-	Content []byte
+	Content []byte `gorm:"bytes"`
 
 	// Context is arbitrary metadata associated with this filesystem entry
-	Context datatypes.JSON `gorm:"index,default:{}"`
+	Context datatypes.JSON `gorm:"column:context;index"`
 
-	CreatedAt time.Time      `gorm:"column:created,index"`
-	UpdatedAt time.Time      `gorm:"column:updated,index"`
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted,index"`
+	CreatedAt time.Time      `gorm:"column:created;index"`
+	UpdatedAt time.Time      `gorm:"column:updated;index"`
+	DeletedAt gorm.DeletedAt `gorm:"column:deleted;index"`
 
 	readIndex int
 	closed    bool
