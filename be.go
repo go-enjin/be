@@ -49,9 +49,9 @@ import (
 //go:generate _scripts/be-pkg-list.sh
 
 var (
-	_ feature.Runner    = &Enjin{}
-	_ feature.System    = &Enjin{}
-	_ feature.Internals = &Enjin{}
+	_ feature.Runner    = (*Enjin)(nil)
+	_ feature.System    = (*Enjin)(nil)
+	_ feature.Internals = (*Enjin)(nil)
 )
 
 func init() {
