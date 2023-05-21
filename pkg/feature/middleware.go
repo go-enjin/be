@@ -20,16 +20,6 @@ import (
 
 type MiddlewareFn = func(next http.Handler) (this http.Handler)
 
-type Middleware interface {
-	Feature
-
-	Apply(s System) (err error)
-	Use(s System) MiddlewareFn
-	Middleware(next http.Handler) http.Handler
-	Serve(w http.ResponseWriter, r *http.Request) (err error)
-	ServePath(path string, s System, w http.ResponseWriter, r *http.Request) (err error)
-}
-
 type UseMiddleware interface {
 	Use(s System) MiddlewareFn
 }
