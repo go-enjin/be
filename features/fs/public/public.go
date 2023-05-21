@@ -156,6 +156,16 @@ func (f *CFeature) Shutdown() {
 	return
 }
 
+func (f *CFeature) UserActions() (list userbase.Actions) {
+
+	tag := f.Tag().Kebab()
+	list = userbase.Actions{
+		userbase.NewAction(tag, "view", "public"),
+	}
+
+	return
+}
+
 func (f *CFeature) FindFile(path string) (data []byte, mime string, err error) {
 	if v, ee := url.PathUnescape(path); ee == nil {
 		path = v

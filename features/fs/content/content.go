@@ -30,6 +30,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/pkg/userbase"
 )
 
 const Tag feature.Tag = "fs-content"
@@ -152,6 +153,16 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *CFeature) Shutdown() {
+	return
+}
+
+func (f *CFeature) UserActions() (list userbase.Actions) {
+
+	tag := f.Tag().Kebab()
+	list = userbase.Actions{
+		userbase.NewAction(tag, "view", "page"),
+	}
+
 	return
 }
 
