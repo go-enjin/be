@@ -26,11 +26,11 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/page/matter"
 	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/types/site"
 	"github.com/go-enjin/be/pkg/types/theme-types"
@@ -264,7 +264,7 @@ func (e *Enjin) MatchQL(query string) (pages []*page.Page) {
 	return
 }
 
-func (e *Enjin) MatchStubsQL(query string) (stubs []*matter.PageStub) {
+func (e *Enjin) MatchStubsQL(query string) (stubs []*fs.PageStub) {
 	for _, f := range e.Features() {
 		if queryEnjin, ok := f.(indexing.QueryIndexFeature); ok {
 			var err error
@@ -277,7 +277,7 @@ func (e *Enjin) MatchStubsQL(query string) (stubs []*matter.PageStub) {
 	return
 }
 
-func (e *Enjin) CheckMatchStubsQL(query string) (stubs []*matter.PageStub, err error) {
+func (e *Enjin) CheckMatchStubsQL(query string) (stubs []*fs.PageStub, err error) {
 	for _, f := range e.Features() {
 		if queryEnjin, ok := f.(indexing.QueryIndexFeature); ok {
 			stubs, err = queryEnjin.PerformQuery(query)
