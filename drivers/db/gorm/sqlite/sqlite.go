@@ -31,7 +31,10 @@ import (
 	"github.com/go-enjin/be/pkg/maps"
 )
 
-const Tag feature.Tag = "drivers-db-gorm-sqlite"
+const (
+	Dialect             = "sqlite"
+	Tag     feature.Tag = "drivers-db-gorm-" + Dialect
+)
 
 var (
 	_ Feature     = (*CFeature)(nil)
@@ -51,6 +54,8 @@ type CFeature struct {
 
 	flags map[string]string
 	conns map[string]*gorm.DB
+
+	loggerConfig map[string]logger.Config
 }
 
 type MakeFeature interface {
@@ -73,6 +78,10 @@ type MakeFeature interface {
 	//
 	// Note: given tag is always converted to lower-kebab-case format
 	AddConnection(tag string) MakeFeature
+
+	// SetLogging configures the gorm.Config.Logger setting for the given
+	// connection, the default is to not log anything for all connections
+	SetLogging(connection string, level logger.LogLevel, slowThreshold time.Duration, ignoreRecordNotFound, parameterizedQueries bool) MakeFeature
 }
 
 func New() MakeFeature {
@@ -89,9 +98,20 @@ func NewTagged(tag feature.Tag) MakeFeature {
 func (f *CFeature) AddConnection(tag string) MakeFeature {
 	tag = strcase.ToKebab(tag)
 	if _, exists := f.flags[tag]; exists {
-		log.FatalDF(1, "a gorm sqlite connection already exists with the given tag: %v", tag)
+		log.FatalDF(1, "a gorm %v connection already exists with the given tag: %v", Dialect, tag)
 	}
 	f.flags[tag] = fmt.Sprintf(gFlagFormat, tag)
+	return f
+}
+
+func (f *CFeature) SetLogging(connection string, level logger.LogLevel, slowThreshold time.Duration, ignoreRecordNotFound, parameterizedQueries bool) MakeFeature {
+	f.loggerConfig[connection] = logger.Config{
+		Colorful:                  false, // always disable color
+		LogLevel:                  level,
+		SlowThreshold:             slowThreshold,
+		IgnoreRecordNotFoundError: ignoreRecordNotFound,
+		ParameterizedQueries:      parameterizedQueries,
+	}
 	return f
 }
 
@@ -103,15 +123,16 @@ func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.flags = make(map[string]string)
 	f.conns = make(map[string]*gorm.DB)
+	f.loggerConfig = make(map[string]logger.Config)
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
-	log.DebugDF(1, "building db gorm sqlite feature")
+	log.DebugDF(1, "building db gorm %v feature", Dialect)
 	for tag, flag := range f.flags {
 		b.AddFlags(
 			&cli.StringFlag{
 				Name:    flag,
-				Usage:   fmt.Sprintf("db gorm sqlite %v connection string", tag),
+				Usage:   fmt.Sprintf("db gorm %v %v connection string", Dialect, tag),
 				Value:   fmt.Sprintf("db.%v.sqlite", tag),
 				EnvVars: b.MakeEnvKeys(strcase.ToScreamingSnake(flag)),
 			},
@@ -124,23 +145,24 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CFeature.Startup(ctx); err != nil {
 		return
 	}
-	config := logger.Config{
-		SlowThreshold:             time.Second,   // Slow SQL threshold
-		LogLevel:                  logger.Silent, // Log level
-		IgnoreRecordNotFoundError: true,          // Ignore ErrRecordNotFound
-		Colorful:                  false,         // Disable color
-	}
+
 	for tag, flag := range f.flags {
 		var uri string
 		if uri = ctx.String(flag); uri == "" {
-			err = fmt.Errorf("db gorm sqlite startup error: missing --%v", flag)
+			err = fmt.Errorf("db gorm %v startup error: missing --%v", Dialect, flag)
 			return
 		}
-		if f.conns[tag], err = gorm.Open(sqlite.Open(uri), &gorm.Config{Logger: logger.New(log.Logger(), config)}); err != nil {
-			err = fmt.Errorf("db gorm sqlite startup error: %v - %v", tag, err)
+
+		var gormConfig = &gorm.Config{}
+		if config, ok := f.loggerConfig[tag]; ok {
+			gormConfig.Logger = logger.New(log.PrefixedLogger("(db|"+Dialect+"|"+tag+") - "), config)
+		}
+
+		if f.conns[tag], err = gorm.Open(sqlite.Open(uri), gormConfig); err != nil {
+			err = fmt.Errorf("db gorm %v startup error: %v - %v", Dialect, tag, err)
 			return
 		}
-		log.InfoF("db gorm sqlite connected: %v", tag)
+		log.InfoF("db gorm %v connected: %v", Dialect, tag)
 	}
 	return
 }
@@ -148,12 +170,12 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 func (f *CFeature) Shutdown() {
 	for tag, conn := range f.conns {
 		if db, err := conn.DB(); err != nil {
-			log.DebugF("error getting db gorm sqlite: %v - %v", tag, err)
+			log.DebugF("error getting db gorm %v: %v - %v", Dialect, tag, err)
 		} else {
 			if err = db.Close(); err != nil {
-				log.ErrorF("error closing db gorm sqlite: %v - %v", tag, err)
+				log.ErrorF("error closing db gorm %v: %v - %v", Dialect, tag, err)
 			} else {
-				log.InfoF("closed db gorm sqlite: %v", tag)
+				log.InfoF("closed db gorm %v: %v", Dialect, tag)
 			}
 		}
 	}
@@ -169,7 +191,7 @@ func (f *CFeature) DB(tag string) (db interface{}, err error) {
 		db = v
 		return
 	}
-	err = fmt.Errorf("db gorm sqlite connection %v not found", tag)
+	err = fmt.Errorf("db gorm %v connection %v not found", Dialect, tag)
 	return
 }
 
@@ -178,6 +200,6 @@ func (f *CFeature) MustDB(tag string) (db interface{}) {
 		db = v
 		return
 	}
-	log.FatalDF(1, "db gorm sqlite connection %v not found", tag)
+	log.FatalDF(1, "db gorm %v connection %v not found", Dialect, tag)
 	return
 }

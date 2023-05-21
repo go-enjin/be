@@ -46,6 +46,8 @@ type CFeature struct {
 
 	flags map[string][]string
 	conns map[string]*gorm.DB
+
+	loggerConfig map[string]logger.Config
 }
 
 type MakeFeature interface {
@@ -66,6 +68,10 @@ type MakeFeature interface {
 	//
 	// Note: given tag is always converted to lower-kebab-case format
 	AddConnection(tag string) MakeFeature
+
+	// SetLogging configures the gorm.Config.Logger setting for the given
+	// connection, the default is to not log anything for all connections
+	SetLogging(connection string, level logger.LogLevel, slowThreshold time.Duration, ignoreRecordNotFound, parameterizedQueries bool) MakeFeature
 }
 
 func New() MakeFeature {
@@ -91,6 +97,17 @@ func (f *CFeature) AddConnection(tag string) MakeFeature {
 	return f
 }
 
+func (f *CFeature) SetLogging(connection string, level logger.LogLevel, slowThreshold time.Duration, ignoreRecordNotFound, parameterizedQueries bool) MakeFeature {
+	f.loggerConfig[connection] = logger.Config{
+		Colorful:                  false, // always disable color
+		LogLevel:                  level,
+		SlowThreshold:             slowThreshold,
+		IgnoreRecordNotFoundError: ignoreRecordNotFound,
+		ParameterizedQueries:      parameterizedQueries,
+	}
+	return f
+}
+
 func (f *CFeature) Make() Feature {
 	return f
 }
@@ -99,6 +116,7 @@ func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.flags = make(map[string][]string)
 	f.conns = make(map[string]*gorm.DB)
+	f.loggerConfig = make(map[string]logger.Config)
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
@@ -126,17 +144,12 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
-	config := logger.Config{
-		SlowThreshold:             time.Second,   // Slow SQL threshold
-		LogLevel:                  logger.Silent, // Log level
-		IgnoreRecordNotFoundError: true,          // Ignore ErrRecordNotFound
-		Colorful:                  false,         // Disable color
-	}
 	for tag, flags := range f.flags {
 		dbTypeFlag, dbUriFlag := flags[0], flags[1]
 		var dialect *gormDialect
 
-		if dbType := ctx.String(dbTypeFlag); dbType == "" {
+		var dbType string
+		if dbType = ctx.String(dbTypeFlag); dbType == "" {
 			err = fmt.Errorf("gorm db startup error: missing --%v", dbTypeFlag)
 			return
 		} else {
@@ -153,12 +166,17 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 			return
 		}
 
-		if f.conns[tag], err = gorm.Open(dialect.openFn(uri), &gorm.Config{Logger: logger.New(log.Logger(), config)}); err != nil {
+		var gormConfig = &gorm.Config{}
+		if config, ok := f.loggerConfig[tag]; ok {
+			gormConfig.Logger = logger.New(log.PrefixedLogger("(db|"+dbType+"|"+tag+") - "), config)
+		}
+
+		if f.conns[tag], err = gorm.Open(dialect.openFn(uri), gormConfig); err != nil {
 			err = fmt.Errorf("gorm db startup connection error: %v - %v", tag, err)
 			return
 		}
 
-		log.InfoF("connected: %v", tag)
+		log.InfoF("connected: %v - %v", tag, dbType)
 	}
 	return
 }
@@ -166,12 +184,12 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 func (f *CFeature) Shutdown() {
 	for tag, conn := range f.conns {
 		if db, err := conn.DB(); err != nil {
-			log.DebugF("error getting gorm sqlite3 db: %v - %v", tag, err)
+			log.DebugF("error getting gorm db: %v - %v", tag, err)
 		} else {
 			if err = db.Close(); err != nil {
-				log.ErrorF("error closing gorm sqlite3 db: %v - %v", tag, err)
+				log.ErrorF("error closing gorm db: %v - %v", tag, err)
 			} else {
-				log.InfoF("closed gorm sqlite3 db: %v", tag)
+				log.InfoF("closed gorm db: %v", tag)
 			}
 		}
 	}
@@ -187,7 +205,7 @@ func (f *CFeature) DB(tag string) (db interface{}, err error) {
 		db = v
 		return
 	}
-	err = fmt.Errorf("gorm sqlite3 db connection %v not found", tag)
+	err = fmt.Errorf("gorm db connection %v not found", tag)
 	return
 }
 
@@ -196,6 +214,6 @@ func (f *CFeature) MustDB(tag string) (db interface{}) {
 		db = v
 		return
 	}
-	log.FatalDF(1, "gorm sqlite3 db connection %v not found", tag)
+	log.FatalDF(1, "gorm db connection %v not found", tag)
 	return
 }
