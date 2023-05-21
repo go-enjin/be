@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package matter
+package fs
 
 import (
 	"encoding/gob"
@@ -20,7 +20,6 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	beContext "github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/fs"
 )
 
 func init() {
@@ -33,7 +32,8 @@ type ValueStubPair struct {
 }
 
 type PageStub struct {
-	Bfs      fs.FileSystem
+	Origin   string
+	FS       FileSystem
 	Point    string
 	Shasum   string
 	Source   string
@@ -42,9 +42,10 @@ type PageStub struct {
 	EnjinCtx beContext.Context
 }
 
-func NewPageStub(enjin beContext.Context, bfs fs.FileSystem, point, source, shasum string, fallback language.Tag) (s *PageStub, err error) {
+func NewPageStub(origin string, enjin beContext.Context, bfs FileSystem, point, source, shasum string, fallback language.Tag) (s *PageStub, err error) {
 	s = &PageStub{
-		Bfs:      bfs,
+		Origin:   origin,
+		FS:       bfs,
 		Point:    point,
 		Shasum:   shasum,
 		Source:   source,
