@@ -38,7 +38,7 @@ type EmbedSupport interface {
 func (f *CFeature) EmbedTheme(path string, tfs embed.FS) MakeFeature {
 	var err error
 	var t *theme.Theme
-	if t, err = theme.NewEmbed(path, tfs); err != nil {
+	if t, err = theme.NewEmbed(f.Tag().String(), path, tfs); err != nil {
 		log.FatalF("error loading embed theme: %v", err)
 	} else {
 		log.DebugF("loaded embed theme: %v", t.Name)

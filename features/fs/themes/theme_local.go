@@ -35,7 +35,7 @@ type LocalSupport interface {
 func (f *CFeature) LocalTheme(path string) MakeFeature {
 	var err error
 	var t *theme.Theme
-	if t, err = theme.NewLocal(path); err != nil {
+	if t, err = theme.NewLocal(f.Tag().String(), path); err != nil {
 		log.FatalF("error loading local theme: %v", err)
 	} else {
 		log.DebugF("loaded local theme: %v", t.Name)
@@ -54,7 +54,7 @@ func (f *CFeature) LocalThemes(path string) MakeFeature {
 	for _, p := range paths {
 		name := bePath.Base(p)
 		log.DebugF("loading theme: %v", p)
-		if f.themes[name], err = theme.NewLocal(p); err != nil {
+		if f.themes[name], err = theme.NewLocal(f.Tag().String(), p); err != nil {
 			delete(f.themes, name)
 			log.FatalF("error loading theme: %v", err)
 			return nil

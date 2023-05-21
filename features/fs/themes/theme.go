@@ -20,7 +20,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/feature/mountable"
+	"github.com/go-enjin/be/pkg/feature/filesystem"
 	"github.com/go-enjin/be/pkg/log"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme"
@@ -34,11 +34,11 @@ var (
 )
 
 type Feature interface {
-	mountable.Feature[MakeFeature]
+	filesystem.Feature[MakeFeature]
 }
 
 type MakeFeature interface {
-	mountable.MakeFeature[MakeFeature]
+	filesystem.MakeFeature[MakeFeature]
 
 	// SetTheme is a convenience method for setting the current theme during the
 	// enjin build phase
@@ -55,7 +55,7 @@ type MakeFeature interface {
 }
 
 type CFeature struct {
-	mountable.CFeature[MakeFeature]
+	filesystem.CFeature[MakeFeature]
 
 	theme      string
 	themes     map[string]*theme.Theme
