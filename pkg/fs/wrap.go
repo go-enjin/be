@@ -18,6 +18,7 @@ import (
 	"io/fs"
 	"time"
 
+	"github.com/go-enjin/be/pkg/page/matter"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -109,5 +110,15 @@ func (w WrapFileSystem) LastModified(path string) (updated int64, err error) {
 
 func (w WrapFileSystem) FileStats(path string) (mime, shasum string, created, updated time.Time, err error) {
 	mime, shasum, created, updated, err = w.fs.FileStats(w.realpath(path))
+	return
+}
+
+func (w WrapFileSystem) FindFilePath(prefix string, extensions ...string) (path string, err error) {
+	path, err = w.fs.FindFilePath(prefix, extensions...)
+	return
+}
+
+func (w WrapFileSystem) ReadPageMatter(path string) (pm *matter.PageMatter, err error) {
+	pm, err = w.fs.ReadPageMatter(w.realpath(path))
 	return
 }

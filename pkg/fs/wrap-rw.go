@@ -14,7 +14,11 @@
 
 package fs
 
-import "os"
+import (
+	"os"
+
+	"github.com/go-enjin/be/pkg/page/matter"
+)
 
 type WrapRWFileSystem struct {
 	WrapFileSystem
@@ -54,5 +58,15 @@ func (w WrapRWFileSystem) Remove(path string) (err error) {
 
 func (w WrapRWFileSystem) RemoveAll(path string) (err error) {
 	err = w.rw.RemoveAll(w.realpath(path))
+	return
+}
+
+func (w WrapRWFileSystem) WritePageMatter(pm *matter.PageMatter) (err error) {
+	err = w.rw.WritePageMatter(pm)
+	return
+}
+
+func (w WrapRWFileSystem) RemovePageMatter(path string) (err error) {
+	err = w.rw.RemovePageMatter(path)
 	return
 }
