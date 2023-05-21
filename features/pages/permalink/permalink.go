@@ -117,21 +117,24 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 
 				for _, checkTag := range checkTags {
 					if p := f.Enjin.FindPage(checkTag, permalinkPath); p != nil {
-						destination := p.Url
-						if p.Url != "/" {
-							destination += "-"
+
+						var destination string
+						if p.Url == "" || p.Url == "." || p.Url == "/" {
+							destination = "/"
+						} else {
+							destination = p.Url + "-"
 						}
 						destination += p.PermalinkSha
 
 						if path != destination {
 							http.Redirect(w, r, destination, http.StatusSeeOther)
 							return
-						}
-						if err := f.Enjin.ServePage(p, w, r); err == nil {
+						} else if err := f.Enjin.ServePage(p, w, r); err == nil {
 							return
 						} else {
 							log.ErrorRF(r, "error serving permalink page: [%v] %v - %v", p.Language, path, err)
 						}
+
 					} else {
 						log.ErrorF("permalinked page not found [%v]", checkTag)
 					}
