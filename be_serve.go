@@ -35,6 +35,7 @@ import (
 	"github.com/go-enjin/be/pkg/request/argv"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme"
+	"github.com/go-enjin/be/pkg/userbase"
 )
 
 const (
@@ -86,21 +87,21 @@ func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Reque
 	reqLangTag := lang.GetTag(r)
 
 	if path, ok := e.eb.statusPages[status]; ok {
+
 		if pg := e.FindPage(reqLangTag, path); pg != nil {
 			pg.Context.SetSpecific(argv.RequestArgvIgnoredKey, true)
 			if err := e.ServePage(pg, w, r); err != nil {
-				log.DebugRF(r, "error serving %v (pages) page: %v - %v", status, path, err)
+				log.ErrorRDF(r, 1, "enjin error serving %v (found) page: %v - %v", status, path, err)
 			} else {
-				log.DebugRF(r, "served %v (pages) page: %v", status, path)
+				log.DebugRDF(r, 1, "enjin served %v (found) page: %v", status, path)
 				return
 			}
 		}
-		for _, f := range e.eb.features {
-			if mf, ok := f.Self().(feature.ServePathFeature); ok {
-				if err := mf.ServePath(path, e, w, r); err == nil {
-					log.DebugRF(r, "served %v (middleware) page: %v", status, path)
-					return
-				}
+
+		for _, spf := range feature.FindAllTypedFeatures[feature.ServePathFeature](e.Features()) {
+			if err := spf.ServePath(path, e, w, r); err == nil {
+				log.DebugRDF(r, 1, "enjin served %v (%v) path: %v", status, spf.(feature.Feature).Tag(), path)
+				return
 			}
 		}
 	}
@@ -160,20 +161,57 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	for _, f := range e.Features() {
-		if ptp, ok := f.(feature.PageTypeProcessor); ok {
-			var pg *page.Page
-			var redirect string
-			var processed bool
-			if pg, redirect, processed, err = ptp.ProcessRequestPageType(r, p); err != nil {
+	if v, ok := r.Context().Value("userbase-denied-allow-error-page").(bool); ok && v {
+		log.DebugRF(r, "bypassing all user access controls to show an error page of some sort: %v", p.Url)
+	} else {
+
+		// looking for view_<origin>_page actions... if any found, perform access
+		check := userbase.NewAction(p.PageMatter.Origin, "view", "page")
+		if e.FindAllUserActions().Has(check) {
+
+			// found this page's particular view action
+			// this requires that the user must have a group with this action
+			log.DebugRF(r, "found access control page action: %v", check)
+
+			if user := userbase.GetCurrentUser(r); user != nil {
+				if !user.Can(check) {
+					log.WarnF("denying user %v access (%v) to: %v", user.EID, check, p.Url)
+					r = r.Clone(context.WithValue(r.Context(), "userbase-denied-allow-error-page", true))
+					e.ServeNotFound(w, r)
+					return
+				} else {
+					log.DebugRF(r, "authenticated user allowed to: (%v) %v", check, p.Url)
+				}
+			} else if e.eb.publicUser.Has(check) {
+				log.DebugRF(r, "public user allowed to: (%v) %v", check, p.Url)
+			} else {
+				log.ErrorRF(r, "denying access, authenticated user not found and public has no access: (%v) %v", check, p.Url)
+				r = r.Clone(context.WithValue(r.Context(), "userbase-denied-allow-error-page", true))
+				e.ServeNotFound(w, r)
 				return
-			} else if redirect != "" {
-				e.ServeRedirect(redirect, w, r)
-				return
-			} else if processed {
-				p = pg
-				break
 			}
+
+		} else {
+			log.ErrorRF(r, `denying access, page action not found: "%v"`, check)
+			r = r.Clone(context.WithValue(r.Context(), "userbase-denied-allow-error-page", true))
+			e.ServeNotFound(w, r)
+			return
+		}
+
+	}
+
+	for _, ptp := range feature.FindAllTypedFeatures[feature.PageTypeProcessor](e.Features()) {
+		var pg *page.Page
+		var redirect string
+		var processed bool
+		if pg, redirect, processed, err = ptp.ProcessRequestPageType(r, p); err != nil {
+			return
+		} else if redirect != "" {
+			e.ServeRedirect(redirect, w, r)
+			return
+		} else if processed {
+			p = pg
+			break
 		}
 	}
 
