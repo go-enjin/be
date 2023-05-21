@@ -49,9 +49,16 @@ type MakeFeature interface {
 
 	Make() Feature
 
+	// AddToIndexProviders indexes the content using the
+	// feature.PageIndexFeature tags specified
 	AddToIndexProviders(tag ...feature.Tag) MakeFeature
+
+	// AddToSearchProviders indexes the content using the
+	// feature.SearchEnjinFeature tags specified
 	AddToSearchProviders(tag ...feature.Tag) MakeFeature
 
+	// SetKeyValueCache specifies the feature.KeyValueCaches feature.Tag and the
+	// name of a specific feature.KeyValueCache
 	SetKeyValueCache(tag feature.Tag, name string) MakeFeature
 }
 
@@ -102,8 +109,15 @@ func (f *CFeature) AddToSearchProviders(tag ...feature.Tag) MakeFeature {
 }
 
 func (f *CFeature) Make() Feature {
+	if f.kvcTag == "" || f.kvcName == "" {
+		log.FatalDF(1, "%v feature requires a feature.KeyValueCache to be set with SetKeyValueCache(tag,name)")
+	}
+
 	f.indexProviderTags = f.indexProviderTags.Unique()
 	f.searchProviderTags = f.searchProviderTags.Unique()
+	if f.indexProviderTags.Len() == 0 {
+		log.FatalDF(1, "%v feature requires at least one feature.PageIndexFeature", f.Tag())
+	}
 	return f
 }
 
@@ -124,7 +138,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		}
 	}
 	if f.cache == nil {
-		err = fmt.Errorf("%v feature requires a feature.KeyValueCache to be set with enjin.SetKeyValueCache(tag,name)", f.Tag())
+		err = fmt.Errorf("%v feature requires a feature.KeyValueCache to be set with SetKeyValueCache(tag,name)", f.Tag())
 		return
 	}
 
@@ -134,7 +148,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		}
 	}
 	if len(f.indexProviders) == 0 {
-		err = fmt.Errorf(`indexing.PageIndexFeature features not found: %+v`, f.indexProviderTags)
+		err = fmt.Errorf(`%v feature required index provider(s) not found: %+v`, f.Tag(), f.indexProviderTags)
 		return
 	}
 
@@ -142,10 +156,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		if f.searchProviderTags.Has(sef.(feature.Feature).Tag()) {
 			f.searchProviders = append(f.searchProviders, sef)
 		}
-	}
-	if len(f.searchProviders) == 0 {
-		err = fmt.Errorf(`indexing.SearchEnjinFeature features not found: %+v`, f.indexProviderTags)
-		return
 	}
 
 	err = f.PopulateIndexes()
