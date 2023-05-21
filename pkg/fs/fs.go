@@ -17,6 +17,8 @@ package fs
 import (
 	"io/fs"
 	"time"
+
+	"github.com/go-enjin/be/pkg/page/matter"
 )
 
 type FileSystem interface {
@@ -34,4 +36,6 @@ type FileSystem interface {
 	LastModified(path string) (dateTime int64, err error)
 	Exists(path string) (exists bool)
 	FileStats(path string) (mime, shasum string, created, updated time.Time, err error)
+	FindFilePath(path string, extensions ...string) (realpath string, err error)
+	ReadPageMatter(path string) (pm *matter.PageMatter, err error)
 }
