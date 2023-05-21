@@ -16,6 +16,7 @@ package matter
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"strings"
 
@@ -90,5 +91,54 @@ func ParseFrontMatterContent(raw string) (matter, content string, matterType Fro
 	matter = ""
 	content = raw
 	matterType = NoneMatter
+	return
+}
+
+func MakeFrontMatterStanza(fmt FrontMatterType, ctx context.Context) (stanza string) {
+	switch fmt {
+	case JsonMatter:
+		stanza += "{{{\n"
+		if data, err := json.MarshalIndent(ctx, "", "\t"); err == nil {
+			content := string(data)
+			if size := len(content); size >= 2 {
+				if content[size-1] == '}' {
+					content = content[:size-1]
+				}
+				if content[0] == '{' {
+					content = content[1:]
+				}
+			}
+			stanza += content + "\n"
+		}
+		stanza += "}}}"
+	case YamlMatter:
+		stanza += "---\n"
+		if data, err := yaml.Marshal(ctx); err == nil {
+			content := string(data)
+			if len(content) > 4 {
+				if content[:4] == "---\n" {
+					content = content[4:]
+				}
+			}
+			stanza += content + "\n"
+		}
+		stanza += "---"
+	case TomlMatter:
+		fallthrough
+	default:
+		stanza += "+++\n"
+		var buf bytes.Buffer
+		enc := toml.NewEncoder(&buf)
+		if err := enc.Encode(ctx); err == nil {
+			content := buf.String()
+			if len(content) > 4 {
+				if content[:4] == "---\n" {
+					content = content[4:]
+				}
+			}
+			stanza += content + "\n"
+		}
+		stanza += "+++"
+	}
 	return
 }
