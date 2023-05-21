@@ -18,6 +18,7 @@ package pql
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -28,13 +29,14 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/page/matter"
 	"github.com/go-enjin/be/pkg/pageql/matcher"
 	"github.com/go-enjin/be/pkg/pageql/selector"
+	bePath "github.com/go-enjin/be/pkg/path"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -192,7 +194,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) PerformQuery(input string) (stubs []*matter.PageStub, err error) {
+func (f *CFeature) PerformQuery(input string) (stubs []*fs.PageStub, err error) {
 	f.RLock()
 	defer f.RUnlock()
 	stubs, err = matcher.NewProcess(input, f.Enjin)
@@ -207,7 +209,7 @@ func (f *CFeature) PerformSelect(input string) (selected map[string]interface{},
 	return
 }
 
-func (f *CFeature) AddToIndex(stub *matter.PageStub, p *page.Page) (err error) {
+func (f *CFeature) AddToIndex(stub *fs.PageStub, p *page.Page) (err error) {
 	f.Lock()
 	defer f.Unlock()
 
@@ -308,8 +310,8 @@ func (f *CFeature) YieldPageContextValues(key string) (values chan interface{}) 
 	return
 }
 
-func (f *CFeature) YieldPageContextValueStubs(key string) (pairs chan *matter.ValueStubPair) {
-	pairs = make(chan *matter.ValueStubPair)
+func (f *CFeature) YieldPageContextValueStubs(key string) (pairs chan *fs.ValueStubPair) {
+	pairs = make(chan *fs.ValueStubPair)
 	go func() {
 		defer close(pairs)
 		ctxKeyBucketName := f.makeCtxValBucketName(key)
@@ -319,8 +321,8 @@ func (f *CFeature) YieldPageContextValueStubs(key string) (pairs chan *matter.Va
 			if shasums, err := kvs.GetSlice[string](ctxKeyBucket, value); err == nil && len(shasums) > 0 {
 				for _, shasum := range shasums {
 					if vStub, eeee := f.pageStubsBucket.Get(shasum); eeee == nil {
-						if stub, ok := vStub.(*matter.PageStub); ok {
-							pairs <- &matter.ValueStubPair{
+						if stub, ok := vStub.(*fs.PageStub); ok {
+							pairs <- &fs.ValueStubPair{
 								Value: value,
 								Stub:  stub,
 							}
@@ -339,10 +341,11 @@ func (f *CFeature) FindRedirection(url string) (p *page.Page) {
 	defer f.RUnlock()
 
 	theme, _ := f.Enjin.GetTheme()
+	url = bePath.CleanWithSlash(url)
 
 	if shasum := kvs.GetValue[string](f.redirectionsBucket, url); shasum != "" {
 		if vStub, e := f.pageStubsBucket.Get(shasum); e == nil {
-			if stub, ok := vStub.(*matter.PageStub); ok {
+			if stub, ok := vStub.(*fs.PageStub); ok {
 				if p, e = page.NewFromPageStub(stub, theme); e != nil {
 					log.ErrorF("error making redirected page from stub: %v - %v", url, e)
 				}
@@ -356,6 +359,8 @@ func (f *CFeature) FindRedirection(url string) (p *page.Page) {
 func (f *CFeature) FindTranslations(url string) (pages []*page.Page) {
 	f.RLock()
 	defer f.RUnlock()
+
+	url = bePath.CleanWithSlash(url)
 
 	if shasums, ee := kvs.GetSlice[string](f.translatedByBucket, url); ee == nil {
 		for _, shasum := range shasums {
@@ -371,12 +376,16 @@ func (f *CFeature) FindTranslations(url string) (pages []*page.Page) {
 func (f *CFeature) FindPage(tag language.Tag, url string) (pg *page.Page) {
 	f.RLock()
 	defer f.RUnlock()
+
+	url = bePath.CleanWithSlash(url)
+
 	if tag == language.Und {
 		if p, e := f.Lookup(f.Enjin.SiteDefaultLanguage(), url); e == nil {
 			pg = p
 			return
 		}
 	}
+
 	if p, e := f.Lookup(tag, url); e == nil {
 		pg = p
 		return
@@ -387,23 +396,46 @@ func (f *CFeature) FindPage(tag language.Tag, url string) (pg *page.Page) {
 func (f *CFeature) Lookup(tag language.Tag, path string) (pg *page.Page, err error) {
 	f.RLock()
 	defer f.RUnlock()
-	if txBucket, ok := f.translationsBucket[tag]; ok {
-		if shasums, e := kvs.GetSlice[string](txBucket, path); e == nil {
-			for _, shasum := range shasums {
-				if p := f.findStubPage(shasum); p != nil && p.LanguageTag == tag {
-					pg = p
-					return
+
+	path = bePath.CleanWithSlash(path)
+
+	process := func(tag language.Tag, path string) (pg *page.Page, err error) {
+		if txBucket, ok := f.translationsBucket[tag]; ok {
+			if shasums, e := kvs.GetSlice[string](txBucket, path); e == nil {
+				for _, shasum := range shasums {
+					if p := f.findStubPage(shasum); p != nil && p.LanguageTag == tag {
+						pg = p
+						return
+					}
 				}
 			}
 		}
+		err = os.ErrNotExist
+		return
 	}
-	err = fmt.Errorf("page not found")
+
+	// check for the given tag
+	if pg, err = process(tag, path); err == nil || err != os.ErrNotExist {
+		return
+	}
+
+	if tag != language.Und {
+		// path not found, check for (Und) fallback
+		if pg, err = process(language.Und, path); err == nil || err != os.ErrNotExist {
+			return
+		}
+	}
+
+	err = os.ErrNotExist
 	return
 }
 
 func (f *CFeature) LookupPrefixed(prefix string) (pages []*page.Page) {
 	f.RLock()
 	defer f.RUnlock()
+
+	prefix = bePath.CleanWithSlash(prefix)
+
 	if allUrls, e := kvs.GetSlice[string](f.allUrlsBucket, "all"); e == nil {
 		for _, url := range allUrls {
 			if strings.HasPrefix(url, prefix) {

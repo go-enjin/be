@@ -19,13 +19,13 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/page/matter"
 )
 
-func (f *CFeature) processPageStub(shasum string, stub *matter.PageStub) (err error) {
+func (f *CFeature) processPageStub(shasum string, stub *fs.PageStub) (err error) {
 	if err = f.pageStubsBucket.Set(shasum, stub); err != nil {
 		err = fmt.Errorf("error setting shasum stubs bucket: %v", err)
 		return
@@ -116,9 +116,9 @@ func (f *CFeature) findStubPage(shasum string) (pg *page.Page) {
 	return
 }
 
-func (f *CFeature) findStub(shasum string) (stub *matter.PageStub) {
+func (f *CFeature) findStub(shasum string) (stub *fs.PageStub) {
 	if vStub, e := f.pageStubsBucket.Get(shasum); e == nil {
-		if s, ok := vStub.(*matter.PageStub); ok {
+		if s, ok := vStub.(*fs.PageStub); ok {
 			stub = s
 		} else {
 			log.ErrorF("expected: *matter.PageStub, received: %T from stubs bucket: %v", vStub, gPageStubsBucketName)
