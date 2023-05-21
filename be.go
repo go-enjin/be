@@ -275,7 +275,7 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 	hr.Map("*", e.router)
 
 	root := chi.NewRouter()
-	root.Mount("/", hr)
+	root.Mount("/*", hr)
 	return e.startupRoutedHttpListener(e.listen, e.port, root)
 }
 
