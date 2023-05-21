@@ -32,7 +32,7 @@ import (
 func (t *Theme) RenderHtmlTemplateContent(ctx context.Context, tmplContent string) (rendered string, err error) {
 	var tt *htmlTemplate.Template
 	if tt, err = t.NewHtmlTemplateWithContext("content.tmpl", ctx); err == nil {
-		if tt, err = tt.Parse(tmplContent); err == nil {
+		if tt, err = tt.Funcs(DefaultFuncMap()).Parse(tmplContent); err == nil {
 			var w bytes.Buffer
 			if err = tt.Execute(&w, ctx); err == nil {
 				rendered = string(w.Bytes())
