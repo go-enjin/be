@@ -1,4 +1,4 @@
-//go:build driver_fs_local || drivers_fs || locals || all
+//go:build !driver_fs_local && !drivers_fs && !locals && !all
 
 // Copyright (c) 2023  The Go-Enjin Authors
 //
@@ -14,23 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package mountable
-
-import (
-	"github.com/go-enjin/be/drivers/fs/local"
-	"github.com/go-enjin/be/pkg/log"
-)
+package filesystem
 
 type LocalPathSupport[MakeTypedFeature interface{}] interface {
-	MountLocalPath(mount, path string) MakeTypedFeature
-}
-
-func (f *CFeature[MakeTypedFeature]) MountLocalPath(mount, path string) MakeTypedFeature {
-	if lfs, err := local.New(path); err != nil {
-		log.FatalDF(1, "error mounting path: %v", err)
-	} else {
-		f.MountPathROFS(path, mount, lfs)
-	}
-	v, _ := f.This().(MakeTypedFeature)
-	return v
 }

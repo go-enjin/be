@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package mountable
+package filesystem
 
 import (
 	"embed"
@@ -24,11 +24,26 @@ import (
 )
 
 type EmbedPathSupport[MakeTypedFeature interface{}] interface {
+	// MountEmbedPath maps the embed filesystem `path` to the enjin URL `point`
+	//
+	// The `point` is pruned from the URL during an HTTP request and the `path`
+	// prefixes the file's real path. For example, it's common for the following
+	// pattern:
+	//
+	//   //go:embed public/**
+	//   var publicFS embed.FS
+	//
+	//   f.MountEmbedPath("/", "public", publicFS)
+	//
+	// This configuration means to provide everything within the embed path of
+	// `./public/*` (recursively) at the root point of the URL, so for example
+	// the URL `/favicon.ico` would translate to the embed filesystem path of
+	// `./public/favicon.ico`
 	MountEmbedPath(mount, path string, rofs embed.FS) MakeTypedFeature
 }
 
 func (f *CFeature[MakeTypedFeature]) MountEmbedPath(mount, path string, efs embed.FS) MakeTypedFeature {
-	if lfs, err := beFsEmbed.New(path, efs); err != nil {
+	if lfs, err := beFsEmbed.New(f.Tag().String(), path, efs); err != nil {
 		log.FatalDF(1, "error mounting path: %v", err)
 	} else {
 		f.MountPathROFS(path, mount, lfs)

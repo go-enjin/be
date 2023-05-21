@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package mountable
+package filesystem
 
 import (
 	"github.com/spkg/zipfs"
@@ -24,11 +24,30 @@ import (
 )
 
 type ZipPathSupport[MakeTypedFeature interface{}] interface {
+	// MountZipPath maps the embed filesystem `path` to the enjin URL `point`
+	//
+	// The `point` is pruned from the URL during an HTTP request and the `path`
+	// prefixes the file's real path. For example, it's common for the following
+	// pattern:
+	//
+	//   /* prepare zip of local public directory; in this example, the zip file
+	//      does in fact contain a top-level directory of "public" which is
+	//      important for the f.MountZipPath call
+	//   */
+	//   $ zip -r public.zip public
+	//
+	//   zipFS, err := zipfs.New("./public.zip")
+	//   f.MountZipPath("/", "public", zipFS)
+	//
+	// This configuration means to provide everything within the zip file of
+	// `./public/*` (recursively) at the root point of the URL, so for example
+	// the URL `/favicon.ico` would translate to the embed filesystem path of
+	// `./public/favicon.ico` within the zip file
 	MountZipPath(mount, path string, zfs *zipfs.FileSystem) MakeTypedFeature
 }
 
 func (f *CFeature[MakeTypedFeature]) MountZipPath(mount, path string, zfs *zipfs.FileSystem) MakeTypedFeature {
-	if lfs, err := zip.New(path, zfs); err != nil {
+	if lfs, err := zip.New(f.Tag().String(), path, zfs); err != nil {
 		log.FatalDF(1, "error mounting path: %v", err)
 	} else {
 		f.MountPathROFS(path, mount, lfs)
