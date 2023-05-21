@@ -44,6 +44,7 @@ func NewTmplDocument(language, url, title string) (doc *CDocument) {
 func (d *CDocument) Self() interface{} {
 	return d
 }
+
 func (f *CFeature) NewDocumentMapping(tag language.Tag) (doctype, analyzer string, dm *mapping.DocumentMapping) {
 	doctype = f.Name()
 	analyzer, dm = search.NewDocumentMapping(tag)

@@ -25,7 +25,6 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/types/theme-types"
@@ -49,8 +48,6 @@ type MakeFeature interface {
 
 type CFeature struct {
 	feature.CFeature
-
-	enjin feature.Internals
 }
 
 func New() MakeFeature {
@@ -60,16 +57,16 @@ func New() MakeFeature {
 	return f
 }
 
-func (f *CFeature) Make() Feature {
-	return f
-}
-
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 }
 
 func (f *CFeature) Setup(enjin feature.Internals) {
-	f.enjin = enjin
+	f.CFeature.Setup(enjin)
+}
+
+func (f *CFeature) Make() Feature {
+	return f
 }
 
 func (f *CFeature) Name() (name string) {
@@ -92,18 +89,15 @@ func (f *CFeature) Prepare(ctx context.Context, content string) (out context.Con
 }
 
 func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html htmlTemplate.HTML, redirect string, err *types.EnjinError) {
-	if tmpl, e := t.NewTextTemplateWithContext("content.tmpl", ctx); e != nil {
-		log.ErrorF("error preparing text template: %v", e)
+	if rendered, e := t.RenderTextTemplateContent(ctx, content); e != nil {
+		err = types.NewEnjinError(
+			"tmpl render error",
+			e.Error(),
+			content,
+		)
 		return
 	} else {
-		if tt, ee := tmpl.Parse(content); ee == nil {
-			var w bytes.Buffer
-			if ee = tt.Execute(&w, ctx); ee == nil {
-				html = htmlTemplate.HTML(w.Bytes())
-			} else {
-				log.ErrorF("error rendering text template: %v", ee)
-			}
-		}
+		html = htmlTemplate.HTML(rendered)
 	}
 	return
 }

@@ -56,8 +56,6 @@ type MakeBlock interface {
 
 type CBlock struct {
 	feature.CEnjinBlock
-
-	enjin feature.Internals
 }
 
 func New() (field MakeBlock) {
@@ -73,10 +71,6 @@ func (f *CBlock) Init(this interface{}) {
 
 func (f *CBlock) Make() Block {
 	return f
-}
-
-func (f *CBlock) Setup(enjin feature.Internals) {
-	f.enjin = enjin
 }
 
 func (f *CBlock) NjnClass() (tagClass feature.NjnClass) {
@@ -252,7 +246,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		return
 	}
 
-	found := f.enjin.MatchQL(query)
+	found := f.Enjin.MatchQL(query)
 	totalFound := len(found)
 	found = filters.FilterPages(found)
 	totalFiltered := len(found)
@@ -260,7 +254,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	if searchEnabled && argvSearch != "" {
 		if len(found) == 0 {
 			// nope
-		} else if matched, searchResults, e := pages.SearchWithin(argvSearch, totalFiltered, 0, found, f.enjin.SiteDefaultLanguage(), reqArgv.Language, f.enjin.SiteLanguageMode()); e != nil {
+		} else if matched, searchResults, e := pages.SearchWithin(argvSearch, totalFiltered, 0, found, f.Enjin.SiteDefaultLanguage(), reqArgv.Language, f.Enjin.SiteLanguageMode()); e != nil {
 			log.ErrorF("error searching within... %v", err)
 			found = nil
 		} else {

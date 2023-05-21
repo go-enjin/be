@@ -106,8 +106,6 @@ type CFeature struct {
 	blocks map[feature.NjnClass]map[string]feature.EnjinBlock
 
 	stringtags []string
-
-	enjin feature.Internals
 }
 
 func New() MakeFeature {
@@ -126,7 +124,7 @@ func (f *CFeature) Init(this interface{}) {
 }
 
 func (f *CFeature) Setup(enjin feature.Internals) {
-	f.enjin = enjin
+	f.CFeature.Setup(enjin)
 	for _, blocks := range f.blocks {
 		for _, block := range blocks {
 			block.Setup(enjin)
