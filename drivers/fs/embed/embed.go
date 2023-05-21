@@ -19,65 +19,46 @@ package embed
 import (
 	"embed"
 	"io/fs"
+	"os"
+	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
+	"github.com/fvbommel/sortorder"
 	"github.com/go-enjin/github-com-djherbis-times"
 
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
+	"github.com/go-enjin/be/pkg/page/matter"
 	bePath "github.com/go-enjin/be/pkg/path"
 	bePathEmbed "github.com/go-enjin/be/pkg/path/embed"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
-type CFileSystem struct {
-	path  string
-	wrap  string
-	embed embed.FS
+type FileSystem struct {
+	origin string
+	path   string
+	wrap   string
+	embed  embed.FS
 }
 
-func New(path string, efs embed.FS) (out beFs.FileSystem, err error) {
-	out = CFileSystem{
-		path:  path,
-		wrap:  "",
-		embed: efs,
+func New(origin string, path string, efs embed.FS) (out FileSystem, err error) {
+	out = FileSystem{
+		origin: origin,
+		path:   path,
+		wrap:   "",
+		embed:  efs,
 	}
 	return
 }
 
-// func Wrap(path, wrap string, efs embed.FS) (out CFileSystem, err error) {
-// 	out = CFileSystem{
-// 		path:  path,
-// 		wrap:  wrap,
-// 		embed: efs,
-// 	}
-// 	return
-// }
-
-func (f CFileSystem) Name() (name string) {
+func (f FileSystem) Name() (name string) {
 	name = f.path
 	return
 }
 
-func (f CFileSystem) realpath(path string) (out string) {
-	out = bePath.SafeConcatRelPath(f.path, path)
-	return
-}
-
-func (f CFileSystem) pruneEntries(paths []string) (pruned []string) {
-	rp := f.path
-	for _, entry := range paths {
-		if strings.HasPrefix(entry, rp) {
-			if entry = entry[len(rp):]; entry != "" && entry[0] == '/' {
-				entry = entry[1:]
-			}
-		}
-		pruned = append(pruned, entry)
-	}
-	return
-}
-
-func (f CFileSystem) Exists(path string) (exists bool) {
+func (f FileSystem) Exists(path string) (exists bool) {
 	if fh, err := f.embed.Open(f.realpath(path)); err == nil {
 		_ = fh.Close()
 		exists = true
@@ -85,62 +66,62 @@ func (f CFileSystem) Exists(path string) (exists bool) {
 	return
 }
 
-func (f CFileSystem) Open(path string) (file fs.File, err error) {
+func (f FileSystem) Open(path string) (file fs.File, err error) {
 	file, err = f.embed.Open(f.realpath(path))
 	return
 }
 
-func (f CFileSystem) ListDirs(path string) (paths []string, err error) {
+func (f FileSystem) ListDirs(path string) (paths []string, err error) {
 	if paths, err = bePathEmbed.ListDirs(f.realpath(path), f.embed); err == nil {
-		paths = f.pruneEntries(paths)
+		paths = beFs.PruneRootFrom(f.path, paths)
 	}
 	return
 }
 
-func (f CFileSystem) ListFiles(path string) (paths []string, err error) {
+func (f FileSystem) ListFiles(path string) (paths []string, err error) {
 	if paths, err = bePathEmbed.ListFiles(f.realpath(path), f.embed); err == nil {
-		paths = f.pruneEntries(paths)
+		paths = beFs.PruneRootFrom(f.path, paths)
 	}
 	return
 }
 
-func (f CFileSystem) ListAllDirs(path string) (paths []string, err error) {
+func (f FileSystem) ListAllDirs(path string) (paths []string, err error) {
 	if paths, err = bePathEmbed.ListAllDirs(f.realpath(path), f.embed); err == nil {
-		paths = f.pruneEntries(paths)
+		paths = beFs.PruneRootFrom(f.path, paths)
 	}
 	return
 }
 
-func (f CFileSystem) ListAllFiles(path string) (paths []string, err error) {
+func (f FileSystem) ListAllFiles(path string) (paths []string, err error) {
 	if paths, err = bePathEmbed.ListAllFiles(f.realpath(path), f.embed); err == nil {
-		paths = f.pruneEntries(paths)
+		paths = beFs.PruneRootFrom(f.path, paths)
 	}
 	return
 }
 
-func (f CFileSystem) ReadDir(path string) (paths []fs.DirEntry, err error) {
+func (f FileSystem) ReadDir(path string) (paths []fs.DirEntry, err error) {
 	paths, err = f.embed.ReadDir(f.realpath(path))
 	return
 }
 
-func (f CFileSystem) ReadFile(path string) (content []byte, err error) {
+func (f FileSystem) ReadFile(path string) (content []byte, err error) {
 	content, err = f.embed.ReadFile(f.realpath(path))
 	return
 }
 
-func (f CFileSystem) MimeType(path string) (mime string, err error) {
+func (f FileSystem) MimeType(path string) (mime string, err error) {
 	if mime, err = bePathEmbed.Mime(f.realpath(path), f.embed); err != nil {
 		mime = "application/octet-stream"
 	}
 	return
 }
 
-func (f CFileSystem) Shasum(path string) (shasum string, err error) {
+func (f FileSystem) Shasum(path string) (shasum string, err error) {
 	shasum, err = bePathEmbed.Shasum(f.realpath(path), f.embed)
 	return
 }
 
-func (f CFileSystem) FileCreated(_ string) (created int64, err error) {
+func (f FileSystem) FileCreated(_ string) (created int64, err error) {
 	var info times.Timespec
 	if info, err = globals.BuildFileInfo(); err == nil && info.HasBirthTime() {
 		created = info.BirthTime().Unix()
@@ -148,7 +129,7 @@ func (f CFileSystem) FileCreated(_ string) (created int64, err error) {
 	return
 }
 
-func (f CFileSystem) LastModified(_ string) (modTime int64, err error) {
+func (f FileSystem) LastModified(_ string) (modTime int64, err error) {
 	var info times.Timespec
 	if info, err = globals.BuildFileInfo(); err == nil {
 		modTime = info.ModTime().Unix()
@@ -156,7 +137,7 @@ func (f CFileSystem) LastModified(_ string) (modTime int64, err error) {
 	return
 }
 
-func (f CFileSystem) FileStats(path string) (mime, shasum string, created, updated time.Time, err error) {
+func (f FileSystem) FileStats(path string) (mime, shasum string, created, updated time.Time, err error) {
 	if mime, err = f.MimeType(path); err != nil {
 		return
 	}
@@ -171,5 +152,51 @@ func (f CFileSystem) FileStats(path string) (mime, shasum string, created, updat
 	if ts.HasBirthTime() {
 		created = ts.BirthTime()
 	}
+	return
+}
+
+func (f FileSystem) FindFilePath(prefix string, extensions ...string) (path string, err error) {
+	sort.Sort(sort.Reverse(sortorder.Natural(extensions)))
+
+	realpath := f.realpath(prefix)
+	if filepath.Ext(realpath) != "" {
+		if bePath.IsFile(realpath) {
+			path = beFs.PruneRootFrom(f.path, realpath)
+			return
+		}
+	}
+
+	sort.Sort(beStrings.SortByLengthDesc(extensions))
+
+	realpath = strings.TrimSuffix(realpath, "/")
+	var paths []string
+	for _, extension := range extensions {
+		paths = append(paths, realpath+"."+extension)
+	}
+
+	for _, p := range paths {
+		if f.Exists(p) {
+			path = beFs.PruneRootFrom(f.path, p)
+			return
+		}
+	}
+
+	err = os.ErrNotExist
+	return
+}
+
+func (f FileSystem) ReadPageMatter(path string) (pm *matter.PageMatter, err error) {
+
+	if f.Exists(path) {
+		var data []byte
+		if data, err = f.ReadFile(path); err != nil {
+			return
+		}
+		_, _, created, updated, _ := f.FileStats(path)
+		pm, err = matter.ParsePageMatter(f.origin, path, created, updated, data)
+		return
+	}
+
+	err = os.ErrNotExist
 	return
 }
