@@ -15,20 +15,19 @@
 package page
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/gofrs/uuid"
-	"github.com/iancoleman/strcase"
-	"gorm.io/gorm"
-
 	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/gofrs/uuid"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/hash/sha"
+	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page/matter"
 	bePath "github.com/go-enjin/be/pkg/path"
 	beStrings "github.com/go-enjin/be/pkg/strings"
@@ -36,14 +35,14 @@ import (
 )
 
 type Page struct {
-	Type   string `json:"type" gorm:"type"`
-	Format string `json:"format" gorm:"type:string"`
+	Type   string `json:"type"`
+	Format string `json:"format"`
 
-	Url  string `json:"url" gorm:"index"`
+	Url  string `json:"url"`
 	Slug string `json:"slug"`
 	Path string `json:"path"`
 
-	Title       string `json:"title" gorm:"index"`
+	Title       string `json:"title"`
 	Summary     string `json:"summary"`
 	Description string `json:"description"`
 
@@ -52,49 +51,32 @@ type Page struct {
 	Archetype string `json:"archetype"`
 
 	Permalink    uuid.UUID `json:"permalink"`
-	PermalinkSha string    `json:"-" gorm:"-"`
+	PermalinkSha string    `json:"permalink-sha"`
 
 	Language    string       `json:"language"`
 	Translates  string       `json:"translates"`
-	LanguageTag language.Tag `json:"-" gorm:"-"`
+	LanguageTag language.Tag `json:"language-tag"`
 
-	Shasum          string `json:"shasum"`
-	Content         string `json:"content"`
-	FrontMatter     string `json:"frontMatter"`
-	FrontMatterType matter.FrontMatterType
-	PageMatter      *matter.PageMatter
+	Shasum          string                 `json:"shasum"`
+	Content         string                 `json:"content"`
+	FrontMatter     string                 `json:"frontMatter"`
+	FrontMatterType matter.FrontMatterType `json:"front-matter-type"`
+	PageMatter      *matter.PageMatter     `json:"page-matter"`
 
-	Context context.Context `json:"-" gorm:"-"`
+	CreatedAt time.Time    `json:"created"`
+	UpdatedAt time.Time    `json:"updated"`
+	DeletedAt sql.NullTime `json:"deleted"`
 
-	Formats types.FormatProvider
-	copied  int
+	Context context.Context `json:"Context"`
 
-	gorm.Model
+	Formats types.FormatProvider `json:"-"`
+
+	copied int
 }
 
-func NewFromFile(path, file string, formats types.FormatProvider, enjin context.Context) (p *Page, err error) {
-	if !bePath.IsFile(file) {
-		err = fmt.Errorf("not a file: %v", file)
-		return
-	}
-	var contents []byte
-	if contents, err = bePath.ReadFile(file); err != nil {
-		return
-	}
-	var created, updated int64
-	if spec, e := bePath.Stat(file); e == nil {
-		if spec.HasBirthTime() {
-			created = spec.BirthTime().Unix()
-		}
-		updated = spec.ModTime().Unix()
-	}
-	p, err = New(path, string(contents), created, updated, formats, enjin)
-	return
-}
-
-func New(path, raw string, created, updated int64, formats types.FormatProvider, enjin context.Context) (p *Page, err error) {
+func New(origin string, path, raw string, created, updated int64, formats types.FormatProvider, enjin context.Context) (p *Page, err error) {
 	var pm *matter.PageMatter
-	if pm, err = matter.ParsePageMatter(path, time.Unix(created, 0), time.Unix(updated, 0), []byte(raw)); err != nil {
+	if pm, err = matter.ParsePageMatter(origin, path, time.Unix(created, 0), time.Unix(updated, 0), []byte(raw)); err != nil {
 		return
 	}
 	p, err = NewFromPageMatter(pm, formats, enjin)
@@ -160,6 +142,54 @@ func NewFromPageMatter(pm *matter.PageMatter, formats types.FormatProvider, enji
 	return
 }
 
+func NewMatterFromPage(p *Page) (pm *matter.PageMatter, err error) {
+	pmCtx := context.Context{}
+	for key, value := range p.PageMatter.Matter {
+		if v, ok := p.Context[key]; ok {
+			pmCtx[key] = v
+		} else {
+			pmCtx[key] = value
+		}
+	}
+	if p.Path == "" {
+		p.Path = "/"
+	}
+	if !strings.HasPrefix(p.PageMatter.Path, p.Path) {
+		log.ErrorF("detected important inconsistency, page Path is not a prefix of PageMatter.Path: %#+v", p)
+	}
+	if _, exists := pmCtx["Url"]; !exists {
+		pmCtx["Url"] = p.Url
+	}
+	if _, exists := pmCtx["Path"]; !exists {
+		pmCtx["Path"] = p.Path
+	}
+	if _, exists := pmCtx["Section"]; !exists {
+		pmCtx["Section"] = p.Section
+	}
+	if _, exists := pmCtx["Slug"]; !exists {
+		pmCtx["Slug"] = p.Slug
+	}
+	if _, exists := pmCtx["Title"]; !exists {
+		pmCtx["Title"] = p.Title
+	}
+	if _, exists := pmCtx["Language"]; !exists {
+		pmCtx["Language"] = p.LanguageTag.String()
+	}
+	if _, exists := pmCtx["Created"]; !exists {
+		pmCtx["Created"] = p.CreatedAt
+	}
+	if _, exists := pmCtx["Updated"]; !exists {
+		pmCtx["Updated"] = p.CreatedAt
+	}
+	pmCtx.Delete("Shasum")
+
+	stanza := matter.MakeFrontMatterStanza(p.FrontMatterType, pmCtx)
+	data := []byte(stanza + "\n" + p.Content)
+
+	pm, err = matter.ParsePageMatter(p.PageMatter.Origin, p.Path, p.CreatedAt, p.UpdatedAt, data)
+	return
+}
+
 func (p *Page) String() string {
 	ctx, _ := json.MarshalIndent(p.Context, "", "    ")
 	return "{{" + string(ctx) + "}}" + "\n" + p.Content
@@ -167,6 +197,8 @@ func (p *Page) String() string {
 
 func (p *Page) initFrontMatter() (err error) {
 	p.Context.SetSpecific("Url", p.Url)
+	p.Context.SetSpecific("Path", p.Path)
+	p.Context.SetSpecific("Section", p.Section)
 	p.Context.SetSpecific("Slug", p.Slug)
 	p.Context.SetSpecific("Title", p.Title)
 	p.Context.SetSpecific("Shasum", p.Shasum)
@@ -231,7 +263,6 @@ func (p *Page) Copy() (copy *Page) {
 		Context:      context.New(),
 		copied:       1,
 	}
-	copy.ID = p.ID
 	copy.CreatedAt = p.CreatedAt
 	copy.UpdatedAt = p.UpdatedAt
 	copy.DeletedAt = p.DeletedAt
@@ -260,8 +291,9 @@ func (p *Page) SetFormat(filepath string) (path string) {
 }
 
 func (p *Page) SetSlugUrl(filepath string) {
-	p.Url, p.Section, p.Slug = p.getUrlPathSectionSlug(filepath)
+	p.Url, p.Path, p.Section, p.Slug = p.getUrlPathSectionSlug(filepath)
 	p.Context.SetSpecific("Url", p.Url)
+	p.Context.SetSpecific("Path", p.Path)
 	p.Context.SetSpecific("Section", p.Section)
 	p.Context.SetSpecific("Slug", p.Slug)
 }
@@ -301,22 +333,29 @@ func (p *Page) SetPermalink(value string) (err error) {
 	return
 }
 
-func (p *Page) getUrlPathSectionSlug(url string) (path, section, slug string) {
+func (p *Page) getUrlPathSectionSlug(url string) (fullpath, path, section, slug string) {
 	var notPath bool
 	if notPath = strings.HasPrefix(url, "!"); notPath {
 		url = url[1:]
 	}
-	path = bePath.TrimSlashes(url)
-	path = strings.ToLower(path)
-	slug = strcase.ToKebab(filepath.Base(path))
-	if parts := strings.Split(path, "/"); len(parts) > 0 {
+	fullpath = bePath.TrimSlashes(url)
+	fullpath = strings.ToLower(fullpath)
+	if path = filepath.Dir(fullpath); path == "." {
+		path = "/"
+	} else {
+		path = bePath.CleanWithSlash(path)
+	}
+	slug = filepath.Base(fullpath)
+	if parts := strings.Split(fullpath, "/"); len(parts) > 1 {
 		section = parts[0]
+	} else {
+		section = ""
 	}
 	if notPath {
-		path = "!" + path
+		fullpath = "!" + fullpath
 	} else {
-		path = "/" + path
+		fullpath = "/" + fullpath
 	}
-	path = strings.ReplaceAll(path, "//", "/")
+	fullpath = filepath.Clean(fullpath)
 	return
 }
