@@ -23,7 +23,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 )
 
-const NotImplemented Tag = "NotImplemented"
+const NotImplemented Tag = "not-implemented"
 
 type Feature interface {
 	Init(this interface{})
