@@ -21,6 +21,7 @@ import (
 	"github.com/tg123/go-htpasswd"
 	"github.com/urfave/cli/v2"
 
+	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
@@ -36,7 +37,7 @@ var (
 
 type Feature interface {
 	feature.Feature
-	userbase.UsersProvider
+	userbase.AuthUserProvider
 	userbase.GroupsProvider
 	userbase.SecretsProvider
 }
@@ -164,36 +165,41 @@ func (f *CFeature) GetUserSecret(id string) (hash string) {
 	return
 }
 
-func (f *CFeature) AddUser(user *userbase.User) (err error) {
-	// f.Lock()
-	// defer f.Unlock()
-	err = fmt.Errorf("cannot add user: %v is read-only", f.Tag())
+func (f *CFeature) AuthUserPresent(id string) (present bool) {
+	f.RLock()
+	defer f.RUnlock()
+	_, present = f.parsedPwd[id]
 	return
 }
 
-func (f *CFeature) AddUserToGroup(id string, groups ...string) (err error) {
-	// f.Lock()
-	// defer f.Unlock()
-	err = fmt.Errorf("cannot add user to group(s): %v is read-only", f.Tag())
-	return
-}
-
-func (f *CFeature) GetUser(id string) (user *userbase.User, err error) {
+func (f *CFeature) GetAuthUser(id string) (user *userbase.AuthUser, err error) {
 	f.RLock()
 	defer f.RUnlock()
 	if _, found := f.parsedPwd[id]; found {
-		user = userbase.NewUser(id, id, "", "")
+		user = userbase.NewAuthUser(id, id, "", "", beContext.Context{})
 	} else {
 		err = fmt.Errorf("user not found")
 	}
 	return
 }
 
-func (f *CFeature) IsUserInGroup(id string, group string) (present bool) {
+func (f *CFeature) GetUserGroups(id string) (groups userbase.Groups) {
 	f.RLock()
 	defer f.RUnlock()
 	for _, htg := range f.htgroups {
-		if htg.IsUserInGroup(id, group) {
+		if userGroups := htg.GetUserGroups(id); len(userGroups) > 0 {
+			groups = groups.AppendString(userGroups...)
+			return
+		}
+	}
+	return
+}
+
+func (f *CFeature) IsUserInGroup(id string, group userbase.Group) (present bool) {
+	f.RLock()
+	defer f.RUnlock()
+	for _, htg := range f.htgroups {
+		if htg.IsUserInGroup(id, group.String()) {
 			present = true
 			return
 		}
@@ -201,14 +207,23 @@ func (f *CFeature) IsUserInGroup(id string, group string) (present bool) {
 	return
 }
 
-func (f *CFeature) GetUserGroups(id string) (groups []string) {
-	f.RLock()
-	defer f.RUnlock()
-	for _, htg := range f.htgroups {
-		if userGroups := htg.GetUserGroups(id); len(userGroups) > 0 {
-			groups = append(groups, userGroups...)
-			return
-		}
-	}
-	return
-}
+// func (f *CFeature) AddUser(user *userbase.AuthUser) (err error) {
+// 	// f.Lock()
+// 	// defer f.Unlock()
+// 	err = fmt.Errorf("%v feature is read-only", f.Tag())
+// 	return
+// }
+//
+// func (f *CFeature) AddUserToGroup(id string, groups ...string) (err error) {
+// 	// f.Lock()
+// 	// defer f.Unlock()
+// 	err = fmt.Errorf("%v feature is read-only", f.Tag())
+// 	return
+// }
+//
+// func (f *CFeature) RemoveUserFromGroup(id string, groups ...string) (err error) {
+// 	// f.Lock()
+// 	// defer f.Unlock()
+// 	err = fmt.Errorf("%v feature is read-only", f.Tag())
+// 	return
+// }

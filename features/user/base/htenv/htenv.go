@@ -16,16 +16,11 @@ package htenv
 
 import (
 	"fmt"
-	"os"
-	"regexp"
-	"strings"
 
-	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
-	"github.com/go-enjin/be/pkg/log"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/userbase"
 )
@@ -40,7 +35,7 @@ var (
 type Feature interface {
 	feature.Feature
 	userbase.SecretsProvider
-	userbase.UsersProvider
+	userbase.AuthUserProvider
 	userbase.GroupsProvider
 }
 
@@ -56,9 +51,9 @@ type CFeature struct {
 	cliCtx *cli.Context
 	enjin  feature.Internals
 
-	users  map[string]*userbase.User
+	users  map[string]*userbase.AuthUser
 	hashes map[string]string
-	groups map[string][]string
+	groups map[userbase.Group][]string
 }
 
 func New() MakeFeature {
@@ -78,9 +73,9 @@ func NewTagged(tag feature.Tag) MakeFeature {
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.FeatureTag = Tag
-	f.users = make(map[string]*userbase.User)
+	f.users = make(map[string]*userbase.AuthUser)
 	f.hashes = make(map[string]string)
-	f.groups = make(map[string][]string)
+	f.groups = make(map[userbase.Group][]string)
 }
 
 func (f *CFeature) Make() Feature {
@@ -119,11 +114,13 @@ func (f *CFeature) Shutdown() {
 }
 
 func (f *CFeature) GetUserSecret(id string) (secret string) {
+	f.RLock()
+	defer f.RUnlock()
 	secret, _ = f.hashes[id]
 	return
 }
 
-func (f *CFeature) AddUser(user *userbase.User) (err error) {
+func (f *CFeature) SetUser(user userbase.AuthUser) (err error) {
 	// f.Lock()
 	// defer f.Unlock()
 	err = fmt.Errorf("cannot add user: %v is read-only", f.Tag())
@@ -137,7 +134,16 @@ func (f *CFeature) AddUserToGroup(id string, groups ...string) (err error) {
 	return
 }
 
-func (f *CFeature) GetUser(id string) (user *userbase.User, err error) {
+func (f *CFeature) AuthUserPresent(id string) (present bool) {
+	f.RLock()
+	defer f.RUnlock()
+	_, present = f.users[id]
+	return
+}
+
+func (f *CFeature) GetAuthUser(id string) (user *userbase.AuthUser, err error) {
+	f.RLock()
+	defer f.RUnlock()
 	if u, ok := f.users[id]; ok {
 		user = u
 	} else {
@@ -146,7 +152,9 @@ func (f *CFeature) GetUser(id string) (user *userbase.User, err error) {
 	return
 }
 
-func (f *CFeature) IsUserInGroup(id string, group string) (present bool) {
+func (f *CFeature) IsUserInGroup(id string, group userbase.Group) (present bool) {
+	f.RLock()
+	defer f.RUnlock()
 	if users, ok := f.groups[group]; ok {
 		if beStrings.StringInSlices(id, users) {
 			present = true
@@ -155,79 +163,12 @@ func (f *CFeature) IsUserInGroup(id string, group string) (present bool) {
 	return
 }
 
-func (f *CFeature) GetUserGroups(id string) (groups []string) {
+func (f *CFeature) GetUserGroups(id string) (groups userbase.Groups) {
+	f.RLock()
+	defer f.RUnlock()
 	for group, users := range f.groups {
 		if beStrings.StringInSlices(id, users) {
 			groups = append(groups, group)
-		}
-	}
-	return
-}
-
-var rxSplitEquals = regexp.MustCompile(`^\s*([^=]+?)\s*=\s*(.+?)\s*$`)
-
-func (f *CFeature) loadEnvironment() (err error) {
-	environ := os.Environ()
-
-	var loadedUsers []string
-	for _, env := range environ {
-		if parts := rxSplitEquals.FindStringSubmatch(env); len(parts) == 3 {
-			if name, hash, ok := f.parseEnvUser(parts[1], parts[2]); ok {
-				f.hashes[name] = hash
-				f.users[name] = userbase.NewUser(name, name, "", "")
-				log.DebugF("including user: %v=%v", name, f.hashes[name])
-				loadedUsers = append(loadedUsers, name)
-			}
-		}
-	}
-
-	var loadedGroups []string
-	for _, env := range environ {
-		if parts := rxSplitEquals.FindStringSubmatch(env); len(parts) == 3 {
-			if name, users, ok := f.parseEnvGroup(parts[1], parts[2]); ok {
-				f.groups[name] = append(f.groups[name], users...)
-				loadedGroups = append(loadedGroups, name)
-			}
-		}
-	}
-
-	log.DebugF("found %d env users: %v", len(loadedUsers), loadedUsers)
-	log.DebugF("found %d env groups: %v", len(loadedGroups), loadedGroups)
-	return
-}
-
-func (f *CFeature) parseEnvUser(key, value string) (name, password string, ok bool) {
-	prefix := globals.MakeFlagEnvKey(f.Tag().String(), "USER") + "_"
-	prefix = strcase.ToKebab(prefix)
-	prefixLen := len(prefix)
-	name = strcase.ToKebab(key)
-	if ln := len(name); prefixLen < ln {
-		if name[0:prefixLen] == prefix {
-			name = name[prefixLen:]
-			password = value
-			ok = true
-			// log.DebugF("user: %v, pass: %v", name, password)
-		}
-	}
-	return
-}
-
-func (f *CFeature) parseEnvGroup(key, value string) (name string, users []string, ok bool) {
-	prefix := globals.MakeFlagEnvKey(f.Tag().String(), "GROUP") + "_"
-	prefix = strcase.ToKebab(prefix)
-	prefixLen := len(prefix)
-	name = strcase.ToKebab(key)
-	if ln := len(name); prefixLen < ln {
-		if name[0:prefixLen] == prefix {
-			name = name[prefixLen:]
-			for _, user := range strings.Split(value, " ") {
-				user = strcase.ToKebab(user)
-				if !beStrings.StringInStrings(user, users...) {
-					users = append(users, user)
-				}
-			}
-			ok = len(users) > 0
-			// log.DebugF("group: %v, users: %v", name, users)
 		}
 	}
 	return

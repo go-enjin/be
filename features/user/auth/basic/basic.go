@@ -92,7 +92,7 @@ type CFeature struct {
 	upNames          []string
 	gpNames          []string
 	spNames          []string
-	usersProviders   []userbase.UsersProvider
+	usersProviders   []userbase.AuthUserProvider
 	groupsProviders  []userbase.GroupsProvider
 	secretsProviders []userbase.SecretsProvider
 }
@@ -370,10 +370,10 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		efTag := ef.Tag().String()
 		for _, upName := range f.upNames {
 			if efTag == upName {
-				if upf, ok := ef.Self().(userbase.UsersProvider); ok {
+				if upf, ok := ef.Self().(userbase.AuthUserProvider); ok {
 					f.usersProviders = append(f.usersProviders, upf)
 				} else {
-					err = fmt.Errorf("%v feature is not a userbase.UsersProvider", efTag)
+					err = fmt.Errorf("%v feature is not a userbase.AuthUserProvider", efTag)
 					return
 				}
 			}
@@ -400,7 +400,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		}
 	}
 	if len(f.usersProviders) == 0 {
-		err = fmt.Errorf("at least one userbase.UsersProvider is required")
+		err = fmt.Errorf("at least one userbase.AuthUserProvider is required")
 		return
 	} else if len(f.groupsProviders) == 0 {
 		err = fmt.Errorf("at least one userbase.GroupsProvider is required")
@@ -485,8 +485,9 @@ func (f *CFeature) RestrictServePage(pgCtx beContext.Context, w http.ResponseWri
 		var id string
 		if id = f.getRequestUserID(r); id != "" {
 			if allow = f.isUserInGroup(id, group); allow {
-				modCtx["CurrentUserID"] = id
-				modCtx["CurrentUser"] = userbase.NewUser(id, id, "", "")
+				tag := f.Tag().Camel()
+				modCtx[tag+"UserID"] = id
+				modCtx[tag+"User"] = userbase.NewAuthUser(id, id, "", "", beContext.Context{"ID": id, "GetName": id})
 				if f.cacheControl != "" {
 					if _, exists := modCtx["CacheControl"]; !exists {
 						modCtx["CacheControl"] = f.cacheControl
@@ -548,7 +549,7 @@ func (f *CFeature) isRequestBypassed(r *http.Request) (bypass bool) {
 	return
 }
 
-func (f *CFeature) isRequestProtected(r *http.Request) (group string, protected bool) {
+func (f *CFeature) isRequestProtected(r *http.Request) (group userbase.Group, protected bool) {
 
 	if f.isRequestIgnored(r.URL.Path) {
 		return
@@ -560,13 +561,13 @@ func (f *CFeature) isRequestProtected(r *http.Request) (group string, protected 
 
 	for _, pp := range f.protectedPaths {
 		if protected = pp.pattern.MatchString(r.URL.Path); protected {
-			group = pp.group
+			group = userbase.NewGroup(pp.group)
 			return
 		}
 	}
 
 	if f.protectAll != "" {
-		group = f.protectAll
+		group = userbase.NewGroup(f.protectAll)
 		protected = true
 		return
 	}
@@ -578,23 +579,22 @@ func (f *CFeature) isRequestIgnored(path string) (ignored bool) {
 	if f.protectAll == "" {
 		// not all are restricted
 		if ignored = len(f.protectedPaths) == 0; ignored {
-			// and no protections specified
+			// no protections specified, early out
 			return
 		}
 	}
 
 	for _, rx := range f.ignoredPaths {
-		if rx.MatchString(path) {
-			ignored = true
+		if ignored = rx.MatchString(path); ignored {
 			return
 		}
 	}
 	return
 }
 
-func (f *CFeature) getUser(id, _ string) (user *userbase.User) {
+func (f *CFeature) getUser(id, _ string) (user *userbase.AuthUser) {
 	for _, upf := range f.usersProviders {
-		if found, err := upf.GetUser(id); err == nil && found != nil {
+		if found, err := upf.GetAuthUser(id); err == nil && found != nil {
 			user = found
 			return
 		}
@@ -611,7 +611,7 @@ func (f *CFeature) getUserSecret(user, _ string) (secret string) {
 	return
 }
 
-func (f *CFeature) isUserInGroup(user, group string) (present bool) {
+func (f *CFeature) isUserInGroup(user string, group userbase.Group) (present bool) {
 	for _, gpf := range f.groupsProviders {
 		if present = gpf.IsUserInGroup(user, group); present {
 			return
