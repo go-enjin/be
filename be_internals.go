@@ -9,7 +9,7 @@ import (
 	"github.com/go-enjin/be/pkg/theme"
 )
 
-func (e *Enjin) Features() (features []feature.Feature) {
+func (e *Enjin) Features() (features feature.Features) {
 	features = e.eb.features
 	return
 }
