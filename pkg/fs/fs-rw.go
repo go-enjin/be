@@ -14,7 +14,11 @@
 
 package fs
 
-import "os"
+import (
+	"os"
+
+	"github.com/go-enjin/be/pkg/page/matter"
+)
 
 type RWFileSystem interface {
 	FileSystem
@@ -22,8 +26,10 @@ type RWFileSystem interface {
 	MakeDir(path string, perm os.FileMode) (err error)
 	MakeDirAll(path string, perm os.FileMode) (err error)
 
-	WriteFile(path string, data []byte, perm os.FileMode) (err error)
-
 	Remove(path string) (err error)
 	RemoveAll(path string) (err error)
+
+	WriteFile(path string, data []byte, perm os.FileMode) (err error)
+	WritePageMatter(pm *matter.PageMatter) (err error)
+	RemovePageMatter(path string) (err error)
 }
