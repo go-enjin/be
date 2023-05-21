@@ -32,7 +32,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/hostrouter"
 	"github.com/iancoleman/strcase"
-	"github.com/nanmu42/gzip"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
@@ -281,7 +280,8 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 }
 
 func (e *Enjin) startupRoutedHttpListener(listen string, port int, router *chi.Mux) (err error) {
-	err = e.startupHandledHttpListener(listen, port, gzip.DefaultHandler().WrapHandler(router))
+	// TODO: cleanup this chain of functions
+	err = e.startupHandledHttpListener(listen, port, router)
 	return
 }
 

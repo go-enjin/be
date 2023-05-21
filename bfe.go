@@ -21,7 +21,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/nanmu42/gzip"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/fastcgi"
@@ -132,8 +131,7 @@ func (fe *FastcgiEnjin) action(ctx *cli.Context) (err error) {
 	if fe.handler, err = fastcgi.New(fe.target, fe.network, fe.source); err != nil {
 		return
 	}
-	handler := gzip.DefaultHandler().WrapHandler(fe.handler)
-	if err = startupHandledHttpListener(fe.listen, fe.port, handler, fe); err != nil && err.Error() == "http: Server closed" {
+	if err = startupHandledHttpListener(fe.listen, fe.port, fe.handler, fe); err != nil && err.Error() == "http: Server closed" {
 		err = nil
 	}
 	return
