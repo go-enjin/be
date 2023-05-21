@@ -246,8 +246,6 @@ func (f *FileSystem) FindFilePath(prefix string, extensions ...string) (path str
 }
 
 func (f *FileSystem) ReadPageMatter(path string) (pm *matter.PageMatter, err error) {
-	f.RLock()
-	defer f.RUnlock()
 
 	if f.Exists(path) {
 		var data []byte
@@ -255,7 +253,9 @@ func (f *FileSystem) ReadPageMatter(path string) (pm *matter.PageMatter, err err
 			return
 		}
 		_, _, created, updated, _ := f.FileStats(path)
-		pm, err = matter.ParsePageMatter(f.origin, path, created, updated, data)
+		if pm, err = matter.ParsePageMatter(f.origin, path, created, updated, data); err != nil {
+			log.ErrorF("error parsing page matter: %v - %v", path, err)
+		}
 		return
 	}
 

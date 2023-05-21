@@ -68,9 +68,6 @@ func (f *FileSystem) WriteFile(path string, data []byte, perm os.FileMode) (err 
 }
 
 func (f *FileSystem) WritePageMatter(pm *matter.PageMatter) (err error) {
-	f.Lock()
-	defer f.Unlock()
-
 	var data []byte
 	if data, err = pm.Bytes(); err != nil {
 		err = fmt.Errorf("error getting bytes from page matter: %v", err)

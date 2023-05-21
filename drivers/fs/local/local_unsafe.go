@@ -18,6 +18,7 @@ package local
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -31,7 +32,7 @@ func (f *FileSystem) realpath(path string) (out string) {
 
 func (f *FileSystem) ensurePathForWrite(path string) (err error) {
 	if dir := filepath.Dir(path); !beStrings.StringInStrings(dir, "", ".", "/", "./") {
-		if err = f.MakeDirAll(dir, DefaultDirMode); err != nil {
+		if err = os.MkdirAll(dir, DefaultDirMode); err != nil {
 			err = fmt.Errorf("error making directory: %v", dir)
 			return
 		}
