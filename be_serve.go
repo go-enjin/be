@@ -287,7 +287,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 			if ctx, r, ok = prh.RestrictServePage(ctx, w, r); !ok {
 				addr, _ := net.GetIpFromRequest(r)
 				log.WarnRF(r, "%v feature denied %v access to: %v", f.Tag(), addr, r.URL.Path)
-				// e.ServeBasic401(w, r)
+				e.ServeNotFound(w, r)
 				return
 			}
 		}
