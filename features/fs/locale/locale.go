@@ -20,7 +20,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/feature/mountable"
+	"github.com/go-enjin/be/pkg/feature/filesystem"
 	"github.com/go-enjin/be/pkg/maps"
 )
 
@@ -32,17 +32,17 @@ var (
 )
 
 type Feature interface {
-	mountable.Feature[MakeFeature]
+	filesystem.Feature[MakeFeature]
 }
 
 type MakeFeature interface {
-	mountable.MakeFeature[MakeFeature]
+	filesystem.MakeFeature[MakeFeature]
 
 	Make() Feature
 }
 
 type CFeature struct {
-	mountable.CFeature[MakeFeature]
+	filesystem.CFeature[MakeFeature]
 }
 
 func New() MakeFeature {

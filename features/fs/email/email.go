@@ -31,7 +31,7 @@ import (
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/feature/mountable"
+	"github.com/go-enjin/be/pkg/feature/filesystem"
 	"github.com/go-enjin/be/pkg/funcmaps"
 	"github.com/go-enjin/be/pkg/page/matter"
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -45,18 +45,18 @@ var (
 )
 
 type Feature interface {
-	mountable.Feature[MakeFeature]
+	filesystem.Feature[MakeFeature]
 	feature.EmailProvider
 }
 
 type MakeFeature interface {
-	mountable.MakeFeature[MakeFeature]
+	filesystem.MakeFeature[MakeFeature]
 
 	Make() Feature
 }
 
 type CFeature struct {
-	mountable.CFeature[MakeFeature]
+	filesystem.CFeature[MakeFeature]
 }
 
 func New() MakeFeature {
@@ -226,7 +226,7 @@ func (f *CFeature) NewEmail(path string, bodyCtx beContext.Context) (message *go
 func (f *CFeature) MakeEmailBody(path string, ctx beContext.Context) (fm beContext.Context, body string, err error) {
 
 	var pm *matter.PageMatter
-	if pm, err = f.ReadPageMatter(path); err != nil {
+	if pm, err = f.FindReadPageMatter(path); err != nil {
 		return
 	}
 	fm = pm.Matter

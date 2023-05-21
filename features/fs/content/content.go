@@ -23,7 +23,8 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/feature/mountable"
+	"github.com/go-enjin/be/pkg/feature/filesystem"
+	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
@@ -39,11 +40,11 @@ var (
 )
 
 type Feature interface {
-	mountable.Feature[MakeFeature]
+	filesystem.Feature[MakeFeature]
 }
 
 type MakeFeature interface {
-	mountable.MakeFeature[MakeFeature]
+	filesystem.MakeFeature[MakeFeature]
 
 	Make() Feature
 
@@ -54,7 +55,7 @@ type MakeFeature interface {
 }
 
 type CFeature struct {
-	mountable.CFeature[MakeFeature]
+	filesystem.CFeature[MakeFeature]
 
 	kvcTag  feature.Tag
 	kvcName string
@@ -114,12 +115,11 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
-	for _, ef := range f.Enjin.Features() {
-		if kvcf, ok := ef.(kvs.KeyValueCaches); ok && ef.Tag() == f.kvcTag {
-			if kvc, ee := kvcf.Get(f.kvcName); ee == nil {
-				f.cache = kvc
-				break
-			}
+	allFeatures := f.Enjin.Features()
+
+	if kvcf := feature.FindTypedFeatureByTag[kvs.KeyValueCaches](f.kvcTag, allFeatures); kvcf != nil {
+		if kvc, ee := kvcf.Get(f.kvcName); ee == nil {
+			f.cache = kvc
 		}
 	}
 	if f.cache == nil {
@@ -127,23 +127,24 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
-	for _, ef := range f.Enjin.Features() {
-		if f.indexProviderTags.Has(ef.Tag()) {
-			if pip, ok := ef.Self().(indexing.PageIndexFeature); ok {
-				f.indexProviders = append(f.indexProviders, pip)
-			} else {
-				err = fmt.Errorf("%v feature is not a pagecache.PageIndexFeature", ef.Tag())
-				return
-			}
+	for _, pif := range feature.FindAllTypedFeatures[indexing.PageIndexFeature](allFeatures) {
+		if f.indexProviderTags.Has(pif.(feature.Feature).Tag()) {
+			f.indexProviders = append(f.indexProviders, pif)
 		}
-		if f.searchProviderTags.Has(ef.Tag()) {
-			if sep, ok := ef.Self().(indexing.SearchEnjinFeature); ok {
-				f.searchProviders = append(f.searchProviders, sep)
-			} else {
-				err = fmt.Errorf("%v feature is not a pagecache.SearchEnjinFeature", ef.Tag())
-				return
-			}
+	}
+	if len(f.indexProviders) == 0 {
+		err = fmt.Errorf(`indexing.PageIndexFeature features not found: %+v`, f.indexProviderTags)
+		return
+	}
+
+	for _, sef := range feature.FindAllTypedFeatures[indexing.SearchEnjinFeature](allFeatures) {
+		if f.searchProviderTags.Has(sef.(feature.Feature).Tag()) {
+			f.searchProviders = append(f.searchProviders, sef)
 		}
+	}
+	if len(f.searchProviders) == 0 {
+		err = fmt.Errorf(`indexing.SearchEnjinFeature features not found: %+v`, f.indexProviderTags)
+		return
 	}
 
 	err = f.PopulateIndexes()
@@ -172,28 +173,33 @@ func (f *CFeature) PopulateIndexes() (err error) {
 		for _, mp := range f.MountPoints[point] {
 			if files, ee := mp.ROFS.ListAllFiles("."); ee == nil {
 
-				// index all URLs from front matter
-				// index all front-matter
 				for _, file := range files {
 
 					if pm, eee := f.ReadPageMatter(file); eee != nil {
+
 						log.ErrorF("error reading page matter: %v - %v", file, eee)
-					} else if pm.Stub != nil {
-						if pg, eeee := page.NewFromPageStub(pm.Stub, theme); eeee != nil {
+
+					} else if pmStub, ok := pm.Stub.(*fs.PageStub); ok && pmStub != nil {
+
+						if pg, eeee := page.NewFromPageStub(pmStub, theme); eeee != nil {
+
 							log.ErrorF("error making page from stub: %v - %v", file, eeee)
+
 						} else {
+
 							for _, pip := range f.indexProviders {
-								if eeeee := pip.AddToIndex(pm.Stub, pg); eeeee != nil {
+								if eeeee := pip.AddToIndex(pmStub, pg); eeeee != nil {
 									log.ErrorF("error adding to page index: %v - %v", file, eeeee)
 								}
 							}
 							for _, sep := range f.searchProviders {
-								if eeeee := sep.AddToSearchIndex(pm.Stub, pg); eeeee != nil {
+								if eeeee := sep.AddToSearchIndex(pmStub, pg); eeeee != nil {
 									log.ErrorF("error adding to search index: %v - %v", file, eeeee)
 								}
 							}
 							total += 1
 							log.DebugF("%v feature indexed page: [%v] %v - %v", f.Tag(), pg.LanguageTag, pg.Url, file)
+
 						}
 					}
 

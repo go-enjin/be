@@ -26,7 +26,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/feature/mountable"
+	"github.com/go-enjin/be/pkg/feature/filesystem"
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
@@ -46,11 +46,11 @@ var (
 )
 
 type Feature interface {
-	mountable.Feature[MakeFeature]
+	filesystem.Feature[MakeFeature]
 }
 
 type MakeFeature interface {
-	mountable.MakeFeature[MakeFeature]
+	filesystem.MakeFeature[MakeFeature]
 
 	UseDirIndex(indexFileName string) MakeFeature
 	SetCacheControl(values string) MakeFeature
@@ -62,7 +62,7 @@ type MakeFeature interface {
 }
 
 type CFeature struct {
-	mountable.CFeature[MakeFeature]
+	filesystem.CFeature[MakeFeature]
 
 	dirIndex string
 
@@ -186,7 +186,7 @@ func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWrite
 	}
 	path = bePath.CleanWithSlash(path)
 
-	var cmp *mountable.CMountPoint
+	var cmp *filesystem.CMountPoint
 	var data []byte
 	var mime string
 	var ok bool
@@ -238,7 +238,7 @@ func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWrite
 	return
 }
 
-func (f *CFeature) findFileData(path string) (cmp *mountable.CMountPoint, data []byte, mime string, fullpath string, ok bool) {
+func (f *CFeature) findFileData(path string) (cmp *filesystem.CMountPoint, data []byte, mime string, fullpath string, ok bool) {
 	for _, point := range maps.SortedKeys(f.MountPoints) {
 		for _, mp := range f.MountPoints[point] {
 			if data, mime, fullpath, ok = beFs.CheckForFileData(mp.ROFS, path, mp.Mount); ok {
