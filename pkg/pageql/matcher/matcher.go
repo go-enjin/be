@@ -22,10 +22,10 @@ import (
 
 	"github.com/go-enjin/be/pkg/cmp"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/page/matter"
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/regexps"
 	"github.com/go-enjin/be/pkg/theme"
@@ -46,7 +46,7 @@ type cMatcher struct {
 	err error
 }
 
-func NewProcess(input string, enjin feature.Internals) (matched []*matter.PageStub, err error) {
+func NewProcess(input string, enjin feature.Internals) (matched []*fs.PageStub, err error) {
 	var ok bool
 	var t *theme.Theme
 	var f indexing.PageContextProvider
@@ -62,7 +62,7 @@ func NewProcess(input string, enjin feature.Internals) (matched []*matter.PageSt
 	return
 }
 
-func NewProcessWith(input string, t *theme.Theme, f indexing.PageContextProvider) (matched []*matter.PageStub, err error) {
+func NewProcessWith(input string, t *theme.Theme, f indexing.PageContextProvider) (matched []*fs.PageStub, err error) {
 	matcher := &cMatcher{
 		feat:    f,
 		theme:   t,
@@ -84,7 +84,7 @@ func NewProcessWith(input string, t *theme.Theme, f indexing.PageContextProvider
 	return
 }
 
-func (m *cMatcher) process() (matched []*matter.PageStub, err error) {
+func (m *cMatcher) process() (matched []*fs.PageStub, err error) {
 	var pErr *pageql.ParseError
 	if m.stmnt, pErr = pageql.CompileQuery(m.input); pErr != nil {
 		err = error(pErr)
@@ -147,7 +147,7 @@ func (m *cMatcher) process() (matched []*matter.PageStub, err error) {
 	return
 }
 
-func (m *cMatcher) processQueryStatement(stmnt *pageql.Statement) (matched []*matter.PageStub, err error) {
+func (m *cMatcher) processQueryStatement(stmnt *pageql.Statement) (matched []*fs.PageStub, err error) {
 	if stmnt.Expression != nil {
 		if matched, err = m.processQueryExpression(stmnt.Expression); err != nil {
 			return
@@ -156,7 +156,7 @@ func (m *cMatcher) processQueryStatement(stmnt *pageql.Statement) (matched []*ma
 	return
 }
 
-func (m *cMatcher) processQueryExpression(expr *pageql.Expression) (matched []*matter.PageStub, err error) {
+func (m *cMatcher) processQueryExpression(expr *pageql.Expression) (matched []*fs.PageStub, err error) {
 	switch {
 	case expr.Condition != nil:
 		matched, err = m.processQueryCondition(expr.Condition)
@@ -167,9 +167,9 @@ func (m *cMatcher) processQueryExpression(expr *pageql.Expression) (matched []*m
 	return
 }
 
-func (m *cMatcher) processQueryCondition(cond *pageql.Condition) (matched []*matter.PageStub, err error) {
+func (m *cMatcher) processQueryCondition(cond *pageql.Condition) (matched []*fs.PageStub, err error) {
 
-	var lhsMatched, rhsMatched []*matter.PageStub
+	var lhsMatched, rhsMatched []*fs.PageStub
 	if lhsMatched, err = m.processQueryExpression(cond.Left); err != nil {
 		return
 	}
@@ -189,7 +189,7 @@ func (m *cMatcher) processQueryCondition(cond *pageql.Condition) (matched []*mat
 		}
 
 	case "OR":
-		add := make(map[string]*matter.PageStub)
+		add := make(map[string]*fs.PageStub)
 		for _, stub := range lhsMatched {
 			add[stub.Shasum] = stub
 		}
@@ -203,7 +203,7 @@ func (m *cMatcher) processQueryCondition(cond *pageql.Condition) (matched []*mat
 	return
 }
 
-func (m *cMatcher) processQueryOperation(op *pageql.Operation) (matched []*matter.PageStub, err error) {
+func (m *cMatcher) processQueryOperation(op *pageql.Operation) (matched []*fs.PageStub, err error) {
 	switch op.Type {
 	case "==", "=~":
 		matched, err = m.processOperationEquals(*op.Left, op.Right, true)
@@ -223,8 +223,8 @@ func (m *cMatcher) processQueryOperation(op *pageql.Operation) (matched []*matte
 	return
 }
 
-func (m *cMatcher) processOperationEquals(key string, opValue *pageql.Value, inclusive bool) (matched []*matter.PageStub, err error) {
-	results := make(map[string]*matter.PageStub)
+func (m *cMatcher) processOperationEquals(key string, opValue *pageql.Value, inclusive bool) (matched []*fs.PageStub, err error) {
+	results := make(map[string]*fs.PageStub)
 
 	// TODO: implement more than string and regexp comparisons
 

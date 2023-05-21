@@ -22,11 +22,11 @@ import (
 
 	"github.com/go-enjin/be/pkg/cmp"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/page/matter"
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/regexps"
 	"github.com/go-enjin/be/pkg/theme"
@@ -38,7 +38,7 @@ type cSelector struct {
 	theme  *theme.Theme
 	sel    *pageql.Selection
 	cache  map[string]map[string]interface{}
-	lookup map[string]map[interface{}]matter.PageStubs
+	lookup map[string]map[interface{}]fs.PageStubs
 
 	err error
 }
@@ -65,7 +65,7 @@ func NewProcessWith(input string, t *theme.Theme, f indexing.PageContextProvider
 		theme:  t,
 		input:  input,
 		cache:  make(map[string]map[string]interface{}),
-		lookup: make(map[string]map[interface{}]matter.PageStubs),
+		lookup: make(map[string]map[interface{}]fs.PageStubs),
 	}
 	if matcher.feat == nil {
 		err = fmt.Errorf("pageql matcher process requires a pagecache.PageContentProvider feature to be present")
@@ -88,7 +88,7 @@ func (m *cSelector) process() (selected map[string]interface{}, err error) {
 	for _, sel := range m.sel.Selecting {
 
 		if _, exists := m.lookup[sel.ContextKey]; !exists {
-			m.lookup[sel.ContextKey] = make(map[interface{}]matter.PageStubs)
+			m.lookup[sel.ContextKey] = make(map[interface{}]fs.PageStubs)
 		}
 
 		for pair := range m.feat.YieldPageContextValueStubs(sel.ContextKey) {
@@ -193,7 +193,7 @@ func (m *cSelector) processWithoutStatement() (selected map[string]interface{}, 
 
 func (m *cSelector) processWithStatement() (selected map[string]interface{}, err error) {
 	if m.sel.Statement != nil {
-		var matched matter.PageStubs
+		var matched fs.PageStubs
 		if matched, err = m.processQueryStatement(m.sel.Statement.Render()); err != nil {
 			log.ErrorF("pqs error: %v", err)
 			return
@@ -208,7 +208,7 @@ func (m *cSelector) processWithStatement() (selected map[string]interface{}, err
 			}
 			var values []interface{}
 			for value, stubs := range m.lookup[sel.ContextKey] {
-				if matter.AnyStubsInStubs(matched, stubs) {
+				if fs.AnyStubsInStubs(matched, stubs) {
 					switch vt := value.(type) {
 					case []string:
 						for _, vtv := range vt {
@@ -287,7 +287,7 @@ func (m *cSelector) processWithStatement() (selected map[string]interface{}, err
 	return
 }
 
-func (m *cSelector) processQueryStatement(stmnt *pageql.Statement) (matched []*matter.PageStub, err error) {
+func (m *cSelector) processQueryStatement(stmnt *pageql.Statement) (matched []*fs.PageStub, err error) {
 	if stmnt.Expression != nil {
 		if matched, err = m.processQueryExpression(stmnt.Expression); err != nil {
 			return
@@ -296,7 +296,7 @@ func (m *cSelector) processQueryStatement(stmnt *pageql.Statement) (matched []*m
 	return
 }
 
-func (m *cSelector) processQueryExpression(expr *pageql.Expression) (matched []*matter.PageStub, err error) {
+func (m *cSelector) processQueryExpression(expr *pageql.Expression) (matched []*fs.PageStub, err error) {
 	switch {
 	case expr.Condition != nil:
 		matched, err = m.processQueryCondition(expr.Condition)
@@ -307,9 +307,9 @@ func (m *cSelector) processQueryExpression(expr *pageql.Expression) (matched []*
 	return
 }
 
-func (m *cSelector) processQueryCondition(cond *pageql.Condition) (matched []*matter.PageStub, err error) {
+func (m *cSelector) processQueryCondition(cond *pageql.Condition) (matched []*fs.PageStub, err error) {
 
-	var lhsMatched, rhsMatched []*matter.PageStub
+	var lhsMatched, rhsMatched []*fs.PageStub
 	if lhsMatched, err = m.processQueryExpression(cond.Left); err != nil {
 		return
 	}
@@ -329,7 +329,7 @@ func (m *cSelector) processQueryCondition(cond *pageql.Condition) (matched []*ma
 		}
 
 	case "OR":
-		add := make(map[string]*matter.PageStub)
+		add := make(map[string]*fs.PageStub)
 		for _, stub := range lhsMatched {
 			add[stub.Shasum] = stub
 		}
@@ -343,7 +343,7 @@ func (m *cSelector) processQueryCondition(cond *pageql.Condition) (matched []*ma
 	return
 }
 
-func (m *cSelector) processQueryOperation(op *pageql.Operation) (matched []*matter.PageStub, err error) {
+func (m *cSelector) processQueryOperation(op *pageql.Operation) (matched []*fs.PageStub, err error) {
 	switch op.Type {
 	case "==":
 		matched, err = m.processOperationEquals(*op.Left, op.Right, true)
@@ -357,8 +357,8 @@ func (m *cSelector) processQueryOperation(op *pageql.Operation) (matched []*matt
 	return
 }
 
-func (m *cSelector) processOperationEquals(key string, opValue *pageql.Value, inclusive bool) (matched []*matter.PageStub, err error) {
-	results := make(map[string]*matter.PageStub)
+func (m *cSelector) processOperationEquals(key string, opValue *pageql.Value, inclusive bool) (matched []*fs.PageStub, err error) {
+	results := make(map[string]*fs.PageStub)
 
 	// TODO: implement more than string and regexp comparisons
 
