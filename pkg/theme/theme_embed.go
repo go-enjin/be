@@ -1,4 +1,4 @@
-//go:build driver_fs_local || drivers_fs || drivers || locals || all
+//go:build driver_fs_embed || drivers_fs || drivers || embeds || all
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //
@@ -17,25 +17,24 @@
 package theme
 
 import (
-	"github.com/go-enjin/be/drivers/fs/local"
+	"embed"
+
+	beFsEmbed "github.com/go-enjin/be/drivers/fs/embed"
 	"github.com/go-enjin/be/pkg/fs"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
-func NewLocal(path string) (t *Theme, err error) {
-	if !bePath.IsDir(path) {
-		err = bePath.ErrorDirNotFound
-		return
-	}
+func NewEmbed(origin string, path string, efs embed.FS) (t *Theme, err error) {
+	path = bePath.TrimSlashes(path)
 	t = new(Theme)
-	t.Path = bePath.TrimSlashes(path)
-	if t.FileSystem, err = local.New(path); err != nil {
+	t.Path = path
+	if t.FileSystem, err = beFsEmbed.New(origin, path, efs); err != nil {
 		return
 	}
-	if staticFs, e := local.New(path + "/static"); e == nil {
+	if staticFs, e := beFsEmbed.New(origin, path+"/static", efs); e == nil {
 		t.StaticFS = staticFs
 		fs.RegisterFileSystem("/", staticFs)
-		// log.DebugF("registered local static fs: %v/static", path)
+		// log.DebugF("registered embed static fs: %v/static", path)
 	} else {
 		t.StaticFS = nil
 	}
