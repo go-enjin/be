@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sort"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -168,7 +169,8 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	}
 
 	// route processor middleware features, in order of longest to shortest
-	sortedRoutes := beStrings.SortByLengthDesc(maps.Keys(e.eb.processors))
+	sortedRoutes := maps.Keys(e.eb.processors)
+	sort.Sort(beStrings.SortByLengthDesc(sortedRoutes))
 	for _, route := range sortedRoutes {
 		log.DebugF("including enjin %v route processor middleware", route)
 		processor := e.eb.processors[route]
@@ -213,26 +215,29 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 func (e *Enjin) RoutingHTTP(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	tag := lang.GetTag(r)
-	for _, f := range e.Features() {
-		if pp, ok := f.Self().(feature.PageProvider); ok {
-			if pg := pp.FindPage(tag, path); pg != nil {
-				if err := e.ServePage(pg, w, r); err == nil {
-					log.DebugRF(r, "enjin router served provided page: %v", pg.Url)
-					return
-				} else {
-					log.ErrorRF(r, "error serving page: %v - %v", pg.Url, err)
-				}
-			}
-		}
-	}
-	for _, f := range e.Features() {
-		if spf, ok := f.Self().(feature.ServePathFeature); ok {
-			if ee := spf.ServePath(path, e, w, r); ee == nil {
-				log.DebugRF(r, "%v feature served path: %v", f.Tag(), path)
+	allFeatures := e.Features()
+
+	// look for any page provider providing the requested page
+	for _, pp := range feature.FindAllTypedFeatures[feature.PageProvider](allFeatures) {
+		if pg := pp.FindPage(tag, path); pg != nil {
+			if err := e.ServePage(pg, w, r); err == nil {
+				log.DebugRF(r, "enjin router served provided page: %v", pg.Url)
 				return
+			} else {
+				log.ErrorRF(r, "error serving provided page: %v - %v", pg.Url, err)
 			}
 		}
 	}
+
+	// look for any serve-path feature handling the requested page
+	for _, spf := range feature.FindAllTypedFeatures[feature.ServePathFeature](allFeatures) {
+		if ee := spf.ServePath(path, e, w, r); ee == nil {
+			log.DebugRF(r, "%v feature served path: %v", spf.(feature.Feature).Tag(), path)
+			return
+		}
+	}
+
+	// look for any fallback, enjin-built-in, pages
 	if pg, ok := e.eb.pages[path]; ok {
 		if err := e.ServePage(pg, w, r); err != nil {
 			log.ErrorRF(r, "serve page err: %v", err)
@@ -242,5 +247,7 @@ func (e *Enjin) RoutingHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	log.DebugRF(r, "enjin router did not find any page or path for: %v", path)
 	e.ServeNotFound(w, r)
 }
