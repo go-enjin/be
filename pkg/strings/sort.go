@@ -14,6 +14,8 @@
 
 package strings
 
+import "github.com/fvbommel/sortorder"
+
 type SortByLengthAsc []string
 
 func (a SortByLengthAsc) Len() int {
@@ -21,7 +23,11 @@ func (a SortByLengthAsc) Len() int {
 }
 
 func (a SortByLengthAsc) Less(i, j int) bool {
-	return len(a[i]) < len(a[j])
+	// ASC is less-than
+	if len(a[i]) < len(a[j]) {
+		return true
+	}
+	return sortorder.NaturalLess(a[i], a[j])
 }
 
 func (a SortByLengthAsc) Swap(i, j int) {
@@ -35,7 +41,11 @@ func (a SortByLengthDesc) Len() int {
 }
 
 func (a SortByLengthDesc) Less(i, j int) bool {
-	return len(a[i]) > len(a[j])
+	// DESC is greater-than
+	if len(a[i]) > len(a[j]) {
+		return true
+	}
+	return sortorder.NaturalLess(a[j], a[i])
 }
 
 func (a SortByLengthDesc) Swap(i, j int) {
