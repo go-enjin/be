@@ -295,6 +295,8 @@ func startupHandledHttpListener(listen string, port int, handler http.Handler, e
 
 	var srv http.Server
 
+	// TODO: implement signal handler features
+
 	idleConnectionsClosed := make(chan struct{})
 	go func() {
 		sigint := make(chan os.Signal, 1)

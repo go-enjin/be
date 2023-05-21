@@ -29,6 +29,8 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
+// TODO: figure out "enjin as a feature" and implement FastCGI as that
+
 type FastcgiEnjin struct {
 	port   int
 	listen string
@@ -131,6 +133,7 @@ func (fe *FastcgiEnjin) action(ctx *cli.Context) (err error) {
 	if fe.handler, err = fastcgi.New(fe.target, fe.network, fe.source); err != nil {
 		return
 	}
+	// TODO: figure out gzip response compression for FastCGI enjins
 	if err = startupHandledHttpListener(fe.listen, fe.port, fe.handler, fe); err != nil && err.Error() == "http: Server closed" {
 		err = nil
 	}
