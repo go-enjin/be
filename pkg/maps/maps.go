@@ -257,6 +257,8 @@ func ValuesSortedByKeys[V interface{}](data map[string]V) (values []V) {
 	return
 }
 
+// SortedKeyLengths returns the list of keys natural sorted and from longest to
+// shortest
 func SortedKeyLengths[V interface{}](data map[string]V) (keys []string) {
 	for key, _ := range data {
 		keys = append(keys, key)
