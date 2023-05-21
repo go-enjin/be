@@ -38,7 +38,7 @@ func (eb *EnjinBuilder) AddPageFromString(path, raw string) feature.Builder {
 		}
 		updated = info.ModTime().Unix()
 	}
-	if p, err := page.New(path, raw, created, updated, t, eb.context); err == nil {
+	if p, err := page.New("enjin", path, raw, created, updated, t, eb.context); err == nil {
 		eb.pages[p.Url] = p
 		log.DebugF("adding page from string: %v", p.Url)
 	} else {
