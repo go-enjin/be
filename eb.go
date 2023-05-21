@@ -39,6 +39,7 @@ import (
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/types/theme-types"
+	"github.com/go-enjin/be/pkg/userbase"
 )
 
 var _ feature.Builder = (*EnjinBuilder)(nil)
@@ -80,6 +81,8 @@ type EnjinBuilder struct {
 	localeNames map[language.Tag]string
 	defaultLang language.Tag
 
+	publicUser userbase.Actions
+
 	enjins []*EnjinBuilder
 }
 
@@ -92,7 +95,7 @@ func New() (be *EnjinBuilder) {
 	be.pages = make(map[string]*page.Page)
 	be.context = context.New()
 	be.theming = make(map[string]*theme.Theme)
-	be.features = make([]feature.Feature, 0)
+	be.features = make(feature.Features, 0)
 	be.headers = make([]headers.ModifyHeadersFn, 0)
 	be.domains = make([]string, 0)
 	be.consoles = make(map[feature.Tag]feature.Console)
@@ -104,6 +107,7 @@ func New() (be *EnjinBuilder) {
 	be.hotReload = false
 	be.langMode = lang.NewQueryMode().Make()
 	be.defaultLang = language.Und
+	be.publicUser = make(userbase.Actions, 0)
 	return be
 }
 
