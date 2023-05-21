@@ -57,7 +57,7 @@ type EnjinBuilder struct {
 	context      context.Context
 	theme        string
 	theming      map[string]*theme.Theme
-	features     []feature.Feature
+	features     feature.Features
 	headers      []headers.ModifyHeadersFn
 	domains      []string
 	consoles     map[feature.Tag]feature.Console
