@@ -30,11 +30,11 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
+	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/indexing"
 	beIndexSearch "github.com/go-enjin/be/pkg/indexing/search"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/page/matter"
 	"github.com/go-enjin/be/pkg/regexps"
 	beSearch "github.com/go-enjin/be/pkg/search"
 )
@@ -192,7 +192,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 	return
 }
 
-func (f *CFeature) AddToSearchIndex(stub *matter.PageStub, p *page.Page) (err error) {
+func (f *CFeature) AddToSearchIndex(stub *fs.PageStub, p *page.Page) (err error) {
 	f.Lock()
 	defer f.Unlock()
 	if f.indexes == nil {
