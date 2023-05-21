@@ -27,6 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
 	"github.com/go-enjin/be/pkg/types/site"
+	"github.com/go-enjin/be/pkg/userbase"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/net/headers"
@@ -77,6 +78,9 @@ type Service interface {
 
 	FindEmailAccount(account string) (emailSender EmailSender)
 	SendEmail(account string, message *gomail.Message) (err error)
+
+	GetPublicAccess() (actions userbase.Actions)
+	FindAllUserActions() (list userbase.Actions)
 
 	Notify(tag string)
 	NotifyF(tag, format string, argv ...interface{})

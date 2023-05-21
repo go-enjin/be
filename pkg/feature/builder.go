@@ -22,6 +22,7 @@ import (
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/theme"
+	"github.com/go-enjin/be/pkg/userbase"
 )
 
 type Builder interface {
@@ -89,6 +90,8 @@ type Builder interface {
 
 	// HotReload enables or disables hot-reloading theme templates and content files
 	HotReload(enabled bool) Builder
+
+	SetPublicAccess(actions ...userbase.Action) Builder
 
 	// Build constructs an Enjin Runner from the Builder configuration
 	Build() Runner
