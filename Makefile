@@ -34,8 +34,8 @@ DJHT_GO_PACKAGE := github.com/go-enjin/github-com-djherbis-times
 DJHT_LOCAL_PATH := ../../../github.com/go-enjin/github-com-djherbis-times
 
 # go-pkgz auth package
-GPA_GO_PACKAGE := github.com/go-pkgz/auth
-GPA_LOCAL_PATH := ../../../github.com/go-pkgz/auth
+GPA_GO_PACKAGE := github.com/go-enjin/github-com-go-pkgz-auth
+GPA_LOCAL_PATH := ../../../github.com/go-enjin/github-com-go-pkgz-auth
 
 GOLANG ?= 1.20.1
 GO_MOD ?= 1020
