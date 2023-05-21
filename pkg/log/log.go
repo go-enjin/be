@@ -55,3 +55,8 @@ func Logger() *log.Logger {
 	}
 	return logLogger
 }
+
+func PrefixedLogger(prefix string) (logging *log.Logger) {
+	logging = log.New(logger.Writer(), prefix, 0)
+	return
+}
