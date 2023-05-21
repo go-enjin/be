@@ -23,9 +23,9 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
-	"github.com/go-enjin/be/pkg/page/matter"
 	"github.com/go-enjin/be/pkg/types/site"
 
 	"github.com/go-enjin/be/pkg/context"
@@ -65,11 +65,11 @@ type Service interface {
 	ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request)
 
 	MatchQL(query string) (pages []*page.Page)
-	MatchStubsQL(query string) (stubs []*matter.PageStub)
+	MatchStubsQL(query string) (stubs []*fs.PageStub)
 	SelectQL(query string) (selected map[string]interface{})
 
 	CheckMatchQL(query string) (pages []*page.Page, err error)
-	CheckMatchStubsQL(query string) (stubs []*matter.PageStub, err error)
+	CheckMatchStubsQL(query string) (stubs []*fs.PageStub, err error)
 	CheckSelectQL(query string) (selected map[string]interface{}, err error)
 
 	FindPage(tag language.Tag, url string) (p *page.Page)
@@ -100,7 +100,7 @@ type Internals interface {
 
 	Self() (self interface{})
 
-	Features() (features []Feature)
+	Features() (features Features)
 	Pages() (pages map[string]*page.Page)
 	Theme() (theme string)
 	Theming() (theming map[string]*theme.Theme)
