@@ -98,7 +98,6 @@ type MakeFeature interface {
 	SetJWTCookieDomain(domain string) MakeFeature
 	SetSendJWTHeader(enabled bool) MakeFeature
 
-	AddAudSecretKeys(keys ...string) MakeFeature
 	AddProvider(name, cid, csecret string) MakeFeature
 	AddDirectProvider(name string, fn provider.CredCheckerFunc) MakeFeature
 
@@ -130,7 +129,6 @@ type CFeature struct {
 	mountAuthApiPath string
 	mountAvatarPath  string
 
-	audKeys    []string
 	audSecrets map[string]string
 
 	authProviders       map[string][]string
@@ -307,15 +305,6 @@ func (f *CFeature) SetSendJWTHeader(enabled bool) MakeFeature {
 	return f
 }
 
-func (f *CFeature) AddAudSecretKeys(keys ...string) MakeFeature {
-	for _, key := range keys {
-		if !beStrings.StringInSlices(key, f.audKeys) {
-			f.audKeys = append(f.audKeys, key)
-		}
-	}
-	return f
-}
-
 func (f *CFeature) AddProvider(name, cid, csecret string) MakeFeature {
 	f.authProviders[name] = []string{cid, csecret}
 	return f
@@ -375,19 +364,16 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 		Name:     globals.MakeFlagName(tag, "default-aud-secret"),
 		Usage:    "specify the default secret key",
 		Category: tag,
-		Required: len(f.audKeys) == 0,
+		Required: true,
 		EnvVars:  globals.MakeFlagEnvKeys(tag, "default-aud-secret"),
 	})
-	for _, key := range f.audKeys {
-		flagName := strcase.ToKebab(key) + "-aud-secret"
-		b.AddFlags(&cli.StringFlag{
-			Name:     globals.MakeFlagName(tag, flagName),
-			Usage:    "specify the " + key + " audience secret",
-			Category: tag,
-			Required: true,
-			EnvVars:  globals.MakeFlagEnvKeys(tag, flagName),
-		})
-	}
+	b.AddFlags(&cli.StringFlag{
+		Name:     globals.MakeFlagName(tag, "feature-aud-secret"),
+		Usage:    "specify the " + f.Tag().Kebab() + " audience secret",
+		Category: tag,
+		Required: true,
+		EnvVars:  globals.MakeFlagEnvKeys(tag, "feature-aud-secret"),
+	})
 
 	err = f.BuildDevAuthService(b)
 	return
@@ -397,7 +383,7 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 	f.Enjin = enjin
 	siteName := strcase.ToKebab(f.Enjin.SiteName())
 
-	f.authOpts.AudSecrets = len(f.audKeys) > 0
+	f.authOpts.AudSecrets = true
 
 	if f.authOpts.Issuer == "" {
 		f.authOpts.Issuer = siteName
@@ -453,14 +439,12 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
-	if err = processAudSecrets(ctx, "_default_", "default-aud-secret", len(f.audKeys) == 0); err != nil {
+	if err = processAudSecrets(ctx, "_default_", "default-aud-secret", true); err != nil {
 		return
 	}
 
-	for _, key := range f.audKeys {
-		if err = processAudSecrets(ctx, key, strcase.ToKebab(key)+"-aud-secret", true); err != nil {
-			return
-		}
+	if err = processAudSecrets(ctx, f.Tag().Kebab(), "feature-aud-secret", true); err != nil {
+		return
 	}
 
 	if flagName := globals.MakeFlagName(tag, "base-url"); ctx.IsSet(flagName) {
