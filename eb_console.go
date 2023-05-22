@@ -22,9 +22,12 @@ import (
 )
 
 func (eb *EnjinBuilder) AddConsole(c feature.Console) feature.Builder {
-	if _, ok := eb.consoles[c.Tag()]; !ok {
-		eb.consoles[c.Tag()] = c
-		log.DebugF("adding console: %v", c.Tag())
+	tag := feature.Tag(c.Tag().Kebab())
+	if _, ok := eb.consoles[tag]; !ok {
+		eb.consoles[tag] = c
+		log.DebugF("adding console: %v", tag)
+	} else {
+		log.FatalDF(1, "console tagged %v already exists", tag)
 	}
 	return eb
 }

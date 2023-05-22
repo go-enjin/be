@@ -37,9 +37,7 @@ import (
 )
 
 var (
-	cliCtx        *cli.Context
 	ctkApp        ctk.Application
-	ctkDisplay    cdk.Display
 	ctkConsoleTag feature.Tag
 )
 
@@ -100,7 +98,6 @@ func (e *Enjin) initConsoles() {
 }
 
 func (e *Enjin) consoleAction(ctx *cli.Context) (err error) {
-	cliCtx = ctx
 
 	argv := ctx.Args().Slice()
 	argc := len(argv)
@@ -108,8 +105,9 @@ func (e *Enjin) consoleAction(ctx *cli.Context) (err error) {
 		return cli.ShowCommandHelp(ctx, "console")
 	}
 
-	ctkConsoleTag = feature.Tag(strcase.ToCamel(argv[0]))
+	ctkConsoleTag = feature.Tag(strcase.ToKebab(argv[0]))
 	if console, ok := e.eb.consoles[ctkConsoleTag]; !ok {
+		fmt.Printf("\n# ERROR: console %v not found\n\n", ctkConsoleTag)
 		return cli.ShowCommandHelp(ctx, "console")
 	} else {
 		console.Setup(ctx, e)
