@@ -25,11 +25,24 @@ import (
 
 func PruneRootPrefixes(path string) (pruned string) {
 	pruned = strings.TrimPrefix(path, "./")
-	pruned = strings.TrimPrefix(path, "/")
+	pruned = strings.TrimPrefix(pruned, "/")
+	pruned = filepath.Clean(pruned)
 	if pruned == "." {
 		pruned = ""
-	} else {
-		pruned = filepath.Clean(pruned)
+	}
+	return
+}
+
+func PruneRootFromString(root string, path string) (pruned string) {
+	pruned = PruneRootPrefixes(path)
+	pruned = strings.TrimPrefix(pruned, PruneRootPrefixes(root))
+	pruned = PruneRootPrefixes(pruned)
+	return
+}
+
+func PruneRootFromSlice(root string, slice []string) (pruned []string) {
+	for _, s := range slice {
+		pruned = append(pruned, PruneRootFromString(root, s))
 	}
 	return
 }
@@ -37,17 +50,10 @@ func PruneRootPrefixes(path string) (pruned string) {
 func PruneRootFrom[T string | []string](root string, path T) (pruned T) {
 	switch t := interface{}(&path).(type) {
 	case *string:
-		var modified string
-		modified = PruneRootPrefixes(*t)
-		modified = strings.TrimPrefix(modified, PruneRootPrefixes(root))
-		modified = PruneRootPrefixes(modified)
-		// modified = "/" + modified
+		modified := PruneRootFromString(root, *t)
 		pruned, _ = interface{}(modified).(T)
 	case *[]string:
-		var modified []string
-		for _, p := range *t {
-			modified = append(modified, PruneRootFrom(root, p))
-		}
+		modified := PruneRootFromSlice(root, *t)
 		pruned, _ = interface{}(modified).(T)
 	default:
 		panic(fmt.Errorf("unsupported type union: (%T) %#+v", path, path))
