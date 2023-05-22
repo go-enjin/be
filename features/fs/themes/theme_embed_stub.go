@@ -16,5 +16,5 @@
 
 package themes
 
-type EmbedSupport interface {
+type ThemeEmbedSupport interface {
 }

@@ -38,8 +38,6 @@ type Feature interface {
 }
 
 type MakeFeature interface {
-	filesystem.MakeFeature[MakeFeature]
-
 	// SetTheme is a convenience method for setting the current theme during the
 	// enjin build phase
 	SetTheme(name string) MakeFeature
@@ -48,8 +46,8 @@ type MakeFeature interface {
 	// phase
 	AddTheme(t *theme.Theme) MakeFeature
 
-	EmbedSupport
-	LocalSupport
+	ThemeEmbedSupport
+	ThemeLocalSupport
 
 	Make() Feature
 }

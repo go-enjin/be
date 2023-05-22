@@ -16,5 +16,5 @@
 
 package themes
 
-type LocalSupport interface {
+type ThemeLocalSupport interface {
 }

@@ -25,7 +25,7 @@ import (
 	"github.com/go-enjin/be/pkg/theme"
 )
 
-type EmbedSupport interface {
+type ThemeEmbedSupport interface {
 	// EmbedTheme constructs an embedded theme.Theme instance and adds it to the
 	// enjin during the build phase
 	EmbedTheme(path string, tfs embed.FS) MakeFeature

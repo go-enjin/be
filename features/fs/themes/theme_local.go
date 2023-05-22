@@ -22,7 +22,7 @@ import (
 	"github.com/go-enjin/be/pkg/theme"
 )
 
-type LocalSupport interface {
+type ThemeLocalSupport interface {
 	// LocalTheme constructs a local theme.Theme instance and adds it to the
 	// enjin during the build phase
 	LocalTheme(path string) MakeFeature
