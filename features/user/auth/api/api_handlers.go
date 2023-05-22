@@ -1,3 +1,5 @@
+//go:build user_auth_api || all
+
 // Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -134,7 +136,7 @@ func (f *CFeature) authValidatorFunc(token string, claims token.Claims) (valid b
 			valid = u != nil
 			return
 		} else {
-			log.ErrorF("error getting user for validation func: %v - %v", eid, e)
+			log.ErrorF("error getting user for %v validation: %v - %v", f.Tag(), eid, e)
 		}
 
 	}
@@ -143,7 +145,7 @@ func (f *CFeature) authValidatorFunc(token string, claims token.Claims) (valid b
 }
 
 func (f *CFeature) AuthApiServeHTTP(next http.Handler, w http.ResponseWriter, r *http.Request) {
-	if cu := userbase.GetCurrentAuthUser(r); cu == nil {
+	if cau := userbase.GetCurrentAuthUser(r); cau == nil {
 
 		if tokenUser, err := token.GetUserInfo(r); err == nil {
 
@@ -153,27 +155,48 @@ func (f *CFeature) AuthApiServeHTTP(next http.Handler, w http.ResponseWriter, r 
 
 				r = userbase.SetCurrentAuthUser(ubAu, r)
 				r.URL.User = url.User(ubAu.EID)
-				log.WarnF("setting current auth user: %v", ubAu.EID)
+				log.WarnF("%v feature setting current auth user: %v", f.Tag(), ubAu.EID)
 
 				if u, eee := f.ubm.GetUser(eid); eee == nil {
 
 					r = userbase.SetCurrentUser(u, r)
-					log.WarnF("setting current user: %v - groups=%#+v, actions=%#+v", u.EID, u.Groups, u.Actions)
+					log.WarnF("%v feature setting current user: %v - groups=%#+v, actions=%#+v", f.Tag(), u.EID, u.Groups, u.Actions)
 
 				} else {
-					log.ErrorRF(r, "error getting User - %v - %v", eid, eee)
+					log.ErrorRF(r, "%v feature error getting User - %v - %v", f.Tag(), eid, eee)
 				}
 
 			} else {
-				log.ErrorRF(r, "error getting AuthUser - %v - %v", eid, ee)
+				log.ErrorRF(r, "%v feature error getting AuthUser - %v - %v", f.Tag(), eid, ee)
 			}
 
 		} else {
-			log.DebugRF(r, "token user not present")
+			if claims, _, ee := f.authService.TokenService().Get(r); ee == nil {
+
+				log.DebugRF(r, "%v feature claims found: %#+v", f.Tag(), claims)
+				http.SetCookie(w, &http.Cookie{
+					Name:     f.authOpts.JWTCookieName,
+					Path:     "/",
+					MaxAge:   -1,
+					HttpOnly: true,
+				})
+				http.SetCookie(w, &http.Cookie{
+					Name:     f.authOpts.XSRFCookieName,
+					Path:     "/",
+					MaxAge:   -1,
+					HttpOnly: true,
+				})
+				w.Header().Del(f.authOpts.JWTHeaderKey)
+				w.Header().Del(f.authOpts.XSRFHeaderKey)
+
+			} else {
+				log.DebugRF(r, "%v feature token user not present", f.Tag())
+			}
+
 		}
 
 	} else {
-		log.DebugRF(r, "current user present: %v", cu.EID)
+		log.DebugRF(r, "%v feature found other user present: %v (%v)", f.Tag(), cau.EID, cau.Origin)
 	}
 	next.ServeHTTP(w, r)
 }
