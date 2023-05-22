@@ -339,5 +339,9 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 		}
 	}
 
+	eb.AddUserAction(
+		userbase.NewAction("enjin", "view", "page"),
+	)
+
 	return newEnjin(eb)
 }
