@@ -56,17 +56,10 @@ type MakeFeature interface {
 	// AddToSearchProviders indexes the content using the
 	// feature.SearchEnjinFeature tags specified
 	AddToSearchProviders(tag ...feature.Tag) MakeFeature
-
-	// SetKeyValueCache specifies the feature.KeyValueCaches feature.Tag and the
-	// name of a specific feature.KeyValueCache
-	SetKeyValueCache(tag feature.Tag, name string) MakeFeature
 }
 
 type CFeature struct {
 	filesystem.CFeature[MakeFeature]
-
-	kvcTag  feature.Tag
-	kvcName string
 
 	indexProviderTags  feature.Tags
 	searchProviderTags feature.Tags
@@ -92,12 +85,6 @@ func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 }
 
-func (f *CFeature) SetKeyValueCache(tag feature.Tag, name string) MakeFeature {
-	f.kvcTag = tag
-	f.kvcName = name
-	return f
-}
-
 func (f *CFeature) AddToIndexProviders(tag ...feature.Tag) MakeFeature {
 	f.indexProviderTags = append(f.indexProviderTags, tag...)
 	return f
@@ -109,10 +96,6 @@ func (f *CFeature) AddToSearchProviders(tag ...feature.Tag) MakeFeature {
 }
 
 func (f *CFeature) Make() Feature {
-	if f.kvcTag == "" || f.kvcName == "" {
-		log.FatalDF(1, "%v feature requires a feature.KeyValueCache to be set with SetKeyValueCache(tag,name)")
-	}
-
 	f.indexProviderTags = f.indexProviderTags.Unique()
 	f.searchProviderTags = f.searchProviderTags.Unique()
 	if f.indexProviderTags.Len() == 0 {
@@ -131,16 +114,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 
 	allFeatures := f.Enjin.Features()
-
-	if kvcf := feature.FindTypedFeatureByTag[kvs.KeyValueCaches](f.kvcTag, allFeatures); kvcf != nil {
-		if kvc, ee := kvcf.Get(f.kvcName); ee == nil {
-			f.cache = kvc
-		}
-	}
-	if f.cache == nil {
-		err = fmt.Errorf("%v feature requires a feature.KeyValueCache to be set with SetKeyValueCache(tag,name)", f.Tag())
-		return
-	}
 
 	for _, pif := range feature.FindAllTypedFeatures[indexing.PageIndexFeature](allFeatures) {
 		if f.indexProviderTags.Has(pif.(feature.Feature).Tag()) {
