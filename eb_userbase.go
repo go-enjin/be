@@ -23,3 +23,8 @@ func (eb *EnjinBuilder) SetPublicAccess(actions ...userbase.Action) feature.Buil
 	eb.publicUser = eb.publicUser.Append(actions...)
 	return eb
 }
+
+func (eb *EnjinBuilder) AddUserAction(actions ...userbase.Action) feature.Builder {
+	eb.userActions = eb.userActions.Append(actions...)
+	return eb
+}

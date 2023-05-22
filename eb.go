@@ -81,7 +81,8 @@ type EnjinBuilder struct {
 	localeNames map[language.Tag]string
 	defaultLang language.Tag
 
-	publicUser userbase.Actions
+	publicUser  userbase.Actions
+	userActions userbase.Actions
 
 	enjins []*EnjinBuilder
 }

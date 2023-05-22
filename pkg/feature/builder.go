@@ -93,6 +93,10 @@ type Builder interface {
 
 	SetPublicAccess(actions ...userbase.Action) Builder
 
+	// AddUserAction adds the given actions to the overall known list of
+	// registered user actions across all features
+	AddUserAction(actions ...userbase.Action) Builder
+
 	// Build constructs an Enjin Runner from the Builder configuration
 	Build() Runner
 }
