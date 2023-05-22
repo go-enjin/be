@@ -17,9 +17,9 @@
 #: uncomment to echo instead of execute
 #CMD=echo
 
-.PHONY: help local unlocal tidy generate
+.PHONY: help generate be-update local unlocal tidy
 
-MAKEFILE_VERSION = v0.0.1
+MAKEFILE_VERSION = v0.0.2
 
 SHELL = /bin/bash
 
@@ -171,6 +171,14 @@ _golang: _enjenv
 generate: _golang
 	@echo "# go generate -v"
 	@$(call _source_activate_run,go,generate,-v)
+
+be-update: export GOPROXY=direct
+be-update: PKG_LIST = $(call _make_extra_pkgs)
+be-update: _golang
+	@`echo "_make_be_update" >> ${_INTERNAL_BUILD_LOG_}`
+	@$(call _validate_extra_pkgs)
+	@echo "# go get ${PKG_LIST}"
+	@$(call _source_activate_run,go,get,${_BUILD_TAGS},${PKG_LIST})
 
 local: _golang
 	@`echo "_make_extra_locals" >> ${_INTERNAL_BUILD_LOG_}`
