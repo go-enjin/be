@@ -121,18 +121,21 @@ func (f *CFeature) Init(this interface{}) {
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
 	log.DebugDF(1, "building gorm db feature")
+	fTag := f.Tag().String()
 	for tag, flags := range f.flags {
 		known := maps.SortedKeys(gKnownDialects)
 		b.AddFlags(
 			&cli.StringFlag{
-				Name:    flags[0],
-				Usage:   fmt.Sprintf("gorm db %v connection type %v", tag, known),
-				EnvVars: b.MakeEnvKeys(strcase.ToScreamingSnake(flags[0])),
+				Category: fTag,
+				Name:     flags[0],
+				Usage:    fmt.Sprintf("gorm db %v connection type %v", tag, known),
+				EnvVars:  b.MakeEnvKeys(strcase.ToScreamingSnake(flags[0])),
 			},
 			&cli.StringFlag{
-				Name:    flags[1],
-				Usage:   fmt.Sprintf("gorm db %v connection URI", tag),
-				EnvVars: b.MakeEnvKeys(strcase.ToScreamingSnake(flags[1])),
+				Category: fTag,
+				Name:     flags[1],
+				Usage:    fmt.Sprintf("gorm db %v connection URI", tag),
+				EnvVars:  b.MakeEnvKeys(strcase.ToScreamingSnake(flags[1])),
 			},
 		)
 	}
