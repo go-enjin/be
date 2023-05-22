@@ -381,12 +381,27 @@ func (f *CFeature) GetUser(eid string) (user *userbase.User, err error) {
 	} else if au, ee := f.getAuthUserUnsafe(eid); ee == nil {
 		if user, err = f.makeUserUnsafe(au); err == nil {
 			if err = f.setUserUnsafe(user); err == nil {
-				err = f.addUserToGroupsUnsafe(user.EID, f.defaultGroups...)
+				if err = f.addUserToGroupsUnsafe(user.EID, f.defaultGroups...); err != nil {
+					f.Unlock()
+					return
+				}
+			} else {
+				f.Unlock()
+				return
 			}
+		} else {
+			f.Unlock()
+			return
 		}
+	} else {
+		err = os.ErrNotExist
+		f.Unlock()
+		return
 	}
 	f.Unlock()
-	if user != nil && err == nil {
+
+	if user != nil {
+		err = nil
 
 		user.Groups = f.GetUserGroups(eid)
 		for _, group := range user.Groups {
@@ -396,6 +411,7 @@ func (f *CFeature) GetUser(eid string) (user *userbase.User, err error) {
 
 		return
 	}
+
 	err = os.ErrNotExist
 	return
 }
