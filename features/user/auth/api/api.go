@@ -15,7 +15,6 @@
 package api
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -40,7 +39,6 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
-	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 var (
@@ -109,7 +107,8 @@ type MakeFeature interface {
 	IncludeVerifyEmailProvider(providerName string) MakeFeature
 
 	SetLogLevel(level log.Level) MakeFeature
-	EnableDevService(enabled bool) MakeFeature
+
+	MakeDevAuthSupport
 }
 
 type CFeature struct {
@@ -140,13 +139,13 @@ type CFeature struct {
 	authOpts    auth.Opts
 	authService *auth.Service
 
-	enableDevService bool
-
 	protectPrefix map[string]*regexp.Regexp
 	protectGroups map[string][]string
 
 	ubmTag feature.Tag
 	ubm    userbase.Manager
+
+	DevAuthSupport
 }
 
 func New() MakeFeature {
@@ -337,11 +336,6 @@ func (f *CFeature) SetVerifyEmailTemplate(name string) MakeFeature {
 	return f
 }
 
-func (f *CFeature) EnableDevService(enabled bool) MakeFeature {
-	f.enableDevService = enabled
-	return f
-}
-
 func (f *CFeature) IncludeVerifyEmailProvider(providerName string) MakeFeature {
 	f.verifyEmailProvider = providerName
 	return f
@@ -362,11 +356,14 @@ func (f *CFeature) Make() Feature {
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
+
 	if f.ubmTag == "" {
 		err = fmt.Errorf("%v requires a userbase.Manager feature tag to be set", f.Tag())
 		return
 	}
+
 	tag := f.Tag().String()
+
 	b.AddFlags(&cli.StringFlag{
 		Name:     globals.MakeFlagName(tag, "base-url"),
 		Usage:    "specify the auth site base url",
@@ -391,6 +388,8 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 			EnvVars:  globals.MakeFlagEnvKeys(tag, flagName),
 		})
 	}
+
+	err = f.BuildDevAuthService(b)
 	return
 }
 
@@ -532,6 +531,10 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 
 	f.authService = auth.NewService(f.authOpts)
 
+	if err = f.StartupDevAuthService(ctx); err != nil {
+		return
+	}
+
 	for name, argv := range f.authProviders {
 		f.authService.AddProvider(name, argv[0], argv[1])
 	}
@@ -547,25 +550,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		}
 		log.DebugF("adding user auth api email provider: %v", f.verifyEmailProvider)
 		f.authAddVerifyEmailProviderFunc(f.verifyEmailProvider)
-	}
-
-	if f.enableDevService {
-		if beStrings.StringInStrings(f.Enjin.Prefix(), "prd", "") {
-			err = fmt.Errorf("cannot run user auth api dev service with production environments")
-			return
-		} else {
-			log.WarnF("!!!!! INCLUDING USER AUTH API DEV SERVICE !!!!!")
-		}
-		go func() {
-			if devAuthServer, devAuthServerErr := f.authService.DevAuth(); devAuthServerErr != nil {
-				log.FatalF("error starting dev auth service: %v", devAuthServerErr)
-			} else {
-				devAuthServer.GetEmailFn = func(username string) string {
-					return username + "@localhost.nope"
-				}
-				devAuthServer.Run(context.Background())
-			}
-		}()
 	}
 
 	return
