@@ -91,6 +91,9 @@ type Builder interface {
 	// HotReload enables or disables hot-reloading theme templates and content files
 	HotReload(enabled bool) Builder
 
+	// SetPublicAccess specifies the list of actions unauthorized visitors have
+	//
+	// Note: not specifying any public access results in no public access given
 	SetPublicAccess(actions ...userbase.Action) Builder
 
 	// AddUserAction adds the given actions to the overall known list of
