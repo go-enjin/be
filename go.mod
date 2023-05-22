@@ -19,6 +19,7 @@ require (
 	github.com/go-curses/cdk v0.5.15
 	github.com/go-curses/ctk v0.5.7
 	github.com/go-enjin/github-com-djherbis-times v0.0.0-20221101184323-aeef8854ee8a
+	github.com/go-enjin/github-com-go-pkgz-auth v0.0.0-20230521172445-0ec67c61435f
 	github.com/go-enjin/golang-org-x-text v0.0.0-20230219204830-4f2b7b481f16
 	github.com/goccy/go-json v0.10.0
 	github.com/gofrs/uuid v4.3.0+incompatible
@@ -85,7 +86,6 @@ require (
 	github.com/gdamore/encoding v1.0.0 // indirect
 	github.com/go-curses/term v1.2.2-gocurses.1 // indirect
 	github.com/go-curses/terminfo v1.0.0 // indirect
-	github.com/go-enjin/github-com-go-pkgz-auth v0.0.0-20230521172445-0ec67c61435f // indirect
 	github.com/go-oauth2/oauth2/v4 v4.5.2 // indirect
 	github.com/go-pkgz/repeater v1.1.3 // indirect
 	github.com/go-pkgz/rest v1.17.0 // indirect
