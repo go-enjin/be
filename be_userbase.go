@@ -14,7 +14,10 @@
 
 package be
 
-import "github.com/go-enjin/be/pkg/userbase"
+import (
+	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/userbase"
+)
 
 func (e *Enjin) GetPublicAccess() (actions userbase.Actions) {
 	actions = actions.Append(e.eb.publicUser...)
@@ -23,10 +26,10 @@ func (e *Enjin) GetPublicAccess() (actions userbase.Actions) {
 
 func (e *Enjin) FindAllUserActions() (list userbase.Actions) {
 
-	for _, f := range e.Features() {
-		if uap, ok := f.This().(userbase.UserActionsProvider); ok {
-			list = append(list, uap.UserActions()...)
-		}
+	list = append(list, e.eb.userActions...)
+
+	for _, uap := range feature.FindAllTypedFeatures[userbase.UserActionsProvider](e.Features()) {
+		list = append(list, uap.UserActions()...)
 	}
 
 	return
