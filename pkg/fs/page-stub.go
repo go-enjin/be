@@ -42,7 +42,7 @@ type PageStub struct {
 	EnjinCtx beContext.Context
 }
 
-func NewPageStub(origin string, enjin beContext.Context, bfs FileSystem, point, source, shasum string, fallback language.Tag) (s *PageStub, err error) {
+func NewPageStub(origin string, enjin beContext.Context, bfs FileSystem, point, source, shasum string, fallback language.Tag) (s *PageStub) {
 	s = &PageStub{
 		Origin:   origin,
 		FS:       bfs,
