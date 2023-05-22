@@ -154,22 +154,23 @@ func (pm *PageMatter) Bytes() (data []byte, err error) {
 		if matter, err = pm.Matter.AsJSON(); err != nil {
 			return
 		}
-		data = append(data, matter...)
-		data = append(data, "}}}\n"...)
+		// json front-matter must remove opening and closing braces
+		data = append(data, matter[1:len(matter)-1]...)
+		data = append(data, "\n}}}\n"...)
 	case TomlMatter:
 		data = append(data, "+++\n"...)
 		if matter, err = pm.Matter.AsTOML(); err != nil {
 			return
 		}
 		data = append(data, matter...)
-		data = append(data, "+++\n"...)
+		data = append(data, "\n+++\n"...)
 	case YamlMatter:
 		data = append(data, "---\n"...)
 		if matter, err = pm.Matter.AsYAML(); err != nil {
 			return
 		}
 		data = append(data, matter...)
-		data = append(data, "---\n"...)
+		data = append(data, "\n---\n"...)
 	case NoneMatter:
 	}
 	data = append(data, pm.Body...)
