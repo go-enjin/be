@@ -38,7 +38,6 @@ type Console interface {
 	Init(this interface{})
 	This() (this interface{})
 	Self() (self Console)
-	Name() (name string)
 	Title() (title string)
 	Build(c Buildable) (err error)
 	Depends() (deps Tags)
@@ -57,6 +56,9 @@ type MakeConsole interface {
 }
 
 type CConsole struct {
+	ConsoleTag Tag
+	Enjin      Internals
+
 	this interface{}
 
 	app     ctk.Application
@@ -67,12 +69,18 @@ type CConsole struct {
 }
 
 func (c *CConsole) Make() Console {
+	if c.ConsoleTag == "" {
+		c.ConsoleTag = NotImplemented
+	}
 	log.DebugF("making console: %v", c.Self().Tag())
 	return c.Self()
 }
 
 func (c *CConsole) Tag() (tag Tag) {
-	return NotImplemented
+	if c.ConsoleTag == NotImplemented {
+		panic(fmt.Errorf("%T console tag not implemented", c))
+	}
+	return c.ConsoleTag
 }
 
 func (c *CConsole) Init(this interface{}) {
@@ -91,10 +99,6 @@ func (c *CConsole) Self() (self Console) {
 	return
 }
 
-func (c *CConsole) Name() (name string) {
-	return strcase.ToKebab(c.Self().Tag().String())
-}
-
 func (c *CConsole) Title() (title string) {
 	return strcase.ToDelimited(c.Self().Tag().String(), ' ')
 }
@@ -108,6 +112,7 @@ func (c *CConsole) Depends() (deps Tags) {
 }
 
 func (c *CConsole) Setup(ctx *cli.Context, ei Internals) {
+	c.Enjin = ei
 }
 
 func (c *CConsole) Prepare(app ctk.Application) {
@@ -118,7 +123,7 @@ func (c *CConsole) Startup(display cdk.Display) {
 	c.display = display
 
 	c.window = ctk.NewWindow()
-	c.window.SetName(fmt.Sprintf("%v-window", c.Self().Name()))
+	c.window.SetName(fmt.Sprintf("%v-window", c.Tag().Kebab()))
 	c.window.SetTitle(c.Self().Title())
 }
 
