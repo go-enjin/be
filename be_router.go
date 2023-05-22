@@ -205,12 +205,7 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	router.MethodNotAllowed(e.Serve405)
 
 	// standard page processing catch-all-not-already-routed
-	router.Get("/*", e.RoutingHTTP)
-	router.Get("/", e.RoutingHTTP)
-
-	// TODO: figure out better ways of protecting content
-	router.Put("/", e.Serve404)
-	router.Post("/", e.Serve404)
+	router.HandleFunc("/*", e.RoutingHTTP)
 
 	return
 }
