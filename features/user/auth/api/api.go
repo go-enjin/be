@@ -554,8 +554,6 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 
 func (f *CFeature) Apply(s feature.System) (err error) {
 	router := s.Router()
-	authenticator := f.authService.Middleware()
-	router.Use(authenticator.Trace)
 	authRoutes, avatarRoutes := f.authService.Handlers()
 	router.Mount(f.mountAuthApiPath, authRoutes)
 	router.Mount(f.mountAvatarPath, avatarRoutes)
