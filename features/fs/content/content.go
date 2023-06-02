@@ -184,16 +184,19 @@ func (f *CFeature) PopulateIndexes() (err error) {
 							for _, pip := range f.indexProviders {
 								if eeeee := pip.AddToIndex(pmStub, pg); eeeee != nil {
 									log.ErrorF("error adding to page index: %v - %v", file, eeeee)
+								} else {
+									// log.DebugF("%v indexed %v", pip.(feature.Feature).Tag(), pg.Url)
 								}
 							}
 							for _, sep := range f.searchProviders {
 								if eeeee := sep.AddToSearchIndex(pmStub, pg); eeeee != nil {
 									log.ErrorF("error adding to search index: %v - %v", file, eeeee)
+								} else {
+									// log.DebugF("%v indexed %v", sep.(feature.Feature).Tag(), pg.Url)
 								}
 							}
 							total += 1
-							log.DebugF("%v feature indexed page: [%v] %v - %v", f.Tag(), pg.LanguageTag, pg.Url, file)
-
+							// log.DebugF("%v feature indexed page: [%v] %v - %v", f.Tag(), pg.LanguageTag, pg.Url, file)
 						}
 					}
 
