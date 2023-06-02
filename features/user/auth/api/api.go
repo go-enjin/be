@@ -33,6 +33,7 @@ import (
 	"github.com/go-enjin/github-com-go-pkgz-auth/provider"
 	"github.com/go-enjin/github-com-go-pkgz-auth/token"
 
+	"github.com/go-enjin/be/pkg/feature/signaling"
 	beKvs "github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/userbase"
 
@@ -47,7 +48,6 @@ var (
 	DefaultUrl            = "http://localhost:" + strconv.Itoa(globals.DefaultPort)
 	DefaultTokenDuration  = time.Minute * 5
 	DefaultCookieDuration = time.Hour * 24
-	DefaultUserGroups     = []string{"user"}
 
 	DefaultEmailNewTokenTemplate = "email-new-token"
 )
@@ -64,6 +64,7 @@ type Feature interface {
 	userbase.AuthUserApi
 	feature.UseMiddleware
 	feature.ApplyMiddleware
+	signaling.SignalsSupport
 }
 
 type MakeFeature interface {
@@ -114,6 +115,7 @@ type MakeFeature interface {
 
 type CFeature struct {
 	feature.CFeature
+	signaling.CSignaling
 
 	publicSignups bool
 
@@ -161,6 +163,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+	f.CSignaling.InitSignaling()
 	f.audSecrets = make(map[string]string)
 	f.authProviders = make(map[string][]string)
 	f.authProvidersDirect = make(map[string]provider.CredCheckerFunc)

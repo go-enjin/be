@@ -94,6 +94,7 @@ func (f *CFeature) authClaimsUpdFunc(claims token.Claims) token.Claims {
 
 		eid, _ := sha.DataHash10([]byte(claims.User.ID))
 
+		var au *userbase.AuthUser
 		if !f.publicSignups {
 			// user must be present in the userbase for all logins
 			if f.ubm.AuthUserPresent(eid) {
@@ -101,6 +102,7 @@ func (f *CFeature) authClaimsUpdFunc(claims token.Claims) token.Claims {
 					log.ErrorF("error updating user: %v - %v", eid, e)
 				} else {
 					log.WarnF("***** auth claims updated authorized user: %#+v", u)
+					au = u
 				}
 			} else {
 				log.ErrorF("unauthorized signup attempt: %#+v", claims.User)
@@ -110,6 +112,12 @@ func (f *CFeature) authClaimsUpdFunc(claims token.Claims) token.Claims {
 			log.ErrorF("error updating user: %v - %v", claims.User.ID, e)
 		} else {
 			log.WarnF("***** auth claims updated public user: %#+v", u)
+			au = u
+		}
+
+		if au != nil {
+			claims.User.SetStrAttr("EID", au.EID)
+			claims.User.SetStrAttr("Origin", au.Origin)
 		}
 
 		// if claims.User.Name == "dev_admin" {
@@ -155,12 +163,14 @@ func (f *CFeature) AuthApiServeHTTP(next http.Handler, w http.ResponseWriter, r 
 
 				r = userbase.SetCurrentAuthUser(ubAu, r)
 				r.URL.User = url.User(ubAu.EID)
-				log.WarnF("%v feature setting current auth user: %v", f.Tag(), ubAu.EID)
+				// log.WarnF("%v feature setting current auth user: %v", f.Tag(), ubAu.EID)
 
 				if u, eee := f.ubm.GetUser(eid); eee == nil {
 
 					r = userbase.SetCurrentUser(u, r)
-					log.WarnF("%v feature setting current user: %v - groups=%#+v, actions=%#+v", f.Tag(), u.EID, u.Groups, u.Actions)
+					f.Emit(userbase.UserLoadedSignal, f.Tag().String(), u)
+
+					// log.WarnF("%v feature setting current user: %v - groups=%#+v, actions=%#+v", f.Tag(), u.EID, u.Groups, u.Actions)
 
 				} else {
 					log.ErrorRF(r, "%v feature error getting User - %v - %v", f.Tag(), eid, eee)
