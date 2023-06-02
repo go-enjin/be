@@ -24,6 +24,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/lang"
@@ -220,6 +221,7 @@ func (e *Enjin) RoutingHTTP(w http.ResponseWriter, r *http.Request) {
 		if pg := pp.FindPage(tag, path); pg != nil {
 			if err := e.ServePage(pg, w, r); err == nil {
 				log.DebugRF(r, "enjin router served provided page: %v", pg.Url)
+				e.Emit(signaling.SignalServePage, pp.(feature.Feature).Tag().String(), pg)
 				return
 			} else {
 				log.ErrorRF(r, "error serving provided page: %v - %v", pg.Url, err)
@@ -231,6 +233,7 @@ func (e *Enjin) RoutingHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, spf := range feature.FindAllTypedFeatures[feature.ServePathFeature](allFeatures) {
 		if ee := spf.ServePath(path, e, w, r); ee == nil {
 			log.DebugRF(r, "%v feature served path: %v", spf.(feature.Feature).Tag(), path)
+			e.Emit(signaling.SignalServePath, spf.(feature.Feature).Tag().String(), path)
 			return
 		}
 	}
@@ -242,6 +245,7 @@ func (e *Enjin) RoutingHTTP(w http.ResponseWriter, r *http.Request) {
 			e.ServeInternalServerError(w, r)
 		} else {
 			log.DebugRF(r, "enjin router served page: %v", path)
+			e.Emit(signaling.SignalServePage, EnjinTag.String(), pg)
 		}
 		return
 	}
