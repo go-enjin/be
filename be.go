@@ -26,6 +26,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 
 	"github.com/go-chi/chi/v5"
@@ -35,6 +36,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/lang/catalog"
 	"github.com/go-enjin/be/pkg/log"
@@ -77,6 +79,9 @@ type Enjin struct {
 
 	router *chi.Mux
 	enjins []*Enjin
+
+	signaling     map[signaling.Signal][]*signalListener
+	signalingLock *sync.RWMutex
 }
 
 func newEnjin(eb *EnjinBuilder) *Enjin {
@@ -111,8 +116,12 @@ func newEnjin(eb *EnjinBuilder) *Enjin {
 			Flags:       eb.flags,
 			Commands:    eb.commands,
 		},
+		// policies
 		contentSecurityPolicy: csp.NewPolicyHandler(),
 		permissionsPolicy:     permissions.NewPolicyHandler(),
+		// make variables
+		signaling:     make(map[signaling.Signal][]*signalListener),
+		signalingLock: &sync.RWMutex{},
 	}
 	e.initLocales()
 	e.initConsoles()
@@ -126,6 +135,8 @@ func newIncludedEnjin(eb *EnjinBuilder, parent *Enjin) *Enjin {
 		eb:                    eb,
 		contentSecurityPolicy: csp.NewPolicyHandler(),
 		permissionsPolicy:     permissions.NewPolicyHandler(),
+		signaling:             make(map[signaling.Signal][]*signalListener),
+		signalingLock:         &sync.RWMutex{},
 	}
 	e.initLocales()
 	e.initConsoles()
