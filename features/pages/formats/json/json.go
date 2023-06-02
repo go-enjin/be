@@ -17,6 +17,7 @@ package json
 import (
 	"fmt"
 	htmlTemplate "html/template"
+	"net/http"
 	"strings"
 
 	"github.com/blevesearch/bleve/v2/mapping"
@@ -24,6 +25,8 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/lang"
+	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/types/theme-types"
 )
@@ -104,12 +107,21 @@ func (f *CFeature) AddSearchDocumentMapping(tag language.Tag, indexMapping *mapp
 func (f *CFeature) IndexDocument(thing interface{}) (out interface{}, err error) {
 	pg, _ := thing.(*page.Page) // FIXME: this "thing" avoids package import loops
 
-	theme := f.Enjin.MustGetTheme()
+	t := f.Enjin.MustGetTheme()
+	r, _ := http.NewRequest("GET", pg.Url, nil)
+	r = lang.SetTag(r, pg.LanguageTag)
+	for _, ptp := range feature.FindAllTypedFeatures[feature.PageTypeProcessor](f.Enjin.Features()) {
+		if v, _, processed, e := ptp.ProcessRequestPageType(r, pg); e != nil {
+			log.ErrorF("error processing page type for json format indexing: %v - %v", pg.Url, e)
+		} else if processed {
+			pg = v
+		}
+	}
 
 	var rendered string
 	if strings.HasSuffix(pg.Format, ".tmpl") {
-		if rendered, err = theme.RenderTextTemplateContent(pg.Context, pg.Content); err != nil {
-			err = fmt.Errorf("error rendering .text.tmpl content: %v", err)
+		if rendered, err = t.RenderTextTemplateContent(pg.Context, pg.Content); err != nil {
+			err = fmt.Errorf("error rendering .json.tmpl content: %v", err)
 			return
 		}
 	} else {

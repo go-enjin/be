@@ -15,9 +15,9 @@
 package html
 
 import (
-	"bytes"
 	"fmt"
 	htmlTemplate "html/template"
+	"net/http"
 	"strings"
 
 	"github.com/blevesearch/bleve/v2/mapping"
@@ -27,9 +27,10 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/lang"
+	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
@@ -105,18 +106,22 @@ func (f *CFeature) AddSearchDocumentMapping(tag language.Tag, indexMapping *mapp
 func (f *CFeature) IndexDocument(thing interface{}) (out interface{}, err error) {
 	pg, _ := thing.(*page.Page) // FIXME: this "thing" avoids package import loops
 
-	var rendered string
+	t := f.Enjin.MustGetTheme()
+	r, _ := http.NewRequest("GET", pg.Url, nil)
+	r = lang.SetTag(r, pg.LanguageTag)
+	for _, ptp := range feature.FindAllTypedFeatures[feature.PageTypeProcessor](f.Enjin.Features()) {
+		if v, _, processed, e := ptp.ProcessRequestPageType(r, pg); e != nil {
+			log.ErrorF("error processing page type for html format indexing: %v - %v", pg.Url, e)
+		} else if processed {
+			pg = v
+		}
+	}
 
+	var rendered string
 	if strings.HasSuffix(pg.Format, ".tmpl") {
-		var buf bytes.Buffer
-		if tt, e := htmlTemplate.New("content.html.tmpl").Funcs(theme.DefaultFuncMap()).Parse(pg.Content); e != nil {
-			err = fmt.Errorf("error parsing template: %v", e)
+		if rendered, err = t.RenderHtmlTemplateContent(pg.Context, pg.Content); err != nil {
+			err = fmt.Errorf("error rendering .html.tmpl content: %v", err)
 			return
-		} else if e = tt.Execute(&buf, pg.Context); e != nil {
-			err = fmt.Errorf("error executing template: %v", e)
-			return
-		} else {
-			rendered = buf.String()
 		}
 	} else {
 		rendered = pg.Content
