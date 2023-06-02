@@ -186,7 +186,7 @@ func (f *CFeature) makeUserUnsafe(au *userbase.AuthUser) (user *userbase.User, e
 
 	realpath := f.userPath + "/" + au.EID + "." + DefaultNewUserPageFormat
 	pm := matter.NewPageMatter(f.Tag().String(), realpath, DefaultNewUserPageBody, matter.JsonMatter, beContext.Context{
-		"DisplayName": au.Name,
+		"Name": au.Name,
 	})
 
 	var uu *userbase.User

@@ -24,7 +24,7 @@ var (
 	}
 
 	DefaultNewUserPageFormat        = "md.tmpl"
-	DefaultNewUserPageBody   string = `# {{ .DisplayName }}...
+	DefaultNewUserPageBody   string = `# {{ .Name }}...
 
 ... has not setup their profile page.`
 )
