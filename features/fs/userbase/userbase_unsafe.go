@@ -124,7 +124,6 @@ func (f *CFeature) makeAuthUserUnsafe(id, name, email, picture, audience string,
 		user.Context.SetSpecific(makeCtxKey("Attributes"), beContext.NewFromMap(attributes))
 		return
 	}
-	// TODO: something goes here for default user groups once groups is a thing
 	user = userbase.NewAuthUser(id, name, email, picture, beContext.Context{
 		makeCtxKey("Audience"):   audience,
 		makeCtxKey("Attributes"): beContext.NewFromMap(attributes),
@@ -175,7 +174,7 @@ func (f *CFeature) setAuthUserUnsafe(user *userbase.AuthUser) (err error) {
 	return
 }
 
-func (f *CFeature) makeUserUnsafe(au *userbase.AuthUser) (user *userbase.User, err error) {
+func (f *CFeature) makeUserUnsafe(au *userbase.AuthUser) (user *userbase.User, created bool, err error) {
 
 	if u, e := f.getUserUnsafe(au.EID); e == nil && u != nil {
 		user = u
@@ -184,6 +183,8 @@ func (f *CFeature) makeUserUnsafe(au *userbase.AuthUser) (user *userbase.User, e
 		user.AuthUser = *au
 		return
 	}
+
+	created = true
 
 	realpath := f.userPath + "/" + au.EID + "." + DefaultNewUserPageFormat
 	pm := matter.NewPageMatter(f.Tag().String(), realpath, DefaultNewUserPageBody, matter.JsonMatter, beContext.Context{

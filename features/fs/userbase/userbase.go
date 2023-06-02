@@ -19,13 +19,13 @@ package userbase
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
+	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/page/matter"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/userbase"
@@ -41,15 +41,14 @@ var (
 type Feature interface {
 	filesystem.Feature[MakeFeature]
 
+	signaling.SignalsSupport
+
 	userbase.AuthUserProvider
 	userbase.AuthUserManager
 	userbase.UserProvider
 	userbase.UserManager
 	userbase.GroupsProvider
 	userbase.GroupsManager
-
-	// feature.PageTypeProcessor
-	// userbase.Manager
 }
 
 type MakeFeature interface {
@@ -87,6 +86,7 @@ type MakeFeature interface {
 
 type CFeature struct {
 	filesystem.CFeature[MakeFeature]
+	signaling.CSignaling
 
 	authPath string
 
@@ -115,6 +115,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+	f.CSignaling.InitSignaling()
 	f.authPath = "/auth"
 	f.userPath = "/user"
 	f.groupPath = "/group"
@@ -355,15 +356,35 @@ func (f *CFeature) RemoveAuthUser(eid string) (err error) {
 func (f *CFeature) NewUser(au *userbase.AuthUser) (user *userbase.User, err error) {
 	f.Lock()
 	defer f.Unlock()
-	// if _, present := f.getUserExistsUnsafe(au.EID); present {
-	// 	err = fmt.Errorf("user exists already: %v", au.EID)
-	// 	return
-	// }
-	if user, err = f.makeUserUnsafe(au); err == nil {
-		if err = f.setUserUnsafe(user); err == nil {
-			err = f.addUserToGroupsUnsafe(user.EID, f.defaultGroups...)
-		}
+
+	if u, e := f.getUserUnsafe(au.EID); e == nil {
+		// user exists already, set and load
+		user = u
+		return
 	}
+
+	var created bool
+	if user, created, err = f.makeUserUnsafe(au); err != nil {
+		err = fmt.Errorf("error making new user structure: %v - %v", au.EID, err)
+		return
+	}
+
+	if err = f.setUserUnsafe(user); err != nil {
+		err = fmt.Errorf("error saving new user: %v - %v", user.EID, err)
+		return
+	}
+
+	if err = f.addUserToGroupsUnsafe(user.EID, f.defaultGroups...); err != nil {
+		err = fmt.Errorf("error adding user to default groups: %v - %V", user.EID, err)
+		return
+	}
+
+	if created {
+		f.Emit(userbase.UserSignupSignal, f.Tag().String(), user)
+	} else {
+		f.Emit(userbase.UserLoginSignal, f.Tag().String(), user)
+	}
+
 	return
 }
 
@@ -375,44 +396,16 @@ func (f *CFeature) SetUser(user *userbase.User) (err error) {
 }
 
 func (f *CFeature) GetUser(eid string) (user *userbase.User, err error) {
-	f.Lock()
-	if u, e := f.getUserUnsafe(eid); e == nil {
-		user = u
-	} else if au, ee := f.getAuthUserUnsafe(eid); ee == nil {
-		if user, err = f.makeUserUnsafe(au); err == nil {
-			if err = f.setUserUnsafe(user); err == nil {
-				if err = f.addUserToGroupsUnsafe(user.EID, f.defaultGroups...); err != nil {
-					f.Unlock()
-					return
-				}
-			} else {
-				f.Unlock()
-				return
-			}
-		} else {
-			f.Unlock()
-			return
-		}
-	} else {
-		err = os.ErrNotExist
-		f.Unlock()
+	f.RLock()
+	defer f.RUnlock()
+	if user, err = f.getUserUnsafe(eid); err != nil {
 		return
 	}
-	f.Unlock()
-
-	if user != nil {
-		err = nil
-
-		user.Groups = f.GetUserGroups(eid)
-		for _, group := range user.Groups {
-			actions := f.GetGroupActions(group)
-			user.Actions = user.Actions.Append(actions...)
-		}
-
-		return
+	user.Groups = f.getUserGroupsUnsafe(user.EID)
+	for _, group := range user.Groups {
+		actions := f.GetGroupActions(group)
+		user.Actions = user.Actions.Append(actions...)
 	}
-
-	err = os.ErrNotExist
 	return
 }
 
