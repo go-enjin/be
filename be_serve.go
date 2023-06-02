@@ -50,6 +50,10 @@ func (e *Enjin) Serve204(w http.ResponseWriter, r *http.Request) {
 	serve.Serve204(w, r)
 }
 
+func (e *Enjin) Serve400(w http.ResponseWriter, r *http.Request) {
+	serve.Serve400(w, r)
+}
+
 func (e *Enjin) Serve401(w http.ResponseWriter, r *http.Request) {
 	serve.Serve401(w, r)
 }
