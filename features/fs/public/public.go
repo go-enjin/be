@@ -56,7 +56,6 @@ type MakeFeature interface {
 	SetCacheControl(values string) MakeFeature
 	SetMountCacheControl(mount string, value string) MakeFeature
 	SetRegexCacheControl(pattern string, value string) MakeFeature
-	SetUserAuthProvider(provider feature.Feature) MakeFeature
 
 	Make() Feature
 }
@@ -120,19 +119,6 @@ func (f *CFeature) UseDirIndex(indexFileName string) MakeFeature {
 	return f
 }
 
-func (f *CFeature) SetUserAuthProvider(provider feature.Feature) MakeFeature {
-	panic("user auth provider tags pattern not implemented yet")
-	// var pass bool
-	// if f.ubp, pass = provider.Self().(userbase.AuthProvider); !pass {
-	// 	log.FatalDF(1, "not a userbase.AuthProvider type: %T", provider)
-	// } else if f.prh, pass = provider.Self().(feature.PageRestrictionHandler); !pass {
-	// 	log.FatalDF(1, "not a feature.PageRestrictionHandler type: %T", provider)
-	// } else if f.drh, pass = provider.Self().(feature.DataRestrictionHandler); !pass {
-	// 	log.FatalDF(1, "not a feature.DataRestrictionHandler type: %T", provider)
-	// }
-	// f.uaf = provider
-	return f
-}
 
 func (f *CFeature) Make() Feature {
 	for point, _ := range f.mountCacheControl {
