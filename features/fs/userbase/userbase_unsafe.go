@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/hash/sha"
@@ -215,6 +216,7 @@ func (f *CFeature) setUserUnsafe(user *userbase.User) (err error) {
 		return
 	}
 	pm.Path = userFilename
+	pm.Updated = time.Now()
 
 	err = f.WritePageMatter(pm)
 	return
