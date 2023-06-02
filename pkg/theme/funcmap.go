@@ -185,7 +185,7 @@ func (t *Theme) makeUnderscoreUnderscore(ctx context.Context) func(argv ...strin
 		}
 
 		if !enjin.SiteSupportsLanguage(targetLang) {
-			log.ErrorF("unsupported site language requested: %v", targetLang)
+			log.DebugF("unsupported site language requested: %v, reverting to default", targetLang)
 			targetLang = enjin.SiteDefaultLanguage()
 		}
 
