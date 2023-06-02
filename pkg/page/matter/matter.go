@@ -16,6 +16,7 @@ package matter
 
 import (
 	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -174,5 +175,17 @@ func (pm *PageMatter) Bytes() (data []byte, err error) {
 	case NoneMatter:
 	}
 	data = append(data, pm.Body...)
+	return
+}
+
+func (pm *PageMatter) DecodeJsonBodyWith(v interface{}) (err error) {
+	err = json.Unmarshal([]byte(pm.Body), v)
+	return
+}
+
+// DecodeJsonBody decodes the .Body from JSON and returns the context data
+func (pm *PageMatter) DecodeJsonBody() (data beContext.Context, err error) {
+	data = beContext.New()
+	err = json.Unmarshal([]byte(pm.Body), &data)
 	return
 }
