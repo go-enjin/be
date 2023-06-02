@@ -61,6 +61,8 @@ func SearchDocument(p *page.Page) (doc search.Document, err error) {
 			if doc, ok = v.(search.Document); !ok {
 				log.ErrorF("format.IndexDocument returned invalid structure: %T", v)
 			}
+		} else {
+			log.ErrorF("format indexing had nil result: %v - %v", p.Format, p.Url)
 		}
 	} else {
 		err = fmt.Errorf("unsupported page format: %v (valid: %v)", p.Format, p.Formats.ListFormats())
