@@ -22,13 +22,23 @@ import (
 )
 
 var (
-	RxDupeSlashes   = regexp.MustCompile(`/+`)
-	RxSlashDotSlash = regexp.MustCompile(`/\./`)
+	RxDupeSlashes = regexp.MustCompile(`/+`)
+	RxTrimCuts    = regexp.MustCompile(`^[!/\s]*([^!/].+?)[/\s]*$`)
 )
 
 func CleanWithSlash(path string) (clean string) {
-	clean = "/" + strings.Trim(path, "/\t ")
+	var lead string
+	if strings.HasPrefix(path, "!") {
+		lead = "!"
+	} else {
+		lead = "/"
+	}
+	clean = RxTrimCuts.ReplaceAllString(path, "$1")
 	clean = filepath.Clean(clean)
+	if clean == "." || clean == lead {
+		clean = ""
+	}
+	clean = lead + clean
 	return
 }
 
