@@ -32,6 +32,14 @@ func Serve204(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("204 - " + printer.Sprintf("No Content")))
 }
 
+func Serve400(w http.ResponseWriter, r *http.Request) {
+	printer := lang.GetPrinterFromRequest(r)
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusBadRequest)
+	// The request was rejected due to being an Unauthorized user (or anonymous guest)
+	_, _ = w.Write([]byte("400 - " + printer.Sprintf("Bad Request")))
+}
+
 func Serve401(w http.ResponseWriter, r *http.Request) {
 	printer := lang.GetPrinterFromRequest(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
