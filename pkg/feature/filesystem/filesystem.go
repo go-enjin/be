@@ -170,8 +170,7 @@ func (f *CFeature[MakeTypedFeature]) FindPathMountPoint(path string) (mps []*CMo
 	for _, point := range maps.SortedKeyLengths(f.MountPoints) {
 		if path == point || strings.HasPrefix(path, bePath.CleanWithSlashes(point)) {
 			// log.WarnDF(1, "%v has %v prefix", path, point)
-			mps = f.MountPoints[point]
-			return
+			mps = append(mps, f.MountPoints[point]...)
 		}
 		// log.WarnDF(1, "%v does not have %v prefix", path, point)
 	}
