@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path/filepath"
 	"sort"
 	"strings"
 	"sync"
@@ -35,7 +34,6 @@ import (
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/page/matter"
-	bePath "github.com/go-enjin/be/pkg/path"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -295,17 +293,11 @@ func (f *DBFileSystem) FindFilePath(prefix string, extensions ...string) (path s
 	defer f.RUnlock()
 
 	realpath := f.realpath(prefix)
-	if filepath.Ext(realpath) != "" {
-		if bePath.IsFile(realpath) {
-			path = beFs.PruneRootFrom(f.path, realpath)
-			return
-		}
-	}
 
 	sort.Sort(beStrings.SortByLengthDesc(extensions))
 
 	realpath = strings.TrimSuffix(realpath, "/")
-	var paths []string
+	paths := []string{realpath}
 	for _, extension := range extensions {
 		paths = append(paths, realpath+"."+extension)
 	}
