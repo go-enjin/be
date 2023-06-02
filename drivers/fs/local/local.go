@@ -79,12 +79,8 @@ func (f *FileSystem) Exists(path string) (exists bool) {
 	defer f.RUnlock()
 
 	realpath := f.realpath(path)
-
 	_, err := os.Stat(realpath)
 	exists = err == nil
-
-	log.DebugF("local exists=%v: %v", exists, realpath)
-
 	return
 }
 
