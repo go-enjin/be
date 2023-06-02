@@ -50,6 +50,7 @@ type Service interface {
 	ServeRedirect(destination string, w http.ResponseWriter, r *http.Request)
 
 	Serve204(w http.ResponseWriter, r *http.Request)
+	Serve400(w http.ResponseWriter, r *http.Request)
 	Serve401(w http.ResponseWriter, r *http.Request)
 	ServeBasic401(w http.ResponseWriter, r *http.Request)
 	Serve403(w http.ResponseWriter, r *http.Request)
