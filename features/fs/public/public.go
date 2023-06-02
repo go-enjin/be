@@ -17,11 +17,13 @@
 package public
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/urfave/cli/v2"
 
@@ -53,6 +55,7 @@ type MakeFeature interface {
 	filesystem.MakeFeature[MakeFeature]
 
 	UseDirIndex(indexFileName string) MakeFeature
+	ServeBasePath(prefix, index string) MakeFeature
 	SetCacheControl(values string) MakeFeature
 	SetMountCacheControl(mount string, value string) MakeFeature
 	SetRegexCacheControl(pattern string, value string) MakeFeature
@@ -69,6 +72,8 @@ type CFeature struct {
 	mountCacheControl map[string]string
 	regexCacheControl map[string]string
 	cachedRegexp      map[string]*regexp.Regexp
+
+	basePaths map[string]string
 
 	uaf feature.Feature
 	ubp userbase.AuthProvider
@@ -92,6 +97,7 @@ func (f *CFeature) Init(this interface{}) {
 	f.mountCacheControl = make(map[string]string)
 	f.regexCacheControl = make(map[string]string)
 	f.cachedRegexp = make(map[string]*regexp.Regexp)
+	f.basePaths = make(map[string]string)
 }
 
 func (f *CFeature) SetCacheControl(values string) MakeFeature {
@@ -119,11 +125,21 @@ func (f *CFeature) UseDirIndex(indexFileName string) MakeFeature {
 	return f
 }
 
+func (f *CFeature) ServeBasePath(prefix, index string) MakeFeature {
+	prefix = bePath.CleanWithSlashes(prefix)
+	f.basePaths[prefix] = bePath.CleanWithSlash(index)
+	return f
+}
 
 func (f *CFeature) Make() Feature {
 	for point, _ := range f.mountCacheControl {
 		if _, found := f.MountPoints[point]; !found {
 			log.FatalDF(1, "mount cache control mount-point not found: %v", point)
+		}
+	}
+	for _, bp := range maps.SortedKeyLengths(f.basePaths) {
+		if _, _, e := f.FindFile(f.basePaths[bp]); e != nil {
+			log.FatalDF(1, "base path %v index file not found: %v", bp, f.basePaths[bp])
 		}
 	}
 	return f
@@ -153,25 +169,7 @@ func (f *CFeature) UserActions() (list userbase.Actions) {
 }
 
 func (f *CFeature) FindFile(path string) (data []byte, mime string, err error) {
-	if v, ee := url.PathUnescape(path); ee == nil {
-		path = v
-	}
-
-	if len(path) <= 1 {
-		err = os.ErrNotExist
-		return
-	}
-
-	var ok bool
-	for _, point := range maps.SortedKeys(f.MountPoints) {
-		for _, mp := range f.MountPoints[point] {
-			if data, mime, _, ok = beFs.CheckForFileData(mp.ROFS, path, mp.Mount); ok {
-				return
-			}
-		}
-	}
-
-	err = os.ErrNotExist
+	_, _, data, mime, err = f.findFileUnsafe(path)
 	return
 }
 
@@ -182,32 +180,40 @@ func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWrite
 	}
 	path = bePath.CleanWithSlash(path)
 
-	var cmp *filesystem.CMountPoint
 	var data []byte
 	var mime string
-	var ok bool
+	var cmp *filesystem.CMountPoint
 
-	// check for path as-is
-	if cmp, data, mime, _, ok = f.findFileData(path); !ok {
-		// path as-is not found, have dirIndex configured
-		if f.dirIndex == "" {
-			err = os.ErrNotExist
-			return
-		}
-		path += "/" + f.dirIndex
-		if cmp, data, mime, _, ok = f.findFileData(path); !ok {
-			err = os.ErrNotExist
-			return
+	for _, bp := range maps.SortedKeyLengths(f.basePaths) {
+		if path+"/" == bp {
+			// serve base path index file
+			if cmp, _, data, mime, err = f.findFileUnsafe(f.basePaths[bp]); err != nil {
+				err = fmt.Errorf("error finding base path %v index file: %v - %v", bp, f.basePaths[bp], err)
+				return
+			}
+		} else if strings.HasPrefix(path, bp) {
+			// check if it is an actual file
+			if cmp, _, data, mime, err = f.findFileUnsafe(path); err != nil {
+				err = nil
+				// not a file, serve index without redirecting
+				if cmp, _, data, mime, err = f.findFileUnsafe(f.basePaths[bp]); err != nil {
+					err = fmt.Errorf("error finding base path %v index file: %v - %v", bp, f.basePaths[bp], err)
+					return
+				}
+			}
 		}
 	}
 
-	// if f.drh != nil {
-	// 	if modReq, pass := f.drh.RestrictServeData(data, mime, w, r); !pass {
-	// 		return
-	// 	} else {
-	// 		r = modReq
-	// 	}
-	// }
+	if cmp == nil {
+		if cmp, _, data, mime, err = f.findFileUnsafe(path); err == os.ErrNotExist {
+			if f.dirIndex == "" {
+				return
+			}
+			if cmp, _, data, mime, err = f.findFileUnsafe(path + "/" + f.dirIndex); err != nil {
+				return
+			}
+		}
+	}
 
 	var cacheControlValue string
 	for _, key := range maps.SortedKeys(f.regexCacheControl) {
@@ -230,18 +236,32 @@ func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWrite
 
 	w.Header().Set("Cache-Control", cacheControlValue)
 	s.ServeData(data, mime, w, r)
-	// log.DebugRDF(r, 1, "%s feature served file: [%v] %v (%v)", f.Tag(), cmp.Mount, fullpath, mime)
 	return
 }
 
-func (f *CFeature) findFileData(path string) (cmp *filesystem.CMountPoint, data []byte, mime string, fullpath string, ok bool) {
-	for _, point := range maps.SortedKeys(f.MountPoints) {
-		for _, mp := range f.MountPoints[point] {
-			if data, mime, fullpath, ok = beFs.CheckForFileData(mp.ROFS, path, mp.Mount); ok {
-				cmp = mp
-				return
-			}
+func (f *CFeature) findFileUnsafe(path string) (cmp *filesystem.CMountPoint, realpath string, data []byte, mime string, err error) {
+	if v, ee := url.PathUnescape(path); ee == nil {
+		path = v
+	}
+
+	if len(path) <= 1 {
+		err = os.ErrNotExist
+		return
+	}
+
+	var ok bool
+	for _, mp := range f.FindPathMountPoint(path) {
+		if data, mime, _, ok = beFs.CheckForFileData(mp.ROFS, path, mp.Mount); ok {
+			cmp = mp
+			return
 		}
 	}
+
+	cmp = nil
+	realpath = ""
+	data = nil
+	mime = ""
+
+	err = os.ErrNotExist
 	return
 }
