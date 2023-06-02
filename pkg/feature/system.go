@@ -23,6 +23,7 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
@@ -86,10 +87,13 @@ type Service interface {
 
 	Notify(tag string)
 	NotifyF(tag, format string, argv ...interface{})
+
+	signaling.EmitterSupport
 }
 
 type System interface {
 	Service
+	signaling.SignalsSupport
 
 	Router() (router *chi.Mux)
 }
@@ -102,6 +106,7 @@ type RootInternals interface {
 
 type Internals interface {
 	Service
+	signaling.SignalsSupport
 	site.Enjin
 
 	Self() (self interface{})
