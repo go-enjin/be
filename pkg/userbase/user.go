@@ -60,3 +60,15 @@ func (u *User) Can(action Action) (allowed bool) {
 	allowed = u.Actions.Has(action)
 	return
 }
+
+func (u *User) FilteredContext(includeKeys ...string) (ctx beContext.Context) {
+	ctx = beContext.Context{}
+	ctx["EID"] = u.EID
+	ctx["Name"] = u.Name
+	ctx["Email"] = u.Email
+	ctx["Image"] = u.Image
+	for _, key := range includeKeys {
+		ctx[key] = u.Page.Context.Get(key)
+	}
+	return
+}
