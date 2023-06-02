@@ -15,6 +15,7 @@
 package lang
 
 import (
+	"context"
 	"net/http"
 	"regexp"
 	"strings"
@@ -23,31 +24,42 @@ import (
 	"github.com/go-enjin/golang-org-x-text/message"
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
 
-	"github.com/go-enjin/be/pkg/context"
+	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
-const LanguageTag context.RequestKey = "language-tag"
-const LanguagePrinter context.RequestKey = "language-printer"
-const LanguageDefault context.RequestKey = "language-default"
+const (
+	LanguageTag     beContext.RequestKey = "language-tag"
+	LanguagePrinter beContext.RequestKey = "language-printer"
+	LanguageDefault beContext.RequestKey = "language-default"
+)
 
 func ParseLangPath(p string) (tag language.Tag, modified string, ok bool) {
 	modified = p
+	lead := "/"
 	var path string
 	if p == "" {
 		return
 	} else if path = p; path[0] == '/' {
 		path = path[1:]
+	} else if path[0] == '!' {
+		lead = "!"
+		path = path[1:]
 	}
 	if parts := strings.Split(path, "/"); len(parts) >= 2 {
 		if t, err := language.Parse(parts[0]); err == nil {
 			tag = t
-			modified = "/" + strings.Join(parts[1:], "/")
+			modified = lead + strings.Join(parts[1:], "/")
 			ok = true
 		}
 	}
+	return
+}
+
+func SetTag(r *http.Request, tag language.Tag) (modified *http.Request) {
+	modified = r.Clone(context.WithValue(r.Context(), LanguageTag, tag))
 	return
 }
 
