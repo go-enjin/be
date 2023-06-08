@@ -18,25 +18,69 @@ package gorm
 
 import (
 	"fmt"
+	"github.com/go-enjin/be/pkg/maps"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"os"
 	"strings"
 
 	"gorm.io/datatypes"
 )
 
-func (f *DBFileSystem) FindPathsWithContext(path, key string, value interface{}) (found []string, err error) {
+func (f *DBFileSystem) GormTx() (tx *gorm.DB) {
+	return f.tx()
+}
+
+func (f *DBFileSystem) FindPathsWithContextKey(path, key string) (found []string, err error) {
+	found, err = f.FindPathsWhere(path, datatypes.JSONQuery("context").HasKey(key))
+	return
+}
+
+func (f *DBFileSystem) FindPathsWhereContextKeyEquals(path, key string, value interface{}) (found []string, err error) {
+	found, err = f.FindPathsWhere(path, datatypes.JSONQuery("context").Equals(value, key))
+	return
+}
+
+func (f *DBFileSystem) FindPathsWhereContextEquals(path string, conditions map[string]interface{}) (found []string, err error) {
+	var expressions []clause.Expression
+	for k, v := range conditions {
+		expressions = append(expressions, datatypes.JSONQuery("context").Equals(v, k))
+	}
+	found, err = f.FindPathsWhere(path, expressions...)
+	return
+}
+
+func (f *DBFileSystem) FindPathsWhereContext(path string, orJsonConditions ...map[string]interface{}) (found []string, err error) {
+	var orExpressions []clause.Expression
+	for _, andConditions := range orJsonConditions {
+		var andExpressions []clause.Expression
+		for _, k := range maps.SortedKeys(andConditions) {
+			andExpressions = append(
+				andExpressions,
+				datatypes.JSONQuery("context").
+					Equals(andConditions[k], k),
+			)
+		}
+		orExpressions = append(orExpressions, clause.And(andExpressions...))
+	}
+	found, err = f.FindPathsWhere(path, clause.Or(orExpressions...))
+	return
+}
+
+func (f *DBFileSystem) FindPathsWhere(path string, expressions ...clause.Expression) (found []string, err error) {
 	f.RLock()
 	defer f.RUnlock()
 
 	realpath := strings.TrimPrefix(path, "/")
-	// realpath := f.realpath(path)
 	var results []*entryStub
 
-	if err = f.tx().
+	query := f.tx().
 		Where(`path LIKE ?`, realpath+"%").
-		Where(datatypes.JSONQuery("context").Equals(value, key)).
-		Find(&results).Error; err != nil {
-		err = fmt.Errorf("error querying for path LIKE %v AND context.%q == %q", path+"%", key, value)
+		Where(clause.And(expressions...))
+	if err = query.Find(&results).Error; err != nil {
+		err = fmt.Errorf("error querying for path LIKE %v AND %#+v", path+"%", query.ToSQL(func(tx *gorm.DB) *gorm.DB {
+			return tx
+		}))
 		return
 	}
 
