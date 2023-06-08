@@ -18,7 +18,7 @@ package filesystem
 
 import (
 	"fmt"
-
+	"github.com/go-enjin/be/pkg/fs"
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 
@@ -96,6 +96,16 @@ func (s CGormDBPathSupport[MakeTypedFeature]) startupGormDBPathSupport(f *CFeatu
 			log.FatalF("error mounting gorm db: %v", err)
 		} else {
 			f.MountPathRWFS(mgdb.path, mgdb.mount, gfs)
+		}
+	}
+	return
+}
+
+func (f *CFeature[MakeTypedFeature]) GormTx(path string) (tx *gorm.DB) {
+	for _, mp := range f.FindPathMountPoint(path) {
+		if gfs, ok := mp.RWFS.(fs.GormFileSystem); ok {
+			// first gorm filesystem wins
+			return gfs.GormTx()
 		}
 	}
 	return

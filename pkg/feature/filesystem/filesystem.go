@@ -222,12 +222,47 @@ func (f *CFeature[MakeTypedFeature]) Exists(path string) (present bool) {
 	return
 }
 
-func (f *CFeature[MakeTypedFeature]) FindPathsWithContext(path, key string, value interface{}) (found []string, err error) {
+func (f *CFeature[MakeTypedFeature]) FindPathsWithContextKey(path, key string) (found []string, err error) {
 	for _, mp := range f.FindPathMountPoint(path) {
 		if v, ok := mp.RWFS.(fs.QueryFileSystem); ok {
-			var ee error
-			if found, ee = v.FindPathsWithContext(path, key, value); ee == nil {
-				return
+			if more, ee := v.FindPathsWithContextKey(path, key); ee == nil {
+				found = append(found, more...)
+			}
+		}
+	}
+	err = os.ErrNotExist
+	return
+}
+
+func (f *CFeature[MakeTypedFeature]) FindPathsWhereContextKeyEquals(path, key string, value interface{}) (found []string, err error) {
+	for _, mp := range f.FindPathMountPoint(path) {
+		if v, ok := mp.RWFS.(fs.QueryFileSystem); ok {
+			if more, ee := v.FindPathsWhereContextKeyEquals(path, key, value); ee == nil {
+				found = append(found, more...)
+			}
+		}
+	}
+	err = os.ErrNotExist
+	return
+}
+
+func (f *CFeature[MakeTypedFeature]) FindPathsWhereContextEquals(path string, conditions map[string]interface{}) (found []string, err error) {
+	for _, mp := range f.FindPathMountPoint(path) {
+		if v, ok := mp.RWFS.(fs.QueryFileSystem); ok {
+			if more, ee := v.FindPathsWhereContextEquals(path, conditions); ee == nil {
+				found = append(found, more...)
+			}
+		}
+	}
+	err = os.ErrNotExist
+	return
+}
+
+func (f *CFeature[MakeTypedFeature]) FindPathsWhereContext(path string, orJsonConditions ...map[string]interface{}) (found []string, err error) {
+	for _, mp := range f.FindPathMountPoint(path) {
+		if v, ok := mp.RWFS.(fs.QueryFileSystem); ok {
+			if more, ee := v.FindPathsWhereContext(path, orJsonConditions...); ee == nil {
+				found = append(found, more...)
 			}
 		}
 	}
