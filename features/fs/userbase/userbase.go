@@ -533,14 +533,20 @@ func (f *CFeature) GetUserGroups(eid string) (groups userbase.Groups) {
 	return
 }
 
-// func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *page.Page, redirect string, processed bool, err error) {
-// 	switch strings.ToLower(p.Type) {
-// 	case "user":
-// 		// these are individual user pages
-// 	case "group":
-// 		// these are the users associated with one or more groups
-// 	case "groups":
-// 		// these are group definitions
-// 	}
-// 	return
-// }
+func (f *CFeature) ListUsers(start, page, numPerPage int) (list []string) {
+	f.RLock()
+	defer f.RUnlock()
+	var eids []string
+	for _, mp := range f.FindPathMountPoint(f.userPath) {
+		found, _ := mp.ROFS.ListAllFiles(f.userPath)
+		for _, path := range found {
+			eids = append(eids, bePath.Base(path))
+		}
+	}
+	for i := start; i < len(eids); i++ {
+		if i < page*numPerPage { // maybe off by one?
+			list = append(list, eids[i])
+		}
+	}
+	return
+}
