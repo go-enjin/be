@@ -154,6 +154,16 @@ func (e *Enjin) ServeJSON(v interface{}, w http.ResponseWriter, r *http.Request)
 	return
 }
 
+func (e *Enjin) ServeStatusJSON(status int, v interface{}, w http.ResponseWriter, r *http.Request) (err error) {
+	var data []byte
+	if data, err = json.Marshal(v); err != nil {
+		return
+	}
+	// log.DebugRDF(r, 1, "serving json: %v", string(data))
+	e.ServeData(data, "application/json", w, serve.SetServeStatus(status, r))
+	return
+}
+
 func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) (err error) {
 	if p.Url != "" && p.Url[0] == '!' {
 		err = fmt.Errorf("cannot serve not-path page: %v", p.Url)

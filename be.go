@@ -54,6 +54,7 @@ const EnjinTag feature.Tag = "enjin"
 var (
 	_ feature.Runner    = (*Enjin)(nil)
 	_ feature.System    = (*Enjin)(nil)
+	_ feature.Service   = (*Enjin)(nil)
 	_ feature.Internals = (*Enjin)(nil)
 )
 
