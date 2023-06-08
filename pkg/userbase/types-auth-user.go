@@ -25,7 +25,7 @@ type AuthUserProvider interface {
 type AuthUserManager interface {
 	// NewAuthUser constructs a new AuthUser instance and saves it to the
 	// userbase
-	NewAuthUser(eid, name, email, picture, audience string, attributes map[string]interface{}) (user *AuthUser, err error)
+	NewAuthUser(rid, name, email, picture, audience string, attributes map[string]interface{}) (user *AuthUser, err error)
 
 	// SetAuthUser writes the given User to the system
 	SetAuthUser(user *AuthUser) (err error)
