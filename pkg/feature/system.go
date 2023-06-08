@@ -66,6 +66,7 @@ type Service interface {
 	ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) (err error)
 	ServePath(urlPath string, w http.ResponseWriter, r *http.Request) (err error)
 	ServeJSON(v interface{}, w http.ResponseWriter, r *http.Request) (err error)
+	ServeStatusJSON(status int, v interface{}, w http.ResponseWriter, r *http.Request) (err error)
 	ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request)
 
 	MatchQL(query string) (pages []*page.Page)
