@@ -22,6 +22,9 @@ type UsersManager interface {
 type UserProvider interface {
 	// GetUser returns the user by enjin ID
 	GetUser(eid string) (user *User, err error)
+
+	// ListUsers returns a paginated list of user EIDs
+	ListUsers(start, page, numPerPage int) (list []string)
 }
 
 type UserManager interface {
