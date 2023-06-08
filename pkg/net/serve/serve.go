@@ -15,10 +15,30 @@
 package serve
 
 import (
+	"context"
 	"net/http"
 
+	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/lang"
 )
+
+const (
+	ServeStatusResponseKey beContext.RequestKey = "ServeStatusResponse"
+)
+
+func SetServeStatus(status int, r *http.Request) (modified *http.Request) {
+	modified = r.Clone(context.WithValue(r.Context(), ServeStatusResponseKey, status))
+	return
+}
+
+func GetServeStatus(r *http.Request) (status int) {
+	if v, ok := r.Context().Value(ServeStatusResponseKey).(int); ok {
+		status = v
+	} else {
+		status = http.StatusOK
+	}
+	return
+}
 
 func Redirect(destination string, w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, destination, http.StatusSeeOther)
