@@ -14,6 +14,19 @@
 
 package fs
 
+import (
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+)
+
 type QueryFileSystem interface {
-	FindPathsWithContext(path, key string, value interface{}) (found []string, err error)
+	FindPathsWithContextKey(path, key string) (found []string, err error)
+	FindPathsWhereContextKeyEquals(path, key string, value interface{}) (found []string, err error)
+	FindPathsWhereContextEquals(path string, conditions map[string]interface{}) (found []string, err error)
+	FindPathsWhereContext(path string, orJsonConditions ...map[string]interface{}) (found []string, err error)
+}
+
+type GormFileSystem interface {
+	GormTx() (tx *gorm.DB)
+	FindPathsWhere(path string, expressions ...clause.Expression) (found []string, err error)
 }
