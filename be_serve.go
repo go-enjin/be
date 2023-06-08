@@ -24,7 +24,6 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
@@ -36,10 +35,6 @@ import (
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/userbase"
-)
-
-const (
-	ServeStatusResponseKey beContext.RequestKey = "ServeStatusResponse"
 )
 
 func (e *Enjin) ServeRedirect(destination string, w http.ResponseWriter, r *http.Request) {
@@ -87,7 +82,7 @@ func (e *Enjin) ServeInternalServerError(w http.ResponseWriter, r *http.Request)
 }
 
 func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Request) {
-	r = r.Clone(context.WithValue(r.Context(), ServeStatusResponseKey, status))
+	r = serve.SetServeStatus(status, r)
 	reqLangTag := lang.GetTag(r)
 
 	if path, ok := e.eb.statusPages[status]; ok {
@@ -398,13 +393,6 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 		data = fn(data)
 	}
 
-	var status int
-	if v, ok := r.Context().Value(ServeStatusResponseKey).(int); ok {
-		status = v
-	} else {
-		status = http.StatusOK
-	}
-
-	w.WriteHeader(status)
+	w.WriteHeader(serve.GetServeStatus(r))
 	_, _ = w.Write(data)
 }

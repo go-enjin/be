@@ -17,7 +17,6 @@
 package be
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/go-enjin/be/pkg/log"
@@ -33,7 +32,7 @@ func (fe *FastcgiEnjin) ServeInternalServerError(w http.ResponseWriter, r *http.
 }
 
 func (fe *FastcgiEnjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Request) {
-	r = r.WithContext(context.WithValue(r.Context(), ServeStatusResponseKey, status))
+	r = serve.SetServeStatus(status, r)
 
 	if path, ok := fe.feb.statusPages[status]; ok && path != "" {
 		serve.Redirect(path, w, r)
