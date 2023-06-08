@@ -195,6 +195,10 @@ func (c Context) Get(key string) (value interface{}) {
 	if v, ok := c[camel]; ok {
 		return v
 	}
+	kebab := strcase.ToKebab(key)
+	if v, ok := c[kebab]; ok {
+		return v
+	}
 	snake := strcase.ToSnake(key)
 	if v, ok := c[snake]; ok {
 		return v
