@@ -369,10 +369,34 @@ func Get(key string, m map[string]interface{}) (value interface{}) {
 		value = Get(keys[0], m)
 	default:
 		if v, ok := m[keys[0]]; ok {
-			if vm, ok := v.(map[string]string); ok {
-				value, _ = vm[keys[1]]
-			} else if vm, ok := v.(map[string]interface{}); ok {
-				value = Get("."+strings.Join(keys[1:], "."), vm)
+			if ms, ok := v.(map[string]string); ok {
+				value, _ = ms[keys[1]]
+			} else if mm, ok := v.(map[string]interface{}); ok {
+				value = Get("."+strings.Join(keys[1:], "."), mm)
+			}
+		}
+	}
+	return
+}
+
+func Delete(key string, m map[string]interface{}) {
+	if key != "" && key[0] != '.' {
+		if _, ok := m[key]; ok {
+			delete(m, key)
+		}
+		return
+	}
+	keys := strings.Split(key[1:], ".")
+	switch len(keys) {
+	case 0: // nop
+	case 1:
+		Delete(keys[0], m)
+	default:
+		if v, ok := m[keys[0]]; ok {
+			if ms, ok := v.(map[string]string); ok {
+				delete(ms, keys[1])
+			} else if mm, ok := v.(map[string]interface{}); ok {
+				Delete("."+strings.Join(keys[1:], "."), mm)
 			}
 		}
 	}
