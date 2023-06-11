@@ -179,52 +179,54 @@ func (c Context) SetSpecific(key string, value interface{}) Context {
 	return c
 }
 
-// Get returns the given key's value as an interface{} and returns nil if not
-// found. Get looks for the key as given first and if not found looks for a
-// CamelCased version of the key and if still not found looks for a kebab-ified
-// version, finally if nothing is found, nil is returned.
+// Get is a convenience wrapper around GetKV
 func (c Context) Get(key string) (value interface{}) {
+	_, value = c.GetKV(key)
+	return
+}
+
+// GetKV looks for the key as given first and if not found looks for CamelCased, kebab-case and snake_cased variations;
+// returning the actual key found and the generic value; returns an empty key and nil value if nothing found at all
+func (c Context) GetKV(key string) (k string, v interface{}) {
+	var ok bool
 	if key != "" && key[0] == '.' {
-		value = maps.Get(key, c)
+		k = key
+		v = maps.Get(key, c)
 		return
 	}
-	if v, ok := c[key]; ok {
-		return v
+
+	k = key
+	if v, ok = c[k]; ok {
+		return
 	}
-	camel := strcase.ToCamel(key)
-	if v, ok := c[camel]; ok {
-		return v
+	k = strcase.ToCamel(key)
+	if v, ok = c[k]; ok {
+		return
 	}
-	kebab := strcase.ToKebab(key)
-	if v, ok := c[kebab]; ok {
-		return v
+	k = strcase.ToKebab(key)
+	if v, ok = c[k]; ok {
+		return
 	}
-	snake := strcase.ToSnake(key)
-	if v, ok := c[snake]; ok {
-		return v
+	k = strcase.ToSnake(key)
+	if v, ok = c[k]; ok {
+		return
 	}
-	return nil
+	return
 }
 
 // Delete deletes the given key from the Context and follows a similar key
 // lookup process to Get() for finding the key to delete and will only delete
 // the first matching key format (specific, Camel, kebab) found
 func (c Context) Delete(key string) (deleted bool) {
-	if _, ok := c[key]; ok {
-		delete(c, key)
+	if key != "" && key[0] == '.' {
+		maps.Delete(key, c)
+		return
+	}
+	if k, v := c.GetKV(key); v != nil {
+		delete(c, k)
 		return true
 	}
-	camel := strcase.ToCamel(key)
-	if _, ok := c[camel]; ok {
-		delete(c, camel)
-		return true
-	}
-	snake := strcase.ToSnake(key)
-	if _, ok := c[snake]; ok {
-		delete(c, snake)
-		return true
-	}
-	return true
+	return false
 }
 
 // DeleteKeys is a batch wrapper around Delete()
@@ -421,8 +423,19 @@ func (c Context) AsOsEnviron() (out []string) {
 func (c Context) CamelizeKeys() {
 	var remove []string
 	for k, v := range c {
-		camelized := strcase.ToCamel(k)
-		if k != camelized {
+		if camelized := strcase.ToCamel(k); k != camelized {
+			remove = append(remove, k)
+			c.SetSpecific(camelized, v)
+		}
+	}
+	c.DeleteKeys(remove...)
+}
+
+// LowerCamelizeKeys transforms all keys within the Context to be of lowerCamelCased form
+func (c Context) LowerCamelizeKeys() {
+	var remove []string
+	for k, v := range c {
+		if camelized := strcase.ToLowerCamel(k); k != camelized {
 			remove = append(remove, k)
 			c.SetSpecific(camelized, v)
 		}
