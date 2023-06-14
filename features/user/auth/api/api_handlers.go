@@ -200,7 +200,7 @@ func (f *CFeature) AuthApiServeHTTP(next http.Handler, w http.ResponseWriter, r 
 				w.Header().Del(f.authOpts.XSRFHeaderKey)
 
 			} else {
-				log.DebugRF(r, "%v feature token user not present", f.Tag())
+				//log.DebugRF(r, "%v feature token user not present", f.Tag())
 			}
 
 		}
