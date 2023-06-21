@@ -153,8 +153,10 @@ func (c Context) Copy() (ctx Context) {
 // Apply takes a list of contexts and merges their contents into this one
 func (c Context) Apply(contexts ...Context) {
 	for _, cc := range contexts {
-		for k, v := range cc {
-			c.Set(k, v)
+		if cc != nil {
+			for k, v := range cc {
+				c.SetSpecific(k, v)
+			}
 		}
 	}
 	return
