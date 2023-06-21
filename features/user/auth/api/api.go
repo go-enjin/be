@@ -110,6 +110,8 @@ type MakeFeature interface {
 
 	SetLogLevel(level log.Level) MakeFeature
 
+	SetDisableXSRF(disabled bool) MakeFeature
+
 	MakeDevAuthSupport
 }
 
@@ -342,6 +344,11 @@ func (f *CFeature) SetUsersManager(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) SetPublicSignups(allowed bool) MakeFeature {
 	f.publicSignups = allowed
+	return f
+}
+
+func (f *CFeature) SetDisableXSRF(disabled bool) MakeFeature {
+	f.authOpts.DisableXSRF = disabled
 	return f
 }
 
