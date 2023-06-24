@@ -33,8 +33,8 @@ func (f *DBFileSystem) MakeDir(path string, _ os.FileMode) (err error) {
 }
 
 func (f *DBFileSystem) MakeDirAll(path string, _ os.FileMode) (err error) {
-	f.Lock()
-	defer f.Unlock()
+	//f.Lock()
+	//defer f.Unlock()
 	// TODO: are directory inodes needed?
 	var entry *File
 	if entry, err = f.getEntryUnsafe(path); err == nil {
@@ -57,24 +57,24 @@ func (f *DBFileSystem) MakeDirAll(path string, _ os.FileMode) (err error) {
 }
 
 func (f *DBFileSystem) Remove(path string) (err error) {
-	f.Lock()
-	defer f.Unlock()
+	//f.Lock()
+	//defer f.Unlock()
 	realpath := f.realpath(path)
 	err = f.tx().Where(`path = ?`, realpath).Delete(&File{}).Error
 	return
 }
 
 func (f *DBFileSystem) RemoveAll(path string) (err error) {
-	f.Lock()
-	defer f.Unlock()
+	//f.Lock()
+	//defer f.Unlock()
 	realpath := f.realpath(path)
 	err = f.tx().Where(`path LIKE ?`, realpath+"%").Delete(&File{}).Error
 	return
 }
 
 func (f *DBFileSystem) WriteFile(path string, data []byte, _ os.FileMode) (err error) {
-	f.Lock()
-	defer f.Unlock()
+	//f.Lock()
+	//defer f.Unlock()
 	realpath := f.realpath(path)
 	var shasum string
 	if shasum, err = sha.DataHash64(data); err != nil {
@@ -103,8 +103,8 @@ func (f *DBFileSystem) WriteFile(path string, data []byte, _ os.FileMode) (err e
 }
 
 func (f *DBFileSystem) WritePageMatter(pm *matter.PageMatter) (err error) {
-	f.Lock()
-	defer f.Unlock()
+	//f.Lock()
+	//defer f.Unlock()
 	realpath := f.realpath(pm.Path)
 
 	var data []byte
