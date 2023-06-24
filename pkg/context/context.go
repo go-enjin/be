@@ -276,6 +276,13 @@ func (c Context) Strings(key string) (values []string) {
 		if vs, ok := v.([]string); ok {
 			values = vs
 			return
+		} else if vi, ok := v.([]interface{}); ok {
+			for _, vii := range vi {
+				if viis, ok := vii.(string); ok {
+					values = append(values, viis)
+				}
+			}
+			return
 		}
 	}
 	return
