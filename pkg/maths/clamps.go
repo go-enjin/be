@@ -14,11 +14,7 @@
 
 package maths
 
-import (
-	"github.com/go-enjin/be/pkg/maps"
-)
-
-func Clamp[T maps.Number](value, min, max T) T {
+func Clamp[T Number](value, min, max T) T {
 	if value >= min && value <= max {
 		return value
 	}
@@ -28,14 +24,14 @@ func Clamp[T maps.Number](value, min, max T) T {
 	return min
 }
 
-func Floor[T maps.Number](value, min T) T {
+func Floor[T Number](value, min T) T {
 	if value < min {
 		return min
 	}
 	return value
 }
 
-func Ceil[T maps.Number](value, max T) T {
+func Ceil[T Number](value, max T) T {
 	if value > max {
 		return max
 	}
