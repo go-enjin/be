@@ -120,6 +120,7 @@ func (f *CFeature) makeAuthUserUnsafe(id, name, email, picture, audience string,
 		user.Name = name
 		user.Email = email
 		user.Image = picture
+		user.Origin = f.Tag().String()
 		user.Context.SetSpecific(makeCtxKey("Audience"), audience)
 		user.Context.SetSpecific(makeCtxKey("Attributes"), beContext.NewFromMap(attributes))
 		return
@@ -128,6 +129,7 @@ func (f *CFeature) makeAuthUserUnsafe(id, name, email, picture, audience string,
 		makeCtxKey("Audience"):   audience,
 		makeCtxKey("Attributes"): beContext.NewFromMap(attributes),
 	})
+	user.Origin = f.Tag().String()
 	return
 }
 
@@ -180,6 +182,7 @@ func (f *CFeature) makeUserUnsafe(au *userbase.AuthUser) (user *userbase.User, c
 		user = u
 		user.RID = au.RID
 		user.EID = au.EID
+		user.Origin = f.Tag().String()
 		user.AuthUser = *au
 		return
 	}
