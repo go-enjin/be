@@ -19,29 +19,30 @@ package api
 import (
 	"fmt"
 	"net/http"
+	"net/mail"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/github-com-go-pkgz-auth"
 	"github.com/go-enjin/github-com-go-pkgz-auth/avatar"
 	"github.com/go-enjin/github-com-go-pkgz-auth/middleware"
 	"github.com/go-enjin/github-com-go-pkgz-auth/provider"
 	"github.com/go-enjin/github-com-go-pkgz-auth/token"
 
-	"github.com/go-enjin/be/pkg/feature/signaling"
-	beKvs "github.com/go-enjin/be/pkg/kvs"
-	"github.com/go-enjin/be/pkg/userbase"
-
-	"github.com/go-enjin/github-com-go-pkgz-auth"
-
+	beCmp "github.com/go-enjin/be/pkg/cmp"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/globals"
+	beKvs "github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/userbase"
 )
 
 var (

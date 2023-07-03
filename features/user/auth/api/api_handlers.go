@@ -27,10 +27,18 @@ import (
 	"github.com/go-enjin/github-com-go-pkgz-auth/provider"
 	"github.com/go-enjin/github-com-go-pkgz-auth/token"
 
+	beCmp "github.com/go-enjin/be/pkg/cmp"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/userbase"
+)
+
+const (
+	PublicSignupDeniedKey     string = "public-signup-denied"
+	AllowlistSignupDeniedKey  string = "allowlist-signup-denied"
+	AllowlistSignupAllowedKey string = "allowlist-signup-allowed"
 )
 
 func (f *CFeature) authAddLocalLoginProvider() {
@@ -106,7 +114,7 @@ func (f *CFeature) authClaimsUpdFunc(claims token.Claims) token.Claims {
 				}
 			} else {
 				log.ErrorF("unauthorized signup attempt: %#+v", claims.User)
-				claims.User.Attributes["public-signup-denied"] = "true"
+				claims.User.Attributes[PublicSignupDeniedKey] = "true"
 			}
 		} else if u, e := f.createOrUpdateAuthUser(claims.User); e != nil {
 			log.ErrorF("error updating user: %v - %v", claims.User.ID, e)
@@ -120,11 +128,6 @@ func (f *CFeature) authClaimsUpdFunc(claims token.Claims) token.Claims {
 			claims.User.SetStrAttr("Origin", au.Origin)
 		}
 
-		// if claims.User.Name == "dev_admin" {
-		// 	// set attributes for dev_admin
-		// 	claims.User.SetAdmin(true)
-		// 	claims.User.SetStrAttr("custom-key", "some value")
-		// }
 	}
 	return claims
 }
@@ -133,7 +136,7 @@ func (f *CFeature) authValidatorFunc(token string, claims token.Claims) (valid b
 
 	if claims.User != nil {
 
-		if denied, ok := claims.User.Attributes["public-signup-denied"]; ok && denied == "true" {
+		if denied, ok := claims.User.Attributes[PublicSignupDeniedKey].(string); ok && denied == "true" {
 			valid = false
 			log.WarnF("%v feature public user signup denied: %#+v", f.Tag(), claims.User)
 			return
@@ -163,14 +166,14 @@ func (f *CFeature) AuthApiServeHTTP(next http.Handler, w http.ResponseWriter, r 
 
 				r = userbase.SetCurrentAuthUser(ubAu, r)
 				r.URL.User = url.User(ubAu.EID)
-				// log.WarnF("%v feature setting current auth user: %v", f.Tag(), ubAu.EID)
+				log.TraceF("%v feature setting current auth user: %v", f.Tag(), ubAu.EID)
 
 				if u, eee := f.ubm.GetUser(eid); eee == nil {
 
 					r = userbase.SetCurrentUser(u, r)
 					f.Emit(userbase.UserLoadedSignal, f.Tag().String(), u)
 
-					// log.WarnF("%v feature setting current user: %v - groups=%#+v, actions=%#+v", f.Tag(), u.EID, u.Groups, u.Actions)
+					log.TraceF("%v feature setting current user: %v - groups=%#+v, actions=%#+v", f.Tag(), u.EID, u.Groups, u.Actions)
 
 				} else {
 					log.ErrorRF(r, "%v feature error getting User - %v - %v", f.Tag(), eid, eee)
