@@ -75,6 +75,7 @@ type MakeFeature interface {
 	SetIssuer(issuer string) MakeFeature
 
 	SetPublicSignups(allowed bool) MakeFeature
+	AddToSignupAllowlist(emails ...string) MakeFeature
 
 	SetUsersManager(tag feature.Tag) MakeFeature
 
@@ -121,6 +122,7 @@ type CFeature struct {
 	signaling.CSignaling
 
 	publicSignups bool
+	allowlist     []string
 
 	verifyEmailAccount  string
 	verifyEmailTemplate string
@@ -345,6 +347,20 @@ func (f *CFeature) SetUsersManager(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) SetPublicSignups(allowed bool) MakeFeature {
 	f.publicSignups = allowed
+	return f
+}
+
+func (f *CFeature) AddToSignupAllowlist(emails ...string) MakeFeature {
+	for _, email := range emails {
+		if email = strings.TrimSpace(email); email == "" {
+			continue
+		}
+		if address, err := mail.ParseAddress(email); err != nil {
+			log.FatalDF(1, "error parsing email address: %v - %v", email, err)
+		} else if !beCmp.ThingInSlices(address.Address, f.allowlist) {
+			f.allowlist = append(f.allowlist, email)
+		}
+	}
 	return f
 }
 

@@ -100,10 +100,22 @@ func (f *CFeature) authClaimsUpdFunc(claims token.Claims) token.Claims {
 			claims.User.Attributes = make(map[string]interface{})
 		}
 
+		var bypassSignupCheck bool
+		if len(f.allowlist) > 0 {
+			// user's email must be present in the allowlist
+			if beCmp.ThingInSlices(claims.User.Email, f.allowlist) {
+				claims.User.Attributes[AllowlistSignupAllowedKey] = "true"
+				bypassSignupCheck = true
+			} else {
+				claims.User.Attributes[AllowlistSignupDeniedKey] = "true"
+				return claims
+			}
+		}
+
 		eid, _ := sha.DataHash10([]byte(claims.User.ID))
 
 		var au *userbase.AuthUser
-		if !f.publicSignups {
+		if !f.publicSignups && !bypassSignupCheck {
 			// user must be present in the userbase for all logins
 			if f.ubm.AuthUserPresent(eid) {
 				if u, e := f.createOrUpdateAuthUser(claims.User); e != nil {
@@ -136,7 +148,13 @@ func (f *CFeature) authValidatorFunc(token string, claims token.Claims) (valid b
 
 	if claims.User != nil {
 
-		if denied, ok := claims.User.Attributes[PublicSignupDeniedKey].(string); ok && denied == "true" {
+		if allowed, ok := claims.User.Attributes[AllowlistSignupAllowedKey].(string); ok && allowed == "true" {
+			// nop, catches before other signup checks
+		} else if restricted, ok := claims.User.Attributes[AllowlistSignupDeniedKey].(string); ok && beStrings.IsTrue(restricted) {
+			valid = false
+			log.WarnF("%v feature public user signup not allowed: %#+v", f.Tag(), claims.User.Email)
+			return
+		} else if denied, ok := claims.User.Attributes[PublicSignupDeniedKey].(string); ok && denied == "true" {
 			valid = false
 			log.WarnF("%v feature public user signup denied: %#+v", f.Tag(), claims.User)
 			return
