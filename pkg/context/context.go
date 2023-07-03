@@ -155,6 +155,18 @@ func (c Context) Apply(contexts ...Context) {
 	for _, cc := range contexts {
 		if cc != nil {
 			for k, v := range cc {
+				c.Set(k, v)
+			}
+		}
+	}
+	return
+}
+
+// ApplySpecific takes a list of contexts and merges their contents into this one, keeping the keys specifically
+func (c Context) ApplySpecific(contexts ...Context) {
+	for _, cc := range contexts {
+		if cc != nil {
+			for k, v := range cc {
 				c.SetSpecific(k, v)
 			}
 		}
