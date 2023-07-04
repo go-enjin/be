@@ -31,7 +31,6 @@ import (
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/page/matter"
-	bePath "github.com/go-enjin/be/pkg/path"
 	bePathEmbed "github.com/go-enjin/be/pkg/path/embed"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
@@ -160,7 +159,7 @@ func (f FileSystem) FindFilePath(prefix string, extensions ...string) (path stri
 
 	realpath := f.realpath(prefix)
 	if filepath.Ext(realpath) != "" {
-		if bePath.IsFile(realpath) {
+		if f.Exists(realpath) {
 			path = beFs.PruneRootFrom(f.path, realpath)
 			return
 		}
