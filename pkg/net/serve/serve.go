@@ -45,11 +45,7 @@ func Redirect(destination string, w http.ResponseWriter, r *http.Request) {
 }
 
 func Serve204(w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusNoContent)
-	// The request was successful and there is no content in the response
-	_, _ = w.Write([]byte("204 - " + printer.Sprintf("No Content")))
 }
 
 func Serve400(w http.ResponseWriter, r *http.Request) {
