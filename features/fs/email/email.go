@@ -227,6 +227,7 @@ func (f *CFeature) MakeEmailBody(path string, ctx beContext.Context) (fm beConte
 
 	var pm *matter.PageMatter
 	if pm, err = f.FindReadPageMatter(path); err != nil {
+		err = fmt.Errorf("error finding email page matter: %v - %v", path, err)
 		return
 	}
 	fm = pm.Matter
