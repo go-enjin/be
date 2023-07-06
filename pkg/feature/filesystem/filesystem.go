@@ -18,9 +18,11 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
+
+	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/golang-org-x-text/language"
-	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
@@ -105,17 +107,8 @@ type CFeature[MakeTypedFeature interface{}] struct {
 	CGormDBPathSupport[MakeTypedFeature]
 
 	MountPoints map[string][]*CMountPoint
-}
 
-type CMountPoint struct {
-	// Path is the actual filesystem path
-	Path string
-	// Mount is the URL path prefix
-	Mount string
-	// ROFS is the read-only filesystem, always non-nil
-	ROFS fs.FileSystem
-	// RWFS is the write-only filesystem, nil when fs is read-only
-	RWFS fs.RWFileSystem
+	txLock *sync.RWMutex
 }
 
 func (f *CFeature[MakeTypedFeature]) Init(this interface{}) {
@@ -123,6 +116,29 @@ func (f *CFeature[MakeTypedFeature]) Init(this interface{}) {
 	f.CGormDBPathSupport.initGormDBPathSupport(f)
 	f.FeatureTag = feature.NotImplemented
 	f.MountPoints = make(map[string][]*CMountPoint)
+	f.txLock = &sync.RWMutex{}
+}
+
+func (f *CFeature[MakeTypedFeature]) CloneFileSystemFeature() (cloned CFeature[MakeTypedFeature]) {
+	//f.RLock()
+	//defer f.RUnlock()
+	c := &CFeature[MakeTypedFeature]{
+		CFeature:    f.CFeature.CloneBaseFeature(),
+		MountPoints: make(map[string][]*CMountPoint),
+		txLock:      &sync.RWMutex{},
+	}
+	for k, mps := range f.MountPoints {
+		for _, mp := range mps {
+			c.MountPoints[k] = append(c.MountPoints[k], &CMountPoint{
+				Mount: mp.Mount,
+				Path:  mp.Path,
+				ROFS:  mp.ROFS.CloneROFS(),
+				RWFS:  mp.RWFS.CloneRWFS(),
+			})
+		}
+	}
+	cloned = *c
+	return
 }
 
 func (f *CFeature[MakeTypedFeature]) MountPathROFS(path, point string, rofs fs.FileSystem) {
