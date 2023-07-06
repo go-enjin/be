@@ -230,7 +230,9 @@ func (f *CFeature[MakeTypedFeature]) FindPathsWithContextKey(path, key string) (
 			}
 		}
 	}
-	err = os.ErrNotExist
+	if len(found) == 0 {
+		err = os.ErrNotExist
+	}
 	return
 }
 
@@ -242,7 +244,9 @@ func (f *CFeature[MakeTypedFeature]) FindPathsWhereContextKeyEquals(path, key st
 			}
 		}
 	}
-	err = os.ErrNotExist
+	if len(found) == 0 {
+		err = os.ErrNotExist
+	}
 	return
 }
 
@@ -254,7 +258,9 @@ func (f *CFeature[MakeTypedFeature]) FindPathsWhereContextEquals(path string, co
 			}
 		}
 	}
-	err = os.ErrNotExist
+	if len(found) == 0 {
+		err = os.ErrNotExist
+	}
 	return
 }
 
@@ -266,7 +272,9 @@ func (f *CFeature[MakeTypedFeature]) FindPathsWhereContext(path string, orJsonCo
 			}
 		}
 	}
-	err = os.ErrNotExist
+	if len(found) == 0 {
+		err = os.ErrNotExist
+	}
 	return
 }
 
