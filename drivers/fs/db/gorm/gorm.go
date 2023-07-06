@@ -43,13 +43,15 @@ type DBFileSystem struct {
 	path string
 	wrap string
 
-	table string
-	db    *gorm.DB
+	name  string   // connection name
+	table string   // table to use for all operations
+	db    *gorm.DB // actual connection
+	tx    *gorm.DB // current transaction
 
 	sync.RWMutex
 }
 
-func New(origin string, path, table string, db *gorm.DB) (out *DBFileSystem, err error) {
+func New(origin string, path, table, connection string, db *gorm.DB) (out *DBFileSystem, err error) {
 	if db == nil {
 		err = fmt.Errorf("db arugment can not be nil")
 		return
@@ -62,10 +64,34 @@ func New(origin string, path, table string, db *gorm.DB) (out *DBFileSystem, err
 		origin: origin,
 		path:   path,
 		wrap:   "",
+		name:   connection,
 		table:  table,
 		db:     db,
+		tx:     nil,
 	}
-	err = out.tx().AutoMigrate(&File{})
+	err = out.tableScopedOrTx().AutoMigrate(&File{})
+	return
+}
+
+func (f *DBFileSystem) CloneROFS() (cloned beFs.FileSystem) {
+	return f.CloneRWFS()
+}
+
+func (f *DBFileSystem) CloneRWFS() (cloned beFs.RWFileSystem) {
+	cloned = &DBFileSystem{
+		origin: f.origin,
+		path:   f.path,
+		wrap:   f.wrap,
+		name:   f.name,
+		table:  f.table,
+		db:     f.db,
+		tx:     nil,
+	}
+	return
+}
+
+func (f *DBFileSystem) EnjinName() (name string) {
+	name = f.name
 	return
 }
 
@@ -106,7 +132,7 @@ func (f *DBFileSystem) ListDirs(path string) (paths []string, err error) {
 	defer f.RUnlock()
 	realpath := f.realpath(path)
 	var stubs []entryStub
-	if err = f.tx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(stubs).Error; err != nil {
+	if err = f.tableScopedOrTx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(stubs).Error; err != nil {
 		return
 	}
 	for _, stub := range stubs {
@@ -126,7 +152,7 @@ func (f *DBFileSystem) ListFiles(path string) (paths []string, err error) {
 	defer f.RUnlock()
 	realpath := f.realpath(path)
 	var stubs []entryStub
-	if err = f.tx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(stubs).Error; err != nil {
+	if err = f.tableScopedOrTx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(stubs).Error; err != nil {
 		return
 	}
 	for _, stub := range stubs {
@@ -145,7 +171,7 @@ func (f *DBFileSystem) ListAllDirs(path string) (paths []string, err error) {
 	defer f.RUnlock()
 	realpath := f.realpath(path)
 	var stubs []entryStub
-	if err = f.tx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(stubs).Error; err != nil {
+	if err = f.tableScopedOrTx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(stubs).Error; err != nil {
 		return
 	}
 	for _, stub := range stubs {
@@ -162,7 +188,7 @@ func (f *DBFileSystem) ListAllFiles(path string) (paths []string, err error) {
 	defer f.RUnlock()
 	realpath := f.realpath(path)
 	var stubs []entryStub
-	if err = f.tx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(stubs).Error; err != nil {
+	if err = f.tableScopedOrTx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(stubs).Error; err != nil {
 		return
 	}
 	for _, stub := range stubs {
@@ -179,7 +205,7 @@ func (f *DBFileSystem) ReadDir(path string) (paths []fs.DirEntry, err error) {
 	defer f.RUnlock()
 	realpath := f.realpath(path)
 	var entries []*File
-	if err = f.tx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(entries).Error; err != nil {
+	if err = f.tableScopedOrTx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(entries).Error; err != nil {
 		return
 	}
 	for _, entry := range entries {
@@ -303,7 +329,7 @@ func (f *DBFileSystem) FindFilePath(prefix string, extensions ...string) (path s
 	}
 
 	var entry File
-	if err = f.tx().Where("path IN (?)", paths).Order("path DESC").First(&entry).Error; err != nil {
+	if err = f.tableScopedOrTx().Where("path IN (?)", paths).Order("path DESC").First(&entry).Error; err != nil {
 		err = os.ErrNotExist
 		return
 	}

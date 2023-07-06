@@ -27,6 +27,43 @@ import (
 	"github.com/go-enjin/be/pkg/page/matter"
 )
 
+func (f *DBFileSystem) BeginTransaction() {
+	f.Lock()
+	defer f.Unlock()
+	if f.tx != nil {
+		//log.FatalDF(1, "transactions within transactions not implemented")
+	} else {
+		f.tx = f.tableScoped().Begin()
+		//f.tx = f.db.Begin()
+	}
+}
+
+func (f *DBFileSystem) RollbackTransaction() {
+	f.Lock()
+	defer f.Unlock()
+	if f.tx != nil {
+		f.tx.Rollback()
+		f.tx = nil
+	}
+}
+
+func (f *DBFileSystem) CommitTransaction() {
+	f.Lock()
+	defer f.Unlock()
+	if f.tx != nil {
+		f.tx.Commit()
+		f.tx = nil
+	}
+}
+
+func (f *DBFileSystem) EndTransaction() {
+	if err := recover(); err != nil {
+		f.RollbackTransaction()
+	} else {
+		f.CommitTransaction()
+	}
+}
+
 func (f *DBFileSystem) MakeDir(path string, _ os.FileMode) (err error) {
 	err = f.MakeDirAll(path, 0)
 	return
@@ -51,7 +88,15 @@ func (f *DBFileSystem) MakeDirAll(path string, _ os.FileMode) (err error) {
 			Content: []byte{},
 			Context: []byte{},
 		}
-		err = f.tx().Save(entry).Error
+		//sq := f.tableScopedOrTx().Begin()
+		//defer func() {
+		//	if sqErr := recover(); sqErr != nil {
+		//		sq.Rollback()
+		//	} else {
+		//		sq.Commit()
+		//	}
+		//}()
+		err = f.tableScopedOrTx().Save(entry).Error
 	}
 	return
 }
@@ -60,7 +105,15 @@ func (f *DBFileSystem) Remove(path string) (err error) {
 	//f.Lock()
 	//defer f.Unlock()
 	realpath := f.realpath(path)
-	err = f.tx().Where(`path = ?`, realpath).Delete(&File{}).Error
+	//sq := f.tableScopedOrTx().Begin()
+	//defer func() {
+	//	if sqErr := recover(); sqErr != nil {
+	//		sq.Rollback()
+	//	} else {
+	//		sq.Commit()
+	//	}
+	//}()
+	err = f.tableScopedOrTx().Where(`path = ?`, realpath).Delete(&File{}).Error
 	return
 }
 
@@ -68,7 +121,15 @@ func (f *DBFileSystem) RemoveAll(path string) (err error) {
 	//f.Lock()
 	//defer f.Unlock()
 	realpath := f.realpath(path)
-	err = f.tx().Where(`path LIKE ?`, realpath+"%").Delete(&File{}).Error
+	//sq := f.tableScopedOrTx().Begin()
+	//defer func() {
+	//	if sqErr := recover(); sqErr != nil {
+	//		sq.Rollback()
+	//	} else {
+	//		sq.Commit()
+	//	}
+	//}()
+	err = f.tableScopedOrTx().Where(`path LIKE ?`, realpath+"%").Delete(&File{}).Error
 	return
 }
 
@@ -98,7 +159,16 @@ func (f *DBFileSystem) WriteFile(path string, data []byte, _ os.FileMode) (err e
 		entry.Content = data
 		// entry.Context = ctx
 	}
-	err = f.tx().Save(entry).Error
+
+	//sq := f.tableScopedOrTx().Begin()
+	//defer func() {
+	//	if sqErr := recover(); sqErr != nil {
+	//		sq.Rollback()
+	//	} else {
+	//		sq.Commit()
+	//	}
+	//}()
+	err = f.tableScopedOrTx().Save(entry).Error
 	return
 }
 
@@ -142,7 +212,15 @@ func (f *DBFileSystem) WritePageMatter(pm *matter.PageMatter) (err error) {
 		entry.Context = jsonMatter
 	}
 
-	err = f.tx().Save(entry).Error
+	//sq := f.tableScopedOrTx().Begin()
+	//defer func() {
+	//	if sqErr := recover(); sqErr != nil {
+	//		sq.Rollback()
+	//	} else {
+	//		sq.Commit()
+	//	}
+	//}()
+	err = f.tableScopedOrTx().Save(entry).Error
 	return
 }
 

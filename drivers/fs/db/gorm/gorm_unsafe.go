@@ -34,7 +34,15 @@ func (f *DBFileSystem) realpath(path string) (out string) {
 func (f *DBFileSystem) getEntryUnsafe(path string) (entry *File, err error) {
 	realpath := f.realpath(path)
 	entry = &File{}
-	if err = f.tx().Where(`path = ?`, realpath).First(entry).Error; err != nil {
+	//sq := f.tableScopedOrTx().Begin()
+	//defer func() {
+	//	if sqErr := recover(); sqErr != nil {
+	//		sq.Rollback()
+	//	} else {
+	//		sq.Commit()
+	//	}
+	//}()
+	if err = f.tableScopedOrTx().Where(`path = ?`, realpath).First(entry).Error; err != nil {
 		entry = nil
 	}
 	return
@@ -43,7 +51,15 @@ func (f *DBFileSystem) getEntryUnsafe(path string) (entry *File, err error) {
 func (f *DBFileSystem) getStubUnsafe(path string) (stub *entryStub, err error) {
 	realpath := f.realpath(path)
 	stub = &entryStub{}
-	if err = f.tx().Where(`path = ?`, realpath).First(stub).Error; err != nil {
+	//sq := f.tableScopedOrTx().Begin()
+	//defer func() {
+	//	if sqErr := recover(); sqErr != nil {
+	//		sq.Rollback()
+	//	} else {
+	//		sq.Commit()
+	//	}
+	//}()
+	if err = f.tableScopedOrTx().Where(`path = ?`, realpath).First(stub).Error; err != nil {
 		stub = nil
 	}
 	return
@@ -52,18 +68,47 @@ func (f *DBFileSystem) getStubUnsafe(path string) (stub *entryStub, err error) {
 func (f *DBFileSystem) getStampUnsafe(path string) (stamp *entryStamp, err error) {
 	realpath := f.realpath(path)
 	stamp = &entryStamp{}
-	if err = f.tx().Where(`path = ?`, realpath).First(stamp).Error; err != nil {
+	//sq := f.tableScopedOrTx().Begin()
+	//defer func() {
+	//	if sqErr := recover(); sqErr != nil {
+	//		sq.Rollback()
+	//	} else {
+	//		sq.Commit()
+	//	}
+	//}()
+	if err = f.tableScopedOrTx().Where(`path = ?`, realpath).First(stamp).Error; err != nil {
 		stamp = nil
 	}
 	return
 }
 
-func (f *DBFileSystem) tx() (tx *gorm.DB) {
-	tx = f.db.Scopes(func(tx *gorm.DB) *gorm.DB {
+func (f *DBFileSystem) tableScopedOrTx() (tx *gorm.DB) {
+	f.RLock()
+	defer f.RUnlock()
+	if f.tx != nil {
+		return f.tx
+	}
+	return f.tableScoped()
+	//var db *gorm.DB
+	//if f.tx != nil {
+	//	//return f.tx
+	//	db = f.tx
+	//} else {
+	//	db = f.db
+	//}
+	//return db.Scopes(func(tx *gorm.DB) *gorm.DB {
+	//	if f.table != "" {
+	//		return tx.Table(f.table)
+	//	}
+	//	return tx
+	//})
+}
+
+func (f *DBFileSystem) tableScoped() (tx *gorm.DB) {
+	return f.db.Scopes(func(tx *gorm.DB) *gorm.DB {
 		if f.table != "" {
 			return tx.Table(f.table)
 		}
 		return tx
 	})
-	return
 }

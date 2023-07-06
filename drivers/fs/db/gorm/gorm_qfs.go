@@ -28,7 +28,7 @@ import (
 )
 
 func (f *DBFileSystem) GormTx() (tx *gorm.DB) {
-	return f.tx()
+	return f.tableScopedOrTx()
 }
 
 func (f *DBFileSystem) FindPathsWithContextKey(path, key string) (found []string, err error) {
@@ -74,7 +74,7 @@ func (f *DBFileSystem) FindPathsWhere(path string, expressions ...clause.Express
 	realpath := strings.TrimPrefix(path, "/")
 	var results []*entryStub
 
-	query := f.tx().
+	query := f.tableScopedOrTx().
 		Where(`path LIKE ?`, realpath+"%").
 		Where(clause.And(expressions...))
 	if err = query.Find(&results).Error; err != nil {
