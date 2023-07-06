@@ -81,6 +81,16 @@ func (f *CFeature) Make() Feature {
 	return f.Self()
 }
 
+func (f *CFeature) CloneBaseFeature() (cloned CFeature) {
+	cloned = CFeature{
+		this:       f.this,
+		ctx:        f.ctx.Copy(),
+		FeatureTag: f.FeatureTag,
+		Enjin:      f.Enjin,
+	}
+	return
+}
+
 func (f *CFeature) Depends() (deps Tags) {
 	return
 }
