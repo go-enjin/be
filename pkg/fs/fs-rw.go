@@ -23,6 +23,12 @@ import (
 type RWFileSystem interface {
 	FileSystem
 
+	CloneRWFS() (cloned RWFileSystem)
+	BeginTransaction()
+	RollbackTransaction()
+	CommitTransaction()
+	EndTransaction()
+
 	MakeDir(path string, perm os.FileMode) (err error)
 	MakeDirAll(path string, perm os.FileMode) (err error)
 
