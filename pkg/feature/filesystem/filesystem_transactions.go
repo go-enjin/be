@@ -32,8 +32,10 @@ func (f *CFeature[MakeTypedFeature]) BeginTransactions() {
 	log.DebugDF(1, "starting %v transactions", f.Tag())
 	for _, mps := range f.MountPoints {
 		for _, mp := range mps {
-			mp.RWFS.BeginTransaction()
-			log.DebugDF(1, "beginning %v transactions: %v", f.Tag(), mp.Mount)
+			if mp.RWFS != nil {
+				mp.RWFS.BeginTransaction()
+				log.DebugDF(1, "beginning %v transactions: %v", f.Tag(), mp.Mount)
+			}
 		}
 	}
 }
@@ -42,8 +44,10 @@ func (f *CFeature[MakeTypedFeature]) RollbackTransactions() {
 	defer f.txLock.Unlock()
 	for _, mps := range f.MountPoints {
 		for _, mp := range mps {
-			mp.RWFS.RollbackTransaction()
-			log.DebugDF(1, "rolling back %v transactions: %v", f.Tag(), mp.Mount)
+			if mp.RWFS != nil {
+				mp.RWFS.RollbackTransaction()
+				log.DebugDF(1, "rolling back %v transactions: %v", f.Tag(), mp.Mount)
+			}
 		}
 	}
 }
@@ -52,8 +56,10 @@ func (f *CFeature[MakeTypedFeature]) CommitTransactions() {
 	defer f.txLock.Unlock()
 	for _, mps := range f.MountPoints {
 		for _, mp := range mps {
-			mp.RWFS.CommitTransaction()
-			log.DebugDF(1, "committing %v transactions: %v", f.Tag(), mp.Mount)
+			if mp.RWFS != nil {
+				mp.RWFS.CommitTransaction()
+				log.DebugDF(1, "committing %v transactions: %v", f.Tag(), mp.Mount)
+			}
 		}
 	}
 }
