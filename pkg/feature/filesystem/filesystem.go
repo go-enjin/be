@@ -129,11 +129,15 @@ func (f *CFeature[MakeTypedFeature]) CloneFileSystemFeature() (cloned CFeature[M
 	}
 	for k, mps := range f.MountPoints {
 		for _, mp := range mps {
+			var rwfs fs.RWFileSystem
+			if mp.RWFS != nil {
+				rwfs = mp.RWFS.CloneRWFS()
+			}
 			c.MountPoints[k] = append(c.MountPoints[k], &CMountPoint{
 				Mount: mp.Mount,
 				Path:  mp.Path,
 				ROFS:  mp.ROFS.CloneROFS(),
-				RWFS:  mp.RWFS.CloneRWFS(),
+				RWFS:  rwfs,
 			})
 		}
 	}
