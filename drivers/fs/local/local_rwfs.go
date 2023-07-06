@@ -18,10 +18,37 @@ package local
 
 import (
 	"fmt"
+	"github.com/go-enjin/be/pkg/fs"
 	"os"
 
 	"github.com/go-enjin/be/pkg/page/matter"
 )
+
+// TODO: implement {Begin,End}Transaction(), flock-ing a top-level lock file blocking all other operations, this may be thread-safe
+
+func (f *FileSystem) CloneRWFS() (cloned fs.RWFileSystem) {
+	cloned = &FileSystem{
+		origin: f.origin,
+		root:   f.root,
+	}
+	return
+}
+
+func (f *FileSystem) BeginTransaction() {
+
+}
+
+func (f *FileSystem) RollbackTransaction() {
+
+}
+
+func (f *FileSystem) CommitTransaction() {
+
+}
+
+func (f *FileSystem) EndTransaction() {
+
+}
 
 func (f *FileSystem) MakeDir(path string, perm os.FileMode) (err error) {
 	f.Lock()

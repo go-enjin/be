@@ -66,6 +66,11 @@ func New(origin string, path string) (out *FileSystem, err error) {
 	return
 }
 
+func (f *FileSystem) CloneROFS() (cloned beFs.FileSystem) {
+	cloned = f.CloneRWFS()
+	return
+}
+
 func (f *FileSystem) Name() (name string) {
 	f.RLock()
 	defer f.RUnlock()
