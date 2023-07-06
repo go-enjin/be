@@ -17,6 +17,7 @@
 package public
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -37,7 +38,8 @@ import (
 )
 
 var (
-	DefaultCacheControl = "public, max-age=604800, no-transform, immutable"
+	DefaultCacheControl        = "public, max-age=604800, no-transform, immutable"
+	DefaultVirtualCacheControl = "no-store"
 )
 
 const Tag feature.Tag = "fs-public"
@@ -57,6 +59,7 @@ type MakeFeature interface {
 	UseDirIndex(indexFileName string) MakeFeature
 	ServeBasePath(prefix, index string) MakeFeature
 	SetCacheControl(values string) MakeFeature
+	SetVirtualCacheControl(values string) MakeFeature
 	SetMountCacheControl(mount string, value string) MakeFeature
 	SetRegexCacheControl(pattern string, value string) MakeFeature
 
@@ -74,6 +77,8 @@ type CFeature struct {
 	cachedRegexp      map[string]*regexp.Regexp
 
 	basePaths map[string]string
+
+	virtualPathCacheControl string
 
 	uaf feature.Feature
 	ubp userbase.AuthProvider
@@ -102,6 +107,11 @@ func (f *CFeature) Init(this interface{}) {
 
 func (f *CFeature) SetCacheControl(values string) MakeFeature {
 	f.cacheControl = values
+	return f
+}
+
+func (f *CFeature) SetVirtualCacheControl(values string) MakeFeature {
+	f.virtualPathCacheControl = values
 	return f
 }
 
@@ -146,6 +156,9 @@ func (f *CFeature) Make() Feature {
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
+	if f.virtualPathCacheControl == "" {
+		f.virtualPathCacheControl = DefaultVirtualCacheControl
+	}
 	return
 }
 
@@ -183,22 +196,27 @@ func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWrite
 	var data []byte
 	var mime string
 	var cmp *filesystem.CMountPoint
+	var isVirtualBasePath bool
 
-	for _, bp := range maps.SortedKeyLengths(f.basePaths) {
-		if path+"/" == bp {
+	for _, basePath := range maps.SortedKeyLengths(f.basePaths) {
+		if path+"/" == basePath {
 			// serve base path index file
-			if cmp, _, data, mime, err = f.findFileUnsafe(f.basePaths[bp]); err != nil {
-				err = fmt.Errorf("error finding base path %v index file: %v - %v", bp, f.basePaths[bp], err)
+			if cmp, _, data, mime, err = f.findFileUnsafe(f.basePaths[basePath]); err != nil {
+				err = fmt.Errorf("error finding base path %v index file: %v - %v", basePath, f.basePaths[basePath], err)
 				return
+			} else {
+				isVirtualBasePath = true
 			}
-		} else if strings.HasPrefix(path, bp) {
+		} else if strings.HasPrefix(path, basePath) {
 			// check if it is an actual file
 			if cmp, _, data, mime, err = f.findFileUnsafe(path); err != nil {
 				err = nil
 				// not a file, serve index without redirecting
-				if cmp, _, data, mime, err = f.findFileUnsafe(f.basePaths[bp]); err != nil {
-					err = fmt.Errorf("error finding base path %v index file: %v - %v", bp, f.basePaths[bp], err)
+				if cmp, _, data, mime, err = f.findFileUnsafe(f.basePaths[basePath]); err != nil {
+					err = fmt.Errorf("error finding base path %v index file: %v - %v", basePath, f.basePaths[basePath], err)
 					return
+				} else {
+					isVirtualBasePath = true
 				}
 			}
 		}
@@ -216,12 +234,16 @@ func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWrite
 	}
 
 	var cacheControlValue string
-	for _, key := range maps.SortedKeys(f.regexCacheControl) {
-		value := f.regexCacheControl[key]
-		rx, _ := f.cachedRegexp[key]
-		if rx.MatchString(path) {
-			cacheControlValue = value
-			break
+	if isVirtualBasePath {
+		cacheControlValue = f.virtualPathCacheControl
+	} else {
+		for _, key := range maps.SortedKeys(f.regexCacheControl) {
+			value := f.regexCacheControl[key]
+			rx, _ := f.cachedRegexp[key]
+			if rx.MatchString(path) {
+				cacheControlValue = value
+				break
+			}
 		}
 	}
 	if cacheControlValue == "" {
@@ -234,7 +256,10 @@ func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWrite
 		}
 	}
 
-	w.Header().Set("Cache-Control", cacheControlValue)
+	if cacheControlValue != "" {
+		w.Header().Set("Cache-Control", cacheControlValue)
+		r = r.Clone(context.WithValue(r.Context(), "Cache-Control", cacheControlValue))
+	}
 	s.ServeData(data, mime, w, r)
 	return
 }
