@@ -80,7 +80,7 @@ func (f *CFeature) authAddVerifyEmailProviderFunc(providerName string) {
 func (f *CFeature) authAudSecretsFunc(aud string) (secret string, err error) {
 	var ok bool
 	if secret, ok = f.audSecrets[aud]; ok {
-		log.DebugF(`using "%v" audience secret`, aud)
+		//log.DebugF(`using "%v" audience secret`, aud)
 		return
 	}
 	if secret, ok = f.audSecrets["_default_"]; ok {
