@@ -95,10 +95,21 @@ func (c *cLocalCache) AddBucket(name string) (kvs kvs.KeyValueStore, err error) 
 }
 
 func (c *cLocalCache) GetBucket(name string) (kvs kvs.KeyValueStore, err error) {
+	c.RLock()
+	defer c.RUnlock()
 	if v, ok := c.buckets[name]; ok {
 		kvs = v
 	} else {
 		err = BucketNotFound
+	}
+	return
+}
+
+func (c *cLocalCache) GetBucketSource(name string) (src interface{}) {
+	c.RLock()
+	defer c.RUnlock()
+	if v, ok := c.buckets[name]; ok {
+		src = v.cache
 	}
 	return
 }
