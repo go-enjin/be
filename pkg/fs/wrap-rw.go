@@ -36,6 +36,27 @@ func WrapRW(path string, fs RWFileSystem) (out RWFileSystem, err error) {
 	return
 }
 
+func (w WrapRWFileSystem) CloneRWFS() (cloned RWFileSystem) {
+	cloned = w.rw.CloneRWFS()
+	return
+}
+
+func (w WrapRWFileSystem) BeginTransaction() {
+	w.rw.BeginTransaction()
+}
+
+func (w WrapRWFileSystem) RollbackTransaction() {
+	w.rw.RollbackTransaction()
+}
+
+func (w WrapRWFileSystem) CommitTransaction() {
+	w.rw.CommitTransaction()
+}
+
+func (w WrapRWFileSystem) EndTransaction() {
+	w.rw.EndTransaction()
+}
+
 func (w WrapRWFileSystem) MakeDir(path string, perm os.FileMode) (err error) {
 	err = w.rw.MakeDir(w.realpath(path), perm)
 	return

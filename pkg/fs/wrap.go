@@ -35,6 +35,11 @@ func Wrap(path string, fs FileSystem) (out FileSystem, err error) {
 	return
 }
 
+func (w WrapFileSystem) CloneROFS() (cloned FileSystem) {
+	cloned = w.fs.CloneROFS()
+	return
+}
+
 func (w WrapFileSystem) realpath(path string) (rp string) {
 	rp = bePath.SafeConcatRelPath(w.path, path)
 	return
