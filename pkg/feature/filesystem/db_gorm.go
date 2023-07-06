@@ -92,7 +92,7 @@ func (s CGormDBPathSupport[MakeTypedFeature]) startupGormDBPathSupport(f *CFeatu
 		}
 		var gfs *beFsGormDB.DBFileSystem
 		log.DebugF("mounting gorm db: mount=%v, path=%v, table=%v - %v", mgdb.mount, mgdb.path, table, mgdb.connection)
-		if gfs, err = beFsGormDB.New(f.Tag().String(), mgdb.path, table, db); err != nil {
+		if gfs, err = beFsGormDB.New(f.Tag().String(), mgdb.path, table, mgdb.connection, db); err != nil {
 			log.FatalF("error mounting gorm db: %v", err)
 		} else {
 			f.MountPathRWFS(mgdb.path, mgdb.mount, gfs)
