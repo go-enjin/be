@@ -27,6 +27,8 @@ type KeyValueCache interface {
 	AddBucket(name string) (kvs KeyValueStore, err error)
 	// GetBucket returns a new bucket, errors if not found
 	GetBucket(name string) (kvs KeyValueStore, err error)
+	// GetBucketSource returns the underlying cache object, or nil if not found
+	GetBucketSource(name string) (src interface{})
 }
 
 type KeyValueStore interface {
