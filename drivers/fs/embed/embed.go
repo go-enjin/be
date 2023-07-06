@@ -52,6 +52,16 @@ func New(origin string, path string, efs embed.FS) (out FileSystem, err error) {
 	return
 }
 
+func (f FileSystem) CloneROFS() (cloned beFs.FileSystem) {
+	cloned = FileSystem{
+		origin: f.origin,
+		path:   f.path,
+		wrap:   f.wrap,
+		embed:  f.embed,
+	}
+	return
+}
+
 func (f FileSystem) Name() (name string) {
 	name = f.path
 	return
