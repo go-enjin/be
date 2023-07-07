@@ -27,6 +27,11 @@ const (
 	CacheControlKey        beContext.RequestKey = "Cache-Control"
 )
 
+func StatusHasBody(status int) (allowed bool) {
+	allowed = status != 204 && status != 304
+	return
+}
+
 func SetCacheControl(value string, w http.ResponseWriter, r *http.Request) (modified *http.Request) {
 	w.Header().Set("Cache-Control", value)
 	modified = r.Clone(context.WithValue(r.Context(), CacheControlKey, value))
