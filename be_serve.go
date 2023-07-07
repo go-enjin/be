@@ -341,6 +341,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 }
 
 func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request) {
+
 	for _, f := range e.eb.features {
 		if prh, ok := f.(feature.DataRestrictionHandler); ok {
 			// log.TraceRF(r, "checking restricted data with: %v", f.Tag())
@@ -351,6 +352,24 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 				return
 			}
 		}
+	}
+
+	w.Header().Set("Content-Type", mime)
+	if reqArgv := argv.GetRequestArgv(r); len(reqArgv.Argv) > 0 {
+		w.Header().Set("Cache-Control", "no-store")
+	} else if value := serve.GetCacheControl(r); value != "" {
+		w.Header().Set("Cache-Control", value)
+	}
+	if value, ok := r.Context().Value("Content-Disposition").(string); ok {
+		w.Header().Set("Content-Disposition", value)
+	} else {
+		w.Header().Set("Content-Disposition", "inline")
+	}
+
+	status := serve.GetServeStatus(r)
+	if !serve.StatusHasBody(status) {
+		w.WriteHeader(status)
+		return
 	}
 
 	// only one translation allowed, non-feature translators take precedence
@@ -376,18 +395,6 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 		}
 	}
 
-	w.Header().Set("Content-Type", mime)
-	if reqArgv := argv.GetRequestArgv(r); len(reqArgv.Argv) > 0 {
-		w.Header().Set("Cache-Control", "no-store")
-	} else if value := serve.GetCacheControl(r); value != "" {
-		w.Header().Set("Cache-Control", value)
-	}
-	if value, ok := r.Context().Value("Content-Disposition").(string); ok {
-		w.Header().Set("Content-Disposition", value)
-	} else {
-		w.Header().Set("Content-Disposition", "inline")
-	}
-
 	for _, f := range e.eb.features {
 		if tfr, ok := f.(feature.OutputTransformer); ok {
 			if tfr.CanTransform(mime, r) {
@@ -403,9 +410,6 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 		data = fn(data)
 	}
 
-	status := serve.GetServeStatus(r)
 	w.WriteHeader(status)
-	if status != 204 {
-		_, _ = w.Write(data)
-	}
+	_, _ = w.Write(data)
 }
