@@ -31,6 +31,7 @@ import (
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	beNet "github.com/go-enjin/be/pkg/net"
+	"github.com/go-enjin/be/pkg/net/serve"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/userbase"
 )
@@ -452,8 +453,7 @@ func (f *CFeature) AuthenticateRequest(w http.ResponseWriter, r *http.Request) (
 			r = r.Clone(context.WithValue(r.Context(), UserContextKey, validated))
 		}
 		if f.cacheControl != "" {
-			r = r.Clone(context.WithValue(r.Context(), "Cache-Control", f.cacheControl))
-			w.Header().Set("Cache-Control", f.cacheControl)
+			r = serve.SetCacheControl(f.cacheControl, w, r)
 		}
 		return r
 	}

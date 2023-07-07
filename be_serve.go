@@ -329,7 +329,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	if cacheControl := p.Context.String("CacheControl", ""); cacheControl != "" {
-		r = r.Clone(context.WithValue(r.Context(), "Cache-Control", cacheControl))
+		r = serve.SetCacheControl(cacheControl, w, r)
 	}
 	mime := ctx.String("ContentType", "text/html; charset=utf-8")
 	contentDisposition := ctx.String("ContentDisposition", "inline")
@@ -379,7 +379,7 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 	w.Header().Set("Content-Type", mime)
 	if reqArgv := argv.GetRequestArgv(r); len(reqArgv.Argv) > 0 {
 		w.Header().Set("Cache-Control", "no-store")
-	} else if value, ok := r.Context().Value("Cache-Control").(string); ok {
+	} else if value := serve.GetCacheControl(r); value != "" {
 		w.Header().Set("Cache-Control", value)
 	}
 	if value, ok := r.Context().Value("Content-Disposition").(string); ok {

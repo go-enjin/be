@@ -17,7 +17,6 @@
 package public
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -33,6 +32,7 @@ import (
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/net/serve"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/userbase"
 )
@@ -257,8 +257,7 @@ func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWrite
 	}
 
 	if cacheControlValue != "" {
-		w.Header().Set("Cache-Control", cacheControlValue)
-		r = r.Clone(context.WithValue(r.Context(), "Cache-Control", cacheControlValue))
+		r = serve.SetCacheControl(cacheControlValue, w, r)
 	}
 	s.ServeData(data, mime, w, r)
 	return
