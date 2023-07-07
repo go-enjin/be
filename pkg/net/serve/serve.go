@@ -24,7 +24,19 @@ import (
 
 const (
 	ServeStatusResponseKey beContext.RequestKey = "ServeStatusResponse"
+	CacheControlKey        beContext.RequestKey = "Cache-Control"
 )
+
+func SetCacheControl(value string, w http.ResponseWriter, r *http.Request) (modified *http.Request) {
+	w.Header().Set("Cache-Control", value)
+	r = r.Clone(context.WithValue(r.Context(), CacheControlKey, value))
+	return
+}
+
+func GetCacheControl(r *http.Request) (value string) {
+	value, _ = r.Context().Value(CacheControlKey).(string)
+	return
+}
 
 func SetServeStatus(status int, r *http.Request) (modified *http.Request) {
 	modified = r.Clone(context.WithValue(r.Context(), ServeStatusResponseKey, status))
