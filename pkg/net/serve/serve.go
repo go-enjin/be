@@ -29,7 +29,7 @@ const (
 
 func SetCacheControl(value string, w http.ResponseWriter, r *http.Request) (modified *http.Request) {
 	w.Header().Set("Cache-Control", value)
-	r = r.Clone(context.WithValue(r.Context(), CacheControlKey, value))
+	modified = r.Clone(context.WithValue(r.Context(), CacheControlKey, value))
 	return
 }
 

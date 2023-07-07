@@ -403,6 +403,9 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 		data = fn(data)
 	}
 
-	w.WriteHeader(serve.GetServeStatus(r))
-	_, _ = w.Write(data)
+	status := serve.GetServeStatus(r)
+	w.WriteHeader(status)
+	if status != 204 {
+		_, _ = w.Write(data)
+	}
 }
