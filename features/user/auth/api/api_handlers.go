@@ -55,6 +55,7 @@ func (f *CFeature) authAddVerifyEmailProviderFunc(providerName string) {
 				err = fmt.Errorf("error parsing auth email text")
 				return
 			}
+			address = strings.ToLower(address)
 			bodyCtx := beContext.New()
 			bodyCtx.Set("UserAuthSiteID", fields[0])
 			bodyCtx.Set("UserAuthUsername", fields[1])
@@ -103,7 +104,7 @@ func (f *CFeature) authClaimsUpdFunc(claims token.Claims) token.Claims {
 		var bypassSignupCheck bool
 		if len(f.allowlist) > 0 {
 			// user's email must be present in the allowlist
-			if beCmp.ThingInSlices(claims.User.Email, f.allowlist) {
+			if beCmp.ThingInSlices(strings.ToLower(claims.User.Email), f.allowlist) {
 				claims.User.Attributes[AllowlistSignupAllowedKey] = "true"
 				bypassSignupCheck = true
 			} else {

@@ -355,6 +355,7 @@ func (f *CFeature) AddToSignupAllowlist(emails ...string) MakeFeature {
 		if email = strings.TrimSpace(email); email == "" {
 			continue
 		}
+		email = strings.ToLower(email)
 		if address, err := mail.ParseAddress(email); err != nil {
 			log.FatalDF(1, "error parsing email address: %v - %v", email, err)
 		} else if !beCmp.ThingInSlices(address.Address, f.allowlist) {
