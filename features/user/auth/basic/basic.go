@@ -208,8 +208,10 @@ func (f *CFeature) Make() Feature {
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
-	patternKey := globals.MakeFlagEnvKey(f.Tag().String(), "PROTECT_PATH_REGEX")
-	groupKey := globals.MakeFlagEnvKey(f.Tag().String(), "PROTECT_PATH_GROUP")
+	category := f.Tag().String()
+	patternKey := globals.MakeFlagEnvKey(category, "PROTECT_PATH_REGEX")
+	groupKey := globals.MakeFlagEnvKey(category, "PROTECT_PATH_GROUP")
+
 	b.AddFeatureNotes(
 		f.Tag(),
 		"this feature supports dynamically restricting content through environment variables",
@@ -222,7 +224,7 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 		"<PATTERN> is a regular expression",
 		"<GROUPS>  is a space separated list of groups allowed",
 	)
-	category := f.Tag().String()
+
 	b.AddFlags(
 		&cli.StringFlag{
 			Name:     globals.MakeFlagName(category, "realm"),
@@ -274,8 +276,10 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		}
 	}
 
+	category := f.Tag().String()
+
 	f.cliCtx = ctx
-	if flagName := globals.MakeFlagName(f.Tag().String(), "realm"); ctx.IsSet(flagName) {
+	if flagName := globals.MakeFlagName(category, "realm"); ctx.IsSet(flagName) {
 		if v, ok := ctx.Value(flagName).(string); ok {
 			if v == "" && f.realm == "" {
 				f.realm = "-"
@@ -290,15 +294,15 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		report(f.realm != "", "realm set to: %v", f.realm)
 	}
 
-	if flagName := globals.MakeFlagName(f.Tag().String(), "protect-all"); ctx.IsSet(flagName) {
+	if flagName := globals.MakeFlagName(category, "protect-all"); ctx.IsSet(flagName) {
 		if v, ok := ctx.Value(flagName).(string); ok {
 			f.protectAll = v
 		}
 	}
 	report(f.protectAll != "", `all requests require access group of: "%v"`, f.protectAll)
 
-	if flagName := globals.MakeFlagName(f.Tag().String(), "bypass-addrs"); ctx.IsSet(flagName) {
-		if v, ok := ctx.Value(flagName).([]string); ok {
+	if flagName := globals.MakeFlagName(category, "bypass-addrs"); ctx.IsSet(flagName) {
+		if v := ctx.StringSlice(flagName); len(v) > 0 {
 			for _, list := range v {
 				for _, s := range strings.Split(list, " ") {
 					if parsed := net.ParseIP(s); parsed != nil {
@@ -312,8 +316,8 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 	report(len(f.bypassingIPs) > 0, "bypassing with %d IP addresses: %+v", len(f.bypassingIPs), f.bypassingIPs)
 
-	if flagName := globals.MakeFlagName(f.Tag().String(), "bypass-cidrs"); ctx.IsSet(flagName) {
-		if v, ok := ctx.Value(flagName).([]string); ok {
+	if flagName := globals.MakeFlagName(category, "bypass-cidrs"); ctx.IsSet(flagName) {
+		if v := ctx.StringSlice(flagName); len(v) > 0 {
 			for _, list := range v {
 				for _, s := range strings.Split(list, " ") {
 					if _, ipNet, ee := net.ParseCIDR(s); ee == nil {
@@ -327,14 +331,14 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 	report(len(f.bypassingCIDRs) > 0, "bypassing with %d IP ranges: %+v", len(f.bypassingCIDRs), f.bypassingCIDRs)
 
-	if flagName := globals.MakeFlagName(f.Tag().String(), "auth-cache-control"); ctx.IsSet(flagName) {
+	if flagName := globals.MakeFlagName(category, "auth-cache-control"); ctx.IsSet(flagName) {
 		if v, ok := ctx.Value(flagName).(string); ok {
 			f.cacheControl = v
 		}
 	}
 
-	// patternKey := globals.MakeFlagEnvKey(f.Tag().String(), "PROTECT_PATH_REGEX")
-	// groupKey := globals.MakeFlagEnvKey(f.Tag().String(), "PROTECT_PATH_GROUP")
+	// patternKey := globals.MakeFlagEnvKey(category, "PROTECT_PATH_REGEX")
+	// groupKey := globals.MakeFlagEnvKey(category, "PROTECT_PATH_GROUP")
 
 	foundPatterns := make(map[string]string)
 	foundGroups := make(map[string]string)
