@@ -85,9 +85,7 @@ type CFeature struct {
 	ignoredPaths   []*regexp.Regexp
 	protectedPaths []*protectedPath
 
-	bypassAddrs    []string
 	bypassingIPs   []net.IP
-	bypassCIDRs    []string
 	bypassingCIDRs []*net.IPNet
 
 	upNames          []string
@@ -183,13 +181,25 @@ func (f *CFeature) ProtectAll(group string) MakeFeature {
 	return f
 }
 
-func (f *CFeature) AddBypassIP(ip ...string) MakeFeature {
-	f.bypassAddrs = append(f.bypassAddrs, ip...)
+func (f *CFeature) AddBypassIP(addresses ...string) MakeFeature {
+	for _, address := range addresses {
+		if parsed := net.ParseIP(address); parsed == nil {
+			log.FatalDF(1, "invalid address: %v", address)
+		} else {
+			f.bypassingIPs = append(f.bypassingIPs, parsed)
+		}
+	}
 	return f
 }
 
-func (f *CFeature) AddBypassCIDR(cidr ...string) MakeFeature {
-	f.bypassCIDRs = append(f.bypassCIDRs, cidr...)
+func (f *CFeature) AddBypassCIDR(ranges ...string) MakeFeature {
+	for _, cidr := range ranges {
+		if _, parsed, err := net.ParseCIDR(cidr); err != nil {
+			log.FatalDF(1, "invalid CIDR: %v - err", cidr, err)
+		} else {
+			f.bypassingCIDRs = append(f.bypassingCIDRs, parsed)
+		}
+	}
 	return f
 }
 
@@ -527,7 +537,7 @@ func (f *CFeature) getRequestUserID(r *http.Request) (id string) {
 }
 
 func (f *CFeature) isRequestBypassed(r *http.Request) (bypass bool) {
-	if len(f.bypassAddrs) > 0 {
+	if len(f.bypassingIPs) > 0 || len(f.bypassingCIDRs) > 0 {
 		if ip, err := beNet.ParseIpFromRequest(r); err == nil {
 
 			for _, safe := range f.bypassingIPs {
