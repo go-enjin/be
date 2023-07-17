@@ -20,13 +20,13 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
-	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/gofrs/uuid"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
+
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
@@ -91,10 +91,6 @@ type CFeature struct {
 	translatedByBucket      kvs.KeyValueStore
 	translationsBucket      map[language.Tag]kvs.KeyValueStore
 	contextValueKeyedBucket kvs.KeyValueStore
-
-	// index map[string]map[interface{}]matter.PageStubs
-
-	sync.RWMutex
 }
 
 func New() MakeFeature {
@@ -121,19 +117,16 @@ func (f *CFeature) SetKeyValueCache(tag feature.Tag, name string) MakeFeature {
 }
 
 func (f *CFeature) SetIncludedContextKeys(keys ...string) MakeFeature {
-	for _, key := range keys {
-		if !beStrings.StringInSlices(key, f.includeContextKeys) {
-			f.includeContextKeys = append(f.includeContextKeys)
-		}
-	}
+	f.includeContextKeys = nil
+	f.IncludeContextKeys(keys...)
 	return f
 }
 
 func (f *CFeature) IncludeContextKeys(keys ...string) MakeFeature {
-	f.includeContextKeys = nil
 	for _, key := range keys {
-		if !beStrings.StringInSlices(key, f.includeContextKeys) {
-			f.includeContextKeys = append(f.includeContextKeys, strcase.ToCamel(key))
+		kebab := strcase.ToKebab(key)
+		if !beStrings.StringInSlices(kebab, f.includeContextKeys) {
+			f.includeContextKeys = append(f.includeContextKeys, kebab)
 		}
 	}
 	return f
@@ -210,10 +203,20 @@ func (f *CFeature) PerformSelect(input string) (selected map[string]interface{},
 }
 
 func (f *CFeature) AddToIndex(stub *fs.PageStub, p *page.Page) (err error) {
+
+	//start := time.Now()
+	//defer func() {
+	//	if err == nil {
+	//		log.DebugF("%v indexed page %v in %v", f.Tag(), p.Url, time.Now().Sub(start).String())
+	//	}
+	//}()
+
 	f.Lock()
 	defer f.Unlock()
 
-	// log.DebugF("adding to index: %v - %v", p.Url, p.Shasum)
+	if _, ee := f.pageStubsBucket.Get(p.Shasum); ee == nil {
+		return
+	}
 
 	if err = f.processPageStub(p.Shasum, stub); err != nil {
 		return
@@ -262,13 +265,22 @@ func (f *CFeature) AddToIndex(stub *fs.PageStub, p *page.Page) (err error) {
 		}
 	}
 
+	excluded := make(map[string]struct{})
+	for _, key := range append(MustExcludeContextKeys(), append(AlwaysExcludeContextKeys, f.excludeContextKeys...)...) {
+		excluded[key] = struct{}{}
+	}
+	included := make(map[string]struct{})
+	for _, key := range append(AlwaysIncludeContextKeys, f.includeContextKeys...) {
+		included[key] = struct{}{}
+	}
+
 	for pCtxKey, pCtxValue := range p.Context {
 
 		kebab := strcase.ToKebab(pCtxKey)
 
-		if beStrings.StringInSlices(kebab, MustExcludeContextKeys(), AlwaysExcludeContextKeys, f.excludeContextKeys) {
+		if _, exclude := excluded[kebab]; exclude {
 			continue
-		} else if !beStrings.StringInSlices(kebab, AlwaysIncludeContextKeys, f.includeContextKeys) {
+		} else if _, include := included[kebab]; !include {
 			continue
 		}
 
@@ -305,6 +317,29 @@ func (f *CFeature) RemoveFromIndex(tag language.Tag, file, shasum string) {
 	return
 }
 
+func (f *CFeature) PageContextValuesCount(key string) (count uint64) {
+	count = kvs.CountDistinctFlatListValues[string](f.contextValueKeyedBucket, key)
+	return
+}
+
+func (f *CFeature) PageContextValueCounts(key string) (counts map[interface{}]uint64) {
+
+	counts = make(map[interface{}]uint64)
+	ctxKeyedValueBucketName := f.makeCtxValBucketName(key)
+	ctxKeyedValueBucket := f.cache.MustBucket(ctxKeyedValueBucketName)
+
+	for value := range kvs.YieldFlatList[string](f.contextValueKeyedBucket, key) {
+
+		valueKey, _ := kvs.EncodeKeyValue(value)
+		//list, _ := kvs.GetStringSlice(ctxKeyedValueBucket, valueKey)
+		list := kvs.GetFlatList[string](ctxKeyedValueBucket, valueKey)
+		counts[value] += uint64(len(list))
+
+	}
+
+	return
+}
+
 func (f *CFeature) YieldPageContextValues(key string) (values chan interface{}) {
 	values = kvs.YieldFlatList[interface{}](f.contextValueKeyedBucket, key)
 	return
@@ -314,25 +349,133 @@ func (f *CFeature) YieldPageContextValueStubs(key string) (pairs chan *fs.ValueS
 	pairs = make(chan *fs.ValueStubPair)
 	go func() {
 		defer close(pairs)
-		ctxKeyBucketName := f.makeCtxValBucketName(key)
-		ctxKeyBucket := f.cache.MustBucket(ctxKeyBucketName)
+
+		ctxKeyedValueBucketName := f.makeCtxValBucketName(key)
+		ctxKeyedValueBucket := f.cache.MustBucket(ctxKeyedValueBucketName)
+
+		found := make(map[string]struct{})
 
 		for value := range f.YieldPageContextValues(key) {
-			if shasums, err := kvs.GetSlice[string](ctxKeyBucket, value); err == nil && len(shasums) > 0 {
+
+			var err error
+			var valueKey string
+			if valueKey, err = kvs.EncodeKeyValue(value); err != nil {
+				log.ErrorF("error encoding %v key value: %T - %v", key, value, err)
+				continue
+			}
+
+			//if shasums, ee := kvs.GetStringSlice(ctxKeyedValueBucket, valueKey); ee == nil && len(shasums) > 0 {
+			if shasums := kvs.GetFlatList[string](ctxKeyedValueBucket, valueKey); len(shasums) > 0 {
 				for _, shasum := range shasums {
-					if vStub, eeee := f.pageStubsBucket.Get(shasum); eeee == nil {
-						if stub, ok := vStub.(*fs.PageStub); ok {
-							pairs <- &fs.ValueStubPair{
-								Value: value,
-								Stub:  stub,
+					if _, seen := found[shasum]; !seen {
+						if vStub, eeee := f.pageStubsBucket.Get(shasum); eeee == nil {
+							if stub, ok := vStub.(*fs.PageStub); ok {
+								pairs <- &fs.ValueStubPair{
+									Value: value,
+									Stub:  stub,
+								}
+								found[shasum] = struct{}{}
 							}
 						}
 					}
 				}
 			}
+
 		}
 
 	}()
+	return
+}
+
+func (f *CFeature) YieldFilterPageContextValueStubs(include bool, key string, value interface{}) (pairs chan *fs.ValueStubPair) {
+
+	ctxKeyedValueBucketName := f.makeCtxValBucketName(key)
+	ctxKeyedValueBucket := f.cache.MustBucket(ctxKeyedValueBucketName)
+	var searchKey string
+	if valueKey, err := kvs.EncodeKeyValue(value); err != nil {
+		log.ErrorF("error encoding %v key value: %T - %v", key, value, err)
+	} else {
+		searchKey = valueKey
+	}
+	pairs = make(chan *fs.ValueStubPair)
+	go func() {
+		defer close(pairs)
+
+		found := make(map[string]struct{})
+
+		for yv := range kvs.YieldFlatList[interface{}](f.contextValueKeyedBucket, key) {
+
+			var err error
+			var valueKey string
+			if valueKey, err = kvs.EncodeKeyValue(yv); err != nil {
+				log.ErrorF("error encoding %v key value: %T - %v", key, yv, err)
+				continue
+			} else if include && searchKey != valueKey {
+				continue
+			} else if !include && searchKey == valueKey {
+				continue
+			}
+
+			for shasum := range kvs.YieldFlatList[string](ctxKeyedValueBucket, valueKey) {
+				if _, seen := found[shasum]; !seen {
+					if vStub, eeee := f.pageStubsBucket.Get(shasum); eeee == nil {
+						if stub, ok := vStub.(*fs.PageStub); ok {
+							pairs <- &fs.ValueStubPair{
+								Value: yv,
+								Stub:  stub,
+							}
+							found[stub.Shasum] = struct{}{}
+						}
+					}
+				}
+			}
+
+		}
+
+	}()
+	return
+}
+
+func (f *CFeature) FilterPageContextValueStubs(include bool, key string, value interface{}) (stubs fs.PageStubs) {
+
+	ctxKeyedValueBucketName := f.makeCtxValBucketName(key)
+	ctxKeyedValueBucket := f.cache.MustBucket(ctxKeyedValueBucketName)
+	var searchKey string
+	if valueKey, err := kvs.EncodeKeyValue(value); err != nil {
+		log.ErrorF("error encoding %v key value: %T - %v", key, value, err)
+		return
+	} else {
+		searchKey = valueKey
+	}
+
+	found := make(map[string]struct{})
+
+	for yv := range kvs.YieldFlatList[interface{}](f.contextValueKeyedBucket, key) {
+
+		var err error
+		var valueKey string
+		if valueKey, err = kvs.EncodeKeyValue(yv); err != nil {
+			log.ErrorF("error encoding %v key value: %T - %v", key, yv, err)
+			continue
+		} else if include && searchKey != valueKey {
+			continue
+		} else if !include && searchKey == valueKey {
+			continue
+		}
+
+		for shasum := range kvs.YieldFlatList[string](ctxKeyedValueBucket, valueKey) {
+			if _, seen := found[shasum]; !seen {
+				if vStub, eeee := f.pageStubsBucket.Get(shasum); eeee == nil {
+					if stub, ok := vStub.(*fs.PageStub); ok {
+						stubs = append(stubs, stub)
+						found[stub.Shasum] = struct{}{}
+					}
+				}
+			}
+		}
+
+	}
+
 	return
 }
 
@@ -362,7 +505,8 @@ func (f *CFeature) FindTranslations(url string) (pages []*page.Page) {
 
 	url = bePath.CleanWithSlash(url)
 
-	if shasums, ee := kvs.GetSlice[string](f.translatedByBucket, url); ee == nil {
+	//if shasums, ee := kvs.GetSlice[string](f.translatedByBucket, url); ee == nil {
+	if shasums := kvs.GetFlatList[string](f.translatedByBucket, url); len(shasums) > 0 {
 		for _, shasum := range shasums {
 			if pg := f.findStubPage(shasum); pg != nil {
 				pages = append(pages, pg)
@@ -401,7 +545,8 @@ func (f *CFeature) Lookup(tag language.Tag, path string) (pg *page.Page, err err
 
 	process := func(tag language.Tag, path string) (pg *page.Page, err error) {
 		if txBucket, ok := f.translationsBucket[tag]; ok {
-			if shasums, e := kvs.GetSlice[string](txBucket, path); e == nil {
+			//if shasums, e := kvs.GetSlice[string](txBucket, path); e == nil {
+			if shasums := kvs.GetFlatList[string](txBucket, path); len(shasums) > 0 {
 				for _, shasum := range shasums {
 					if p := f.findStubPage(shasum); p != nil && p.LanguageTag == tag {
 						pg = p
@@ -436,14 +581,14 @@ func (f *CFeature) LookupPrefixed(prefix string) (pages []*page.Page) {
 
 	prefix = bePath.CleanWithSlash(prefix)
 
-	if allUrls, e := kvs.GetSlice[string](f.allUrlsBucket, "all"); e == nil {
-		for _, url := range allUrls {
-			if strings.HasPrefix(url, prefix) {
-				if shasums, ee := kvs.GetSlice[string](f.pageUrlsBucket, url); ee == nil {
-					for _, shasum := range shasums {
-						if pg := f.findStubPage(shasum); pg != nil {
-							pages = append(pages, pg)
-						}
+	allUrls := kvs.GetFlatList[string](f.allUrlsBucket, "all")
+	for _, url := range allUrls {
+		if strings.HasPrefix(url, prefix) {
+			//if shasums, ee := kvs.GetSlice[string](f.pageUrlsBucket, url); ee == nil {
+			if shasums := kvs.GetFlatList[string](f.pageUrlsBucket, url); len(shasums) > 0 {
+				for _, shasum := range shasums {
+					if pg := f.findStubPage(shasum); pg != nil {
+						pages = append(pages, pg)
 					}
 				}
 			}
