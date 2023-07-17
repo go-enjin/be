@@ -82,11 +82,21 @@ func BuildInfoString() string {
 	)
 }
 
+var (
+	buildFileInfo times.Timespec
+)
+
 func BuildFileInfo() (info times.Timespec, err error) {
+	if buildFileInfo != nil {
+		info = buildFileInfo
+		return
+	}
 	var name, tgt string
 	if name, err = os.Executable(); err == nil {
 		if tgt, err = filepath.EvalSymlinks(name); err == nil {
-			info, err = times.Stat(tgt)
+			if info, err = times.Stat(tgt); err == nil {
+				buildFileInfo = info
+			}
 		}
 	}
 	return
