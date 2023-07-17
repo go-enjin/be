@@ -22,8 +22,8 @@ import (
 
 	"github.com/patrickmn/go-cache"
 
-	gocache "github.com/eko/gocache/v3/cache"
-	"github.com/eko/gocache/v3/store"
+	gocache "github.com/eko/gocache/lib/v4/cache"
+	store_go_cache "github.com/eko/gocache/store/go_cache/v4"
 
 	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
@@ -85,7 +85,7 @@ func (c *cLocalCache) AddBucket(name string) (kvs kvs.KeyValueStore, err error) 
 		return
 	}
 	gocacheClient := cache.New(cache.NoExpiration, cache.NoExpiration)
-	gocacheStore := store.NewGoCache(gocacheClient)
+	gocacheStore := store_go_cache.NewGoCache(gocacheClient)
 	cacheManager := gocache.New[interface{}](gocacheStore)
 	c.buckets[name] = &cLocalStore{
 		cache: cacheManager,
