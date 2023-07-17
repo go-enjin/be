@@ -19,6 +19,17 @@ import (
 	"time"
 )
 
+func Cmp[T comparable](a, b interface{}) (same bool, err error) {
+	if ac, ok := a.(T); ok {
+		if bc, ok := b.(T); ok {
+			same = ac == bc
+			return
+		}
+	}
+	err = fmt.Errorf("error cmp.Cmp - inconsistent types: %T vs %T", a, b)
+	return
+}
+
 func Compare(a, b interface{}) (same bool, err error) {
 	if fmt.Sprintf("%T", a) != fmt.Sprintf("%T", b) {
 		err = fmt.Errorf("incompatible types for comparison: %T vs %T", a, b)
