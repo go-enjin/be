@@ -17,6 +17,8 @@ package kvs
 import (
 	"fmt"
 	"strings"
+
+	"github.com/go-enjin/be/pkg/gob"
 )
 
 type Numbers interface {
@@ -66,19 +68,50 @@ func RemoveFromSlice[T Variables](store KeyValueStore, key interface{}, values .
 
 func AppendToSlice[T Variables](store KeyValueStore, key interface{}, values ...T) (err error) {
 	var list []T
-	unique := make(map[T]bool)
 	if v, e := store.Get(key); e == nil {
-		if items, ok := v.([]T); ok {
-			for _, item := range items {
-				if _, present := unique[item]; !present {
-					unique[item] = true
-					list = append(list, item)
-				}
-			}
-		}
+		list, _ = v.([]T)
 	}
-	list = append(values, list...)
-	err = store.Set(key, list)
+	err = store.Set(key, append(values, list...))
+	return
+}
+
+func StringSliceEmpty(store KeyValueStore, key interface{}) (empty bool) {
+	var err error
+	var v interface{}
+	if v, err = store.Get(key); err != nil {
+		return
+	}
+	vs, _ := v.(string)
+	empty = vs == ""
+	return
+}
+
+func GetStringSlice(store KeyValueStore, key interface{}) (values []string, err error) {
+	var v interface{}
+	if v, err = store.Get(key); err != nil {
+		return
+	}
+	if vs, ok := v.(string); !ok {
+		err = fmt.Errorf("value of %v is not nl-string", key)
+	} else {
+		values = strings.Split(vs, "\n")
+	}
+	return
+}
+
+func AppendToStringSlice(store KeyValueStore, key interface{}, values ...string) (err error) {
+	var list string
+	if v, e := store.Get(key); e == nil {
+		list, _ = v.(string)
+	}
+	combined := strings.Join(values, "\n")
+	if list != "" {
+		if combined != "" {
+			combined += "\n"
+		}
+		combined += list
+	}
+	err = store.Set(key, combined)
 	return
 }
 
@@ -109,7 +142,7 @@ func MakeFlatListKey(key string, suffixes ...string) (name string) {
 	return
 }
 
-func GetFlatList[T interface{}](store KeyValueStore, key string, value T) (values []T) {
+func GetFlatList[T interface{}](store KeyValueStore, key string) (values []T) {
 	endKey := MakeFlatListKey(key, "end")
 	endIdx := GetValue[uint64](store, endKey)
 
@@ -122,6 +155,65 @@ func GetFlatList[T interface{}](store KeyValueStore, key string, value T) (value
 		}
 	}
 
+	return
+}
+
+func EncodeKeyValue(value interface{}) (valueKey string, err error) {
+	var v []byte
+	if v, err = gob.Encode(value); err != nil {
+		return
+	} else {
+		valueKey = string(v)
+	}
+	return
+}
+
+func DecodeKeyValue(valueKey string) (value interface{}, err error) {
+	value, err = gob.Decode([]byte(valueKey))
+	return
+}
+
+func FlatListEmpty(store KeyValueStore, key string) (empty bool) {
+	empty = CountFlatList(store, key) == 0
+	return
+}
+
+func CountFlatList(store KeyValueStore, key string) (count uint64) {
+	endKey := MakeFlatListKey(key, "end")
+	count = GetValue[uint64](store, endKey)
+	return
+}
+
+func CountFlatListValues[T comparable](store KeyValueStore, key string) (counts map[T]uint64) {
+	counts = make(map[T]uint64)
+	for v := range YieldFlatList[interface{}](store, key) {
+		if value, ok := v.(T); ok {
+			counts[value] += 1
+			continue
+		}
+		if values, ok := v.([]T); ok {
+			for _, value := range values {
+				counts[value] += 1
+			}
+		}
+	}
+	return
+}
+
+func CountDistinctFlatListValues[T comparable](store KeyValueStore, key string) (count uint64) {
+	track := make(map[T]struct{})
+	for v := range YieldFlatList[interface{}](store, key) {
+		if value, ok := v.(T); ok {
+			track[value] = struct{}{}
+			continue
+		}
+		if values, ok := v.([]T); ok {
+			for _, value := range values {
+				track[value] = struct{}{}
+			}
+		}
+	}
+	count = uint64(len(track))
 	return
 }
 
