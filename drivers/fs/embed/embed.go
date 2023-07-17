@@ -18,6 +18,7 @@ package embed
 
 import (
 	"embed"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -26,6 +27,7 @@ import (
 	"time"
 
 	"github.com/fvbommel/sortorder"
+
 	"github.com/go-enjin/github-com-djherbis-times"
 
 	beFs "github.com/go-enjin/be/pkg/fs"
@@ -40,6 +42,7 @@ type FileSystem struct {
 	path   string
 	wrap   string
 	embed  embed.FS
+	id     string
 }
 
 func New(origin string, path string, efs embed.FS) (out FileSystem, err error) {
@@ -48,8 +51,13 @@ func New(origin string, path string, efs embed.FS) (out FileSystem, err error) {
 		path:   path,
 		wrap:   "",
 		embed:  efs,
+		id:     fmt.Sprintf("%v://%v", origin, path),
 	}
 	return
+}
+
+func (f FileSystem) ID() (id string) {
+	return f.id
 }
 
 func (f FileSystem) CloneROFS() (cloned beFs.FileSystem) {
@@ -58,6 +66,7 @@ func (f FileSystem) CloneROFS() (cloned beFs.FileSystem) {
 		path:   f.path,
 		wrap:   f.wrap,
 		embed:  f.embed,
+		id:     f.id,
 	}
 	return
 }

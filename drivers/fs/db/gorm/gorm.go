@@ -27,8 +27,9 @@ import (
 	"time"
 
 	"github.com/fvbommel/sortorder"
-	times "github.com/go-enjin/github-com-djherbis-times"
 	"gorm.io/gorm"
+
+	times "github.com/go-enjin/github-com-djherbis-times"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	beFs "github.com/go-enjin/be/pkg/fs"
@@ -48,10 +49,12 @@ type DBFileSystem struct {
 	db    *gorm.DB // actual connection
 	tx    *gorm.DB // current transaction
 
+	id string
+
 	sync.RWMutex
 }
 
-func New(origin string, path, table, connection string, db *gorm.DB) (out *DBFileSystem, err error) {
+func New(origin, path, table, connection string, db *gorm.DB) (out *DBFileSystem, err error) {
 	if db == nil {
 		err = fmt.Errorf("db arugment can not be nil")
 		return
@@ -68,9 +71,14 @@ func New(origin string, path, table, connection string, db *gorm.DB) (out *DBFil
 		table:  table,
 		db:     db,
 		tx:     nil,
+		id:     fmt.Sprintf("%v+%v://%v@%v", origin, connection, table, path),
 	}
 	err = out.tableScopedOrTx().AutoMigrate(&File{})
 	return
+}
+
+func (f *DBFileSystem) ID() (id string) {
+	return f.id
 }
 
 func (f *DBFileSystem) CloneROFS() (cloned beFs.FileSystem) {
@@ -86,6 +94,7 @@ func (f *DBFileSystem) CloneRWFS() (cloned beFs.RWFileSystem) {
 		table:  f.table,
 		db:     f.db,
 		tx:     nil,
+		id:     f.id,
 	}
 	return
 }

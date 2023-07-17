@@ -22,6 +22,7 @@ import (
 )
 
 type FileSystem interface {
+	ID() (id string)
 	CloneROFS() (cloned FileSystem)
 	Name() (name string)
 	Open(path string) (fh fs.File, err error)

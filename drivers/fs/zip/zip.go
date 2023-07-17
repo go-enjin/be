@@ -17,6 +17,7 @@
 package zip
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -24,8 +25,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-enjin/github-com-djherbis-times"
 	"github.com/spkg/zipfs"
+
+	"github.com/go-enjin/github-com-djherbis-times"
 
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
@@ -40,6 +42,7 @@ type FileSystem struct {
 	path   string
 	wrap   string
 	zip    *zipfs.FileSystem
+	id     string
 }
 
 func New(origin string, path string, zfs *zipfs.FileSystem) (out FileSystem, err error) {
@@ -48,12 +51,28 @@ func New(origin string, path string, zfs *zipfs.FileSystem) (out FileSystem, err
 		path:   path,
 		wrap:   "",
 		zip:    zfs,
+		id:     fmt.Sprintf("%v://%v", origin, path),
 	}
 	return
 }
 
+func (f FileSystem) ID() (id string) {
+	return f.id
+}
+
 func (f FileSystem) Name() (name string) {
 	name = f.path
+	return
+}
+
+func (f FileSystem) CloneROFS() (cloned beFs.FileSystem) {
+	cloned = FileSystem{
+		origin: f.origin,
+		path:   f.path,
+		wrap:   f.wrap,
+		zip:    f.zip,
+		id:     f.id,
+	}
 	return
 }
 

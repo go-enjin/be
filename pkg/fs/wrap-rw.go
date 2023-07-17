@@ -15,6 +15,7 @@
 package fs
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/go-enjin/be/pkg/page/matter"
@@ -30,10 +31,15 @@ func WrapRW(path string, fs RWFileSystem) (out RWFileSystem, err error) {
 		WrapFileSystem: WrapFileSystem{
 			path: path,
 			fs:   fs,
+			id:   fmt.Sprintf("%v=[%v]", fs.ID(), path),
 		},
 		rw: fs,
 	}
 	return
+}
+
+func (w WrapRWFileSystem) ID() (id string) {
+	return w.id
 }
 
 func (w WrapRWFileSystem) CloneRWFS() (cloned RWFileSystem) {

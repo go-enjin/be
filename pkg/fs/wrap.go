@@ -15,6 +15,7 @@
 package fs
 
 import (
+	"fmt"
 	"io/fs"
 	"time"
 
@@ -25,14 +26,20 @@ import (
 type WrapFileSystem struct {
 	path string
 	fs   FileSystem
+	id   string
 }
 
 func Wrap(path string, fs FileSystem) (out FileSystem, err error) {
 	out = WrapFileSystem{
 		path: path,
 		fs:   fs,
+		id:   fmt.Sprintf("%v=[%v]", fs.ID(), path),
 	}
 	return
+}
+
+func (w WrapFileSystem) ID() (id string) {
+	return w.id
 }
 
 func (w WrapFileSystem) CloneROFS() (cloned FileSystem) {

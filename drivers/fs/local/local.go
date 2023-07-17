@@ -17,6 +17,7 @@
 package local
 
 import (
+	"encoding/gob"
 	"fmt"
 	"io/fs"
 	"os"
@@ -44,6 +45,7 @@ var (
 type FileSystem struct {
 	origin string
 	root   string
+	id     string
 
 	sync.RWMutex
 }
@@ -59,11 +61,19 @@ func New(origin string, path string) (out *FileSystem, err error) {
 				path = relPath
 			}
 		}
-		out = &FileSystem{origin: origin, root: path}
+		out = &FileSystem{
+			origin: origin,
+			root:   path,
+			id:     fmt.Sprintf("%v://%v", origin, path),
+		}
 		return
 	}
 	err = fmt.Errorf("error constructing FileSystem: %v - %v", bePath.ErrorDirNotFound, path)
 	return
+}
+
+func (f *FileSystem) ID() (id string) {
+	return f.id
 }
 
 func (f *FileSystem) CloneROFS() (cloned beFs.FileSystem) {

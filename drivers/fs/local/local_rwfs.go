@@ -18,8 +18,9 @@ package local
 
 import (
 	"fmt"
-	"github.com/go-enjin/be/pkg/fs"
 	"os"
+
+	"github.com/go-enjin/be/pkg/fs"
 
 	"github.com/go-enjin/be/pkg/page/matter"
 )
@@ -30,6 +31,7 @@ func (f *FileSystem) CloneRWFS() (cloned fs.RWFileSystem) {
 	cloned = &FileSystem{
 		origin: f.origin,
 		root:   f.root,
+		id:     f.id,
 	}
 	return
 }
