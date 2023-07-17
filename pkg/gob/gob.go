@@ -21,22 +21,28 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 )
 
-type wrapper struct {
-	Value interface{}
+func init() {
+	gob.Register(language.Tag{})
 }
 
 func Register(v interface{}) {
 	gob.Register(v)
-	gob.Register(language.Tag{})
 }
 
 func Encode(v interface{}) (data []byte, err error) {
 	var b bytes.Buffer
 	e := gob.NewEncoder(&b)
-	w := wrapper{
-		Value: v,
+	if err = e.Encode(&v); err != nil {
+		return
 	}
-	if err = e.Encode(&w); err != nil {
+	data = b.Bytes()
+	return
+}
+
+func EncodeTyped[T interface{}](v *T) (data []byte, err error) {
+	var b bytes.Buffer
+	e := gob.NewEncoder(&b)
+	if err = e.Encode(v); err != nil {
 		return
 	}
 	data = b.Bytes()
@@ -47,10 +53,18 @@ func Decode(data []byte) (v interface{}, err error) {
 	var b bytes.Buffer
 	e := gob.NewDecoder(&b)
 	b.Write(data)
-	var w wrapper
-	if err = e.Decode(&w); err != nil {
+	if err = e.Decode(&v); err != nil {
 		return
 	}
-	v = w.Value
+	return
+}
+
+func DecodeTyped[T interface{}](data []byte, v *T) (err error) {
+	var b bytes.Buffer
+	e := gob.NewDecoder(&b)
+	b.Write(data)
+	if err = e.Decode(v); err != nil {
+		return
+	}
 	return
 }
