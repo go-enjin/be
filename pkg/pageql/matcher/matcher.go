@@ -31,6 +31,8 @@ import (
 	"github.com/go-enjin/be/pkg/theme"
 )
 
+// TODO: matcher constructor must specify the specific page context provider to use instead of always the first feature found
+
 type cMatcher struct {
 	input string
 	feat  indexing.PageContextProvider
@@ -256,20 +258,18 @@ func (m *cMatcher) processOperationEquals(key string, opValue *pageql.Value, inc
 
 	case opValue.String != nil:
 
-		for pair := range m.feat.YieldPageContextValueStubs(key) {
-			if match, ee := cmp.Compare(pair.Value, *opValue.String); ee != nil {
-				err = ee
-				return
-			} else {
-				if (inclusive && match) || (!inclusive && !match) {
-					stub := pair.Stub
-					results[stub.Shasum] = stub
-					p, _ := page.NewFromPageStub(stub, m.theme)
-					ctx := p.Context.Copy()
-					ctx.CamelizeKeys()
-					m.cache[stub.Shasum] = ctx.Select(m.stmnt.ContextKeys...)
-				}
+		// TODO: this is expensive, m.cache is only used for sorting, need a better way
+		//for pair := range m.feat.YieldFilterPageContextValueStubs(inclusive, key, opValue.String) {
+		//	stub := pair.Stub
+		for _, stub := range m.feat.FilterPageContextValueStubs(inclusive, key, opValue.String) {
+			if _, present := results[stub.Shasum]; present {
+				continue
 			}
+			results[stub.Shasum] = stub
+			p, _ := page.NewFromPageStub(stub, m.theme)
+			ctx := p.Context.Copy()
+			ctx.CamelizeKeys()
+			m.cache[stub.Shasum] = ctx.Select(m.stmnt.ContextKeys...)
 		}
 
 	default:
