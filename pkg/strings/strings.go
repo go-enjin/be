@@ -76,6 +76,17 @@ func StringIndexInStrings(src string, dst ...string) int {
 	return -1
 }
 
+func AnyStringsInStrings(src, tgt []string) (found bool) {
+	for _, s := range src {
+		for _, t := range tgt {
+			if found = s == t; found {
+				return
+			}
+		}
+	}
+	return
+}
+
 func RemoveValueFromSlice(value string, slice *[]string) (modified bool) {
 	var found []int
 	for jdx, v := range *slice {
