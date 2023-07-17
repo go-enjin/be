@@ -33,6 +33,10 @@ import (
 )
 
 var (
+	ErrReadOnlyMount = fmt.Errorf("read-only mount point")
+)
+
+var (
 	_ Feature[MakeFeature[interface{}]] = &CFeature[MakeFeature[interface{}]]{}
 )
 
@@ -327,8 +331,7 @@ func (f *CFeature[MakeTypedFeature]) FindReadPageMatter(path string) (pm *matter
 
 func (f *CFeature[MakeTypedFeature]) ReadPageMatter(path string) (pm *matter.PageMatter, err error) {
 	for _, mp := range f.FindPathMountPoint(path) {
-		if pm, err = mp.ROFS.ReadPageMatter(path); err == nil {
-			pm.Stub = fs.NewPageStub(f.Tag().String(), f.Enjin.Context(), mp.ROFS, mp.Mount, path, pm.Shasum, pm.Locale)
+		if pm, err = f.ReadMountPageMatter(mp, path); err == nil {
 			return
 		}
 	}
@@ -336,10 +339,18 @@ func (f *CFeature[MakeTypedFeature]) ReadPageMatter(path string) (pm *matter.Pag
 	return
 }
 
+func (f *CFeature[MakeTypedFeature]) ReadMountPageMatter(mp *CMountPoint, path string) (pm *matter.PageMatter, err error) {
+	if pm, err = mp.ROFS.ReadPageMatter(path); err == nil {
+		pm.Stub = fs.NewPageStub(f.Tag().String(), f.Enjin.Context(), mp.ROFS, mp.Mount, path, pm.Shasum, pm.Locale)
+		return
+	}
+	err = os.ErrNotExist
+	return
+}
+
 func (f *CFeature[MakeTypedFeature]) WritePageMatter(pm *matter.PageMatter) (err error) {
 	for _, mp := range f.FindPathMountPoint(pm.Path) {
-		if mp.RWFS != nil {
-			err = mp.RWFS.WritePageMatter(pm)
+		if err = f.WriteMountPageMatter(mp, pm); err == nil || err != ErrReadOnlyMount {
 			return
 		}
 	}
@@ -347,13 +358,30 @@ func (f *CFeature[MakeTypedFeature]) WritePageMatter(pm *matter.PageMatter) (err
 	return
 }
 
+func (f *CFeature[MakeTypedFeature]) WriteMountPageMatter(mp *CMountPoint, pm *matter.PageMatter) (err error) {
+	if mp.RWFS != nil {
+		err = mp.RWFS.WritePageMatter(pm)
+		return
+	}
+	err = ErrReadOnlyMount
+	return
+}
+
 func (f *CFeature[MakeTypedFeature]) RemovePageMatter(path string) (err error) {
 	for _, mp := range f.FindPathMountPoint(path) {
-		if mp.RWFS != nil {
-			err = mp.RWFS.RemovePageMatter(path)
+		if err = f.RemoveMountPageMatter(mp, path); err == nil || err != ErrReadOnlyMount {
 			return
 		}
 	}
 	err = fmt.Errorf("read/write mount point for [%v] not found", path)
+	return
+}
+
+func (f *CFeature[MakeTypedFeature]) RemoveMountPageMatter(mp *CMountPoint, path string) (err error) {
+	if mp.RWFS != nil {
+		err = mp.RWFS.RemovePageMatter(path)
+		return
+	}
+	err = ErrReadOnlyMount
 	return
 }
