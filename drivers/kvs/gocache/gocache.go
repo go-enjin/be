@@ -25,6 +25,8 @@ import (
 	"github.com/go-enjin/be/pkg/kvs"
 )
 
+// TODO: implement a means of specifying supported cache configurations instead of hard-coded defaults
+
 const Tag feature.Tag = "drivers-kvs-gocache"
 
 var (
@@ -44,6 +46,10 @@ type Feature interface {
 
 type MakeFeature interface {
 	MemorySupport
+	IMCacheSupport
+	MemShardSupport
+	BigCacheSupport
+	RistrettoSupport
 
 	Make() Feature
 }
