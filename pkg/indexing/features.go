@@ -17,6 +17,7 @@ package indexing
 import (
 	"github.com/blevesearch/bleve/v2"
 	"github.com/blevesearch/bleve/v2/mapping"
+
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/fs"
@@ -63,6 +64,10 @@ type KeywordProvider interface {
 }
 
 type PageContextProvider interface {
+	PageContextValuesCount(key string) (count uint64)
+	PageContextValueCounts(key string) (counts map[interface{}]uint64)
 	YieldPageContextValues(key string) (values chan interface{})
 	YieldPageContextValueStubs(key string) (pairs chan *fs.ValueStubPair)
+	YieldFilterPageContextValueStubs(include bool, key string, value interface{}) (pairs chan *fs.ValueStubPair)
+	FilterPageContextValueStubs(include bool, key string, value interface{}) (stubs fs.PageStubs)
 }
