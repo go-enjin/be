@@ -32,10 +32,15 @@ import (
 
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
+	"github.com/go-enjin/be/pkg/gob"
 	"github.com/go-enjin/be/pkg/page/matter"
 	bePathEmbed "github.com/go-enjin/be/pkg/path/embed"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
+
+func init() {
+	gob.Register(FileSystem{})
+}
 
 type FileSystem struct {
 	origin string

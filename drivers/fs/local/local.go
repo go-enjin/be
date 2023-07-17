@@ -17,7 +17,6 @@
 package local
 
 import (
-	"encoding/gob"
 	"fmt"
 	"io/fs"
 	"os"
@@ -30,6 +29,7 @@ import (
 	"github.com/go-enjin/github-com-djherbis-times"
 
 	beFs "github.com/go-enjin/be/pkg/fs"
+	"github.com/go-enjin/be/pkg/gob"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page/matter"
@@ -41,6 +41,10 @@ var (
 	DefaultDirMode  fs.FileMode = 0770
 	DefaultFileMode fs.FileMode = 0660
 )
+
+func init() {
+	gob.Register(FileSystem{})
+}
 
 type FileSystem struct {
 	origin string
