@@ -15,7 +15,10 @@
 package strings
 
 import (
+	"sort"
 	"strings"
+
+	"github.com/maruel/natural"
 
 	"github.com/go-enjin/be/pkg/regexps"
 )
@@ -55,5 +58,18 @@ func LastName(fullName string) (lastName string) {
 			break
 		}
 	}
+	return
+}
+
+func SortedByLastName(data []string) (keys []string) {
+	lookup := make(map[string]string)
+	for _, key := range data {
+		lookup[key] = LastName(key)
+		keys = append(keys, key)
+	}
+	sort.Slice(keys, func(i, j int) (less bool) {
+		less = natural.Less(lookup[keys[i]], lookup[keys[j]])
+		return less
+	})
 	return
 }
