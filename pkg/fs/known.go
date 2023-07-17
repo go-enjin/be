@@ -45,6 +45,20 @@ func RegisterFileSystem(mount string, f FileSystem) {
 	// log.DebugDF(1, "registered fs: %v [%d] - %v", mount, len(_registry.registered[mount]), f.Name())
 }
 
+func GetFileSystem(id string) (f FileSystem, ok bool) {
+	_registry.RLock()
+	defer _registry.RUnlock()
+	for _, systems := range _registry.registered {
+		for _, system := range systems {
+			if ok = system.ID() == id; ok {
+				f = system
+				return
+			}
+		}
+	}
+	return
+}
+
 func FileExists(path string) (exists bool) {
 	_registry.RLock()
 	defer _registry.RUnlock()
