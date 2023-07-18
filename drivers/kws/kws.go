@@ -55,7 +55,7 @@ type Feature interface {
 type CFeature struct {
 	feature.CFeature
 
-	keyword map[string]fs.PageStubs
+	keyword map[string][]string
 	docMaps map[language.Tag]map[string]*mapping.DocumentMapping
 }
 
@@ -81,7 +81,7 @@ func (f *CFeature) Make() Feature {
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.docMaps = make(map[language.Tag]map[string]*mapping.DocumentMapping)
-	f.keyword = make(map[string]fs.PageStubs)
+	f.keyword = make(map[string][]string)
 }
 
 func (f *CFeature) Setup(enjin feature.Internals) {
@@ -172,8 +172,8 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 	notStubs := make(map[string]bool)
 	for word, _ := range notWords {
 		if stubs, ok := f.keyword[word]; ok {
-			for _, stub := range stubs {
-				notStubs[stub.Shasum] = true
+			for _, shasum := range stubs {
+				notStubs[shasum] = true
 			}
 		}
 	}
@@ -183,19 +183,23 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 		mustMatch := make(map[string]fs.PageStubs)
 		mustCache := make(map[string]map[string]int)
 		for word, _ := range mustWords {
-			if stubs, ok := f.keyword[word]; ok {
+			if shasums, ok := f.keyword[word]; ok {
 				// log.WarnF("found %d stubs for %v", len(stubs), word)
-				for _, stub := range stubs {
-					if _, not := notStubs[stub.Shasum]; not {
+				for _, shasum := range shasums {
+					if _, not := notStubs[shasum]; not {
 						continue
 					}
-					if _, exists := mustCache[stub.Shasum]; !exists {
-						mustCache[stub.Shasum] = make(map[string]int)
+					if _, exists := mustCache[shasum]; !exists {
+						mustCache[shasum] = make(map[string]int)
 					}
-					mustCache[stub.Shasum][word] += 1
-					if len(mustCache[stub.Shasum]) == numMustWords {
+					mustCache[shasum][word] += 1
+					if len(mustCache[shasum]) == numMustWords {
 						// log.WarnF("stub has all words: %v - %v", stub.Source, mustWords)
-						mustMatch[word] = append(mustMatch[word], stub)
+						if stub := f.Enjin.FindPageStub(shasum); stub != nil {
+							mustMatch[word] = append(mustMatch[word], stub)
+						} else {
+							log.ErrorF("error finding page stub by shasum: %v", shasum)
+						}
 					}
 				}
 			}
@@ -209,10 +213,10 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 		}
 
 		for word, _ := range shouldWords {
-			if stubs, ok := f.keyword[word]; ok {
-				for _, stub := range stubs {
-					if _, exists := scores[stub.Shasum]; exists {
-						scores[stub.Shasum] += shouldScores[word]
+			if shasums, ok := f.keyword[word]; ok {
+				for _, shasum := range shasums {
+					if _, exists := scores[shasum]; exists {
+						scores[shasum] += shouldScores[word]
 					}
 				}
 			}
@@ -223,13 +227,13 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 	} else {
 		// no must words present
 		for word, _ := range shouldWords {
-			if stubs, ok := f.keyword[word]; ok {
-				for _, stub := range stubs {
-					if _, not := notStubs[stub.Shasum]; not {
+			if shasums, ok := f.keyword[word]; ok {
+				for _, shasum := range shasums {
+					if _, not := notStubs[shasum]; not {
 						continue
 					}
-					matches[stub.Shasum] = stub
-					scores[stub.Shasum] += shouldScores[word]
+					matches[shasum] = f.Enjin.FindPageStub(shasum)
+					scores[shasum] += shouldScores[word]
 				}
 			}
 		}
@@ -316,13 +320,13 @@ func (f *CFeature) AddToSearchIndex(stub *fs.PageStub, p *page.Page) (err error)
 		return
 	}
 	if f.keyword == nil {
-		f.keyword = make(map[string]fs.PageStubs)
+		f.keyword = make(map[string][]string)
 	}
 	for _, content := range doc.GetContents() {
 		words := regexps.RxKeywords.FindAllString(content, -1)
 		for _, word := range words {
 			lcw := strings.ToLower(word)
-			f.keyword[lcw] = append(f.keyword[lcw], stub)
+			f.keyword[lcw] = append(f.keyword[lcw], stub.Shasum)
 		}
 	}
 	return
@@ -344,6 +348,12 @@ func (f *CFeature) KnownKeywords() (keywords []string) {
 func (f *CFeature) KeywordStubs(keyword string) (stubs fs.PageStubs) {
 	f.RLock()
 	defer f.RUnlock()
-	stubs = f.keyword[keyword]
+	for _, shasum := range f.keyword[keyword] {
+		if stub := f.Enjin.FindPageStub(shasum); stub != nil {
+			stubs = append(stubs, stub)
+		} else {
+			log.ErrorF("error finding page stub by shasum: %v", shasum)
+		}
+	}
 	return
 }
