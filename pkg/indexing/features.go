@@ -64,6 +64,7 @@ type KeywordProvider interface {
 }
 
 type PageContextProvider interface {
+	FindPageStub(shasum string) (stub *fs.PageStub)
 	PageContextValuesCount(key string) (count uint64)
 	PageContextValueCounts(key string) (counts map[interface{}]uint64)
 	YieldPageContextValues(key string) (values chan interface{})
