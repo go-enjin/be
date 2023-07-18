@@ -77,6 +77,7 @@ type Service interface {
 	CheckMatchStubsQL(query string) (stubs []*fs.PageStub, err error)
 	CheckSelectQL(query string) (selected map[string]interface{}, err error)
 
+	FindPageStub(shasum string) (stub *fs.PageStub)
 	FindPage(tag language.Tag, url string) (p *page.Page)
 	FindFile(path string) (data []byte, mime string, err error)
 
