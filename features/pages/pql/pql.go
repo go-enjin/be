@@ -187,6 +187,15 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
+func (f *CFeature) FindPageStub(shasum string) (stub *fs.PageStub) {
+	f.RLock()
+	defer f.RUnlock()
+	if v, err := f.pageStubsBucket.Get(shasum); err == nil && v != nil {
+		stub, _ = v.(*fs.PageStub)
+	}
+	return
+}
+
 func (f *CFeature) PerformQuery(input string) (stubs []*fs.PageStub, err error) {
 	f.RLock()
 	defer f.RUnlock()
