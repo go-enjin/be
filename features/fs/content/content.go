@@ -18,6 +18,7 @@ package content
 
 import (
 	"fmt"
+	"runtime"
 	"runtime/debug"
 	"time"
 
@@ -32,6 +33,10 @@ import (
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/userbase"
+)
+
+var (
+	DefaultGCPercent = -1
 )
 
 const Tag feature.Tag = "fs-content"
@@ -57,10 +62,17 @@ type MakeFeature interface {
 	// AddToSearchProviders indexes the content using the
 	// feature.SearchEnjinFeature tags specified
 	AddToSearchProviders(tag ...feature.Tag) MakeFeature
+
+	// SetStartupGC specifies the debug.SetGCPercent() value to use during startup indexing. The setting is restored
+	// when the indexing is complete. The default is -1 which disables setting anything at all. The Go default GC
+	// percent is 100. See: https://tip.golang.org/doc/gc-guide for more detail on what this does.
+	SetStartupGC(percent int) MakeFeature
 }
 
 type CFeature struct {
 	filesystem.CFeature[MakeFeature]
+
+	gcPercent int
 
 	indexProviderTags  feature.Tags
 	searchProviderTags feature.Tags
@@ -84,6 +96,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+	f.gcPercent = DefaultGCPercent
 }
 
 func (f *CFeature) AddToIndexProviders(tag ...feature.Tag) MakeFeature {
@@ -93,6 +106,11 @@ func (f *CFeature) AddToIndexProviders(tag ...feature.Tag) MakeFeature {
 
 func (f *CFeature) AddToSearchProviders(tag ...feature.Tag) MakeFeature {
 	f.searchProviderTags = append(f.searchProviderTags, tag...)
+	return f
+}
+
+func (f *CFeature) SetStartupGC(percent int) MakeFeature {
+	f.gcPercent = percent
 	return f
 }
 
@@ -186,7 +204,10 @@ func (f *CFeature) PopulateIndexes() (err error) {
 
 	log.DebugF("%v feature adding pages to: %v", f.Tag(), append(f.indexProviderTags, f.searchProviderTags...))
 
-	previousGOGC := debug.SetGCPercent(200) //< slow go runtime GC down a bit
+	var previousGOGC int
+	if f.gcPercent != -1 {
+		previousGOGC = debug.SetGCPercent(f.gcPercent) //< slow go runtime GC down a bit?
+	}
 
 	theme := f.Enjin.MustGetTheme()
 	for _, point := range maps.SortedKeys(f.MountPoints) {
@@ -206,15 +227,11 @@ func (f *CFeature) PopulateIndexes() (err error) {
 				} else if fileCount > 1000 {
 					numBatches = fileCount / 500
 				} else if fileCount > 100 {
-					numBatches = fileCount / 50
-				} else {
 					numBatches = 1
 				}
 				batchMax := fileCount / numBatches
 
 				batchTrack := make(map[feature.Tag]time.Duration)
-
-				skipProfiling := numBatches < 10
 
 				for _, file := range files {
 
@@ -232,48 +249,38 @@ func (f *CFeature) PopulateIndexes() (err error) {
 
 							for idx, pip := range f.indexProviders {
 								tag := f.indexProviderTags[idx]
-								var pipStart time.Time
-								if !skipProfiling {
-									pipStart = time.Now()
-								}
+								pipStart := time.Now()
 								if eeeee := pip.AddToIndex(pmStub, pg); eeeee != nil {
 									log.ErrorF("error adding to page index: %v - %v", file, eeeee)
 								} else {
 									// log.DebugF("%v indexed %v", pip.(feature.Feature).Tag(), pg.Url)
 								}
-								if !skipProfiling {
-									if _, exists := batchTrack[tag]; exists {
-										batchTrack[tag] += time.Now().Sub(pipStart)
-									} else {
-										batchTrack[tag] = time.Now().Sub(pipStart)
-									}
+								if _, exists := batchTrack[tag]; exists {
+									batchTrack[tag] += time.Now().Sub(pipStart)
+								} else {
+									batchTrack[tag] = time.Now().Sub(pipStart)
 								}
 							}
 
 							for idx, sep := range f.searchProviders {
-								tag := f.indexProviderTags[idx]
-								var sepStart time.Time
-								if !skipProfiling {
-									sepStart = time.Now()
-								}
+								tag := f.searchProviderTags[idx]
+								sepStart := time.Now()
 								if eeeee := sep.AddToSearchIndex(pmStub, pg); eeeee != nil {
 									log.ErrorF("error adding to search index: %v - %v", file, eeeee)
 								} else {
 									// log.DebugF("%v indexed %v", sep.(feature.Feature).Tag(), pg.Url)
 								}
-								if !skipProfiling {
-									if _, exists := batchTrack[tag]; exists {
-										batchTrack[tag] += time.Now().Sub(sepStart)
-									} else {
-										batchTrack[tag] = time.Now().Sub(sepStart)
-									}
+								if _, exists := batchTrack[tag]; exists {
+									batchTrack[tag] += time.Now().Sub(sepStart)
+								} else {
+									batchTrack[tag] = time.Now().Sub(sepStart)
 								}
 							}
 
 							total += 1
 							batchTotal += 1
 
-							if !skipProfiling && numBatches > 1 && batchTotal >= batchMax {
+							if batchTotal >= batchMax {
 								batchCount += 1
 								now := time.Now()
 								dur := now.Sub(batchStart)
@@ -282,7 +289,7 @@ func (f *CFeature) PopulateIndexes() (err error) {
 									trackSummary[k] = v.String()
 								}
 								delta := dur - prevBatch
-								log.DebugF(
+								log.WarnF(
 									"%v indexed batch %d/%d (%d) in %v +%v (%d/%d in %v) - %+v",
 									f.Tag(),
 									batchCount, numBatches, batchTotal, dur, delta,
@@ -301,10 +308,15 @@ func (f *CFeature) PopulateIndexes() (err error) {
 		}
 	}
 
-	debug.SetGCPercent(previousGOGC)
+	if f.gcPercent != -1 {
+		debug.SetGCPercent(previousGOGC)
+	}
+
+	gcStart := time.Now()
+	runtime.GC()
 
 	end := time.Now()
-	log.InfoF("%v feature indexed %d pages in %v", f.Tag(), total, end.Sub(start))
+	log.InfoF("%v feature indexed %d pages in %v (gc: %v)", f.Tag(), total, end.Sub(start), end.Sub(gcStart))
 
 	return
 }
