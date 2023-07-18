@@ -309,3 +309,14 @@ func (e *Enjin) CheckSelectQL(query string) (selected map[string]interface{}, er
 	}
 	return
 }
+
+func (e *Enjin) FindPageStub(shasum string) (stub *fs.PageStub) {
+	for _, f := range e.Features() {
+		if pcp, ok := f.(indexing.PageContextProvider); ok {
+			if stub = pcp.FindPageStub(shasum); stub != nil {
+				return
+			}
+		}
+	}
+	return
+}
