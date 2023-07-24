@@ -20,6 +20,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/puzpuzpuz/xsync/v2"
+
 	"github.com/go-enjin/be/pkg/cmp"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
@@ -38,10 +40,9 @@ type cSelector struct {
 	feat   indexing.PageContextProvider
 	theme  *theme.Theme
 	sel    *pageql.Selection
-	cache  map[string]map[string]interface{}
-	lookup map[string]map[interface{}][]string
-	count  map[string]uint64
-	stubs  map[string]*fs.PageStub
+	cache  *xsync.MapOf[string, map[string]interface{}]
+	lookup *xsync.MapOf[string, map[interface{}][]string]
+	count  *xsync.MapOf[string, uint64]
 
 	err error
 }
@@ -67,10 +68,9 @@ func NewProcessWith(input string, t *theme.Theme, f indexing.PageContextProvider
 		feat:   f,
 		theme:  t,
 		input:  input,
-		cache:  make(map[string]map[string]interface{}),
-		lookup: make(map[string]map[interface{}][]string),
-		count:  make(map[string]uint64),
-		stubs:  make(map[string]*fs.PageStub),
+		cache:  xsync.NewMapOf[map[string]interface{}](),
+		lookup: xsync.NewMapOf[map[interface{}][]string](),
+		count:  xsync.NewMapOf[uint64](),
 	}
 	if matcher.feat == nil {
 		err = fmt.Errorf("pageql matcher process requires a pagecache.PageContentProvider feature to be present")
@@ -92,19 +92,20 @@ func (m *cSelector) process() (selected map[string]interface{}, err error) {
 
 	for _, sel := range m.sel.Selecting {
 
-		if _, exists := m.lookup[sel.ContextKey]; !exists {
-			m.lookup[sel.ContextKey] = make(map[interface{}][]string)
+		if _, exists := m.lookup.Load(sel.ContextKey); !exists {
+			m.lookup.Store(sel.ContextKey, make(map[interface{}][]string))
 		}
 
 		if sel.Count {
-			m.count[sel.ContextKey] = m.feat.PageContextValuesCount(sel.ContextKey)
+			m.count.Store(sel.ContextKey, m.feat.PageContextValuesCount(sel.ContextKey))
 		}
 
 		for pair := range m.feat.YieldPageContextValueStubs(sel.ContextKey) {
-			if _, present := m.stubs[pair.Stub.Shasum]; !present {
-				m.stubs[pair.Stub.Shasum] = pair.Stub
-			}
-			m.lookup[sel.ContextKey][pair.Value] = append(m.lookup[sel.ContextKey][pair.Value], pair.Stub.Shasum)
+			kvp, _ := m.lookup.Load(sel.ContextKey)
+			shasums, _ := kvp[pair.Value]
+			shasums = append(shasums, pair.Stub.Shasum)
+			kvp[pair.Value] = shasums
+			m.lookup.Store(sel.ContextKey, kvp)
 		}
 
 	}
@@ -112,13 +113,14 @@ func (m *cSelector) process() (selected map[string]interface{}, err error) {
 	if m.sel.Statement != nil {
 
 		for _, key := range m.sel.Statement.ContextKeys {
-			if _, exists := m.lookup[key]; !exists {
-				m.lookup[key] = make(map[interface{}][]string)
+			if _, exists := m.lookup.Load(key); !exists {
+				m.lookup.Store(key, make(map[interface{}][]string))
 				for pair := range m.feat.YieldPageContextValueStubs(key) {
-					if _, present := m.stubs[pair.Stub.Shasum]; !present {
-						m.stubs[pair.Stub.Shasum] = pair.Stub
-					}
-					m.lookup[key][pair.Value] = append(m.lookup[key][pair.Value], pair.Stub.Shasum)
+					kvp, _ := m.lookup.Load(key)
+					shasums, _ := kvp[pair.Value]
+					shasums = append(shasums, pair.Stub.Shasum)
+					kvp[pair.Value] = shasums
+					m.lookup.Store(key, kvp)
 				}
 			}
 		}
@@ -139,8 +141,9 @@ func (m *cSelector) processWithoutStatement() (selected map[string]interface{}, 
 		if !sel.Distinct && !sel.Count {
 			continue
 		}
-		values := maps.AnyKeys(m.lookup[sel.ContextKey])
-		count, _ := m.count[sel.ContextKey]
+		kvp, _ := m.lookup.Load(sel.ContextKey)
+		values := maps.AnyKeys(kvp)
+		count, _ := m.count.Load(sel.ContextKey)
 		switch {
 		case !sel.Count && sel.Random:
 			idx := rand.Intn(len(values))
@@ -168,7 +171,8 @@ func (m *cSelector) processWithoutStatement() (selected map[string]interface{}, 
 	randoms := make(map[string]interface{})
 	for _, sel := range m.sel.Selecting {
 		if sel.Random {
-			values := maps.AnyKeys(m.lookup[sel.ContextKey])
+			kvp, _ := m.lookup.Load(sel.ContextKey)
+			values := maps.AnyKeys(kvp)
 			if lv := len(values); lv > 1 {
 				idx := rand.Intn(len(values))
 				randoms[sel.ContextKey] = values[idx]
@@ -178,7 +182,8 @@ func (m *cSelector) processWithoutStatement() (selected map[string]interface{}, 
 				randoms[sel.ContextKey] = nil
 			}
 		} else if !sel.Distinct && !sel.Count {
-			for _, value := range maps.AnyKeys(m.lookup[sel.ContextKey]) {
+			kvp, _ := m.lookup.Load(sel.ContextKey)
+			for _, value := range maps.AnyKeys(kvp) {
 				simples[sel.ContextKey] = append(simples[sel.ContextKey], value)
 			}
 		}
@@ -230,7 +235,8 @@ func (m *cSelector) processWithStatement() (selected map[string]interface{}, err
 				continue
 			}
 			var values []interface{}
-			for value, shasums := range m.lookup[sel.ContextKey] {
+			kvp, _ := m.lookup.Load(sel.ContextKey)
+			for value, shasums := range kvp {
 				if beStrings.AnyStringsInStrings(matchedShasums, shasums) {
 					switch vt := value.(type) {
 					case []string:
@@ -246,7 +252,7 @@ func (m *cSelector) processWithStatement() (selected map[string]interface{}, err
 					}
 				}
 			}
-			count, _ := m.count[sel.ContextKey]
+			count, _ := m.count.Load(sel.ContextKey)
 			switch {
 			case !sel.Count && sel.Random:
 				idx := rand.Intn(len(values))
@@ -270,7 +276,8 @@ func (m *cSelector) processWithStatement() (selected map[string]interface{}, err
 		randoms := make(map[string]interface{})
 		for _, sel := range m.sel.Selecting {
 			if sel.Random && !sel.Distinct && !sel.Count {
-				values := maps.AnyKeys(m.lookup[sel.ContextKey])
+				kvp, _ := m.lookup.Load(sel.ContextKey)
+				values := maps.AnyKeys(kvp)
 				idx := rand.Intn(len(values))
 				randoms[sel.ContextKey] = values[idx]
 			}
@@ -284,7 +291,8 @@ func (m *cSelector) processWithStatement() (selected map[string]interface{}, err
 					continue
 				}
 				found := false
-				for value, shasums := range m.lookup[sel.ContextKey] {
+				kvp, _ := m.lookup.Load(sel.ContextKey)
+				for value, shasums := range kvp {
 					if found = beStrings.StringInSlices(stub.Shasum, shasums); found {
 						simples[sel.ContextKey] = append(simples[sel.ContextKey], value)
 						break
@@ -393,18 +401,18 @@ func (m *cSelector) processOperationEquals(key string, opValue *pageql.Value, in
 			err = fmt.Errorf("error compiling regular expression: %v", err)
 			return
 		}
-		if values, ok := m.lookup[key]; ok {
+		if values, ok := m.lookup.Load(key); ok {
 			for value, shasums := range values {
 				switch t := value.(type) {
 				case string:
 					match := rx.MatchString(t)
 					if (inclusive && match) || (!inclusive && !match) {
 						for _, shasum := range shasums {
-							results[shasum] = m.stubs[shasum]
-							p, _ := page.NewFromPageStub(m.stubs[shasum], m.theme)
+							results[shasum] = m.feat.FindPageStub(shasum)
+							p, _ := page.NewFromPageStub(results[shasum], m.theme)
 							ctx := p.Context.Copy()
 							ctx.CamelizeKeys()
-							m.cache[shasum] = ctx.Select(m.sel.Statement.ContextKeys...)
+							m.cache.Store(shasum, ctx.Select(m.sel.Statement.ContextKeys...))
 						}
 					}
 				default:
@@ -415,7 +423,7 @@ func (m *cSelector) processOperationEquals(key string, opValue *pageql.Value, in
 		}
 
 	case opValue.String != nil:
-		if values, ok := m.lookup[key]; ok {
+		if values, ok := m.lookup.Load(key); ok {
 			for value, shasums := range values {
 				if match, ee := cmp.Compare(value, *opValue.String); ee != nil {
 					err = ee
@@ -423,11 +431,11 @@ func (m *cSelector) processOperationEquals(key string, opValue *pageql.Value, in
 				} else {
 					if (inclusive && match) || (!inclusive && !match) {
 						for _, shasum := range shasums {
-							results[shasum] = m.stubs[shasum]
-							p, _ := page.NewFromPageStub(m.stubs[shasum], m.theme)
+							results[shasum] = m.feat.FindPageStub(shasum)
+							p, _ := page.NewFromPageStub(results[shasum], m.theme)
 							ctx := p.Context.Copy()
 							ctx.CamelizeKeys()
-							m.cache[shasum] = ctx.Select(m.sel.Statement.ContextKeys...)
+							m.cache.Store(shasum, ctx.Select(m.sel.Statement.ContextKeys...))
 						}
 					}
 				}
