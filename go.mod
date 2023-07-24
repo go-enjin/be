@@ -38,6 +38,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.6
 	github.com/pkg/profile v1.6.0
 	github.com/polds/logrus-papertrail-hook v0.0.0-20180214143432-bcfe7b72c1a4
+	github.com/puzpuzpuz/xsync/v2 v2.4.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spkg/zipfs v0.7.1
 	github.com/tdewolff/minify/v2 v2.12.0
