@@ -122,8 +122,8 @@ type cLocalStore struct {
 }
 
 func (f *cLocalStore) Get(key interface{}) (value interface{}, err error) {
-	f.RLock()
-	defer f.RUnlock()
+	//f.RLock()
+	//defer f.RUnlock()
 	value, err = f.cache.Get(context.Background(), key)
 	// var data []byte
 	// if data, err = f.cache.Get(context.Background(), key); err != nil {
@@ -134,8 +134,8 @@ func (f *cLocalStore) Get(key interface{}) (value interface{}, err error) {
 }
 
 func (f *cLocalStore) Set(key interface{}, value interface{}) (err error) {
-	f.Lock()
-	defer f.Unlock()
+	//f.Lock()
+	//defer f.Unlock()
 	// var data []byte
 	// if data, err = gob.Encode(value); err != nil {
 	// 	return
