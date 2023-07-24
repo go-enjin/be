@@ -259,9 +259,8 @@ func (m *cMatcher) processOperationEquals(key string, opValue *pageql.Value, inc
 	case opValue.String != nil:
 
 		// TODO: this is expensive, m.cache is only used for sorting, need a better way
-		//for pair := range m.feat.YieldFilterPageContextValueStubs(inclusive, key, opValue.String) {
-		//	stub := pair.Stub
-		for _, stub := range m.feat.FilterPageContextValueStubs(inclusive, key, opValue.String) {
+		for pair := range m.feat.YieldFilterPageContextValueStubs(inclusive, key, opValue.String) {
+			stub := pair.Stub
 			if _, present := results[stub.Shasum]; present {
 				continue
 			}
