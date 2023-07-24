@@ -22,11 +22,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/gofrs/uuid"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
-
-	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
@@ -188,8 +187,8 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *CFeature) FindPageStub(shasum string) (stub *fs.PageStub) {
-	f.RLock()
-	defer f.RUnlock()
+	//f.RLock()
+	//defer f.RUnlock()
 	if v, err := f.pageStubsBucket.Get(shasum); err == nil && v != nil {
 		stub, _ = v.(*fs.PageStub)
 	}
@@ -197,15 +196,15 @@ func (f *CFeature) FindPageStub(shasum string) (stub *fs.PageStub) {
 }
 
 func (f *CFeature) PerformQuery(input string) (stubs []*fs.PageStub, err error) {
-	f.RLock()
-	defer f.RUnlock()
+	//f.RLock()
+	//defer f.RUnlock()
 	stubs, err = matcher.NewProcess(input, f.Enjin)
 	return
 }
 
 func (f *CFeature) PerformSelect(input string) (selected map[string]interface{}, err error) {
-	f.RLock()
-	defer f.RUnlock()
+	//f.RLock()
+	//defer f.RUnlock()
 	t, _ := f.Enjin.GetTheme()
 	selected, err = selector.NewProcessWith(input, t, f)
 	return
@@ -489,8 +488,8 @@ func (f *CFeature) FilterPageContextValueStubs(include bool, key string, value i
 }
 
 func (f *CFeature) FindRedirection(url string) (p *page.Page) {
-	f.RLock()
-	defer f.RUnlock()
+	//f.RLock()
+	//defer f.RUnlock()
 
 	theme, _ := f.Enjin.GetTheme()
 	url = bePath.CleanWithSlash(url)
@@ -509,8 +508,8 @@ func (f *CFeature) FindRedirection(url string) (p *page.Page) {
 }
 
 func (f *CFeature) FindTranslations(url string) (pages []*page.Page) {
-	f.RLock()
-	defer f.RUnlock()
+	//f.RLock()
+	//defer f.RUnlock()
 
 	url = bePath.CleanWithSlash(url)
 
@@ -527,8 +526,8 @@ func (f *CFeature) FindTranslations(url string) (pages []*page.Page) {
 }
 
 func (f *CFeature) FindPage(tag language.Tag, url string) (pg *page.Page) {
-	f.RLock()
-	defer f.RUnlock()
+	//f.RLock()
+	//defer f.RUnlock()
 
 	url = bePath.CleanWithSlash(url)
 
@@ -547,8 +546,8 @@ func (f *CFeature) FindPage(tag language.Tag, url string) (pg *page.Page) {
 }
 
 func (f *CFeature) Lookup(tag language.Tag, path string) (pg *page.Page, err error) {
-	f.RLock()
-	defer f.RUnlock()
+	//f.RLock()
+	//defer f.RUnlock()
 
 	path = bePath.CleanWithSlash(path)
 
@@ -585,8 +584,8 @@ func (f *CFeature) Lookup(tag language.Tag, path string) (pg *page.Page, err err
 }
 
 func (f *CFeature) LookupPrefixed(prefix string) (pages []*page.Page) {
-	f.RLock()
-	defer f.RUnlock()
+	//f.RLock()
+	//defer f.RUnlock()
 
 	prefix = bePath.CleanWithSlash(prefix)
 
