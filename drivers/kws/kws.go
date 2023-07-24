@@ -22,10 +22,11 @@ import (
 	"strings"
 
 	"github.com/blevesearch/bleve/v2"
-	"github.com/blevesearch/bleve/v2/mapping"
 	bleveSearch "github.com/blevesearch/bleve/v2/search"
+	"github.com/fvbommel/sortorder"
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/maruel/natural"
+	"github.com/puzpuzpuz/xsync/v2"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
@@ -33,7 +34,6 @@ import (
 	"github.com/go-enjin/be/pkg/indexing"
 	indexingSearch "github.com/go-enjin/be/pkg/indexing/search"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/regexps"
 	"github.com/go-enjin/be/pkg/search"
@@ -55,8 +55,7 @@ type Feature interface {
 type CFeature struct {
 	feature.CFeature
 
-	keyword map[string][]string
-	docMaps map[language.Tag]map[string]*mapping.DocumentMapping
+	keyword *xsync.MapOf[string, []string]
 }
 
 type MakeFeature interface {
@@ -80,24 +79,11 @@ func (f *CFeature) Make() Feature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
-	f.docMaps = make(map[language.Tag]map[string]*mapping.DocumentMapping)
-	f.keyword = make(map[string][]string)
+	f.keyword = xsync.NewMapOf[[]string]()
 }
 
 func (f *CFeature) Setup(enjin feature.Internals) {
 	f.CFeature.Setup(enjin)
-	locales := f.Enjin.SiteLocales()
-	for _, feat := range f.Enjin.Features() {
-		if v, ok := feat.Self().(indexing.SearchDocumentMapperFeature); ok {
-			for _, tag := range locales {
-				if _, exists := f.docMaps[tag]; !exists {
-					f.docMaps[tag] = make(map[string]*mapping.DocumentMapping)
-				}
-				doctype, dm := v.SearchDocumentMapping(tag)
-				f.docMaps[tag][doctype] = dm
-			}
-		}
-	}
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
@@ -171,7 +157,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 	}
 	notStubs := make(map[string]bool)
 	for word, _ := range notWords {
-		if stubs, ok := f.keyword[word]; ok {
+		if stubs, ok := f.keyword.Load(word); ok {
 			for _, shasum := range stubs {
 				notStubs[shasum] = true
 			}
@@ -183,7 +169,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 		mustMatch := make(map[string]fs.PageStubs)
 		mustCache := make(map[string]map[string]int)
 		for word, _ := range mustWords {
-			if shasums, ok := f.keyword[word]; ok {
+			if shasums, ok := f.keyword.Load(word); ok {
 				// log.WarnF("found %d stubs for %v", len(stubs), word)
 				for _, shasum := range shasums {
 					if _, not := notStubs[shasum]; not {
@@ -213,7 +199,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 		}
 
 		for word, _ := range shouldWords {
-			if shasums, ok := f.keyword[word]; ok {
+			if shasums, ok := f.keyword.Load(word); ok {
 				for _, shasum := range shasums {
 					if _, exists := scores[shasum]; exists {
 						scores[shasum] += shouldScores[word]
@@ -227,7 +213,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 	} else {
 		// no must words present
 		for word, _ := range shouldWords {
-			if shasums, ok := f.keyword[word]; ok {
+			if shasums, ok := f.keyword.Load(word); ok {
 				for _, shasum := range shasums {
 					if _, not := notStubs[shasum]; not {
 						continue
@@ -319,36 +305,49 @@ func (f *CFeature) AddToSearchIndex(stub *fs.PageStub, p *page.Page) (err error)
 	} else if doc == nil {
 		return
 	}
-	if f.keyword == nil {
-		f.keyword = make(map[string][]string)
-	}
 	for _, content := range doc.GetContents() {
 		words := regexps.RxKeywords.FindAllString(content, -1)
 		for _, word := range words {
 			lcw := strings.ToLower(word)
-			f.keyword[lcw] = append(f.keyword[lcw], stub.Shasum)
+			//f.keyword[lcw] = append(f.keyword[lcw], stub.Shasum)
+			shasums, _ := f.keyword.Load(lcw)
+			shasums = append(shasums, stub.Shasum)
+			f.keyword.Store(lcw, shasums)
 		}
 	}
 	return
 }
 
 func (f *CFeature) RemoveFromSearchIndex(tag language.Tag, file, shasum string) {
-	f.Lock()
-	defer f.Unlock()
+	//f.Lock()
+	//defer f.Unlock()
 	return
 }
 
+func (f *CFeature) Size() (count int) {
+	return f.keyword.Size()
+}
+
+func (f *CFeature) Range(fn func(keyword string, shasums []string) (proceed bool)) {
+	f.keyword.Range(fn)
+}
+
 func (f *CFeature) KnownKeywords() (keywords []string) {
-	f.RLock()
-	defer f.RUnlock()
-	keywords = maps.SortedKeys(f.keyword)
+	//f.RLock()
+	//defer f.RUnlock()
+	f.keyword.Range(func(key string, value []string) bool {
+		keywords = append(keywords, key)
+		return true
+	})
+	sort.Sort(sortorder.Natural(keywords))
 	return
 }
 
 func (f *CFeature) KeywordStubs(keyword string) (stubs fs.PageStubs) {
-	f.RLock()
-	defer f.RUnlock()
-	for _, shasum := range f.keyword[keyword] {
+	//f.RLock()
+	//defer f.RUnlock()
+	shasums, _ := f.keyword.Load(keyword)
+	for _, shasum := range shasums {
 		if stub := f.Enjin.FindPageStub(shasum); stub != nil {
 			stubs = append(stubs, stub)
 		} else {
