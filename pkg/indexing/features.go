@@ -59,8 +59,10 @@ type SearchDocumentMapperFeature interface {
 }
 
 type KeywordProvider interface {
+	Size() (count int)
 	KnownKeywords() (keywords []string)
 	KeywordStubs(keyword string) (stubs fs.PageStubs)
+	Range(fn func(key string, value []string) (proceed bool))
 }
 
 type PageContextProvider interface {
