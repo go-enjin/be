@@ -28,13 +28,19 @@ import (
 	"github.com/go-enjin/be/pkg/net/ip/ranges/cloudflare"
 )
 
-var _ feature.Feature = (*Feature)(nil)
-
-var _ feature.RequestFilter = (*Feature)(nil)
+var (
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
+)
 
 const Tag feature.Tag = "request-cloudflare"
 
-type Feature struct {
+type Feature interface {
+	feature.Feature
+	feature.RequestFilter
+}
+
+type CFeature struct {
 	feature.CFeature
 
 	allowDirect bool
@@ -42,28 +48,40 @@ type Feature struct {
 }
 
 type MakeFeature interface {
-	feature.MakeFeature
+	Make() Feature
 
 	AllowDirect() MakeFeature
 }
 
 func New() MakeFeature {
-	f := new(Feature)
+	return NewTagged(Tag)
+}
+
+func NewTagged(tag feature.Tag) MakeFeature {
+	f := new(CFeature)
 	f.Init(f)
-	f.FeatureTag = Tag
+	f.FeatureTag = tag
 	return f
 }
 
-func (f *Feature) AllowDirect() MakeFeature {
+func (f *CFeature) Init(this interface{}) {
+	f.CFeature.Init(this)
+}
+
+func (f *CFeature) AllowDirect() MakeFeature {
 	f.allowDirect = true
 	return f
 }
 
-func (f *Feature) Build(b feature.Buildable) (err error) {
+func (f *CFeature) Make() Feature {
+	return f
+}
+
+func (f *CFeature) Build(b feature.Buildable) (err error) {
 	return
 }
 
-func (f *Feature) Startup(ctx *cli.Context) (err error) {
+func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CFeature.Startup(ctx); err != nil {
 		return
 	}
@@ -74,7 +92,7 @@ func (f *Feature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *Feature) FilterRequest(r *http.Request) (err error) {
+func (f *CFeature) FilterRequest(r *http.Request) (err error) {
 	address, _ := net.GetIpFromRequest(r)
 	var ip string
 	if ip, err = net.GetProxyIpFromRequest(r); err != nil {

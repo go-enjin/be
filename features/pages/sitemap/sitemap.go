@@ -59,10 +59,18 @@ type MakeFeature interface {
 }
 
 func New() MakeFeature {
+	return NewTagged(Tag)
+}
+
+func NewTagged(tag feature.Tag) MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
-	f.FeatureTag = Tag
+	f.FeatureTag = tag
 	return f
+}
+
+func (f *CFeature) Init(this interface{}) {
+	f.CFeature.Init(this)
 }
 
 func (f *CFeature) SetDomain(domain string) MakeFeature {
@@ -75,10 +83,6 @@ func (f *CFeature) Make() Feature {
 		log.FatalDF(1, "http:// or https:// required for sitemap domain setting")
 	}
 	return f
-}
-
-func (f *CFeature) Init(this interface{}) {
-	f.CFeature.Init(this)
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {

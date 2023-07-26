@@ -61,18 +61,22 @@ type MakeFeature interface {
 }
 
 func New() MakeFeature {
-	f := new(CFeature)
-	f.Init(f)
-	f.FeatureTag = Tag
-	return f
+	return NewTagged(Tag)
 }
 
-func (f *CFeature) Make() Feature {
+func NewTagged(tag feature.Tag) MakeFeature {
+	f := new(CFeature)
+	f.Init(f)
+	f.FeatureTag = tag
 	return f
 }
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+}
+
+func (f *CFeature) Make() Feature {
+	return f
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {

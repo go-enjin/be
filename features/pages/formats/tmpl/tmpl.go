@@ -61,12 +61,12 @@ func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 }
 
-func (f *CFeature) Setup(enjin feature.Internals) {
-	f.CFeature.Setup(enjin)
-}
-
 func (f *CFeature) Make() Feature {
 	return f
+}
+
+func (f *CFeature) Setup(enjin feature.Internals) {
+	f.CFeature.Setup(enjin)
 }
 
 func (f *CFeature) Name() (name string) {

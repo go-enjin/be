@@ -57,10 +57,18 @@ type CFeature struct {
 }
 
 func New() MakeFeature {
+	return NewTagged(Tag)
+}
+
+func NewTagged(tag feature.Tag) MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
-	f.FeatureTag = Tag
+	f.FeatureTag = tag
 	return f
+}
+
+func (f *CFeature) Init(this interface{}) {
+	f.CFeature.Init(this)
 }
 
 func (f *CFeature) Ignore(pathsOrPatterns ...string) MakeFeature {
