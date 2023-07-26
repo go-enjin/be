@@ -19,6 +19,7 @@ import (
 )
 
 type Processor interface {
+	Feature
 	Process(s Service, next http.Handler, w http.ResponseWriter, r *http.Request)
 }
 

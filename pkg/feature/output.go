@@ -21,6 +21,7 @@ import (
 type TranslateOutputFn = func(input []byte) (output []byte, mime string)
 
 type OutputTranslator interface {
+	Feature
 	CanTranslate(mime string) (ok bool)
 	TranslateOutput(s Service, input []byte, inputMime string) (output []byte, mime string, err error)
 }
@@ -28,6 +29,7 @@ type OutputTranslator interface {
 type TransformOutputFn = func(input []byte) (output []byte)
 
 type OutputTransformer interface {
+	Feature
 	CanTransform(mime string, r *http.Request) (ok bool)
 	TransformOutput(mime string, input []byte) (output []byte)
 }

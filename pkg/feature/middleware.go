@@ -21,13 +21,16 @@ import (
 type MiddlewareFn = func(next http.Handler) (this http.Handler)
 
 type UseMiddleware interface {
+	Feature
 	Use(s System) MiddlewareFn
 }
 
 type ApplyMiddleware interface {
+	Feature
 	Apply(s System) (err error)
 }
 
 type ServePathFeature interface {
+	Feature
 	ServePath(path string, s System, w http.ResponseWriter, r *http.Request) (err error)
 }

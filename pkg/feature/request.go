@@ -24,25 +24,31 @@ import (
 type RequestFilterFn = func(r *http.Request) (err error)
 
 type RequestFilter interface {
+	Feature
 	FilterRequest(r *http.Request) (err error)
 }
 
 type RequestRewriter interface {
+	Feature
 	RewriteRequest(w http.ResponseWriter, r *http.Request) (modified *http.Request)
 }
 
 type RequestModifier interface {
+	Feature
 	ModifyRequest(w http.ResponseWriter, r *http.Request)
 }
 
 type HeadersModifier interface {
+	Feature
 	ModifyHeaders(w http.ResponseWriter, r *http.Request)
 }
 
 type ContentSecurityPolicyModifier interface {
+	Feature
 	ModifyContentSecurityPolicy(policy csp.Policy, r *http.Request) (modified csp.Policy)
 }
 
 type PermissionsPolicyModifier interface {
+	Feature
 	ModifyPermissionsPolicy(policy permissions.Policy, r *http.Request) (modified permissions.Policy)
 }

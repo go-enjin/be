@@ -26,22 +26,27 @@ import (
 type PageContextFilterFn = func(ctx context.Context, r *http.Request) (modCtx context.Context)
 
 type PageContextModifier interface {
+	Feature
 	FilterPageContext(themeCtx, pageCtx context.Context, r *http.Request) (themeOut context.Context)
 }
 
 type PageRestrictionHandler interface {
+	Feature
 	RestrictServePage(ctx context.Context, w http.ResponseWriter, r *http.Request) (modCtx context.Context, modReq *http.Request, allow bool)
 }
 
 type DataRestrictionHandler interface {
+	Feature
 	RestrictServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request) (modReq *http.Request, allow bool)
 }
 
 type FileProvider interface {
+	Feature
 	FindFile(url string) (data []byte, mime string, err error)
 }
 
 type PageProvider interface {
+	Feature
 	FindRedirection(url string) (p *page.Page)
 	FindTranslations(url string) (pages []*page.Page)
 	FindPage(tag language.Tag, url string) (p *page.Page)
@@ -49,5 +54,6 @@ type PageProvider interface {
 }
 
 type PageTypeProcessor interface {
+	Feature
 	ProcessRequestPageType(r *http.Request, p *page.Page) (pg *page.Page, redirect string, processed bool, err error)
 }
