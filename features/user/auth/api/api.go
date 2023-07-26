@@ -441,15 +441,14 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
-	for _, ef := range f.Enjin.Features() {
-		if ubm, ok := ef.(userbase.Manager); ok && ef.Tag() == f.ubmTag {
-			f.ubm = ubm
-			break
-		}
-	}
-	if f.ubm == nil {
+	if ef, ok := f.Enjin.FeaturesCache().Get(f.ubmTag); !ok {
 		err = fmt.Errorf("%v error: userbase.Manager (tagged: %v) not found", f.Tag(), f.ubmTag)
 		return
+	} else if ubm, ok := ef.(userbase.Manager); !ok {
+		err = fmt.Errorf("%v error: userbase.Manager (tagged: %v) is not a userbase.Manager", f.Tag(), f.ubmTag)
+		return
+	} else {
+		f.ubm = ubm
 	}
 
 	tag := f.Tag().String()
@@ -511,18 +510,11 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		} else {
 			f.emailSender = es
 
-			var ep feature.EmailProvider
-			for _, ef := range f.Enjin.Features() {
-				if v, ok := ef.Self().(feature.EmailProvider); ok {
-					ep = v
-					break
-				}
-			}
-			if ep == nil {
+			// TODO: add a .SetEmailProviderFeature(tag feature.Tag) MakeFeature method
+			f.emailProvider = feature.FirstTyped[feature.EmailProvider](f.Enjin.Features())
+			if f.emailProvider == nil {
 				err = fmt.Errorf("feature.EmailProvider not found")
 				return
-			} else {
-				f.emailProvider = ep
 			}
 
 			log.DebugF("found feature.EmailSender and feature.EmailProvider")
@@ -530,17 +522,24 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 
 	if f.authOpts.RefreshCache == nil && f.refreshCacheTag != "" && f.refreshCacheBucket != "" {
-		for _, ef := range f.Enjin.Features() {
-			if kvcf, ok := ef.Self().(beKvs.KeyValueCaches); ok && ef.Tag() == f.refreshCacheTag {
-				if kvc, ee := kvcf.Get(f.refreshCacheName); ee == nil {
-					if kvs, eee := kvc.GetBucket(f.refreshCacheBucket); eee == nil {
-						f.authOpts.RefreshCache = beKvs.NewKVSA(kvs)
-						log.DebugF("using refresh cache: %v/%s/%s", f.refreshCacheTag, f.refreshCacheName, f.refreshCacheBucket)
-						break
-					}
-				}
-			}
+
+		if kvcf, ok := f.Enjin.FeaturesCache().Get(f.refreshCacheTag); !ok {
+			err = fmt.Errorf("%v feature: %v feature not found", f.Tag(), f.refreshCacheTag)
+			return
+		} else if kvcs, ok := feature.AsTyped[beKvs.KeyValueCaches](kvcf); !ok {
+			err = fmt.Errorf("%v feature: %v feature is not a kvs.KeyValueCaches", f.Tag(), f.refreshCacheTag)
+			return
+		} else if kvc, ee := kvcs.Get(f.refreshCacheName); ee != nil {
+			err = fmt.Errorf("%v feature: error getting cache by name: %v from %v - %v", f.Tag(), f.refreshCacheName, f.refreshCacheTag, ee)
+			return
+		} else if kvs, ee := kvc.GetBucket(f.refreshCacheBucket); ee != nil {
+			err = fmt.Errorf("%v feature: error getting %v bucket from %v cache - %v", f.Tag(), f.refreshCacheBucket, f.refreshCacheTag, ee)
+			return
+		} else {
+			f.authOpts.RefreshCache = beKvs.NewKVSA(kvs)
+			log.DebugF("using refresh cache: %v/%s/%s", f.refreshCacheTag, f.refreshCacheName, f.refreshCacheBucket)
 		}
+
 	}
 
 	f.authService = auth.NewService(f.authOpts)
