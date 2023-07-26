@@ -138,9 +138,7 @@ func (t *Theme) init() (err error) {
 }
 
 func (t *Theme) AddFormatProvider(providers ...types.FormatProvider) {
-	for _, provider := range providers {
-		t.FormatProviders = append(t.FormatProviders, provider)
-	}
+	t.FormatProviders = append(t.FormatProviders, providers...)
 }
 
 func (t *Theme) ListFormats() (names []string) {
