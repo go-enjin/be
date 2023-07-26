@@ -14,17 +14,31 @@
 
 package feature
 
-type Features []Feature
+import (
+	"fmt"
 
-func (f Features) Len() (count int) {
-	return len(f)
+	"github.com/go-enjin/be/pkg/log"
+)
+
+func AsTyped[T interface{}](f Feature) (t T, ok bool) {
+	t, ok = f.This().(T)
+	return
 }
 
-func (f Features) Find(tag Tag) (found Feature) {
-	for _, ef := range f {
-		if ef.Tag() == tag {
-			found = ef
-			return
+func MustTyped[T interface{}](f Feature) (t T) {
+	if v, ok := f.This().(T); ok {
+		t = v
+		return
+	}
+	var check *T
+	log.FatalDF(1, "%v feature is not %v", f.Tag(), fmt.Sprintf("%T", check)[1:])
+	return
+}
+
+func FilterTyped[T interface{}](list Features) (found []T) {
+	for _, f := range list {
+		if fT, ok := f.This().(T); ok {
+			found = append(found, fT)
 		}
 	}
 	return
