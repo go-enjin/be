@@ -16,6 +16,10 @@ package feature
 
 type Features []Feature
 
+func (f Features) Len() (count int) {
+	return len(f)
+}
+
 func (f Features) Find(tag Tag) (found Feature) {
 	for _, ef := range f {
 		if ef.Tag() == tag {
