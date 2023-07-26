@@ -18,7 +18,6 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/theme"
-	types "github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 func (eb *EnjinBuilder) SetTheme(name string) feature.Builder {
@@ -36,11 +35,6 @@ func (eb *EnjinBuilder) AddTheme(t *theme.Theme) feature.Builder {
 	if lfs, ok := t.Locales(); ok {
 		eb.localeFiles = append(eb.localeFiles, lfs)
 		log.DebugF("including %v theme locales", t.Name)
-	}
-	for _, f := range eb.features {
-		if fp, ok := f.This().(types.FormatProvider); ok {
-			eb.theming[t.Name].FormatProviders = append(eb.theming[t.Name].FormatProviders, fp)
-		}
 	}
 	return eb
 }
