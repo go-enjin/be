@@ -9,8 +9,13 @@ import (
 	"github.com/go-enjin/be/pkg/theme"
 )
 
+func (e *Enjin) FeaturesCache() (cache *feature.FeaturesCache) {
+	cache = e.eb.features
+	return
+}
+
 func (e *Enjin) Features() (features feature.Features) {
-	features = e.eb.features
+	features = e.eb.features.List()
 	return
 }
 
