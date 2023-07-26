@@ -18,6 +18,10 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
+const (
+	NilTag Tag = ""
+)
+
 // Tag is the primary identifier type for enjin Feature implementations
 type Tag string
 
