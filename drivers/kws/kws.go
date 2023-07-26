@@ -49,6 +49,7 @@ const Tag feature.Tag = "PagesIndexingKeyWordSearch"
 
 type Feature interface {
 	feature.Feature
+	indexing.KeywordProvider
 	indexing.SearchEnjinFeature
 }
 
@@ -73,13 +74,13 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	return f
 }
 
-func (f *CFeature) Make() Feature {
-	return f
-}
-
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.keyword = xsync.NewMapOf[[]string]()
+}
+
+func (f *CFeature) Make() Feature {
+	return f
 }
 
 func (f *CFeature) Setup(enjin feature.Internals) {

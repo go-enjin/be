@@ -85,6 +85,13 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	return f
 }
 
+func (f *CFeature) Init(this interface{}) {
+	f.CFeature.Init(this)
+	f.flags = make(map[string][]string)
+	f.conns = make(map[string]*gorm.DB)
+	f.loggerConfig = make(map[string]logger.Config)
+}
+
 func (f *CFeature) AddConnection(tag string) MakeFeature {
 	tag = strcase.ToKebab(tag)
 	if _, exists := f.flags[tag]; exists {
@@ -110,13 +117,6 @@ func (f *CFeature) SetLogging(connection string, level logger.LogLevel, slowThre
 
 func (f *CFeature) Make() Feature {
 	return f
-}
-
-func (f *CFeature) Init(this interface{}) {
-	f.CFeature.Init(this)
-	f.flags = make(map[string][]string)
-	f.conns = make(map[string]*gorm.DB)
-	f.loggerConfig = make(map[string]logger.Config)
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {

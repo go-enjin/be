@@ -75,14 +75,14 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	return f
 }
 
-func (f *CFeature) Make() Feature {
-	return f
-}
-
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.indexes = make(map[language.Tag]bleve.Index)
 	f.docMaps = make(map[language.Tag]map[string]*mapping.DocumentMapping)
+}
+
+func (f *CFeature) Make() Feature {
+	return f
 }
 
 func (f *CFeature) Setup(enjin feature.Internals) {
