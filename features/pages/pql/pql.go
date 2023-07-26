@@ -148,16 +148,17 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
-	for _, ef := range f.Enjin.Features() {
-		if kvcf, ok := ef.(kvs.KeyValueCaches); ok && ef.Tag() == f.kvcTag {
-			var kvc kvs.KeyValueCache
-			if kvc, err = kvcf.Get(f.kvcName); err != nil {
-				err = fmt.Errorf("%v cache not found: %v", f.kvcTag, f.kvcName)
-				return
-			}
-			f.cache = kvc
-			break
-		}
+	if kvcf, ok := f.Enjin.FeaturesCache().Get(f.kvcTag); !ok {
+		err = fmt.Errorf("%v feature not found", f.kvcTag)
+		return
+	} else if kvcs, ok := kvcf.(kvs.KeyValueCaches); !ok {
+		err = fmt.Errorf("%v feature is not a kvs.KeyValueCaches", f.kvcTag)
+		return
+	} else if kvc, ee := kvcs.Get(f.kvcName); ee != nil {
+		err = fmt.Errorf("%v cache not found: %v", f.kvcTag, f.kvcName)
+		return
+	} else {
+		f.cache = kvc
 	}
 
 	if f.cache == nil {
