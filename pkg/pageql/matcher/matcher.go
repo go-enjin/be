@@ -49,16 +49,14 @@ type cMatcher struct {
 }
 
 func NewProcess(input string, enjin feature.Internals) (matched []*fs.PageStub, err error) {
-	var ok bool
 	var t *theme.Theme
 	var f indexing.PageContextProvider
 	if t, err = enjin.GetTheme(); err != nil {
 		return
 	}
-	for _, feat := range enjin.Features() {
-		if f, ok = feat.(indexing.PageContextProvider); ok {
-			break
-		}
+	for _, feat := range feature.FilterTyped[indexing.PageContextProvider](enjin.Features()) {
+		f = feat
+		break
 	}
 	matched, err = NewProcessWith(input, t, f)
 	return
