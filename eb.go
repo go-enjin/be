@@ -109,6 +109,8 @@ type EnjinBuilder struct {
 	fFileProviders                  []feature.FileProvider
 	fQueryIndexFeatures             []indexing.QueryIndexFeature
 	fPageContextProviders           []indexing.PageContextProvider
+	fAuthProviders                  []userbase.AuthProvider
+	fUserActionsProviders           []userbase.UserActionsProvider
 
 	enjins []*EnjinBuilder
 }

@@ -26,6 +26,7 @@ import (
 	"github.com/go-enjin/be/pkg/net/headers"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	types "github.com/go-enjin/be/pkg/types/theme-types"
+	"github.com/go-enjin/be/pkg/userbase"
 )
 
 func (eb *EnjinBuilder) Set(key string, value interface{}) feature.Builder {
@@ -95,6 +96,8 @@ func (eb *EnjinBuilder) AddFeature(f feature.Feature) feature.Builder {
 	eb.fFileProviders = checkRegisterFeature[feature.FileProvider](f, eb.fFileProviders)
 	eb.fQueryIndexFeatures = checkRegisterFeature[indexing.QueryIndexFeature](f, eb.fQueryIndexFeatures)
 	eb.fPageContextProviders = checkRegisterFeature[indexing.PageContextProvider](f, eb.fPageContextProviders)
+	eb.fAuthProviders = checkRegisterFeature[userbase.AuthProvider](f, eb.fAuthProviders)
+	eb.fUserActionsProviders = checkRegisterFeature[userbase.UserActionsProvider](f, eb.fUserActionsProviders)
 
 	return eb
 }
