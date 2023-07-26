@@ -385,7 +385,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		efTag := ef.Tag().String()
 		for _, upName := range f.upNames {
 			if efTag == upName {
-				if upf, ok := ef.Self().(userbase.AuthUserProvider); ok {
+				if upf, ok := feature.AsTyped[userbase.AuthUserProvider](ef); ok {
 					f.usersProviders = append(f.usersProviders, upf)
 				} else {
 					err = fmt.Errorf("%v feature is not a userbase.AuthUserProvider", efTag)
@@ -395,7 +395,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		}
 		for _, gpName := range f.gpNames {
 			if efTag == gpName {
-				if gpf, ok := ef.Self().(userbase.GroupsProvider); ok {
+				if gpf, ok := feature.AsTyped[userbase.GroupsProvider](ef); ok {
 					f.groupsProviders = append(f.groupsProviders, gpf)
 				} else {
 					err = fmt.Errorf("%v feature is not a userbase.GroupsProvider", efTag)
@@ -405,7 +405,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		}
 		for _, spName := range f.spNames {
 			if efTag == spName {
-				if spf, ok := ef.Self().(userbase.SecretsProvider); ok {
+				if spf, ok := feature.AsTyped[userbase.SecretsProvider](ef); ok {
 					f.secretsProviders = append(f.secretsProviders, spf)
 				} else {
 					err = fmt.Errorf("%v feature is not a userbase.SecretsProvider", efTag)
@@ -414,6 +414,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 			}
 		}
 	}
+
 	if len(f.usersProviders) == 0 {
 		err = fmt.Errorf("at least one userbase.AuthUserProvider is required")
 		return
