@@ -14,7 +14,9 @@
 
 package userbase
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type AuthProvider interface {
 	AuthenticateRequest(w http.ResponseWriter, r *http.Request) (handled bool, modified *http.Request)
