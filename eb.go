@@ -58,7 +58,7 @@ type EnjinBuilder struct {
 	context      context.Context
 	theme        string
 	theming      map[string]*theme.Theme
-	features     feature.Features
+	features     *feature.FeaturesCache
 	headers      []headers.ModifyHeadersFn
 	domains      []string
 	consoles     map[feature.Tag]feature.Console
@@ -96,7 +96,7 @@ func New() (be *EnjinBuilder) {
 	be.pages = make(map[string]*page.Page)
 	be.context = context.New()
 	be.theming = make(map[string]*theme.Theme)
-	be.features = make(feature.Features, 0)
+	be.features = feature.NewFeaturesCache()
 	be.headers = make([]headers.ModifyHeadersFn, 0)
 	be.domains = make([]string, 0)
 	be.consoles = make(map[feature.Tag]feature.Console)
