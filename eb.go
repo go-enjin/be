@@ -31,6 +31,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
+	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
@@ -83,6 +84,31 @@ type EnjinBuilder struct {
 
 	publicUser  userbase.Actions
 	userActions userbase.Actions
+
+	fFormatProviders                []types.FormatProvider
+	fRequestFilters                 []feature.RequestFilter
+	fPageContextModifiers           []feature.PageContextModifier
+	fPageRestrictionHandlers        []feature.PageRestrictionHandler
+	fMenuProviders                  []feature.MenuProvider
+	fDataRestrictionHandlers        []feature.DataRestrictionHandler
+	fOutputTranslators              []feature.OutputTranslator
+	fOutputTransformers             []feature.OutputTransformer
+	fPageTypeProcessors             []feature.PageTypeProcessor
+	fServePathFeatures              []feature.ServePathFeature
+	fDatabases                      []feature.Database
+	fEmailSenders                   []feature.EmailSender
+	fRequestModifiers               []feature.RequestModifier
+	fRequestRewriters               []feature.RequestRewriter
+	fPermissionsPolicyModifiers     []feature.PermissionsPolicyModifier
+	fContentSecurityPolicyModifiers []feature.ContentSecurityPolicyModifier
+	fUseMiddlewares                 []feature.UseMiddleware
+	fHeadersModifiers               []feature.HeadersModifier
+	fProcessors                     []feature.Processor
+	fApplyMiddlewares               []feature.ApplyMiddleware
+	fPageProviders                  []feature.PageProvider
+	fFileProviders                  []feature.FileProvider
+	fQueryIndexFeatures             []indexing.QueryIndexFeature
+	fPageContextProviders           []indexing.PageContextProvider
 
 	enjins []*EnjinBuilder
 }
@@ -169,6 +195,13 @@ func (eb *EnjinBuilder) prepareBuild() {
 	eb.Set("DefaultLanguage", eb.defaultLang.String())
 	eb.Set("DefaultLanguageTag", eb.defaultLang)
 
+	for _, f := range eb.features.List() {
+		if err = f.Self().Build(eb); err != nil {
+			log.FatalDF(2, "feature [%v] - %v", f.Tag(), err)
+			return
+		}
+	}
+
 	if eb.theme != "" {
 		if _, ok := eb.theming[eb.theme]; !ok {
 			log.FatalDF(2, "theme not found: %v", eb.theme)
@@ -182,28 +215,15 @@ func (eb *EnjinBuilder) prepareBuild() {
 		}
 	}
 
-	var hasFormatProvider bool
-	for _, f := range eb.features {
-		if _, hasFormatProvider = f.(types.FormatProvider); hasFormatProvider {
-			break
-		}
-	}
-	if !hasFormatProvider {
+	if len(eb.fFormatProviders) == 0 {
+		// add basic page formats feature
 		eb.AddFeature(formats.New().Make())
 	}
 
 	for _, t := range eb.theming {
-		for _, f := range eb.features {
-			if p, ok := f.(types.FormatProvider); ok {
-				t.AddFormatProvider(p)
-			}
-		}
-	}
-
-	for _, f := range eb.features {
-		if err = f.Self().Build(eb); err != nil {
-			log.FatalDF(2, "feature [%v] - %v", f.Tag(), err)
-			return
+		// add format providers to all themes
+		for _, p := range eb.fFormatProviders {
+			t.AddFormatProvider(p)
 		}
 	}
 

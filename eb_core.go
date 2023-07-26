@@ -21,9 +21,11 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
+	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/headers"
 	beStrings "github.com/go-enjin/be/pkg/strings"
+	types "github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 func (eb *EnjinBuilder) Set(key string, value interface{}) feature.Builder {
@@ -51,17 +53,49 @@ func (eb *EnjinBuilder) AddDomains(domains ...string) feature.Builder {
 	return eb
 }
 
+func checkRegisterFeature[T interface{}](f feature.Feature, list []T) []T {
+	var check *T
+	if ff, ok := feature.AsTyped[T](f); ok {
+		log.DebugF("registering %v as a %v", f.Tag(), fmt.Sprintf("%T", check)[1:])
+		list = append(list, ff)
+	}
+	return list
+}
+
 func (eb *EnjinBuilder) AddFeature(f feature.Feature) feature.Builder {
 	if f == nil {
 		return eb
 	}
-	for _, known := range eb.features {
-		if known.Tag() == f.Tag() {
-			log.FatalDF(1, "duplicated feature tag: %v", f.Tag())
-		}
+	if err := eb.features.Add(f); err != nil {
+		log.FatalDF(1, "error adding feature: %T - %v", f, err)
 	}
 	log.DebugF("adding feature: %v", f.Tag())
-	eb.features = append(eb.features, f)
+
+	eb.fFormatProviders = checkRegisterFeature[types.FormatProvider](f, eb.fFormatProviders)
+	eb.fRequestFilters = checkRegisterFeature[feature.RequestFilter](f, eb.fRequestFilters)
+	eb.fPageContextModifiers = checkRegisterFeature[feature.PageContextModifier](f, eb.fPageContextModifiers)
+	eb.fPageRestrictionHandlers = checkRegisterFeature[feature.PageRestrictionHandler](f, eb.fPageRestrictionHandlers)
+	eb.fMenuProviders = checkRegisterFeature[feature.MenuProvider](f, eb.fMenuProviders)
+	eb.fDataRestrictionHandlers = checkRegisterFeature[feature.DataRestrictionHandler](f, eb.fDataRestrictionHandlers)
+	eb.fOutputTranslators = checkRegisterFeature[feature.OutputTranslator](f, eb.fOutputTranslators)
+	eb.fOutputTransformers = checkRegisterFeature[feature.OutputTransformer](f, eb.fOutputTransformers)
+	eb.fPageTypeProcessors = checkRegisterFeature[feature.PageTypeProcessor](f, eb.fPageTypeProcessors)
+	eb.fServePathFeatures = checkRegisterFeature[feature.ServePathFeature](f, eb.fServePathFeatures)
+	eb.fDatabases = checkRegisterFeature[feature.Database](f, eb.fDatabases)
+	eb.fEmailSenders = checkRegisterFeature[feature.EmailSender](f, eb.fEmailSenders)
+	eb.fRequestModifiers = checkRegisterFeature[feature.RequestModifier](f, eb.fRequestModifiers)
+	eb.fRequestRewriters = checkRegisterFeature[feature.RequestRewriter](f, eb.fRequestRewriters)
+	eb.fPermissionsPolicyModifiers = checkRegisterFeature[feature.PermissionsPolicyModifier](f, eb.fPermissionsPolicyModifiers)
+	eb.fContentSecurityPolicyModifiers = checkRegisterFeature[feature.ContentSecurityPolicyModifier](f, eb.fContentSecurityPolicyModifiers)
+	eb.fUseMiddlewares = checkRegisterFeature[feature.UseMiddleware](f, eb.fUseMiddlewares)
+	eb.fHeadersModifiers = checkRegisterFeature[feature.HeadersModifier](f, eb.fHeadersModifiers)
+	eb.fProcessors = checkRegisterFeature[feature.Processor](f, eb.fProcessors)
+	eb.fApplyMiddlewares = checkRegisterFeature[feature.ApplyMiddleware](f, eb.fApplyMiddlewares)
+	eb.fPageProviders = checkRegisterFeature[feature.PageProvider](f, eb.fPageProviders)
+	eb.fFileProviders = checkRegisterFeature[feature.FileProvider](f, eb.fFileProviders)
+	eb.fQueryIndexFeatures = checkRegisterFeature[indexing.QueryIndexFeature](f, eb.fQueryIndexFeatures)
+	eb.fPageContextProviders = checkRegisterFeature[indexing.PageContextProvider](f, eb.fPageContextProviders)
+
 	return eb
 }
 
@@ -129,7 +163,7 @@ func (eb *EnjinBuilder) AddRouteProcessor(route string, processor feature.ReqPro
 
 func (eb *EnjinBuilder) resolveFeatureDeps() (err error) {
 	found := make(feature.Tags, 0)
-	for _, f := range eb.features {
+	for _, f := range eb.features.List() {
 		if deps := f.Depends(); len(deps) > 0 {
 			for _, d := range deps {
 				if !found.Has(d) {
