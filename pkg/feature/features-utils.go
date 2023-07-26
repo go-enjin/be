@@ -35,6 +35,16 @@ func MustTyped[T interface{}](f Feature) (t T) {
 	return
 }
 
+func FirstTyped[T interface{}](list Features) (found T) {
+	for _, f := range list {
+		if fT, ok := f.This().(T); ok {
+			found = fT
+			return
+		}
+	}
+	return
+}
+
 func FilterTyped[T interface{}](list Features) (found []T) {
 	for _, f := range list {
 		if fT, ok := f.This().(T); ok {
