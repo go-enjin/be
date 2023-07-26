@@ -114,6 +114,8 @@ type Internals interface {
 	Self() (self interface{})
 
 	Features() (features Features)
+	FeaturesCache() (cache *FeaturesCache)
+
 	Pages() (pages map[string]*page.Page)
 	Theme() (theme string)
 	Theming() (theming map[string]*theme.Theme)
