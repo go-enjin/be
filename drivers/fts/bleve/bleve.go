@@ -88,7 +88,7 @@ func (f *CFeature) Make() Feature {
 func (f *CFeature) Setup(enjin feature.Internals) {
 	f.CFeature.Setup(enjin)
 	locales := f.Enjin.SiteLocales()
-	for _, sdm := range feature.FilterTyped[indexing.SearchDocumentMapperFeature](f.Enjin.Features()) {
+	for _, sdm := range feature.FilterTyped[indexing.SearchDocumentMapperFeature](f.Enjin.Features().List()) {
 		for _, tag := range locales {
 			if _, exists := f.docMaps[tag]; !exists {
 				f.docMaps[tag] = make(map[string]*mapping.DocumentMapping)
@@ -226,7 +226,7 @@ func (f *CFeature) RemoveFromSearchIndex(tag language.Tag, file, shasum string) 
 	f.Lock()
 	defer f.Unlock()
 	// TODO: remove page from full-text-search index
-	for _, indexer := range feature.FilterTyped[indexing.PageIndexFeature](f.Enjin.Features()) {
+	for _, indexer := range feature.FilterTyped[indexing.PageIndexFeature](f.Enjin.Features().List()) {
 		indexer.RemoveFromIndex(tag, file, shasum)
 	}
 	return

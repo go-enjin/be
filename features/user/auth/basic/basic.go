@@ -381,7 +381,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
-	for _, ef := range f.enjin.Features() {
+	for _, ef := range f.enjin.Features().List() {
 		efTag := ef.Tag().String()
 		for _, upName := range f.upNames {
 			if efTag == upName {

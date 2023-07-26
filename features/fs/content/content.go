@@ -132,7 +132,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
-	allFeatures := f.Enjin.Features()
+	allFeatures := f.Enjin.Features().List()
 
 	var indexProviderTags feature.Tags
 	for _, pif := range feature.FilterTyped[indexing.PageIndexFeature](allFeatures) {

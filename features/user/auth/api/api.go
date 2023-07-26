@@ -441,7 +441,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
-	if ef, ok := f.Enjin.FeaturesCache().Get(f.ubmTag); !ok {
+	if ef, ok := f.Enjin.Features().Get(f.ubmTag); !ok {
 		err = fmt.Errorf("%v error: userbase.Manager (tagged: %v) not found", f.Tag(), f.ubmTag)
 		return
 	} else if ubm, ok := ef.(userbase.Manager); !ok {
@@ -511,7 +511,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 			f.emailSender = es
 
 			// TODO: add a .SetEmailProviderFeature(tag feature.Tag) MakeFeature method
-			f.emailProvider = feature.FirstTyped[feature.EmailProvider](f.Enjin.Features())
+			f.emailProvider = feature.FirstTyped[feature.EmailProvider](f.Enjin.Features().List())
 			if f.emailProvider == nil {
 				err = fmt.Errorf("feature.EmailProvider not found")
 				return
@@ -523,7 +523,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 
 	if f.authOpts.RefreshCache == nil && f.refreshCacheTag != "" && f.refreshCacheBucket != "" {
 
-		if kvcf, ok := f.Enjin.FeaturesCache().Get(f.refreshCacheTag); !ok {
+		if kvcf, ok := f.Enjin.Features().Get(f.refreshCacheTag); !ok {
 			err = fmt.Errorf("%v feature: %v feature not found", f.Tag(), f.refreshCacheTag)
 			return
 		} else if kvcs, ok := feature.AsTyped[beKvs.KeyValueCaches](kvcf); !ok {

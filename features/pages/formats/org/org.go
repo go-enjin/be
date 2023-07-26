@@ -142,7 +142,7 @@ func (f *CFeature) IndexDocument(p interface{}) (out interface{}, err error) {
 	t := f.Enjin.MustGetTheme()
 	r, _ := http.NewRequest("GET", pg.Url, nil)
 	r = lang.SetTag(r, pg.LanguageTag)
-	for _, ptp := range feature.FilterTyped[feature.PageTypeProcessor](f.Enjin.Features()) {
+	for _, ptp := range feature.FilterTyped[feature.PageTypeProcessor](f.Enjin.Features().List()) {
 		if v, _, processed, e := ptp.ProcessRequestPageType(r, pg); e != nil {
 			log.ErrorF("error processing page type for org format indexing: %v - %v", pg.Url, e)
 		} else if processed {

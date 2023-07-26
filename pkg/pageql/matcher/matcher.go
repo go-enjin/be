@@ -54,7 +54,7 @@ func NewProcess(input string, enjin feature.Internals) (matched []*fs.PageStub, 
 	if t, err = enjin.GetTheme(); err != nil {
 		return
 	}
-	for _, feat := range feature.FilterTyped[indexing.PageContextProvider](enjin.Features()) {
+	for _, feat := range feature.FilterTyped[indexing.PageContextProvider](enjin.Features().List()) {
 		f = feat
 		break
 	}

@@ -130,7 +130,7 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 	}
 
 	log.DebugF("using search path: %v", f.path)
-	f.search = feature.FirstTyped[indexing.SearchEnjinFeature](f.Enjin.Features())
+	f.search = feature.FirstTyped[indexing.SearchEnjinFeature](f.Enjin.Features().List())
 	if f.search == nil {
 		// TODO: add a .SetSearchEnjinFeature(tag feature.Tag) MakeFeature method
 		log.FatalF("searching pages requires a pagecache.SearchEnjinFeature")
@@ -259,7 +259,7 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 		}
 
 		// finalize
-		for _, rp := range feature.FilterTyped[ResultsPostProcessor](f.Enjin.Features()) {
+		for _, rp := range feature.FilterTyped[ResultsPostProcessor](f.Enjin.Features().List()) {
 			rp.SearchResultsPostProcess(p)
 		}
 		pg = p

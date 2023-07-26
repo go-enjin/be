@@ -148,7 +148,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
-	if kvcf, ok := f.Enjin.FeaturesCache().Get(f.kvcTag); !ok {
+	if kvcf, ok := f.Enjin.Features().Get(f.kvcTag); !ok {
 		err = fmt.Errorf("%v feature not found", f.kvcTag)
 		return
 	} else if kvcs, ok := kvcf.(kvs.KeyValueCaches); !ok {

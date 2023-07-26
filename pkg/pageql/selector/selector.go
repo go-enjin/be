@@ -53,7 +53,7 @@ func NewProcess(input string, enjin feature.Internals) (selected map[string]inte
 	if t, err = enjin.GetTheme(); err != nil {
 		return
 	}
-	for _, feat := range feature.FilterTyped[indexing.PageContextProvider](enjin.Features()) {
+	for _, feat := range feature.FilterTyped[indexing.PageContextProvider](enjin.Features().List()) {
 		f = feat
 		break
 	}
