@@ -21,7 +21,6 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
-	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
@@ -34,15 +33,13 @@ import (
 func (e *Enjin) requestFiltersMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		remoteAddr, _ := beNet.GetIpFromRequest(r)
-		for _, f := range e.eb.features {
-			if rf, ok := f.(feature.RequestFilter); ok {
-				if err := rf.FilterRequest(r); err != nil {
-					log.WarnRF(r, "filtering request from: %v - %v", remoteAddr, err)
-					e.Serve404(w, r)
-					return
-				} else {
-					log.DebugRF(r, "allowing request from: %v", remoteAddr)
-				}
+		for _, rf := range e.eb.fRequestFilters {
+			if err := rf.FilterRequest(r); err != nil {
+				log.WarnRF(r, "filtering request from: %v - %v", remoteAddr, err)
+				e.Serve404(w, r)
+				return
+			} else {
+				log.DebugRF(r, "allowing request from: %v", remoteAddr)
 			}
 		}
 		next.ServeHTTP(w, r)

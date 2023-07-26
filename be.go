@@ -236,13 +236,13 @@ func (e *Enjin) SetupRootEnjin(ctx *cli.Context) (err error) {
 }
 
 func (e *Enjin) setupFeatures() {
-	for _, f := range e.Features() {
+	for _, f := range e.eb.features.List() {
 		f.Setup(e)
 	}
 }
 
 func (e *Enjin) startupFeatures(ctx *cli.Context) (err error) {
-	for _, f := range e.Features() {
+	for _, f := range e.eb.features.List() {
 		if err = f.Startup(ctx); err != nil {
 			return
 		}
@@ -339,7 +339,7 @@ func startupHandledHttpListener(listen string, port int, handler http.Handler, e
 }
 
 func (e *Enjin) Shutdown() {
-	for _, f := range e.Features() {
+	for _, f := range e.eb.features.List() {
 		f.Shutdown()
 	}
 	e.Notify("web process shutdown")

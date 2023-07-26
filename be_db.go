@@ -23,12 +23,10 @@ import (
 )
 
 func (e *Enjin) DB(tag string) (db interface{}, err error) {
-	for _, f := range e.Features() {
-		if fdb, ok := f.(feature.Database); ok {
-			if beStrings.StringInSlices(tag, fdb.ListDB()) {
-				db, err = fdb.DB(tag)
-				return
-			}
+	for _, fdb := range e.eb.fDatabases {
+		if beStrings.StringInSlices(tag, fdb.ListDB()) {
+			db, err = fdb.DB(tag)
+			return
 		}
 	}
 	err = fmt.Errorf("db feature not found by tag: %v", tag)
@@ -44,12 +42,10 @@ func (e *Enjin) MustDB(tag string) (db interface{}) {
 }
 
 func (e *Enjin) SpecificDB(fTag feature.Tag, tag string) (db interface{}, err error) {
-	for _, f := range e.Features() {
-		if fdb, ok := f.(feature.Database); ok {
-			if fTag == fdb.Tag() {
-				db, err = fdb.DB(tag)
-				return
-			}
+	for _, fdb := range e.eb.fDatabases {
+		if fTag == fdb.Tag() {
+			db, err = fdb.DB(tag)
+			return
 		}
 	}
 	err = fmt.Errorf("db feature not found: %v", fTag)

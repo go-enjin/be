@@ -66,33 +66,27 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 
 	// request modifier features are expected to modify the request object
 	// in-place, before any further feature processing
-	for _, f := range e.Features() {
-		tag := f.Tag()
-		if rm, ok := f.(feature.RequestModifier); ok {
-			log.DebugF("including %v request modifier middleware", tag)
-			router.Use(func(next http.Handler) http.Handler {
-				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					rm.ModifyRequest(w, r)
-					next.ServeHTTP(w, r)
-				})
+	for _, rm := range e.eb.fRequestModifiers {
+		log.DebugF("including %v request modifier middleware", rm.Tag())
+		router.Use(func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				rm.ModifyRequest(w, r)
+				next.ServeHTTP(w, r)
 			})
-		}
+		})
 	}
 
 	// request rewriter features are expected to return a modified request
 	// object, potentially dropping data if requests are modified WithContext
 	// and not Clone
-	for _, f := range e.Features() {
-		tag := f.Tag()
-		if rm, ok := f.(feature.RequestRewriter); ok {
-			log.DebugF("including %v request rewriter middleware", tag)
-			router.Use(func(next http.Handler) http.Handler {
-				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					r = rm.RewriteRequest(w, r)
-					next.ServeHTTP(w, r)
-				})
+	for _, rr := range e.eb.fRequestRewriters {
+		log.DebugF("including %v request rewriter middleware", rr.This())
+		router.Use(func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				r = rr.RewriteRequest(w, r)
+				next.ServeHTTP(w, r)
 			})
-		}
+		})
 	}
 
 	// logging after requests modified so proxy has a chance to populate ip
@@ -116,15 +110,13 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	// header policy modifier features do not block next.ServeHTTP calls and
 	// must happen before blocking middleware features (ones that may not call
 	// next.ServeHTTP having already served the response)
-	for _, f := range e.Features() {
-		if ppm, ok := f.(feature.PermissionsPolicyModifier); ok {
-			log.DebugF("including %v modify permissions policy middleware", f.Tag())
-			router.Use(e.permissionsPolicy.ModifyPolicyMiddleware(ppm.ModifyPermissionsPolicy))
-		}
-		if cspm, ok := f.(feature.ContentSecurityPolicyModifier); ok {
-			log.DebugF("including %v modify content security policy middleware", f.Tag())
-			router.Use(e.contentSecurityPolicy.ModifyPolicyMiddleware(cspm.ModifyContentSecurityPolicy))
-		}
+	for _, ppm := range e.eb.fPermissionsPolicyModifiers {
+		log.DebugF("including %v modify permissions policy middleware", ppm.Tag())
+		router.Use(e.permissionsPolicy.ModifyPolicyMiddleware(ppm.ModifyPermissionsPolicy))
+	}
+	for _, cspm := range e.eb.fContentSecurityPolicyModifiers {
+		log.DebugF("including %v modify content security policy middleware", cspm.Tag())
+		router.Use(e.contentSecurityPolicy.ModifyPolicyMiddleware(cspm.ModifyContentSecurityPolicy))
 	}
 
 	// theme static files [blocking middleware]
@@ -142,34 +134,28 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 
 	// potentially blocking middleware features that do not require standard
 	// page rendering or data response facilities
-	for _, f := range e.Features() {
-		if af, ok := f.(feature.UseMiddleware); ok {
-			log.DebugF("including %v use middleware", f.Tag())
-			if mw := af.Use(e); mw != nil {
-				router.Use(mw)
-			}
+	for _, um := range e.eb.fUseMiddlewares {
+		log.DebugF("including %v use middleware", um.Tag())
+		if mw := um.Use(e); mw != nil {
+			router.Use(mw)
 		}
 	}
 
 	// header modifier features that happen after potentially blocking features
 	// that did not actually serve a response
-	for _, f := range e.Features() {
-		if hm, ok := f.(feature.HeadersModifier); ok {
-			log.DebugF("including %v use-after modify headers middleware", f.Tag())
-			router.Use(headers.ModifyAfterUseMiddleware(hm.ModifyHeaders))
-		}
+	for _, hm := range e.eb.fHeadersModifiers {
+		log.DebugF("including %v use-after modify headers middleware", hm.Tag())
+		router.Use(headers.ModifyAfterUseMiddleware(hm.ModifyHeaders))
 	}
 
 	// processor middleware features are potentially blocking
-	for _, f := range e.Features() {
-		if proc, ok := f.(feature.Processor); ok {
-			log.DebugF("including %v processor middleware", f.Tag())
-			router.Use(func(next http.Handler) http.Handler {
-				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					proc.Process(e, next, w, r)
-				})
+	for _, proc := range e.eb.fProcessors {
+		log.DebugF("including %v processor middleware", proc.Tag())
+		router.Use(func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				proc.Process(e, next, w, r)
 			})
-		}
+		})
 	}
 
 	// route processor middleware features, in order of longest to shortest
@@ -192,12 +178,10 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 
 	// middleware features have a final chance to apply enjin changes before
 	// error handling router changes are made
-	for _, f := range e.Features() {
-		if af, ok := f.(feature.ApplyMiddleware); ok {
-			log.DebugF("including %v apply middleware", f.Tag())
-			if err = af.Apply(e); err != nil {
-				return
-			}
+	for _, am := range e.eb.fApplyMiddlewares {
+		log.DebugF("including %v apply middleware", am.Tag())
+		if err = am.Apply(e); err != nil {
+			return
 		}
 	}
 
@@ -214,10 +198,9 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 func (e *Enjin) RoutingHTTP(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	tag := lang.GetTag(r)
-	allFeatures := e.Features()
 
 	// look for any page provider providing the requested page
-	for _, pp := range feature.FindAllTypedFeatures[feature.PageProvider](allFeatures) {
+	for _, pp := range e.eb.fPageProviders {
 		if pg := pp.FindPage(tag, path); pg != nil {
 			if err := e.ServePage(pg, w, r); err == nil {
 				log.DebugRF(r, "enjin router served provided page: %v", pg.Url)
@@ -230,7 +213,7 @@ func (e *Enjin) RoutingHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// look for any serve-path feature handling the requested page
-	for _, spf := range feature.FindAllTypedFeatures[feature.ServePathFeature](allFeatures) {
+	for _, spf := range e.eb.fServePathFeatures {
 		if ee := spf.ServePath(path, e, w, r); ee == nil {
 			log.DebugRF(r, "%v feature served path: %v", spf.(feature.Feature).Tag(), path)
 			e.Emit(signaling.SignalServePath, spf.(feature.Feature).Tag().String(), path)

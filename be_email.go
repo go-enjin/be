@@ -23,12 +23,10 @@ import (
 )
 
 func (e *Enjin) FindEmailAccount(account string) (emailSender feature.EmailSender) {
-	for _, f := range e.Features() {
-		if es, ok := f.(feature.EmailSender); ok {
-			if es.HasEmailAccount(account) {
-				emailSender = es
-				return
-			}
+	for _, es := range e.eb.fEmailSenders {
+		if es.HasEmailAccount(account) {
+			emailSender = es
+			return
 		}
 	}
 	return

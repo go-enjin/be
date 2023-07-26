@@ -16,6 +16,7 @@ package be
 
 import (
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -25,10 +26,8 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
-	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/theme"
@@ -118,11 +117,9 @@ func (e *Enjin) Context() (ctx context.Context) {
 }
 
 func (e *Enjin) FindRedirection(url string) (p *page.Page) {
-	for _, f := range e.Features() {
-		if provider, ok := f.(feature.PageProvider); ok {
-			if p = provider.FindRedirection(url); p != nil {
-				return
-			}
+	for _, provider := range e.eb.fPageProviders {
+		if p = provider.FindRedirection(url); p != nil {
+			return
 		}
 	}
 	for _, pg := range e.eb.pages {
@@ -135,11 +132,9 @@ func (e *Enjin) FindRedirection(url string) (p *page.Page) {
 }
 
 func (e *Enjin) FindTranslations(url string) (pages []*page.Page) {
-	for _, f := range e.Features() {
-		if provider, ok := f.(feature.PageProvider); ok {
-			if found := provider.FindTranslations(url); len(found) > 0 {
-				pages = append(pages, found...)
-			}
+	for _, provider := range e.eb.fPageProviders {
+		if found := provider.FindTranslations(url); len(found) > 0 {
+			pages = append(pages, found...)
 		}
 	}
 	for _, pg := range e.eb.pages {
@@ -151,24 +146,21 @@ func (e *Enjin) FindTranslations(url string) (pages []*page.Page) {
 }
 
 func (e *Enjin) FindFile(path string) (data []byte, mime string, err error) {
-	for _, f := range e.Features() {
-		if provider, ok := f.(feature.FileProvider); ok {
-			if d, m, ee := provider.FindFile(path); ee == nil {
-				data = d
-				mime = m
-			}
+	for _, provider := range e.eb.fFileProviders {
+		if d, m, ee := provider.FindFile(path); ee == nil {
+			data = d
+			mime = m
+			return
 		}
 	}
-	err = fmt.Errorf("file not found")
+	err = os.ErrNotExist
 	return
 }
 
 func (e *Enjin) FindPage(tag language.Tag, url string) (p *page.Page) {
-	for _, f := range e.Features() {
-		if provider, ok := f.(feature.PageProvider); ok {
-			if p = provider.FindPage(tag, url); p != nil {
-				return
-			}
+	for _, provider := range e.eb.fPageProviders {
+		if p = provider.FindPage(tag, url); p != nil {
+			return
 		}
 	}
 	for _, pg := range e.eb.pages {
@@ -183,40 +175,32 @@ func (e *Enjin) FindPage(tag language.Tag, url string) (p *page.Page) {
 }
 
 func (e *Enjin) FindPages(prefix string) (pages []*page.Page) {
-	for _, f := range e.Features() {
-		if provider, ok := f.(feature.PageProvider); ok {
-			pages = append(pages, provider.LookupPrefixed(prefix)...)
-		}
+	for _, provider := range e.eb.fPageProviders {
+		pages = append(pages, provider.LookupPrefixed(prefix)...)
 	}
 	return
 }
 
 func (e *Enjin) ListFormats() (names []string) {
-	for _, f := range e.Features() {
-		if p, ok := f.(types.FormatProvider); ok {
-			names = append(names, p.ListFormats()...)
-		}
+	for _, p := range e.eb.fFormatProviders {
+		names = append(names, p.ListFormats()...)
 	}
 	return
 }
 
 func (e *Enjin) GetFormat(name string) (format types.Format) {
-	for _, f := range e.Features() {
-		if p, ok := f.(types.FormatProvider); ok {
-			if format = p.GetFormat(name); format != nil {
-				return
-			}
+	for _, p := range e.eb.fFormatProviders {
+		if format = p.GetFormat(name); format != nil {
+			return
 		}
 	}
 	return
 }
 
 func (e *Enjin) MatchFormat(filename string) (format types.Format, match string) {
-	for _, f := range e.Features() {
-		if p, ok := f.(types.FormatProvider); ok {
-			if format, match = p.MatchFormat(filename); format != nil {
-				return
-			}
+	for _, p := range e.eb.fFormatProviders {
+		if format, match = p.MatchFormat(filename); format != nil {
+			return
 		}
 	}
 	return
@@ -224,98 +208,90 @@ func (e *Enjin) MatchFormat(filename string) (format types.Format, match string)
 
 func (e *Enjin) CheckMatchQL(query string) (pages []*page.Page, err error) {
 	t, _ := e.GetTheme()
-	for _, f := range e.Features() {
-		if queryEnjin, ok := f.(indexing.QueryIndexFeature); ok {
-			if matches, ee := queryEnjin.PerformQuery(query); ee != nil {
-				err = ee
-			} else {
-				for _, stub := range matches {
-					if p, err := page.NewFromPageStub(stub, t); err != nil {
-						log.ErrorF("error making page from cache: %v", err)
-					} else {
-						pages = append(pages, p)
-					}
+	for _, queryEnjin := range e.eb.fQueryIndexFeatures {
+		if matches, ee := queryEnjin.PerformQuery(query); ee != nil {
+			err = ee
+		} else {
+			for _, stub := range matches {
+				if p, err := page.NewFromPageStub(stub, t); err != nil {
+					log.ErrorF("error making page from cache: %v", err)
+				} else {
+					pages = append(pages, p)
 				}
 			}
-			break
 		}
+		// first query index feature wins?
+		break
 	}
 	return
 }
 
 func (e *Enjin) MatchQL(query string) (pages []*page.Page) {
 	t, _ := e.GetTheme()
-	for _, f := range e.Features() {
-		if queryEnjin, ok := f.(indexing.QueryIndexFeature); ok {
-			if matches, err := queryEnjin.PerformQuery(query); err != nil {
-				log.ErrorF("error performing enjin query: %v", err)
-			} else {
-				for _, stub := range matches {
-					if p, err := page.NewFromPageStub(stub, t); err != nil {
-						log.ErrorF("error making page from cache: %v", err)
-					} else {
-						pages = append(pages, p)
-					}
+	for _, queryEnjin := range e.eb.fQueryIndexFeatures {
+		if matches, err := queryEnjin.PerformQuery(query); err != nil {
+			log.ErrorF("error performing enjin query: %v", err)
+		} else {
+			for _, stub := range matches {
+				if p, err := page.NewFromPageStub(stub, t); err != nil {
+					log.ErrorF("error making page from cache: %v", err)
+				} else {
+					pages = append(pages, p)
 				}
 			}
-			break
 		}
+		// first query index feature wins?
+		break
 	}
 	return
 }
 
 func (e *Enjin) MatchStubsQL(query string) (stubs []*fs.PageStub) {
-	for _, f := range e.Features() {
-		if queryEnjin, ok := f.(indexing.QueryIndexFeature); ok {
-			var err error
-			if stubs, err = queryEnjin.PerformQuery(query); err != nil {
-				log.ErrorF("error performing enjin query: %v", err)
-			}
-			break
+	for _, queryEnjin := range e.eb.fQueryIndexFeatures {
+		var err error
+		if stubs, err = queryEnjin.PerformQuery(query); err != nil {
+			log.ErrorF("error performing enjin query: %v", err)
 		}
+		// first query index feature wins?
+		break
 	}
 	return
 }
 
 func (e *Enjin) CheckMatchStubsQL(query string) (stubs []*fs.PageStub, err error) {
-	for _, f := range e.Features() {
-		if queryEnjin, ok := f.(indexing.QueryIndexFeature); ok {
-			stubs, err = queryEnjin.PerformQuery(query)
-			break
-		}
+	for _, queryEnjin := range e.eb.fQueryIndexFeatures {
+		stubs, err = queryEnjin.PerformQuery(query)
+		// first query index feature wins?
+		break
 	}
 	return
 }
 
 func (e *Enjin) SelectQL(query string) (selected map[string]interface{}) {
-	for _, f := range e.Features() {
-		if queryEnjin, ok := f.(indexing.QueryIndexFeature); ok {
-			var err error
-			if selected, err = queryEnjin.PerformSelect(query); err != nil {
-				log.ErrorF("error performing enjin select: %v", err)
-			}
-			break
+	for _, queryEnjin := range e.eb.fQueryIndexFeatures {
+		var err error
+		if selected, err = queryEnjin.PerformSelect(query); err != nil {
+			log.ErrorF("error performing enjin select: %v", err)
 		}
+		// first query index feature wins?
+		break
 	}
 	return
 }
 
 func (e *Enjin) CheckSelectQL(query string) (selected map[string]interface{}, err error) {
-	for _, f := range e.Features() {
-		if queryEnjin, ok := f.(indexing.QueryIndexFeature); ok {
-			selected, err = queryEnjin.PerformSelect(query)
-			break
-		}
+	for _, queryEnjin := range e.eb.fQueryIndexFeatures {
+		selected, err = queryEnjin.PerformSelect(query)
+		// first query index feature wins?
+		break
 	}
 	return
 }
 
 func (e *Enjin) FindPageStub(shasum string) (stub *fs.PageStub) {
-	for _, f := range e.Features() {
-		if pcp, ok := f.(indexing.PageContextProvider); ok {
-			if stub = pcp.FindPageStub(shasum); stub != nil {
-				return
-			}
+	for _, pcp := range e.eb.fPageContextProviders {
+		if stub = pcp.FindPageStub(shasum); stub != nil {
+			return
 		}
 	}
 	return
