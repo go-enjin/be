@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"github.com/go-enjin/be/pkg/cmp"
-	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/log"
@@ -46,20 +45,6 @@ type cMatcher struct {
 	sortDir string
 
 	err error
-}
-
-func NewProcess(input string, enjin feature.Internals) (matched []*fs.PageStub, err error) {
-	var t *theme.Theme
-	var f indexing.PageContextProvider
-	if t, err = enjin.GetTheme(); err != nil {
-		return
-	}
-	for _, feat := range feature.FilterTyped[indexing.PageContextProvider](enjin.Features().List()) {
-		f = feat
-		break
-	}
-	matched, err = NewProcessWith(input, t, f)
-	return
 }
 
 func NewProcessWith(input string, t *theme.Theme, f indexing.PageContextProvider) (matched []*fs.PageStub, err error) {

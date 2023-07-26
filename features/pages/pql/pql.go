@@ -22,10 +22,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/gofrs/uuid"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
+
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
@@ -33,10 +34,11 @@ import (
 	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/pageql/matcher"
-	"github.com/go-enjin/be/pkg/pageql/selector"
 	bePath "github.com/go-enjin/be/pkg/path"
 	beStrings "github.com/go-enjin/be/pkg/strings"
+
+	"github.com/go-enjin/be/features/pages/pql/matcher"
+	"github.com/go-enjin/be/features/pages/pql/selector"
 )
 
 var (
@@ -199,15 +201,14 @@ func (f *CFeature) FindPageStub(shasum string) (stub *fs.PageStub) {
 func (f *CFeature) PerformQuery(input string) (stubs []*fs.PageStub, err error) {
 	//f.RLock()
 	//defer f.RUnlock()
-	stubs, err = matcher.NewProcess(input, f.Enjin)
+	stubs, err = matcher.NewProcessWith(input, f.Enjin.MustGetTheme(), f)
 	return
 }
 
 func (f *CFeature) PerformSelect(input string) (selected map[string]interface{}, err error) {
 	//f.RLock()
 	//defer f.RUnlock()
-	t, _ := f.Enjin.GetTheme()
-	selected, err = selector.NewProcessWith(input, t, f)
+	selected, err = selector.NewProcessWith(input, f.Enjin.MustGetTheme(), f)
 	return
 }
 

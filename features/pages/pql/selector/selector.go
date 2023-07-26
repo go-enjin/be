@@ -23,7 +23,6 @@ import (
 	"github.com/puzpuzpuz/xsync/v2"
 
 	"github.com/go-enjin/be/pkg/cmp"
-	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/log"
@@ -45,20 +44,6 @@ type cSelector struct {
 	count  *xsync.MapOf[string, uint64]
 
 	err error
-}
-
-func NewProcess(input string, enjin feature.Internals) (selected map[string]interface{}, err error) {
-	var t *theme.Theme
-	var f indexing.PageContextProvider
-	if t, err = enjin.GetTheme(); err != nil {
-		return
-	}
-	for _, feat := range feature.FilterTyped[indexing.PageContextProvider](enjin.Features().List()) {
-		f = feat
-		break
-	}
-	selected, err = NewProcessWith(input, t, f)
-	return
 }
 
 func NewProcessWith(input string, t *theme.Theme, f indexing.PageContextProvider) (selected map[string]interface{}, err error) {
