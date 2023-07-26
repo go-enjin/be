@@ -15,7 +15,6 @@
 package be
 
 import (
-	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -28,7 +27,7 @@ func (e *Enjin) FindAllUserActions() (list userbase.Actions) {
 
 	list = append(list, e.eb.userActions...)
 
-	for _, uap := range feature.FindAllTypedFeatures[userbase.UserActionsProvider](e.Features()) {
+	for _, uap := range e.eb.fUserActionsProviders {
 		list = append(list, uap.UserActions()...)
 	}
 
