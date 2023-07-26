@@ -135,7 +135,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	allFeatures := f.Enjin.Features()
 
 	var indexProviderTags feature.Tags
-	for _, pif := range feature.FindAllTypedFeatures[indexing.PageIndexFeature](allFeatures) {
+	for _, pif := range feature.FilterTyped[indexing.PageIndexFeature](allFeatures) {
 		tag := pif.(feature.Feature).Tag()
 		if f.indexProviderTags.Has(tag) {
 			f.indexProviders = append(f.indexProviders, pif)
@@ -156,7 +156,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	f.indexProviderTags = indexProviderTags // tags order matches providers order
 
 	var searchProviderTags feature.Tags
-	for _, sef := range feature.FindAllTypedFeatures[indexing.SearchEnjinFeature](allFeatures) {
+	for _, sef := range feature.FilterTyped[indexing.SearchEnjinFeature](allFeatures) {
 		tag := sef.(feature.Feature).Tag()
 		if f.searchProviderTags.Has(tag) {
 			f.searchProviders = append(f.searchProviders, sef)
