@@ -515,7 +515,6 @@ func (f *CFeature) FindTranslations(url string) (pages []*page.Page) {
 
 	url = bePath.CleanWithSlash(url)
 
-	//if shasums, ee := kvs.GetSlice[string](f.translatedByBucket, url); ee == nil {
 	if shasums := kvs.GetFlatList[string](f.translatedByBucket, url); len(shasums) > 0 {
 		for _, shasum := range shasums {
 			if pg := f.findStubPage(shasum); pg != nil {
@@ -555,13 +554,11 @@ func (f *CFeature) Lookup(tag language.Tag, path string) (pg *page.Page, err err
 
 	process := func(tag language.Tag, path string) (pg *page.Page, err error) {
 		if txBucket, ok := f.translationsBucket[tag]; ok {
-			//if shasums, e := kvs.GetSlice[string](txBucket, path); e == nil {
-			if shasums := kvs.GetFlatList[string](txBucket, path); len(shasums) > 0 {
-				for _, shasum := range shasums {
-					if p := f.findStubPage(shasum); p != nil && p.LanguageTag == tag {
-						pg = p
-						return
-					}
+			if v, e := txBucket.Get(path); e == nil {
+				shasum, _ := v.(string)
+				if p := f.findStubPage(shasum); p != nil && p.LanguageTag == tag {
+					pg = p
+					return
 				}
 			}
 		}

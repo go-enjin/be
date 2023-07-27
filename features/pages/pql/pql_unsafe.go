@@ -86,8 +86,12 @@ func (f *CFeature) processTranslations(lang language.Tag, shasum, translates str
 	//	err = fmt.Errorf("error appending to languages string list: [%v] %v - %v", lang, translates, err)
 	//	return
 	//}
-	if err = kvs.AppendToFlatList[string](f.translationsBucket[lang], translates, shasum); err != nil {
-		err = fmt.Errorf("error appending to languages string list: [%v] %v - %v", lang, translates, err)
+	//if err = kvs.AppendToFlatList[string](f.translationsBucket[lang], translates, shasum); err != nil {
+	//	err = fmt.Errorf("error appending to languages string list: [%v] %v - %v", lang, translates, err)
+	//	return
+	//}
+	if err = f.translationsBucket[lang].Set(translates, shasum); err != nil {
+		err = fmt.Errorf("error setting languages string: [%v] %v - %v", lang, translates, err)
 		return
 	}
 	return
@@ -106,7 +110,6 @@ func (f *CFeature) processPageContextValue(key, shasum string, value interface{}
 	ctxKeyedValueBucket := f.cache.MustBucket(ctxKeyedValueBucketName)
 
 	// check if this value has been added to the list before
-	//if kvs.StringSliceEmpty(ctxKeyedValueBucket, valueKey) == false {
 	if kvs.FlatListEmpty(ctxKeyedValueBucket, valueKey) == true {
 		// value keyed flat list is distinct values only
 		if err = kvs.AppendToFlatList[interface{}](f.contextValueKeyedBucket, key, value); err != nil {
@@ -115,9 +118,6 @@ func (f *CFeature) processPageContextValue(key, shasum string, value interface{}
 		}
 	}
 
-	//if e := kvs.AppendToStringSlice(ctxKeyedValueBucket, valueKey, shasum); e != nil {
-	//	err = fmt.Errorf("error appending to bucket string list: %v/%v[%v]=\"%v\" - %v", f.kvcTag, f.kvcName, ctxKeyedValueBucketName, value, err)
-	//}
 	if e := kvs.AppendToFlatList[string](ctxKeyedValueBucket, valueKey, shasum); e != nil {
 		err = fmt.Errorf("error appending to bucket flat list: %v/%v[%v]=\"%v\" - %v", f.kvcTag, f.kvcName, ctxKeyedValueBucketName, value, err)
 	}
