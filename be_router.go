@@ -66,11 +66,17 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 
 	// request modifier features are expected to modify the request object
 	// in-place, before any further feature processing
-	for _, rm := range e.eb.fRequestModifiers {
-		log.DebugF("including %v request modifier middleware", rm.Tag())
+	if count := len(e.eb.fRequestModifiers); count > 0 {
+		var tags feature.Tags
+		for _, rm := range e.eb.fRequestModifiers {
+			tags = append(tags, rm.Tag())
+		}
+		log.DebugF("including %d request modifier middlewares: %+v", count, tags)
 		router.Use(func(next http.Handler) http.Handler {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				rm.ModifyRequest(w, r)
+				for _, rm := range e.eb.fRequestModifiers {
+					rm.ModifyRequest(w, r)
+				}
 				next.ServeHTTP(w, r)
 			})
 		})
@@ -79,11 +85,17 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	// request rewriter features are expected to return a modified request
 	// object, potentially dropping data if requests are modified WithContext
 	// and not Clone
-	for _, rr := range e.eb.fRequestRewriters {
-		log.DebugF("including %v request rewriter middleware", rr.This())
+	if count := len(e.eb.fRequestRewriters); count > 0 {
+		var tags feature.Tags
+		for _, rr := range e.eb.fRequestRewriters {
+			tags = append(tags, rr.Tag())
+		}
+		log.DebugF("including %d request rewriter middlewares: %+v", count, tags)
 		router.Use(func(next http.Handler) http.Handler {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				r = rr.RewriteRequest(w, r)
+				for _, rr := range e.eb.fRequestRewriters {
+					r = rr.RewriteRequest(w, r)
+				}
 				next.ServeHTTP(w, r)
 			})
 		})
@@ -152,8 +164,9 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	for _, proc := range e.eb.fProcessors {
 		log.DebugF("including %v processor middleware", proc.Tag())
 		router.Use(func(next http.Handler) http.Handler {
+			innerProc := proc // prevent outer scoped proc overwriting
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				proc.Process(e, next, w, r)
+				innerProc.Process(e, next, w, r)
 			})
 		})
 	}
@@ -163,11 +176,11 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	sort.Sort(beStrings.SortByLengthDesc(sortedRoutes))
 	for _, route := range sortedRoutes {
 		log.DebugF("including enjin %v route processor middleware", route)
-		processor := e.eb.processors[route]
 		router.Use(func(next http.Handler) http.Handler {
+			innerRoute := route // prevent outer scoped route overwriting
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if r.URL.Path == route {
-					if processor(e, w, r) {
+				if r.URL.Path == innerRoute {
+					if e.eb.processors[innerRoute](e, w, r) {
 						return
 					}
 				}
