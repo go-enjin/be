@@ -227,6 +227,8 @@ func (f *CFeature) PopulateIndexes() (err error) {
 				} else if fileCount > 1000 {
 					numBatches = fileCount / 500
 				} else if fileCount > 100 {
+					numBatches = 10
+				} else {
 					numBatches = 1
 				}
 				batchMax := fileCount / numBatches
