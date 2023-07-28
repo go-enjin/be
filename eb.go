@@ -110,6 +110,7 @@ type EnjinBuilder struct {
 	fPageContextProviders           []indexing.PageContextProvider
 	fAuthProviders                  []userbase.AuthProvider
 	fUserActionsProviders           []userbase.UserActionsProvider
+	fEnjinContextProvider           []feature.EnjinContextProvider
 
 	enjins []*EnjinBuilder
 }

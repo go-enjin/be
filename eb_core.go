@@ -98,6 +98,7 @@ func (eb *EnjinBuilder) AddFeature(f feature.Feature) feature.Builder {
 	eb.fPageContextProviders = checkRegisterFeature[indexing.PageContextProvider](f, eb.fPageContextProviders)
 	eb.fAuthProviders = checkRegisterFeature[userbase.AuthProvider](f, eb.fAuthProviders)
 	eb.fUserActionsProviders = checkRegisterFeature[userbase.UserActionsProvider](f, eb.fUserActionsProviders)
+	eb.fEnjinContextProvider = checkRegisterFeature[feature.EnjinContextProvider](f, eb.fEnjinContextProvider)
 
 	return eb
 }

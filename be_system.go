@@ -86,6 +86,9 @@ func (e *Enjin) Prefix() (prefix string) {
 
 func (e *Enjin) Context() (ctx context.Context) {
 	ctx = e.eb.context.Copy()
+	for _, ecp := range e.eb.fEnjinContextProvider {
+		ctx.ApplySpecific(ecp.EnjinContext())
+	}
 	if e.debug {
 		ctx.SetSpecific("Debug", true)
 	}
