@@ -17,8 +17,6 @@
 package context
 
 import (
-	"net/http"
-
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
@@ -36,13 +34,16 @@ const Tag feature.Tag = "pages-context"
 
 type Feature interface {
 	feature.Feature
-	feature.PageContextModifier
+	feature.EnjinContextProvider
 }
 
 type MakeFeature interface {
 	Make() Feature
 
+	// Set stores the given key and value within the base context as-is
 	Set(key string, value interface{}) MakeFeature
+
+	// Flag applies the CLI flags to the EnjinContext in CamelCased key format
 	Flag(custom cli.Flag) MakeFeature
 }
 
@@ -73,7 +74,9 @@ func (f *CFeature) Init(this interface{}) {
 }
 
 func (f *CFeature) Set(key string, value interface{}) MakeFeature {
-	f.ctx.Set(key, value)
+	camel := strcase.ToCamel(key)
+	f.ctx.SetSpecific(camel, value)
+	log.DebugF("setting page context: %v => %#+v", camel, value)
 	return f
 }
 
@@ -97,17 +100,28 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CFeature.Startup(ctx); err != nil {
 		return
 	}
-	f.cli = ctx
-	return
-}
-
-func (f *CFeature) FilterPageContext(tCtx context.Context, pCtx context.Context, r *http.Request) (out context.Context) {
-	out = tCtx.Copy()
 	for _, custom := range f.custom {
 		for _, name := range custom.Names() {
-			out.Set(strcase.ToCamel(name), f.cli.Generic(name))
-			log.DebugRF(r, "setting page context: %v => %v", strcase.ToCamel(name), f.cli.Generic(name))
+			camel := strcase.ToCamel(name)
+			f.ctx.SetSpecific(camel, f.cli.Generic(name))
+			log.DebugF("applying CLI context: %v => %#+v", camel, f.cli.Generic(name))
 		}
 	}
 	return
 }
+
+func (f *CFeature) EnjinContext() (ctx context.Context) {
+	ctx = f.ctx.Copy()
+	return
+}
+
+//func (f *CFeature) FilterPageContext(tCtx context.Context, pCtx context.Context, r *http.Request) (out context.Context) {
+//	out = tCtx.Copy()
+//	for _, custom := range f.custom {
+//		for _, name := range custom.Names() {
+//			out.Set(strcase.ToCamel(name), f.cli.Generic(name))
+//			log.DebugRF(r, "setting page context: %v => %v", strcase.ToCamel(name), f.cli.Generic(name))
+//		}
+//	}
+//	return
+//}
