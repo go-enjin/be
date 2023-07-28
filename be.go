@@ -14,7 +14,6 @@
 
 package be
 
-// TODO: build flags to configure database support
 // TODO: allow/deny direct connections
 // TODO: allow/deny proxy connections (all, any, cloudflare, atlassian)
 // TODO: allow/deny requests (atlas-gonnect stuff?)
