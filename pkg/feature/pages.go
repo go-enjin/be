@@ -30,6 +30,11 @@ type PageContextModifier interface {
 	FilterPageContext(themeCtx, pageCtx context.Context, r *http.Request) (themeOut context.Context)
 }
 
+type EnjinContextProvider interface {
+	Feature
+	EnjinContext() (ctx context.Context)
+}
+
 type PageRestrictionHandler interface {
 	Feature
 	RestrictServePage(ctx context.Context, w http.ResponseWriter, r *http.Request) (modCtx context.Context, modReq *http.Request, allow bool)
