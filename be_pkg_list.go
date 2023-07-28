@@ -55,7 +55,6 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/pkg/net/headers",
 		"github.com/go-enjin/be/pkg/net/headers/policy/csp",
 		"github.com/go-enjin/be/pkg/net/headers/policy/permissions",
-		"github.com/go-enjin/be/pkg/net/ip/deny",
 		"github.com/go-enjin/be/pkg/net/ip/ranges/atlassian",
 		"github.com/go-enjin/be/pkg/net/ip/ranges/cloudflare",
 		"github.com/go-enjin/be/pkg/net/minify",

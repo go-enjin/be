@@ -43,7 +43,6 @@ import (
 	"github.com/go-enjin/be/pkg/net/gorilla-handlers"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
-	"github.com/go-enjin/be/pkg/net/ip/deny"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -208,9 +207,6 @@ func (e *Enjin) SetupRootEnjin(ctx *cli.Context) (err error) {
 	middleware.DefaultLogger = func(next http.Handler) http.Handler {
 		return handlers.LoggingHandler(log.InfoWriter(), next)
 	}
-
-	deny.DenyDuration = ctx.Int64("deny-duration")
-	deny.DenyWordPressPaths()
 
 	if domains := ctx.StringSlice("domain"); domains != nil && len(domains) > 0 {
 		for _, domain := range domains {

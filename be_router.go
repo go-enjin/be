@@ -31,7 +31,6 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/headers"
-	"github.com/go-enjin/be/pkg/net/ip/deny"
 	"github.com/go-enjin/be/pkg/request/argv"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
@@ -113,7 +112,6 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	router.Use(e.headersMiddleware)
 
 	// operational security measures
-	router.Use(deny.Middleware)
 	router.Use(e.domainsMiddleware)
 	router.Use(e.permissionsPolicy.PrepareRequestMiddleware)
 	router.Use(e.contentSecurityPolicy.PrepareRequestMiddleware)

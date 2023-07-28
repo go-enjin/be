@@ -36,7 +36,6 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/headers"
-	"github.com/go-enjin/be/pkg/net/ip/deny"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/types/theme-types"
@@ -308,13 +307,6 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 			Usage:    "set logging level: error, warn, info, debug or trace",
 			EnvVars:  eb.MakeEnvKeys("LOG_LEVEL"),
 			Category: "general",
-		},
-		&cli.Int64Flag{
-			Name:     "deny-duration",
-			Usage:    "number of seconds to block denied ip addresses",
-			EnvVars:  eb.MakeEnvKeys("DENY_DURATION"),
-			Value:    deny.DenyDuration,
-			Category: "security",
 		},
 		&cli.StringSliceFlag{
 			Name:     "domain",
