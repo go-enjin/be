@@ -57,7 +57,7 @@ func (eb *EnjinBuilder) AddDomains(domains ...string) feature.Builder {
 func checkRegisterFeature[T interface{}](f feature.Feature, list []T) []T {
 	var check *T
 	if ff, ok := feature.AsTyped[T](f); ok {
-		log.DebugF("registering %v as a %v", f.Tag(), fmt.Sprintf("%T", check)[1:])
+		log.DebugDF(1, "registering %v as a %v", f.Tag(), fmt.Sprintf("%T", check)[1:])
 		list = append(list, ff)
 	}
 	return list
