@@ -18,6 +18,7 @@ package fastcgi
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -34,19 +35,21 @@ var (
 var rxPathInfo = regexp.MustCompile(`^(.+\.php)(/?.+)$`)
 
 type phpFS struct {
-	DocRoot  string
-	Exts     []string
-	DirIndex string
+	DocRoot    string
+	DirIndex   string
+	EnvKeys    []string
+	Extensions []string
 }
 
-func newPhpFS(dirIndex, root string) gofast.Middleware {
+func newPhpFS(dirIndex, root string, envKeys []string) gofast.Middleware {
 	if dirIndex == "" {
 		dirIndex = DefaultDirIndex
 	}
 	fs := &phpFS{
-		DocRoot:  root,
-		Exts:     []string{"php"},
-		DirIndex: dirIndex,
+		DocRoot:    root,
+		DirIndex:   dirIndex,
+		EnvKeys:    envKeys,
+		Extensions: []string{"php"},
 	}
 	return gofast.Chain(
 		gofast.BasicParamsMap,
@@ -79,6 +82,10 @@ func (fs *phpFS) Router() gofast.Middleware {
 				}
 			} else if bePath.IsFile(docRootFileName) {
 				fastcgiScriptName = docRootFileName
+			}
+
+			for _, key := range fs.EnvKeys {
+				req.Params[key] = os.Getenv(key)
 			}
 
 			req.Params["PATH_INFO"] = fastcgiPathInfo

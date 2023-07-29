@@ -24,6 +24,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 var (
@@ -52,6 +53,7 @@ type MakeFeature interface {
 	SetFastCGI(source string) MakeFeature
 	SetNetwork(network string) MakeFeature
 	SetDirIndex(filename string) MakeFeature
+	UseEnv(keys ...string) MakeFeature
 }
 
 type CFeature struct {
@@ -62,6 +64,8 @@ type CFeature struct {
 	docroot  string
 	network  string
 	dirIndex string
+
+	envKeys []string
 }
 
 func New() MakeFeature {
@@ -112,6 +116,15 @@ func (f *CFeature) SetDirIndex(filename string) MakeFeature {
 	return f
 }
 
+func (f *CFeature) UseEnv(keys ...string) MakeFeature {
+	for _, key := range keys {
+		if !beStrings.StringInSlices(key, f.envKeys) {
+			f.envKeys = append(f.envKeys, key)
+		}
+	}
+	return f
+}
+
 func (f *CFeature) Make() Feature {
 	if f.source == "" {
 		log.FatalDF(1, "%v feature requires .SetFastCGI", f.Tag())
@@ -136,7 +149,7 @@ func (f *CFeature) Shutdown() {
 
 func (f *CFeature) Apply(s feature.System) (err error) {
 	var handler http.Handler
-	if handler, err = newHandler(f.dirIndex, f.docroot, f.network, f.source); err != nil {
+	if handler, err = newHandler(f.dirIndex, f.docroot, f.network, f.source, f.envKeys); err != nil {
 		return
 	}
 	s.Router().Mount(f.mount, handler)

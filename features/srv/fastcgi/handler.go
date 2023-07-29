@@ -33,15 +33,14 @@ import (
 
 type service struct {
 	DirIndex string
-
-	Target string
-
-	Domains []string
+	Target   string
+	Domains  []string
+	EnvKeys  []string
 
 	handler http.Handler
 }
 
-func newHandler(dirIndex, target, network, source string) (s *service, err error) {
+func newHandler(dirIndex, target, network, source string, envKeys []string) (s *service, err error) {
 	if target, err = bePath.Abs(target); err != nil {
 		return
 	}
@@ -55,7 +54,7 @@ func newHandler(dirIndex, target, network, source string) (s *service, err error
 	var h gofast.Handler
 	if bePath.IsDir(target) {
 		h = gofast.NewHandler(
-			newPhpFS(dirIndex, target)(gofast.BasicSession),
+			newPhpFS(dirIndex, target, envKeys)(gofast.BasicSession),
 			gofast.SimpleClientFactory(gofast.SimpleConnFactory(network, source)),
 		)
 		log.DebugF("fastcgi target is a directory: %v", target)
@@ -71,6 +70,7 @@ func newHandler(dirIndex, target, network, source string) (s *service, err error
 	}
 	lh := &logger{next: h}
 	s = &service{
+		EnvKeys:  envKeys,
 		DirIndex: dirIndex,
 		Target:   target,
 		handler:  lh,
