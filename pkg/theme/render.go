@@ -129,51 +129,123 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *htmlT
 			err = fmt.Errorf("%v layout not found in %v", layoutName, t.Name)
 			return
 		}
-	} else {
-		if parent := t.GetParent(); parent != nil {
-			parentLayout, _, _ = parent.FindLayout(layoutName)
-		}
+	} else if parent := t.GetParent(); parent != nil {
+		parentLayout, _, _ = parent.FindLayout(layoutName)
 	}
 
-	var baseLookups []string
-	archetype := ctx.String("Archetype", "")
-	if archetype != "" {
-		// archetype is a filename, not a directory
-		//  - layouts/_default/blog-single.fmt.tmpl
-		//  - layouts/_default/blog.fmt.tmpl
-		//  - layouts/_default/blog.tmpl
-		baseLookups = append(baseLookups, fmt.Sprintf("%s/%s-%s", layoutName, archetype, view))
-		baseLookups = append(baseLookups, fmt.Sprintf("%s/%s", layoutName, archetype))
-	}
-	baseLookups = append(
-		baseLookups,
-		fmt.Sprintf("%s/%s", layoutName, view),
-		fmt.Sprintf("%s/%s-baseof", layoutName, view),
-		fmt.Sprintf("%s/baseof", layoutName),
-	)
+	//  - layouts/_default/blog-single.fmt.tmpl
+	//  - layouts/_default/blog.fmt.tmpl
+	//  - layouts/_default/blog.tmpl
 
-	if layoutName != "_default" {
-		if archetype != "" {
-			baseLookups = append(baseLookups, fmt.Sprintf("_default/%s-%s", archetype, view))
-			baseLookups = append(baseLookups, fmt.Sprintf("_default/%s", archetype))
-		}
-		baseLookups = append(
-			baseLookups,
-			fmt.Sprintf("_default/%s", view),
-			fmt.Sprintf("_default/%s-baseof", view),
-			"_default/baseof",
-		)
-	}
+	/*
+		layouts/posts/single-baseof.html.html
+		layouts/posts/baseof.html.html
+		layouts/posts/single-baseof.html
+		layouts/posts/baseof.html
+		layouts/_default/single-baseof.html.html
+		layouts/_default/baseof.html.html
+		layouts/_default/single-baseof.html
+		layouts/_default/baseof.html
+	*/
 
 	var lookups []string
-	var pageFormat string
-	var lookupFormat string
-	if pageFormat = ctx.String("Format", ""); pageFormat != "" {
-		lookupFormat = "." + pageFormat
+
+	pagetype := ctx.String("Type", "page")
+	archetype := ctx.String("Archetype", "")
+	pageFormat := ctx.String("Format", "")
+	pageFormat = strings.TrimSuffix(pageFormat, ".tmpl")
+
+	addLookup := func(layoutName, archetype, view, format, extn string) {
+		name := layoutName + "/"
+		if archetype != "" {
+			name += archetype
+			if view != "" {
+				name += "-"
+			}
+		}
+		if view != "" {
+			name += view
+		}
+		if format != "" {
+			name += "." + format
+		}
+		name += "." + extn
+		lookups = append(lookups, name)
 	}
-	for _, name := range baseLookups {
-		lookups = append(lookups, name+lookupFormat+".tmpl")
-		lookups = append(lookups, name+".tmpl")
+
+	/*
+		layouts/{layoutName}/{archetype,pagetype}-{view}.{fmt}.{html,tmpl}
+		layouts/{layoutName}/{archetype,pagetype}.{fmt}.{html,tmpl}
+		layouts/{layoutName}/{view}.{fmt}.{html,tmpl}
+		layouts/{layoutName}/baseof.{fmt}.{html,tmpl}
+		layouts/{layoutName}/{archetype,pagetype}-{view}.{html,tmpl}
+		layouts/{layoutName}/{archetype,pagetype}.{html,tmpl}
+		layouts/{layoutName}/{view}.{html,tmpl}
+		layouts/{layoutName}/baseof.{html,tmpl}
+		layouts/_default/{archetype,pagetype}-{view}.{fmt}.{html,tmpl}
+		layouts/_default/{archetype,pagetype}.{fmt}.{html,tmpl}
+		layouts/_default/{view}.{fmt}.{html,tmpl}
+		layouts/_default/baseof.{fmt}.{html,tmpl}
+		layouts/_default/{archetype,pagetype}-{view}.{html,tmpl}
+		layouts/_default/{archetype,pagetype}.{html,tmpl}
+		layouts/_default/{view}.{html,tmpl}
+		layouts/_default/baseof.{html,tmpl}
+	*/
+
+	if pageFormat != "" {
+		if archetype != "" {
+			addLookup(layoutName, archetype, view, pageFormat, "html")
+			addLookup(layoutName, archetype, view, pageFormat, "tmpl")
+			addLookup(layoutName, archetype, "", pageFormat, "html")
+			addLookup(layoutName, archetype, "", pageFormat, "tmpl")
+		}
+		addLookup(layoutName, pagetype, view, pageFormat, "html")
+		addLookup(layoutName, pagetype, view, pageFormat, "tmpl")
+		addLookup(layoutName, pagetype, "", pageFormat, "html")
+		addLookup(layoutName, pagetype, "", pageFormat, "tmpl")
+		addLookup(layoutName, "", view, pageFormat, "html")
+		addLookup(layoutName, "", "baseof", pageFormat, "tmpl")
+	}
+	if archetype != "" {
+		addLookup(layoutName, archetype, view, "", "html")
+		addLookup(layoutName, archetype, view, "", "tmpl")
+		addLookup(layoutName, archetype, "", "", "html")
+		addLookup(layoutName, archetype, "", "", "tmpl")
+	}
+	addLookup(layoutName, pagetype, view, "", "html")
+	addLookup(layoutName, pagetype, view, "", "tmpl")
+	addLookup(layoutName, pagetype, "", "", "html")
+	addLookup(layoutName, pagetype, "", "", "tmpl")
+	addLookup(layoutName, "", view, "", "html")
+	addLookup(layoutName, "", "baseof", "", "tmpl")
+
+	if layoutName != "_default" {
+		if pageFormat != "" {
+			if archetype != "" {
+				addLookup("_default", archetype, view, pageFormat, "html")
+				addLookup("_default", archetype, view, pageFormat, "tmpl")
+				addLookup("_default", archetype, "", pageFormat, "html")
+				addLookup("_default", archetype, "", pageFormat, "tmpl")
+			}
+			addLookup("_default", pagetype, view, pageFormat, "html")
+			addLookup("_default", pagetype, view, pageFormat, "tmpl")
+			addLookup("_default", pagetype, "", pageFormat, "html")
+			addLookup("_default", pagetype, "", pageFormat, "tmpl")
+			addLookup("_default", "", view, pageFormat, "html")
+			addLookup("_default", "", "baseof", pageFormat, "tmpl")
+		}
+		if archetype != "" {
+			addLookup("_default", archetype, view, "", "html")
+			addLookup("_default", archetype, view, "", "tmpl")
+			addLookup("_default", archetype, "", "", "html")
+			addLookup("_default", archetype, "", "", "tmpl")
+		}
+		addLookup("_default", pagetype, view, "", "html")
+		addLookup("_default", pagetype, view, "", "tmpl")
+		addLookup("_default", pagetype, "", "", "html")
+		addLookup("_default", pagetype, "", "", "tmpl")
+		addLookup("_default", "", view, "", "html")
+		addLookup("_default", "", "baseof", "", "tmpl")
 	}
 
 	var tmpl *htmlTemplate.Template
@@ -201,7 +273,10 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *htmlT
 	}
 
 	if tt = LookupTemplate(tmpl, lookups...); tt == nil {
-		err = fmt.Errorf("%v theme template not found for: archetype=%v, layout=%v, pageFormat=%v, lookups=%v", t.Config.Name, archetype, layoutName, pageFormat, lookups)
+		err = fmt.Errorf(
+			"%v theme template not found for: archetype=%v, type=%v, layout=%v, pageFormat=%v, lookups=%v",
+			t.Config.Name, archetype, pagetype, layoutName, pageFormat, lookups,
+		)
 	} else {
 		log.TraceF("lookup success: %v", tt.Name())
 	}
