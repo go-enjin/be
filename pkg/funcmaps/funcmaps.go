@@ -84,6 +84,7 @@ func HtmlFuncMap() (funcMap htmlTemplate.FuncMap) {
 		"parseUrl": ParseUrl,
 		"baseName": BaseName,
 
+		"isEmptyString":              IsEmptyString,
 		"splitString":                SplitString,
 		"filterStrings":              FilterStrings,
 		"stringsAsList":              StringsAsList,
