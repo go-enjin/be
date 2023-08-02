@@ -55,14 +55,15 @@ func (re *RenderEnjin) WalkStringTags(doc *html.Node) (prepared []interface{}) {
 			} else if c.Type == html.TextNode {
 				// log.DebugF("%v[storing]: %v", depth, c.Data)
 
+				parsed := re.Enjin.TranslateShortcodes(c.Data, re.ctx)
 				if last := len(data) - 1; last >= 0 {
 					if v, ok := data[last].(string); ok {
-						data[last] = v + c.Data
+						data[last] = v + parsed
 					} else {
-						data = append(data, c.Data)
+						data = append(data, parsed)
 					}
 				} else {
-					data = append(data, c.Data)
+					data = append(data, parsed)
 				}
 
 			} else if c.Type == html.ElementNode {

@@ -36,6 +36,7 @@ var _ feature.EnjinRenderer = (*RenderEnjin)(nil)
 type RenderEnjin struct {
 	Njn   feature.EnjinSystem
 	Theme types.Theme
+	Enjin feature.Internals
 	ctx   context.Context
 
 	blockCount   int
@@ -52,10 +53,11 @@ type RenderEnjin struct {
 	sync.RWMutex
 }
 
-func renderNjnData(f feature.EnjinSystem, ctx context.Context, t types.Theme, data interface{}) (html template.HTML, redirect string, err *types.EnjinError) {
+func renderNjnData(f *CFeature, ctx context.Context, t types.Theme, data interface{}) (html template.HTML, redirect string, err *types.EnjinError) {
 	re := new(RenderEnjin)
 	re.Njn = f
 	re.Theme = t
+	re.Enjin = f.Enjin
 	re.ctx = ctx
 	re.headingLevel = 0
 	re.cache = make(map[string]string)
