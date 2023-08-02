@@ -23,7 +23,7 @@ MAKEFILE_VERSION = v0.0.2
 
 SHELL = /bin/bash
 
-GOPKG_KEYS := GOXT DJHT GPA
+GOPKG_KEYS := GOXT DJHT GPA GOTS
 
 # Go-Enjin gotext package
 GOXT_GO_PACKAGE := github.com/go-enjin/golang-org-x-text
@@ -36,6 +36,10 @@ DJHT_LOCAL_PATH := ../../../github.com/go-enjin/github-com-djherbis-times
 # go-pkgz auth package
 GPA_GO_PACKAGE := github.com/go-enjin/github-com-go-pkgz-auth
 GPA_LOCAL_PATH := ../../../github.com/go-enjin/github-com-go-pkgz-auth
+
+# Go-Enjin text/scanner package
+GOTS_GO_PACKAGE := github.com/go-enjin/go-stdlib-text-scanner
+GOTS_LOCAL_PATH := ../../../github.com/go-enjin/go-stdlib-text-scanner
 
 GOLANG ?= 1.20.1
 GO_MOD ?= 1020
