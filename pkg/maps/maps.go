@@ -362,6 +362,40 @@ func IsMap(v interface{}) (ok bool) {
 	return
 }
 
+func Set(key string, value interface{}, m map[string]interface{}) (err error) {
+	if key != "" && key[0] != '.' {
+		m[key] = value
+		return
+	}
+	keys := strings.Split(key[1:], ".")
+	keysLen := len(keys)
+	switch keysLen {
+	case 0: // nop
+	case 1:
+		err = Set(keys[0], value, m)
+		return
+	default:
+
+		var mm map[string]interface{}
+		if v, ok := m[keys[0]]; ok {
+			if t, ok := v.(map[string]interface{}); ok {
+				mm = t
+			} else {
+				err = fmt.Errorf("unexpected sub-context value type: %T", v)
+				return
+			}
+		} else {
+			mm = make(map[string]interface{})
+			if err = Set(keys[0], mm, m); err != nil {
+				return
+			}
+		}
+
+		err = Set("."+strings.Join(keys[1:], "."), value, mm)
+	}
+	return
+}
+
 func Get(key string, m map[string]interface{}) (value interface{}) {
 	if key != "" && key[0] != '.' {
 		if v, ok := m[key]; ok {
