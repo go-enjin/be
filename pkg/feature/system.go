@@ -90,6 +90,8 @@ type Service interface {
 	Notify(tag string)
 	NotifyF(tag, format string, argv ...interface{})
 
+	TranslateShortcodes(content string, ctx context.Context) (modified string)
+
 	signaling.EmitterSupport
 }
 
