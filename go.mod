@@ -25,11 +25,13 @@ require (
 	github.com/go-curses/ctk v0.5.7
 	github.com/go-enjin/github-com-djherbis-times v0.0.0-20221101184323-aeef8854ee8a
 	github.com/go-enjin/github-com-go-pkgz-auth v0.0.0-20230521172445-0ec67c61435f
+	github.com/go-enjin/go-stdlib-text-scanner v0.0.0-20230802192426-4bb6f8536f19
 	github.com/go-enjin/golang-org-x-text v0.7.1-enjin.0
 	github.com/goccy/go-json v0.10.0
 	github.com/gofrs/uuid v4.3.0+incompatible
 	github.com/gomarkdown/markdown v0.0.0-20220905174103-7b278df48cfb
 	github.com/iancoleman/strcase v0.2.0
+	github.com/kenshaw/emoji v0.3.3
 	github.com/leekchan/gtf v0.0.0-20190214083521-5fba33c5b00b
 	github.com/maruel/natural v1.1.0
 	github.com/microcosm-cc/bluemonday v1.0.25

@@ -182,6 +182,8 @@ github.com/go-enjin/github-com-djherbis-times v0.0.0-20221101184323-aeef8854ee8a
 github.com/go-enjin/github-com-djherbis-times v0.0.0-20221101184323-aeef8854ee8a/go.mod h1:hId0+St26leJQkTRaFYATZHMGja4wrv0hzf5SwKs3hA=
 github.com/go-enjin/github-com-go-pkgz-auth v0.0.0-20230521172445-0ec67c61435f h1:R3moLSQJZ3+6wIE4HjsBfaKMB8zL8k5SQoczwiATPWw=
 github.com/go-enjin/github-com-go-pkgz-auth v0.0.0-20230521172445-0ec67c61435f/go.mod h1:8pgaKm5JjXuRirUTEV4PC9a94DOZ5S2FS7EVV2Ds3VM=
+github.com/go-enjin/go-stdlib-text-scanner v0.0.0-20230802192426-4bb6f8536f19 h1:EH6Ob1F64c/86ZcTXSQqV5koviaEu6WWjbYdUbnnL8w=
+github.com/go-enjin/go-stdlib-text-scanner v0.0.0-20230802192426-4bb6f8536f19/go.mod h1:wZsENS37jfCzDfTtW8IulLBSU9/OyB+lkrQweMJ/6K4=
 github.com/go-enjin/golang-org-x-text v0.7.1-enjin.0 h1:Ze9XonV/P8WlQCqXnPtzXJImR34z58P/XyFnyUtr0fI=
 github.com/go-enjin/golang-org-x-text v0.7.1-enjin.0/go.mod h1:drs2gdlsfKSimrkS5j//UTGEMEWcLyX9M3frtW/dP+k=
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=
@@ -332,6 +334,8 @@ github.com/jtolio/gls v4.20.0+incompatible/go.mod h1:GF2xHVJrJQpGRwALkO1TrXm6sTH
 github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7VTCxuUUipMqKk8s4w=
 github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8IZAc4RVcycCCAKdM=
 github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88/go.mod h1:3w7q1U84EfirKl04SVQ/s7nPm1ZPhiXd34z40TNz36k=
+github.com/kenshaw/emoji v0.3.3 h1:hnCZ1UMxgw81UBYqMgbO65s+PbzBT+DDAM7W3nGdpgI=
+github.com/kenshaw/emoji v0.3.3/go.mod h1:UHZHpun22ziHK9+1SuVYWq+rdFzQJLy5xtNC3k6Qbyw=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.13.6/go.mod h1:/3/Vjq9QcHkK5uEr5lBEmyoZ1iFhe47etQ6QUkpK6sk=
 github.com/klauspost/compress v1.15.0 h1:xqfchp4whNFxn5A4XFyyYtitiWI8Hy5EW59jEwcyL6U=
