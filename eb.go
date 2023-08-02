@@ -111,6 +111,7 @@ type EnjinBuilder struct {
 	fAuthProviders                  []userbase.AuthProvider
 	fUserActionsProviders           []userbase.UserActionsProvider
 	fEnjinContextProvider           []feature.EnjinContextProvider
+	fPageShortcodeProcessors        []feature.PageShortcodeProcessor
 
 	enjins []*EnjinBuilder
 }

@@ -99,6 +99,7 @@ func (eb *EnjinBuilder) AddFeature(f feature.Feature) feature.Builder {
 	eb.fAuthProviders = checkRegisterFeature[userbase.AuthProvider](f, eb.fAuthProviders)
 	eb.fUserActionsProviders = checkRegisterFeature[userbase.UserActionsProvider](f, eb.fUserActionsProviders)
 	eb.fEnjinContextProvider = checkRegisterFeature[feature.EnjinContextProvider](f, eb.fEnjinContextProvider)
+	eb.fPageShortcodeProcessors = checkRegisterFeature[feature.PageShortcodeProcessor](f, eb.fPageShortcodeProcessors)
 
 	return eb
 }
