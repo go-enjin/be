@@ -17,11 +17,13 @@ package gob
 import (
 	"bytes"
 	"encoding/gob"
+	"time"
 
 	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 func init() {
+	gob.Register(time.Time{})
 	gob.Register(language.Tag{})
 }
 
