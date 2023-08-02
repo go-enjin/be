@@ -121,7 +121,7 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 		)
 		return
 	} else {
-		html = template.HTML(text)
+		html = template.HTML(f.Enjin.TranslateShortcodes(text, ctx))
 	}
 	return
 }
