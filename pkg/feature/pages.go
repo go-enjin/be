@@ -62,3 +62,8 @@ type PageTypeProcessor interface {
 	Feature
 	ProcessRequestPageType(r *http.Request, p *page.Page) (pg *page.Page, redirect string, processed bool, err error)
 }
+
+type PageShortcodeProcessor interface {
+	Feature
+	TranslateShortcodes(content string, ctx context.Context) (modified string)
+}
