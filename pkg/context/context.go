@@ -193,6 +193,17 @@ func (c Context) SetSpecific(key string, value interface{}) Context {
 	return c
 }
 
+// SetKV allows for .Deep.Variable.Names
+func (c Context) SetKV(key string, value interface{}) (err error) {
+	if key != "" && key[0] == '.' {
+		err = maps.Set(key, value, c)
+		return
+	}
+	k := strcase.ToCamel(key)
+	c[k] = value
+	return
+}
+
 // Get is a convenience wrapper around GetKV
 func (c Context) Get(key string) (value interface{}) {
 	_, value = c.GetKV(key)
@@ -202,7 +213,6 @@ func (c Context) Get(key string) (value interface{}) {
 // GetKV looks for the key as given first and if not found looks for CamelCased, kebab-case and snake_cased variations;
 // returning the actual key found and the generic value; returns an empty key and nil value if nothing found at all
 func (c Context) GetKV(key string) (k string, v interface{}) {
-	var ok bool
 	if key != "" && key[0] == '.' {
 		k = key
 		v = maps.Get(key, c)
@@ -210,6 +220,7 @@ func (c Context) GetKV(key string) (k string, v interface{}) {
 	}
 
 	k = key
+	var ok bool
 	if v, ok = c[k]; ok {
 		return
 	}
