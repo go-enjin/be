@@ -1,4 +1,4 @@
-//go:build page_external_google_gtm || page_external_google || pages || all
+//go:build page_partials_google_gtm || page_partials_google || pages_partials || pages || all
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //
