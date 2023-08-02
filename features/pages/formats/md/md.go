@@ -89,7 +89,7 @@ func (f *CFeature) Prepare(ctx context.Context, content string) (out context.Con
 }
 
 func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, redirect string, err *types.EnjinError) {
-	html = template.HTML(RenderMarkdown(content))
+	html = template.HTML(f.Enjin.TranslateShortcodes(RenderMarkdown(content), ctx))
 	return
 }
 
