@@ -299,3 +299,17 @@ func (e *Enjin) FindPageStub(shasum string) (stub *fs.PageStub) {
 	}
 	return
 }
+
+func (e *Enjin) TranslateShortcodes(content string, ctx context.Context) (modified string) {
+	if len(e.eb.fPageShortcodeProcessors) > 0 {
+		// first shortcode processor wins?
+		modified = content
+		for _, psp := range e.eb.fPageShortcodeProcessors {
+			modified = psp.TranslateShortcodes(modified, ctx)
+		}
+	} else {
+		// passthrough nop
+		modified = content
+	}
+	return
+}
