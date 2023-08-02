@@ -104,6 +104,10 @@ func HtmlFuncMap() (funcMap htmlTemplate.FuncMap) {
 		"CmpLang": CmpLang,
 
 		"iterate": Iterate,
+
+		"safeHTML":  AsHTML,
+		"dict":      Dict,
+		"makeSlice": MakeSlice,
 	}
 	for k, v := range gtf.GtfFuncMap {
 		funcMap[k] = v
