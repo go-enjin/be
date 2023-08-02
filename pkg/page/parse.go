@@ -15,6 +15,8 @@
 package page
 
 import (
+	"time"
+
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
@@ -70,9 +72,31 @@ func (p *Page) parseContext(ctx context.Context) {
 		p.Format = format
 	}
 
-	// context content is not "source" content, do not populate "from" context,
-	// only set it so that it's current
-	// ctx.Set("Content", p.Content)
+	if created := ctx.String("Created", ""); created != "" {
+		// 2020-05-01T12:55:05-04:00
+		if parsed, err := time.Parse(time.RFC3339, created); err == nil {
+			p.CreatedAt = parsed
+		} else if parsed, err = time.Parse(time.RFC1123Z, created); err == nil {
+			p.CreatedAt = parsed
+		} else if parsed, err = time.Parse(time.RFC1123, created); err == nil {
+			p.CreatedAt = parsed
+		} else {
+			log.ErrorF("error parsing unsupported time/date format: %v", created)
+		}
+	}
+
+	if updated := ctx.String("Updated", ""); updated != "" {
+		// 2020-05-01T12:55:05-04:00
+		if parsed, err := time.Parse(time.RFC3339, updated); err == nil {
+			p.UpdatedAt = parsed
+		} else if parsed, err = time.Parse(time.RFC1123Z, updated); err == nil {
+			p.UpdatedAt = parsed
+		} else if parsed, err = time.Parse(time.RFC1123, updated); err == nil {
+			p.UpdatedAt = parsed
+		} else {
+			log.ErrorF("error parsing unsupported time/date format: %v", updated)
+		}
+	}
 
 	p.Context.Apply(ctx)
 }
