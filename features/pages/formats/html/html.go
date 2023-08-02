@@ -88,8 +88,8 @@ func (f *CFeature) Prepare(ctx context.Context, content string) (out context.Con
 	return
 }
 
-func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html htmlTemplate.HTML, redirect string, err *types.EnjinError) {
-	html = htmlTemplate.HTML(content)
+func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (output htmlTemplate.HTML, redirect string, err *types.EnjinError) {
+	output = htmlTemplate.HTML(f.Enjin.TranslateShortcodes(content, ctx))
 	return
 }
 
