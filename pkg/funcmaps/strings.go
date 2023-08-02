@@ -17,35 +17,34 @@ package funcmaps
 import (
 	"fmt"
 	"html/template"
-	"regexp"
-)
-
-var (
-	rxIsEmpty = regexp.MustCompile(`(?msi)\A\s*\z`)
+	"strings"
 )
 
 func IsEmptyString(input interface{}) (empty bool) {
-	var content string
+	empty = strings.TrimSpace(ToString(input)) == ""
+	return
+}
+
+func ToString(input interface{}) (output string) {
 	switch t := input.(type) {
 	case string:
-		content = t
+		output = t
 	case template.HTML:
-		content = string(t)
+		output = string(t)
 	case template.CSS:
-		content = string(t)
+		output = string(t)
 	case template.JS:
-		content = string(t)
+		output = string(t)
 	case template.HTMLAttr:
-		content = string(t)
+		output = string(t)
 	case template.JSStr:
-		content = string(t)
+		output = string(t)
 	case template.URL:
-		content = string(t)
+		output = string(t)
 	case template.Srcset:
-		content = string(t)
+		output = string(t)
 	default:
-		content = fmt.Sprintf("%v", input)
+		output = fmt.Sprintf("%v", input)
 	}
-	empty = rxIsEmpty.MatchString(content)
 	return
 }

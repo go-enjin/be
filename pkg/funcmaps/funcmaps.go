@@ -43,6 +43,7 @@ func HtmlFuncMap() (funcMap htmlTemplate.FuncMap) {
 		"asHTMLAttr": AsHTMLAttr,
 		"asCSS":      AsCSS,
 		"asJS":       AsJS,
+		"toString":   ToString,
 
 		"fsHash":         FsHash,
 		"fsUrl":          FsUrl,
