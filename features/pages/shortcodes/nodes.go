@@ -6,6 +6,11 @@ import (
 
 type Nodes []*Node
 
+func (nodes Nodes) Len() (count int) {
+	count = len(nodes)
+	return
+}
+
 func (nodes Nodes) Raw() (raw string) {
 	for _, child := range nodes {
 		raw += child.Raw
