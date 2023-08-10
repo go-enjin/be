@@ -21,7 +21,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/fvbommel/sortorder"
 	"github.com/iancoleman/strcase"
 	"github.com/maruel/natural"
 
@@ -287,7 +286,7 @@ func ReverseSortedKeys[V interface{}](data map[string]V) (keys []string) {
 	for key, _ := range data {
 		keys = append(keys, key)
 	}
-	sort.Sort(sort.Reverse(sortorder.Natural(keys)))
+	sort.Sort(sort.Reverse(natural.StringSlice(keys)))
 	return
 }
 
