@@ -194,58 +194,66 @@ func (t *Theme) TemplateFromContext(view string, ctx context.Context) (tt *htmlT
 
 	if pageFormat != "" {
 		if archetype != "" {
-			addLookup(layoutName, archetype, view, pageFormat, "html")
 			addLookup(layoutName, archetype, view, pageFormat, "tmpl")
-			addLookup(layoutName, archetype, "", pageFormat, "html")
+			addLookup(layoutName, archetype, view, pageFormat, "html")
 			addLookup(layoutName, archetype, "", pageFormat, "tmpl")
+			addLookup(layoutName, archetype, "", pageFormat, "html")
 		}
-		addLookup(layoutName, pagetype, view, pageFormat, "html")
 		addLookup(layoutName, pagetype, view, pageFormat, "tmpl")
-		addLookup(layoutName, pagetype, "", pageFormat, "html")
+		addLookup(layoutName, pagetype, view, pageFormat, "html")
 		addLookup(layoutName, pagetype, "", pageFormat, "tmpl")
+		addLookup(layoutName, pagetype, "", pageFormat, "html")
+		addLookup(layoutName, "", view, pageFormat, "tmpl")
 		addLookup(layoutName, "", view, pageFormat, "html")
 		addLookup(layoutName, "", "baseof", pageFormat, "tmpl")
+		addLookup(layoutName, "", "baseof", pageFormat, "html")
 	}
 	if archetype != "" {
-		addLookup(layoutName, archetype, view, "", "html")
 		addLookup(layoutName, archetype, view, "", "tmpl")
-		addLookup(layoutName, archetype, "", "", "html")
+		addLookup(layoutName, archetype, view, "", "html")
 		addLookup(layoutName, archetype, "", "", "tmpl")
+		addLookup(layoutName, archetype, "", "", "html")
 	}
-	addLookup(layoutName, pagetype, view, "", "html")
 	addLookup(layoutName, pagetype, view, "", "tmpl")
-	addLookup(layoutName, pagetype, "", "", "html")
+	addLookup(layoutName, pagetype, view, "", "html")
 	addLookup(layoutName, pagetype, "", "", "tmpl")
+	addLookup(layoutName, pagetype, "", "", "html")
+	addLookup(layoutName, "", view, "", "tmpl")
 	addLookup(layoutName, "", view, "", "html")
 	addLookup(layoutName, "", "baseof", "", "tmpl")
+	addLookup(layoutName, "", "baseof", "", "html")
 
 	if layoutName != "_default" {
 		if pageFormat != "" {
 			if archetype != "" {
-				addLookup("_default", archetype, view, pageFormat, "html")
 				addLookup("_default", archetype, view, pageFormat, "tmpl")
-				addLookup("_default", archetype, "", pageFormat, "html")
+				addLookup("_default", archetype, view, pageFormat, "html")
 				addLookup("_default", archetype, "", pageFormat, "tmpl")
+				addLookup("_default", archetype, "", pageFormat, "html")
 			}
-			addLookup("_default", pagetype, view, pageFormat, "html")
 			addLookup("_default", pagetype, view, pageFormat, "tmpl")
-			addLookup("_default", pagetype, "", pageFormat, "html")
+			addLookup("_default", pagetype, view, pageFormat, "html")
 			addLookup("_default", pagetype, "", pageFormat, "tmpl")
+			addLookup("_default", pagetype, "", pageFormat, "html")
+			addLookup("_default", "", view, pageFormat, "tmpl")
 			addLookup("_default", "", view, pageFormat, "html")
 			addLookup("_default", "", "baseof", pageFormat, "tmpl")
+			addLookup("_default", "", "baseof", pageFormat, "html")
 		}
 		if archetype != "" {
-			addLookup("_default", archetype, view, "", "html")
 			addLookup("_default", archetype, view, "", "tmpl")
-			addLookup("_default", archetype, "", "", "html")
+			addLookup("_default", archetype, view, "", "html")
 			addLookup("_default", archetype, "", "", "tmpl")
+			addLookup("_default", archetype, "", "", "html")
 		}
-		addLookup("_default", pagetype, view, "", "html")
 		addLookup("_default", pagetype, view, "", "tmpl")
-		addLookup("_default", pagetype, "", "", "html")
+		addLookup("_default", pagetype, view, "", "html")
 		addLookup("_default", pagetype, "", "", "tmpl")
+		addLookup("_default", pagetype, "", "", "html")
+		addLookup("_default", "", view, "", "tmpl")
 		addLookup("_default", "", view, "", "html")
 		addLookup("_default", "", "baseof", "", "tmpl")
+		addLookup("_default", "", "baseof", "", "html")
 	}
 
 	var tmpl *htmlTemplate.Template
