@@ -22,6 +22,8 @@ import (
 	"unicode"
 
 	"github.com/iancoleman/strcase"
+
+	"github.com/go-enjin/be/pkg/regexps"
 )
 
 func StringsToKebabs(in ...string) (out []string) {
@@ -120,11 +122,9 @@ func RemoveIndexFromStrings(idx int, slice []string) []string {
 	return slice
 }
 
-var RxWord = regexp.MustCompile(`\w+`)
-
 func TitleCase(input string) (output string) {
 	first := true
-	output = RxWord.ReplaceAllStringFunc(
+	output = regexps.RxWord.ReplaceAllStringFunc(
 		strings.ToLower(input),
 		func(word string) string {
 			if !first {
@@ -152,11 +152,9 @@ func GetBasicMime(mime string) (basic string) {
 	return
 }
 
-var RxQuoteStringsOnly = regexp.MustCompile(`(?i)^(true|false|-?\d*[.,]?\d*)$`)
-
 // QuoteJsonValue will quote everything other than numbers or boolean text
 func QuoteJsonValue(in string) (out string) {
-	if RxQuoteStringsOnly.MatchString(in) {
+	if regexps.RxQuoteStringsOnly.MatchString(in) {
 		return strings.ToLower(in)
 	}
 	out = fmt.Sprintf(`"%v"`, strings.ReplaceAll(in, `"`, `\"`))
@@ -193,12 +191,6 @@ func IsFalse(text string) bool {
 	return false
 }
 
-var (
-	RxParseHtmlTagKeyOnly    = regexp.MustCompile(`^([a-zA-Z][-a-zA-Z0-9]+)$`)
-	RxParseHtmlTagKeyValue   = regexp.MustCompile(`^([a-zA-Z][-a-zA-Z0-9]+)=(.+?)$`)
-	RxSplitHtmlTagAttributes = regexp.MustCompile(`\s+`)
-)
-
 func TrimQuotes(quoted string) (unquoted string) {
 	quotedLen := len(quoted)
 	unquoted = quoted
@@ -218,15 +210,15 @@ func ParseHtmlTagAttributes(input interface{}) (attributes map[string]interface{
 	attributes = make(map[string]interface{})
 
 	parseAndUpdate := func(raw string) (e error) {
-		parts := RxSplitHtmlTagAttributes.Split(raw, -1)
+		parts := regexps.RxSplitHtmlTagAttributes.Split(raw, -1)
 		for _, part := range parts {
-			if RxParseHtmlTagKeyOnly.MatchString(part) {
-				if m := RxParseHtmlTagKeyOnly.FindAllStringSubmatch(part, -1); m != nil {
+			if regexps.RxParseHtmlTagKeyOnly.MatchString(part) {
+				if m := regexps.RxParseHtmlTagKeyOnly.FindAllStringSubmatch(part, -1); m != nil {
 					key := m[0][1]
 					attributes[key] = nil
 				}
-			} else if RxParseHtmlTagKeyValue.MatchString(part) {
-				if m := RxParseHtmlTagKeyValue.FindAllStringSubmatch(part, -1); m != nil {
+			} else if regexps.RxParseHtmlTagKeyValue.MatchString(part) {
+				if m := regexps.RxParseHtmlTagKeyValue.FindAllStringSubmatch(part, -1); m != nil {
 					key, quoted := m[0][1], m[0][2]
 					unquoted := TrimQuotes(quoted)
 					attributes[key] = unquoted
@@ -274,7 +266,7 @@ func ParseHtmlTagAttributes(input interface{}) (attributes map[string]interface{
 
 func UniqueFromSpaceSep(value string, original []string) (updated []string) {
 	updated = original
-	parts := RxSplitHtmlTagAttributes.Split(value, -1)
+	parts := regexps.RxSplitHtmlTagAttributes.Split(value, -1)
 	for _, part := range parts {
 		if !StringInStrings(part, updated...) {
 			updated = append(updated, part)
@@ -288,7 +280,7 @@ func AddClassNamesToNjnBlock(data map[string]interface{}, classes ...string) map
 		var unique []string
 		switch t := v.(type) {
 		case string:
-			parts := RxSplitHtmlTagAttributes.Split(t, -1)
+			parts := regexps.RxSplitHtmlTagAttributes.Split(t, -1)
 			for _, p := range parts {
 				unique = UniqueFromSpaceSep(p, unique)
 			}
@@ -309,17 +301,13 @@ func AddClassNamesToNjnBlock(data map[string]interface{}, classes ...string) map
 	return data
 }
 
-var RxEmpty = regexp.MustCompile(`(?ms)\A\s*\z`)
-
 func Empty(value string) (empty bool) {
-	empty = RxEmpty.MatchString(value)
+	empty = regexps.RxEmpty.MatchString(value)
 	return
 }
 
-var RxTmplTags = regexp.MustCompile(`\{\{.+?}}`)
-
 func StripTmplTags(value string) (clean string) {
-	clean = RxTmplTags.ReplaceAllString(value, "")
+	clean = regexps.RxTmplTags.ReplaceAllString(value, "")
 	return
 }
 
