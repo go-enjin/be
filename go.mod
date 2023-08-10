@@ -17,6 +17,7 @@ require (
 	github.com/erni27/imcache v1.0.1
 	github.com/felixge/httpsnoop v1.0.3
 	github.com/foomo/htpasswd v0.0.0-20200116085101-e3a90e78da9c
+	github.com/frustra/bbcode v0.0.0-20201127003707-6ef347fbe1c8
 	github.com/fvbommel/sortorder v1.0.2
 	github.com/gabriel-vasile/mimetype v1.4.1
 	github.com/go-chi/chi/v5 v5.0.8
