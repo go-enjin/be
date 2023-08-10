@@ -191,18 +191,20 @@ func IsFalse(text string) bool {
 	return false
 }
 
-func TrimQuotes(quoted string) (unquoted string) {
-	quotedLen := len(quoted)
-	unquoted = quoted
-	if quotedLen < 2 {
-		return
-	}
-	switch quoted[0] {
-	case '"', '\'':
-		if quoted[quotedLen-1] == quoted[0] {
-			unquoted = unquoted[1 : quotedLen-1]
+func TrimQuotes(maybeQuoted string) (unquoted string) {
+	if total := len(maybeQuoted); total > 2 {
+		// there's enough length for quotes to be possible
+		if last := total - 1; maybeQuoted[0] == maybeQuoted[last] {
+			// the first and last characters are the same
+			switch maybeQuoted[0] {
+			case '\'', '`', '"':
+				// valid quote detected, trim string
+				unquoted = maybeQuoted[1:last]
+				return
+			}
 		}
 	}
+	unquoted = maybeQuoted
 	return
 }
 
