@@ -1,3 +1,5 @@
+//go:build page_shortcodes || pages || all
+
 // Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +25,8 @@ type ShortcodeHandlerFn = func(node *Node, ctx beContext.Context) (output string
 type Shortcode struct {
 	Name     string
 	Aliases  []string
-	Inline   bool
+	Nesting  bool
+	InlineFn ShortcodeHandlerFn
 	RenderFn ShortcodeHandlerFn
 }
 

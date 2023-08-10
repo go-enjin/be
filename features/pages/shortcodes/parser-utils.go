@@ -1,23 +1,28 @@
+//go:build page_shortcodes || pages || all
+
+// Copyright (c) 2023  The Go-Enjin Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package shortcodes
 
 import (
 	"strings"
 
 	"github.com/go-enjin/go-stdlib-text-scanner"
-)
 
-func unquote(input string) (output string) {
-	if total := len(input); total > 2 {
-		if input[0] == '"' || input[0] == '\'' {
-			if input[total-1] == input[0] {
-				output = input[1 : total-1]
-				return
-			}
-		}
-	}
-	output = input
-	return
-}
+	beStrings "github.com/go-enjin/be/pkg/strings"
+)
 
 func slurpTo(scan *scanner.Scanner, to ...string) (text string, stop string) {
 	stoppers := map[string]struct{}{}
@@ -36,7 +41,7 @@ func slurpTo(scan *scanner.Scanner, to ...string) (text string, stop string) {
 	return
 }
 
-func slurpToClosingTag(scan *scanner.Scanner, name string) (text, raw string, closed bool) {
+func slurpToNextTag(scan *scanner.Scanner) (text, raw, maybeTag, maybeTagRaw string, closing bool) {
 	var prev, token string
 
 	for tok := scan.Scan(); tok != scanner.EOF; tok = scan.Scan() {
@@ -44,28 +49,37 @@ func slurpToClosingTag(scan *scanner.Scanner, name string) (text, raw string, cl
 
 		if prev == "[" {
 
+			prefix := "["
+			var keep string
 			if token == "/" {
+				prefix += "/"
+			} else {
+				keep = token
+			}
 
-				if value, stop := slurpTo(scan, "]"); stop != "]" {
-					raw += "[/" + value
-					text += "[/" + value
-					return
-				} else if normalized := strings.ToLower(strings.TrimSpace(value)); normalized == name {
-					closed = true
-					raw += "[/" + value + "]"
-					return
-				} else {
-					raw += "[/" + value + "]"
-					text += "[/" + value + "]"
-					token = ""
-					prev = ""
-				}
+			if value, stop := slurpTo(scan, "]", "["); stop == "]" {
+				// found closing brace, possibly a tag
+				raw += prefix + keep + value + stop
+				closing = token == "/"
+				maybeTag = strings.ToLower(strings.TrimSpace(keep + value))
+				maybeTagRaw = keep + value
+				return
+
+			} else if stop == "[" {
+				// re-opened
+				raw += prefix + keep + value
+				text += prefix + keep + value
+				prev = "["
+				token = ""
+				continue
 
 			} else {
-
-				raw += prev
-				text += prev
-
+				// did not find a closing brace, not a tag
+				raw += prefix + keep + value + stop
+				text += prefix + keep + value + stop
+				token = ""
+				prev = ""
+				continue
 			}
 
 		} else {
@@ -80,6 +94,45 @@ func slurpToClosingTag(scan *scanner.Scanner, name string) (text, raw string, cl
 
 	raw += token
 	text += token
+	return
+}
+
+func parseOpeningTag(input string) (raw, name string, attributes *Attributes, ok bool) {
+	attributes = newAttributes()
+	raw = "[" + input + "]"
+
+	if ok = rxNameOnly.MatchString(input); ok {
+		// [name]
+		name = strings.ToLower(input)
+
+	} else if ok = rxNameValue.MatchString(input); ok {
+		// [name=value]
+		m := rxNameValue.FindAllStringSubmatch(input, 1)
+		name = strings.ToLower(m[0][1])
+		attributes.Set(name, beStrings.TrimQuotes(m[0][2]))
+
+	} else if ok = rxNameKeyValues.MatchString(input); ok {
+		// [name key=value...]
+		m := rxNameKeyValues.FindAllStringSubmatch(input, 1)
+		name = strings.ToLower(m[0][1])
+		if argv, keys := parseArgumentString(m[0][2]); len(keys) > 0 {
+			for _, key := range keys {
+				attributes.Set(strings.ToLower(key), argv[key])
+			}
+		}
+
+	}
+	return
+}
+
+func parseClosingTag(input string) (raw, name string, ok bool) {
+	raw = "[/" + input + "]"
+
+	if ok = rxNameOnly.MatchString(input); ok {
+		// [/name]
+		name = strings.ToLower(input)
+	}
+
 	return
 }
 
