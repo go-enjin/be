@@ -22,7 +22,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
 	"github.com/go-enjin/be/pkg/log"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/pkg/theme"
 )
 
@@ -84,7 +84,7 @@ func (f *CFeature) SetTheme(name string) MakeFeature {
 func (f *CFeature) AddTheme(t *theme.Theme) MakeFeature {
 	if _, already := f.themes[t.Name]; already {
 		log.WarnDF(1, "replacing existing %v theme", t.Name)
-		beStrings.RemoveValueFromSlice(t.Name, &f.orderAdded) // replacing order
+		f.orderAdded, _ = slices.Prune(f.orderAdded, t.Name)
 	}
 	f.orderAdded = append(f.orderAdded, t.Name)
 	f.themes[t.Name] = t
