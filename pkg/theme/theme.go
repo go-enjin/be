@@ -79,6 +79,7 @@ type Archetype struct {
 var _ types.Theme = (*Theme)(nil)
 
 type Theme struct {
+	Origin string
 	Name   string
 	Path   string
 	Config Config
@@ -94,19 +95,16 @@ type Theme struct {
 	FormatProviders []types.FormatProvider
 }
 
-func New(path string, fs fs.FileSystem) (t *Theme, err error) {
-	path = bePath.TrimSlashes(path)
+func New(origin, path string, themeFs, staticFs fs.FileSystem) (t *Theme, err error) {
 	t = new(Theme)
-	t.Path = path
-	t.FileSystem = fs
-
+	t.Origin = origin
 	t.Name = bePath.Base(path)
-	if found := getThemeInstance(t.Name); found != nil {
-		t = found
-		log.DebugF("found existing instance: %v", t.Name)
-		return
+	t.Path = path
+	t.FileSystem = themeFs
+	if staticFs != nil {
+		t.StaticFS = staticFs
+		fs.RegisterFileSystem("/", staticFs)
 	}
-
 	err = t.init()
 	return
 }
