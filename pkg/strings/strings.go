@@ -41,26 +41,6 @@ func LowerStrings(in ...string) (out []string) {
 	return
 }
 
-func StringInSlices(src string, dst ...[]string) bool {
-	for _, v := range dst {
-		for _, vv := range v {
-			if src == vv {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func StringInStrings(src string, dst ...string) bool {
-	for _, v := range dst {
-		if src == v {
-			return true
-		}
-	}
-	return false
-}
-
 func StringIndexInSlice(src string, dst []string) int {
 	for i, v := range dst {
 		if src == v {
@@ -88,39 +68,6 @@ func AnyStringsInStrings(src, tgt []string) (found bool) {
 		}
 	}
 	return
-}
-
-func RemoveValueFromSlice(value string, slice *[]string) (modified bool) {
-	var found []int
-	for jdx, v := range *slice {
-		if v == value {
-			found = append(found, jdx)
-		}
-	}
-	for _, rdx := range found {
-		size := len(*slice)
-		if rdx < size && rdx >= 0 {
-			if rdx == 0 {
-				*slice = (*slice)[1:]
-			} else if rdx < size-1 {
-				*slice = (*slice)[:size-1]
-			} else {
-				*slice = append((*slice)[:rdx], (*slice)[rdx:]...)
-			}
-		}
-	}
-	modified = modified || len(found) > 0
-	return
-}
-
-func RemoveIndexFromStrings(idx int, slice []string) []string {
-	if idx >= 0 && idx < len(slice) {
-		if idx == 0 {
-			return slice[1:]
-		}
-		return append(slice[:idx], slice[idx+1:]...)
-	}
-	return slice
 }
 
 func TitleCase(input string) (output string) {
