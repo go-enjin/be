@@ -95,3 +95,53 @@ func Unshift[V interface{}, S ~[]V](slice S) (modified S, value V) {
 	}
 	return
 }
+
+// IndexOf returns the first index matching the value given
+func IndexOf[V comparable, S ~[]V](slice S, value V) (index int) {
+	index = -1
+	for idx, v := range slice {
+		if v == value {
+			index = idx
+			return
+		}
+	}
+	return
+}
+
+// IndexesOf returns a list of all indexes matching the value given
+func IndexesOf[V comparable, S ~[]V](slice S, value V) (indexes []int) {
+	for idx, v := range slice {
+		if v == value {
+			indexes = append(indexes, idx)
+		}
+	}
+	return
+}
+
+// Present returns true if the search value is present in any of the other values given
+func Present[V comparable](search V, others ...V) (present bool) {
+	present = Within(search, others)
+	return
+}
+
+// Within return true if the search value is present in any of the other slices of V given
+func Within[V comparable, S ~[]V](search V, others ...S) (present bool) {
+	for _, other := range others {
+		for _, value := range other {
+			if present = search == value; present {
+				return
+			}
+		}
+	}
+	return
+}
+
+// AnyWithin returns true if any of the values in the source given are present in any of the other slices given
+func AnyWithin[V comparable, S ~[]V](src S, others ...S) (present bool) {
+	for _, search := range src {
+		if present = Within(search, others...); present {
+			return
+		}
+	}
+	return
+}
