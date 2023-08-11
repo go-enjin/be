@@ -227,9 +227,9 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	}
 
 	if e.eb.hotReload {
-		log.DebugF("hot-reloading theme layouts")
-		if err = t.Layouts.Reload(); err != nil {
-			err = fmt.Errorf("error refreshing layout template: %v", err)
+		log.DebugF("hot-reloading theme: %v", t.Name)
+		if err = t.Reload(); err != nil {
+			err = fmt.Errorf("error reloading theme: %v", err)
 			return
 		}
 	}

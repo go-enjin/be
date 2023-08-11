@@ -38,11 +38,11 @@ func NewLayouts(t *Theme) (layouts *Layouts, err error) {
 		t: t,
 		m: make(map[string]*Layout),
 	}
-	err = layouts.Reload()
+	err = layouts.load()
 	return
 }
 
-func (l *Layouts) Reload() (err error) {
+func (l *Layouts) load() (err error) {
 	l.Lock()
 	defer l.Unlock()
 
@@ -60,14 +60,6 @@ func (l *Layouts) Reload() (err error) {
 
 	for _, path := range paths {
 		name := bePath.Base(path)
-		if exists, ok := l.m[name]; ok && exists != nil {
-			if err = exists.Reload(); err != nil {
-				err = fmt.Errorf("%v theme: error reloading %v layout: %v", l.t.Config.Name, name, err)
-				return
-			}
-			log.TraceF("%v theme: reloaded %v layout", l.t.Config.Name, exists.Name)
-			continue
-		}
 		if layout, e := NewLayout(path, l.t.FileSystem, l.t); e != nil {
 			err = fmt.Errorf("error creating new layout: %v - %v", path, e)
 			return

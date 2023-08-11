@@ -135,6 +135,18 @@ func (t *Theme) init() (err error) {
 	return
 }
 
+func (t *Theme) Reload() (err error) {
+	var nt *Theme
+	if nt, err = New(t.Origin, t.Path, t.FileSystem, t.StaticFS); err == nil {
+		nt.FormatProviders = t.FormatProviders
+		*t = *nt
+		if parent := nt.GetParent(); parent != nil {
+			err = parent.Reload()
+		}
+	}
+	return
+}
+
 func (t *Theme) AddFormatProvider(providers ...types.FormatProvider) {
 	t.FormatProviders = append(t.FormatProviders, providers...)
 }
