@@ -20,7 +20,6 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/feature/filesystem"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/pkg/theme"
@@ -34,7 +33,7 @@ var (
 )
 
 type Feature interface {
-	filesystem.Feature[MakeFeature]
+	feature.Feature
 
 	// ListThemes returns the names of all themes added to this feature, in the order they were added
 	ListThemes() (names []string)
@@ -62,7 +61,7 @@ type MakeFeature interface {
 }
 
 type CFeature struct {
-	filesystem.CFeature[MakeFeature]
+	feature.CFeature
 
 	theme      string
 	themes     map[string]*theme.Theme
