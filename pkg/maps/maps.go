@@ -15,6 +15,7 @@
 package maps
 
 import (
+	"cmp"
 	"fmt"
 	"html/template"
 	"sort"
@@ -287,6 +288,28 @@ func ReverseSortedKeys[V interface{}](data map[string]V) (keys []string) {
 		keys = append(keys, key)
 	}
 	sort.Sort(sort.Reverse(natural.StringSlice(keys)))
+	return
+}
+
+func OrderedKeys[K cmp.Ordered, V interface{}](data map[K]V) (keys []K) {
+	for key, _ := range data {
+		keys = append(keys, key)
+	}
+	sort.Slice(keys, func(i, j int) (less bool) {
+		less = cmp.Less(keys[i], keys[j]) // i vs j
+		return
+	})
+	return
+}
+
+func ReverseOrderedKeys[K cmp.Ordered, V interface{}](data map[K]V) (keys []K) {
+	for key, _ := range data {
+		keys = append(keys, key)
+	}
+	sort.Slice(keys, func(i, j int) (less bool) {
+		less = cmp.Less(keys[j], keys[i]) // j vs i
+		return
+	})
 	return
 }
 
