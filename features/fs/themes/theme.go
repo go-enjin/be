@@ -35,6 +35,12 @@ var (
 
 type Feature interface {
 	filesystem.Feature[MakeFeature]
+
+	// ListThemes returns the names of all themes added to this feature, in the order they were added
+	ListThemes() (names []string)
+
+	// GetTheme returns the theme by given name or nil if not found
+	GetTheme(name string) *theme.Theme
 }
 
 type MakeFeature interface {
@@ -45,6 +51,9 @@ type MakeFeature interface {
 	// AddTheme is a convenience method for adding themes during the enjin build
 	// phase
 	AddTheme(t *theme.Theme) MakeFeature
+
+	// Include themes loaded with a different instance of this themes feature
+	Include(other Feature) MakeFeature
 
 	ThemeEmbedSupport
 	ThemeLocalSupport
@@ -91,6 +100,18 @@ func (f *CFeature) AddTheme(t *theme.Theme) MakeFeature {
 	return f
 }
 
+func (f *CFeature) Include(other Feature) MakeFeature {
+	if other != nil {
+		for _, name := range other.ListThemes() {
+			if t := other.GetTheme(name); t != nil {
+				f.AddTheme(t)
+				log.DebugDF(1, "%v including %v theme: %v", f.Tag(), other.Tag(), name)
+			}
+		}
+	}
+	return f
+}
+
 func (f *CFeature) Make() Feature {
 	return f
 }
@@ -117,5 +138,15 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *CFeature) Shutdown() {
+	return
+}
+
+func (f *CFeature) ListThemes() (names []string) {
+	names = append(names, f.orderAdded...)
+	return
+}
+
+func (f *CFeature) GetTheme(name string) (t *theme.Theme) {
+	t, _ = f.themes[name]
 	return
 }
