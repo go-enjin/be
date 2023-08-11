@@ -27,7 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	bePath "github.com/go-enjin/be/pkg/path"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 type Layout struct {
@@ -83,7 +83,7 @@ func (l *Layout) Reload() (err error) {
 				continue
 			} else if v, ok := l.lastMods[entryName]; ok {
 				if v == lastMod {
-					if !beStrings.StringInStrings(entryName, l.Keys...) {
+					if !slices.Present(entryName, l.Keys...) {
 						l.Keys = append(l.Keys, entryName)
 					}
 					continue
@@ -102,7 +102,7 @@ func (l *Layout) Reload() (err error) {
 			l.lastMods[entryName] = lastMod
 			l.cache[entryName] = lang.StripTranslatorComments(string(data))
 
-			if !beStrings.StringInStrings(entryName, l.Keys...) {
+			if !slices.Present(entryName, l.Keys...) {
 				l.Keys = append(l.Keys, entryName)
 			}
 

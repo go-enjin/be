@@ -23,7 +23,7 @@ import (
 	"github.com/maruel/natural"
 
 	"github.com/go-enjin/be/pkg/maps"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 // TODO: sort out errors with: `(.Title != m!(?i)thing!)` statements, use different regexp open/close markers (ie: ~ or / instead of !)
@@ -122,11 +122,11 @@ func parseQueryString(query string) (stmnt *Statement, err *ParseError) {
 
 	contextKeys := extract(stmnt.Expression)
 	if stmnt.OrderBy != nil {
-		if !beStrings.StringInSlices(*stmnt.OrderBy, contextKeys) {
+		if !slices.Within(*stmnt.OrderBy, contextKeys) {
 			contextKeys = append(contextKeys, *stmnt.OrderBy)
 		}
 	} else {
-		if !beStrings.StringInSlices("Url", contextKeys) {
+		if !slices.Within("Url", contextKeys) {
 			contextKeys = append(contextKeys, "Url")
 		}
 	}
@@ -169,11 +169,11 @@ func parseSelectString(query string) (sel *Selection, err *ParseError) {
 	if sel.Statement != nil {
 		contextKeys := extract(sel.Statement.Expression)
 		if sel.Statement.OrderBy != nil {
-			if !beStrings.StringInSlices(*sel.Statement.OrderBy, contextKeys) {
+			if !slices.Within(*sel.Statement.OrderBy, contextKeys) {
 				contextKeys = append(contextKeys, *sel.Statement.OrderBy)
 			}
 		} else {
-			if !beStrings.StringInSlices("Url", contextKeys) {
+			if !slices.Within("Url", contextKeys) {
 				contextKeys = append(contextKeys, "Url")
 			}
 		}

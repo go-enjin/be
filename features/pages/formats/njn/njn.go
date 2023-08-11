@@ -63,6 +63,7 @@ import (
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/types/theme-types"
 )
@@ -186,7 +187,7 @@ func (f *CFeature) AddBlock(block feature.EnjinBlock) MakeFeature {
 
 func (f *CFeature) AddStringTags(names ...string) MakeFeature {
 	for _, name := range names {
-		if !beStrings.StringInStrings(name, f.stringtags...) {
+		if !slices.Present(name, f.stringtags...) {
 			f.stringtags = append(f.stringtags, name)
 			log.TraceF("added %v shortcode", name)
 		}

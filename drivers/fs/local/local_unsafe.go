@@ -22,7 +22,7 @@ import (
 	"path/filepath"
 
 	bePath "github.com/go-enjin/be/pkg/path"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 func (f *FileSystem) realpath(path string) (out string) {
@@ -31,7 +31,7 @@ func (f *FileSystem) realpath(path string) (out string) {
 }
 
 func (f *FileSystem) ensurePathForWrite(path string) (err error) {
-	if dir := filepath.Dir(path); !beStrings.StringInStrings(dir, "", ".", "/", "./") {
+	if dir := filepath.Dir(path); !slices.Present(dir, "", ".", "/", "./") {
 		if err = os.MkdirAll(dir, DefaultDirMode); err != nil {
 			err = fmt.Errorf("error making directory: %v", dir)
 			return

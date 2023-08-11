@@ -28,6 +28,7 @@ import (
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
+	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -73,7 +74,7 @@ func (f *CFeature) Init(this interface{}) {
 
 func (f *CFeature) Ignore(pathsOrPatterns ...string) MakeFeature {
 	for _, pathOrPattern := range pathsOrPatterns {
-		if !beStrings.StringInStrings(pathOrPattern, f.ignore...) {
+		if !slices.Present(pathOrPattern, f.ignore...) {
 			f.ignore = append(f.ignore, pathOrPattern)
 		}
 	}

@@ -21,6 +21,7 @@ import (
 	"github.com/maruel/natural"
 
 	"github.com/go-enjin/be/pkg/regexps"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 var nameSuffixes = []string{
@@ -51,7 +52,7 @@ func LastName(fullName string) (lastName string) {
 	if names := regexps.RxKeywords.FindAllString(fullName, -1); len(names) > 0 {
 		for i := len(names) - 1; i >= 0; i-- {
 			name := names[i]
-			if StringInSlices(strings.ToLower(name), nameSuffixes) {
+			if slices.Within(strings.ToLower(name), nameSuffixes) {
 				continue
 			}
 			lastName = name

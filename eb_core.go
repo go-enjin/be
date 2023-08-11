@@ -24,7 +24,7 @@ import (
 	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/headers"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 	types "github.com/go-enjin/be/pkg/types/theme-types"
 	"github.com/go-enjin/be/pkg/userbase"
 )
@@ -47,7 +47,7 @@ func (eb *EnjinBuilder) AddHtmlHeadTag(name string, attr map[string]string) feat
 
 func (eb *EnjinBuilder) AddDomains(domains ...string) feature.Builder {
 	for _, domain := range domains {
-		if !beStrings.StringInStrings(domain, eb.domains...) {
+		if !slices.Present(domain, eb.domains...) {
 			eb.domains = append(eb.domains, domain)
 		}
 	}

@@ -24,6 +24,7 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/go-enjin/be/pkg/regexps"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 func StringsToKebabs(in ...string) (out []string) {
@@ -270,7 +271,7 @@ func UniqueFromSpaceSep(value string, original []string) (updated []string) {
 	updated = original
 	parts := regexps.RxSplitHtmlTagAttributes.Split(value, -1)
 	for _, part := range parts {
-		if !StringInStrings(part, updated...) {
+		if !slices.Present(part, updated...) {
 			updated = append(updated, part)
 		}
 	}

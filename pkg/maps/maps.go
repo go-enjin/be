@@ -27,6 +27,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/regexps"
+	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -191,7 +192,7 @@ func ParseNjnFieldAttributes(field map[string]interface{}) (attributes map[strin
 func FinalizeNjnFieldData(data map[string]interface{}, field map[string]interface{}, skip ...string) (err error) {
 	for key, value := range field {
 		switch {
-		case beStrings.StringInStrings(key, skip...):
+		case slices.Present(key, skip...):
 		default:
 			if key == "attributes" {
 				if attrs, _, _, e := ParseNjnFieldAttributes(field); e != nil {

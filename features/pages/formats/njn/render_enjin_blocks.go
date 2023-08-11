@@ -24,6 +24,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -127,7 +128,7 @@ func (re *RenderEnjin) PrepareGenericBlock(typeName string, data map[string]inte
 	preparedData["Depth"] = re.GetCurrentDepth()
 	preparedData["BlockIndex"] = re.blockCount
 	if bt, ok := data["theme"].(string); ok {
-		if beStrings.StringInStrings(bt, re.Theme.GetBlockThemeNames()...) {
+		if slices.Present(bt, re.Theme.GetBlockThemeNames()...) {
 			preparedData["Theme"] = bt
 		} else {
 			log.ErrorF("unknown njn block theme: %v", bt)

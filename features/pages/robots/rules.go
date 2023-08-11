@@ -20,7 +20,7 @@ import (
 	"strings"
 
 	"github.com/go-enjin/be/pkg/log"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 type RuleGroup interface {
@@ -49,7 +49,7 @@ func NewRuleGroup() (rule MakeRuleGroup) {
 
 func (r *cRuleGroup) AddUserAgent(userAgent string) MakeRuleGroup {
 	userAgent = strings.TrimSpace(userAgent)
-	if !beStrings.StringInSlices(userAgent, r.userAgents) {
+	if !slices.Within(userAgent, r.userAgents) {
 		r.userAgents = append(r.userAgents, userAgent)
 	}
 	return r
@@ -57,7 +57,7 @@ func (r *cRuleGroup) AddUserAgent(userAgent string) MakeRuleGroup {
 
 func (r *cRuleGroup) AddAllowed(allow string) MakeRuleGroup {
 	allow = strings.TrimSpace(allow)
-	if !beStrings.StringInSlices(allow, r.allowed) {
+	if !slices.Within(allow, r.allowed) {
 		r.allowed = append(r.allowed, allow)
 	}
 	return r
@@ -65,7 +65,7 @@ func (r *cRuleGroup) AddAllowed(allow string) MakeRuleGroup {
 
 func (r *cRuleGroup) AddDisallowed(disallow string) MakeRuleGroup {
 	disallow = strings.TrimSpace(disallow)
-	if !beStrings.StringInSlices(disallow, r.disallowed) {
+	if !slices.Within(disallow, r.disallowed) {
 		r.disallowed = append(r.disallowed, disallow)
 	}
 	return r

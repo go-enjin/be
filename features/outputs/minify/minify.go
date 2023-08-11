@@ -27,6 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	beMinify "github.com/go-enjin/be/pkg/net/minify"
 	bePath "github.com/go-enjin/be/pkg/path"
+	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -76,7 +77,7 @@ func (f *CFeature) Init(this interface{}) {
 }
 
 func (f *CFeature) AddMimeType(mime string) MakeFeature {
-	if !beStrings.StringInStrings(mime, f.mimeTypes...) {
+	if !slices.Present(mime, f.mimeTypes...) {
 		f.mimeTypes = append(f.mimeTypes, mime)
 	}
 	return f
@@ -89,7 +90,7 @@ func (f *CFeature) SetMimeTypes(mimeTypes ...string) MakeFeature {
 
 func (f *CFeature) Ignore(pathsOrPatterns ...string) MakeFeature {
 	for _, pathOrPattern := range pathsOrPatterns {
-		if !beStrings.StringInStrings(pathOrPattern, f.ignore...) {
+		if !slices.Present(pathOrPattern, f.ignore...) {
 			f.ignore = append(f.ignore, pathOrPattern)
 		}
 	}

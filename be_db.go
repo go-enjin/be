@@ -19,12 +19,12 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 func (e *Enjin) DB(tag string) (db interface{}, err error) {
 	for _, fdb := range e.eb.fDatabases {
-		if beStrings.StringInSlices(tag, fdb.ListDB()) {
+		if slices.Within(tag, fdb.ListDB()) {
 			db, err = fdb.DB(tag)
 			return
 		}

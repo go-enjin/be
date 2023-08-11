@@ -19,7 +19,7 @@ package shortcodes
 import (
 	"strings"
 
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 type Attributes struct {
@@ -57,7 +57,7 @@ func (a *Attributes) String() (output string) {
 
 func (a *Attributes) Apply(other *Attributes) {
 	for _, k := range other.Keys {
-		if !beStrings.StringInSlices(k, a.Keys) {
+		if !slices.Within(k, a.Keys) {
 			a.Keys = append(a.Keys, k)
 		}
 		a.Lookup[k] = other.Lookup[k]

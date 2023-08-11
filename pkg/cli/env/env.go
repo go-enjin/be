@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -85,9 +86,9 @@ func SetPathPrefixed(path string) string {
 
 func SetPathRemoved(path string) string {
 	if paths := GetPaths(); len(paths) > 0 {
-		for beStrings.StringInStrings(path, paths...) {
+		for slices.Present(path, paths...) {
 			if idx := beStrings.StringIndexInStrings(path, paths...); idx >= 0 {
-				paths = beStrings.RemoveIndexFromStrings(idx, paths)
+				paths = slices.Remove(paths, idx)
 			}
 		}
 		envPath := strings.Join(paths, ":")

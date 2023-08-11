@@ -21,7 +21,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net"
-	"github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 type IpRangeItem struct {
@@ -54,7 +54,7 @@ func Init() {
 	knownRanges = []string{}
 	if ranges, err := GetIpRanges(); err == nil {
 		for _, cidr := range ranges {
-			if !strings.StringInStrings(cidr, knownRanges...) {
+			if !slices.Present(cidr, knownRanges...) {
 				knownRanges = append(
 					knownRanges,
 					cidr,

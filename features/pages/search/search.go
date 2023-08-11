@@ -36,7 +36,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/request/argv"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 var (
@@ -157,7 +157,7 @@ func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.
 
 func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *page.Page, redirect string, processed bool, err error) {
 	if p.Type == "search" {
-		if beStrings.StringInStrings(r.Method, "GET", "") {
+		if slices.Present(r.Method, "GET", "") {
 			if len(r.URL.Query()) > 0 {
 				if redirect, err = f.handleQueryRedirect(r); err != nil {
 					p.Context.SetSpecific("SiteSearchError", err.Error())

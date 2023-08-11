@@ -28,7 +28,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/serve"
 	bePath "github.com/go-enjin/be/pkg/path"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 type service struct {
@@ -85,7 +85,7 @@ func (s *service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if host, _, err = net.SplitHostPort(r.Host); err != nil {
 			host = r.Host
 		}
-		if !beStrings.StringInStrings(host, s.Domains...) {
+		if !slices.Present(host, s.Domains...) {
 			log.WarnF("rejecting unsupported domain: %v", r.Host)
 			serve.Serve404(w, r)
 			return

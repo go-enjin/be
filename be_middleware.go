@@ -27,7 +27,7 @@ import (
 	beNet "github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/request/argv"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 func (e *Enjin) requestFiltersMiddleware(next http.Handler) http.Handler {
@@ -49,7 +49,7 @@ func (e *Enjin) requestFiltersMiddleware(next http.Handler) http.Handler {
 func (e *Enjin) domainsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if len(e.eb.domains) > 0 {
-			if !beStrings.StringInStrings(r.Host, e.eb.domains...) {
+			if !slices.Present(r.Host, e.eb.domains...) {
 				log.WarnRF(r, "rejecting unsupported domain: %v", r.Host)
 				e.ServeNotFound(w, r)
 				return

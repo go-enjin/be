@@ -20,7 +20,7 @@ import (
 
 	"golang.org/x/net/html"
 
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 func (re *RenderEnjin) PrepareStringTags(text string) (data []interface{}, err error) {
@@ -67,7 +67,7 @@ func (re *RenderEnjin) WalkStringTags(doc *html.Node) (prepared []interface{}) {
 				}
 
 			} else if c.Type == html.ElementNode {
-				if beStrings.StringInStrings(c.Data, re.Njn.StringTags()...) {
+				if slices.Present(c.Data, re.Njn.StringTags()...) {
 					// log.DebugF("%v[shortcode]: %v", depth, c.Data)
 					child := make(map[string]interface{})
 					child["Type"] = c.Data // tag name for element nodes

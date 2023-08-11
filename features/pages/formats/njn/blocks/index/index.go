@@ -32,7 +32,7 @@ import (
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/pages"
 	"github.com/go-enjin/be/pkg/request/argv"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 // TODO: SearchWithin is way too heavy for quoted.fyi, does not use kws
@@ -189,7 +189,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			for _, piece := range pieces[1:] {
 				if updated := filters.SetPresent(piece); updated {
 					fixArgs = append(fixArgs, piece)
-				} else if beStrings.StringInSlices(piece, indexViews) {
+				} else if slices.Within(piece, indexViews) {
 					if argvView == "" {
 						argvView = piece
 						viewArgs = append(viewArgs, piece)

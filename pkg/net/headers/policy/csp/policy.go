@@ -10,7 +10,7 @@ import (
 	"github.com/fvbommel/sortorder"
 
 	"github.com/go-enjin/be/pkg/maps"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 type Policy interface {
@@ -66,8 +66,8 @@ func (p *cPolicy) Value() (value string) {
 		b := sorted[j]
 		aType := a.DirectiveType()
 		bType := b.DirectiveType()
-		aIsReport := beStrings.StringInStrings(aType, "report-to", "report-uri")
-		bIsReport := beStrings.StringInStrings(bType, "report-to", "report-uri")
+		aIsReport := slices.Present(aType, "report-to", "report-uri")
+		bIsReport := slices.Present(bType, "report-to", "report-uri")
 		aIsDefault := aType == "default-src"
 		bIsDefault := bType == "default-src"
 		switch {
@@ -100,7 +100,7 @@ func (p *cPolicy) Value() (value string) {
 func (p *cPolicy) Set(d Directive) Policy {
 	data, order := p.makeDataMap()
 	dType := d.DirectiveType()
-	if !beStrings.StringInSlices(dType, order) {
+	if !slices.Within(dType, order) {
 		order = append(order, dType)
 	}
 	data[dType] = []Directive{d}
@@ -121,7 +121,7 @@ func (p *cPolicy) makeDataMap() (data map[string][]Directive, order []string) {
 	data = make(map[string][]Directive)
 	for _, d := range *p {
 		dType := d.DirectiveType()
-		if !beStrings.StringInSlices(dType, order) {
+		if !slices.Within(dType, order) {
 			order = append(order, dType)
 		}
 		data[dType] = append(data[dType], d)

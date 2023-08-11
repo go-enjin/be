@@ -21,6 +21,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -81,8 +82,8 @@ func (f *CField) Defaults() MakeField {
 
 func (f *CField) AddTag(name string) MakeField {
 	name = strings.ToLower(name)
-	if beStrings.StringInStrings(name, TagNames...) {
-		if !beStrings.StringInStrings(name, f.supported...) {
+	if slices.Present(name, TagNames...) {
+		if !slices.Present(name, f.supported...) {
 			f.supported = append(f.supported, name)
 		}
 	} else {
@@ -93,7 +94,7 @@ func (f *CField) AddTag(name string) MakeField {
 
 func (f *CField) RemoveTag(name string) MakeField {
 	if idx := beStrings.StringIndexInStrings(name, f.supported...); idx >= 0 {
-		f.supported = beStrings.RemoveIndexFromStrings(idx, f.supported)
+		f.supported = slices.Remove(f.supported, idx)
 	}
 	return f
 }
@@ -113,7 +114,7 @@ func (f *CField) NjnFieldNames() (names []string) {
 }
 
 func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field map[string]interface{}) (data map[string]interface{}, err error) {
-	if !beStrings.StringInStrings(tagName, f.supported...) {
+	if !slices.Present(tagName, f.supported...) {
 		err = fmt.Errorf(`%v feature does not support tags named "%v"`, Tag, tagName)
 		return
 	}

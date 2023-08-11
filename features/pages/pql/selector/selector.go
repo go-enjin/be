@@ -30,6 +30,7 @@ import (
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/regexps"
+	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/theme"
 )
@@ -276,7 +277,7 @@ func (m *cSelector) processWithStatement() (selected map[string]interface{}, err
 				found := false
 				kvp, _ := m.lookup.Load(sel.ContextKey)
 				for value, shasums := range kvp {
-					if found = beStrings.StringInSlices(stub.Shasum, shasums); found {
+					if found = slices.Within(stub.Shasum, shasums); found {
 						simples[sel.ContextKey] = append(simples[sel.ContextKey], value)
 						break
 					}

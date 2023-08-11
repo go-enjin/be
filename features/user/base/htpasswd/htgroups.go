@@ -20,7 +20,7 @@ import (
 	"strings"
 	"sync"
 
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 type htgroups struct {
@@ -61,12 +61,12 @@ func newHtgroups(filepath string) (htg *htgroups, err error) {
 func (h *htgroups) AddToGroup(group string, users ...string) {
 	h.Lock()
 	defer h.Unlock()
-	if !beStrings.StringInSlices(group, h.order) {
+	if !slices.Within(group, h.order) {
 		h.order = append(h.order, group)
 		h.parsed[group] = make([]string, 0)
 	}
 	for _, user := range users {
-		if !beStrings.StringInSlices(user, h.parsed[group]) {
+		if !slices.Within(user, h.parsed[group]) {
 			h.parsed[group] = append(h.parsed[group], user)
 		}
 	}

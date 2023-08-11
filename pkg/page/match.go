@@ -19,7 +19,7 @@ import (
 	"sync"
 
 	"github.com/go-enjin/be/pkg/pageql"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 type MatcherFn func(path string, pg *Page) (found string, ok bool)
@@ -78,7 +78,7 @@ func (p *Page) Redirections() (redirects []string) {
 }
 
 func (p *Page) IsRedirection(path string) (ok bool) {
-	ok = beStrings.StringInStrings(path, p.Redirections()...)
+	ok = slices.Present(path, p.Redirections()...)
 	return
 }
 

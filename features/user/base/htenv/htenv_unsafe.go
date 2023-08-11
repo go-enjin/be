@@ -23,7 +23,7 @@ import (
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -82,7 +82,7 @@ func (f *CFeature) parseEnvGroup(key, value string) (group userbase.Group, users
 		group = userbase.NewGroup(name)
 		for _, user := range strings.Split(value, " ") {
 			user = strcase.ToKebab(user)
-			if !beStrings.StringInStrings(user, users...) {
+			if !slices.Present(user, users...) {
 				users = append(users, user)
 			}
 		}

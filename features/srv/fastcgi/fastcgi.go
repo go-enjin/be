@@ -24,7 +24,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 var (
@@ -118,7 +118,7 @@ func (f *CFeature) SetDirIndex(filename string) MakeFeature {
 
 func (f *CFeature) UseEnv(keys ...string) MakeFeature {
 	for _, key := range keys {
-		if !beStrings.StringInSlices(key, f.envKeys) {
+		if !slices.Within(key, f.envKeys) {
 			f.envKeys = append(f.envKeys, key)
 		}
 	}

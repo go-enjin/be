@@ -14,7 +14,9 @@
 
 package feature
 
-import beStrings "github.com/go-enjin/be/pkg/strings"
+import (
+	"github.com/go-enjin/be/pkg/slices"
+)
 
 type NjnClass uint
 
@@ -56,11 +58,11 @@ func (f *CEnjinFeature) NjnCheckTag(tagName string) (allow bool) {
 	denied, checkDenied := f.NjnTagsDenied()
 	switch {
 	case checkAllowed && checkDenied:
-		allow = !beStrings.StringInStrings(tagName, denied...) && beStrings.StringInStrings(tagName, allowed...)
+		allow = !slices.Present(tagName, denied...) && slices.Present(tagName, allowed...)
 	case checkAllowed:
-		allow = beStrings.StringInStrings(tagName, allowed...)
+		allow = slices.Present(tagName, allowed...)
 	case checkDenied:
-		allow = !beStrings.StringInStrings(tagName, denied...)
+		allow = !slices.Present(tagName, denied...)
 	default:
 		allow = true
 	}

@@ -26,7 +26,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 var (
@@ -80,7 +80,7 @@ func (f *CFeature) Init(this interface{}) {
 
 func (f *CFeature) AddSitemap(sitemap string) MakeFeature {
 	sitemap = strings.TrimSpace(sitemap)
-	if !beStrings.StringInSlices(sitemap, f.sitemaps) {
+	if !slices.Within(sitemap, f.sitemaps) {
 		f.sitemaps = append(f.sitemaps, sitemap)
 	}
 	return f

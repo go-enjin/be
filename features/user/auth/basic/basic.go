@@ -32,7 +32,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	beNet "github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/net/serve"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -141,13 +141,13 @@ func (f *CFeature) SetAuthCacheControl(control string) MakeFeature {
 }
 
 func (f *CFeature) AddUserbase(usersProvider, groupsProvider, secretsProvider string) MakeFeature {
-	if usersProvider != "" && !beStrings.StringInSlices(usersProvider, f.upNames) {
+	if usersProvider != "" && !slices.Within(usersProvider, f.upNames) {
 		f.upNames = append(f.upNames, usersProvider)
 	}
-	if groupsProvider != "" && !beStrings.StringInSlices(groupsProvider, f.gpNames) {
+	if groupsProvider != "" && !slices.Within(groupsProvider, f.gpNames) {
 		f.gpNames = append(f.gpNames, groupsProvider)
 	}
-	if secretsProvider != "" && !beStrings.StringInSlices(secretsProvider, f.spNames) {
+	if secretsProvider != "" && !slices.Within(secretsProvider, f.spNames) {
 		f.spNames = append(f.spNames, secretsProvider)
 	}
 	return f
@@ -371,7 +371,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 	for fgk, _ := range foundGroups {
 		if _, ok := foundPatterns[fgk]; !ok {
-			if !beStrings.StringInSlices(fgk, brokenPairs) {
+			if !slices.Within(fgk, brokenPairs) {
 				brokenPairs = append(brokenPairs, fgk)
 			}
 		}

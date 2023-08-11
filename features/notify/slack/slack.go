@@ -22,7 +22,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/notify"
-	"github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 var (
@@ -56,7 +56,7 @@ func New() MakeFeature {
 }
 
 func (f *CFeature) Add(channel string) MakeFeature {
-	if !strings.StringInStrings(channel, f.channels...) {
+	if !slices.Present(channel, f.channels...) {
 		f.channels = append(f.channels, channel)
 	}
 	return f

@@ -15,8 +15,9 @@
 package lang
 
 import (
-	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/golang-org-x-text/language"
+
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 var bleveLocaleAnalyzers = []string{
@@ -26,6 +27,6 @@ var bleveLocaleAnalyzers = []string{
 }
 
 func BleveSupportedAnalyzer(tag language.Tag) (ok bool) {
-	ok = beStrings.StringInStrings(tag.String(), bleveLocaleAnalyzers...)
+	ok = slices.Present(tag.String(), bleveLocaleAnalyzers...)
 	return
 }

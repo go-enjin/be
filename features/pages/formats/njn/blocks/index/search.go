@@ -24,7 +24,7 @@ import (
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request/argv"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []string, reqArgv *argv.RequestArgv) (redirect string, err error) {
@@ -72,7 +72,7 @@ func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []stri
 		for _, argvArgs := range reqArgv.Argv {
 			var args []string
 			for _, arg := range argvArgs {
-				if target == blockTag && beStrings.StringInSlices(arg, viewKeys) {
+				if target == blockTag && slices.Within(arg, viewKeys) {
 					target += "-" + arg
 				}
 				if skip := arg != "" && arg[0] == '(' && arg[len(arg)-1] == ')'; !skip {
@@ -91,7 +91,7 @@ func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []stri
 			if len(argvArgs) > 0 && argvArgs[0] == blockTag {
 				target := blockTag
 				for jdx, arg := range argvArgs {
-					if target == blockTag && beStrings.StringInSlices(arg, viewKeys) {
+					if target == blockTag && slices.Within(arg, viewKeys) {
 						target += "-" + arg
 					}
 					if arg != "" && arg[0] == '(' && arg[len(arg)-1] == ')' {

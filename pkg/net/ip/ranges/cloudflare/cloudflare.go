@@ -22,7 +22,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net"
-	strings2 "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 var (
@@ -39,7 +39,7 @@ func Init() {
 	knownRanges = []string{}
 	if v4ranges, err := GetIpRangesV4(); err == nil {
 		for _, cidr := range v4ranges {
-			if !strings2.StringInStrings(cidr, knownRanges...) {
+			if !slices.Present(cidr, knownRanges...) {
 				knownRanges = append(
 					knownRanges,
 					cidr,
@@ -50,7 +50,7 @@ func Init() {
 	}
 	if v6ranges, err := GetIpRangesV6(); err == nil {
 		for _, cidr := range v6ranges {
-			if !strings2.StringInStrings(cidr, knownRanges...) {
+			if !slices.Present(cidr, knownRanges...) {
 				knownRanges = append(
 					knownRanges,
 					cidr,

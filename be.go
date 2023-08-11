@@ -42,7 +42,7 @@ import (
 	"github.com/go-enjin/be/pkg/net/gorilla-handlers"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 //go:generate _scripts/be-pkg-list.sh
@@ -209,7 +209,7 @@ func (e *Enjin) SetupRootEnjin(ctx *cli.Context) (err error) {
 
 	if domains := ctx.StringSlice("domain"); domains != nil && len(domains) > 0 {
 		for _, domain := range domains {
-			if domain != "" && !beStrings.StringInStrings(domain, e.eb.domains...) {
+			if domain != "" && !slices.Present(domain, e.eb.domains...) {
 				e.eb.domains = append(e.eb.domains, domain)
 			}
 		}
@@ -219,7 +219,7 @@ func (e *Enjin) SetupRootEnjin(ctx *cli.Context) (err error) {
 		tag := strcase.ToKebab(enjin.tag)
 		if domains := ctx.StringSlice(tag + "-domain"); len(domains) > 0 {
 			for _, domain := range domains {
-				if !beStrings.StringInSlices(domain, enjin.domains) {
+				if !slices.Within(domain, enjin.domains) {
 					log.DebugF("adding domain to %v enjin: %v", tag, domain)
 					enjin.domains = append(enjin.domains, domain)
 				}

@@ -17,12 +17,12 @@ package cli
 import (
 	"github.com/urfave/cli/v2"
 
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 func FlagInFlags(name string, flags []cli.Flag) (ok bool) {
 	for _, f := range flags {
-		if ok = beStrings.StringInSlices(name, f.Names()); ok {
+		if ok = slices.Within(name, f.Names()); ok {
 			return
 		}
 	}
@@ -31,7 +31,7 @@ func FlagInFlags(name string, flags []cli.Flag) (ok bool) {
 
 func CommandInCommands(name string, commands cli.Commands) (ok bool) {
 	for _, c := range commands {
-		if ok = beStrings.StringInSlices(name, c.Names()); ok {
+		if ok = slices.Within(name, c.Names()); ok {
 			return
 		}
 	}

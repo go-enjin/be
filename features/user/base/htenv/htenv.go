@@ -21,7 +21,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -156,7 +156,7 @@ func (f *CFeature) IsUserInGroup(id string, group userbase.Group) (present bool)
 	f.RLock()
 	defer f.RUnlock()
 	if users, ok := f.groups[group]; ok {
-		if beStrings.StringInSlices(id, users) {
+		if slices.Within(id, users) {
 			present = true
 		}
 	}
@@ -167,7 +167,7 @@ func (f *CFeature) GetUserGroups(id string) (groups userbase.Groups) {
 	f.RLock()
 	defer f.RUnlock()
 	for group, users := range f.groups {
-		if beStrings.StringInSlices(id, users) {
+		if slices.Within(id, users) {
 			groups = append(groups, group)
 		}
 	}

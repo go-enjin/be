@@ -28,6 +28,8 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/features/pages/pql/matcher"
+	"github.com/go-enjin/be/features/pages/pql/selector"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/indexing"
@@ -35,10 +37,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
 	bePath "github.com/go-enjin/be/pkg/path"
-	beStrings "github.com/go-enjin/be/pkg/strings"
-
-	"github.com/go-enjin/be/features/pages/pql/matcher"
-	"github.com/go-enjin/be/features/pages/pql/selector"
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 var (
@@ -126,7 +125,7 @@ func (f *CFeature) SetIncludedContextKeys(keys ...string) MakeFeature {
 func (f *CFeature) IncludeContextKeys(keys ...string) MakeFeature {
 	for _, key := range keys {
 		kebab := strcase.ToKebab(key)
-		if !beStrings.StringInSlices(kebab, f.includeContextKeys) {
+		if !slices.Within(kebab, f.includeContextKeys) {
 			f.includeContextKeys = append(f.includeContextKeys, kebab)
 		}
 	}
