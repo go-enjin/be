@@ -18,10 +18,12 @@ package themes
 
 import (
 	"embed"
+	"fmt"
 	"os"
 
+	beFsEmbed "github.com/go-enjin/be/drivers/fs/embed"
+	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
-	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/theme"
 )
 
@@ -35,27 +37,53 @@ type ThemeEmbedSupport interface {
 	EmbedThemes(path string, fs embed.FS) MakeFeature
 }
 
+func (f *CFeature) loadEmbedTheme(path string, efs embed.FS) (t *theme.Theme, err error) {
+	var themeFs, staticFs fs.FileSystem
+	if themeFs, err = beFsEmbed.New(f.Tag().String(), path, efs); err != nil {
+		err = fmt.Errorf("error mounting local filesystem: %v - %v", path, err)
+		return
+	}
+	if staticFs, err = beFsEmbed.New(f.Tag().String(), path+"/static", efs); err == nil {
+		fs.RegisterFileSystem("/", staticFs)
+	} else {
+		staticFs = nil
+	}
+
+	if t, err = theme.New(f.Tag().String(), path, themeFs, staticFs); err != nil {
+		err = fmt.Errorf("error loading theme: %v - %v", path, err)
+		return
+	}
+
+	return
+}
+
 func (f *CFeature) EmbedTheme(path string, tfs embed.FS) MakeFeature {
 	var err error
 	var t *theme.Theme
-	if t, err = theme.NewEmbed(f.Tag().String(), path, tfs); err != nil {
-		log.FatalF("error loading embed theme: %v", err)
-	} else {
-		log.DebugF("loaded embed theme: %v", t.Name)
+
+	if t, err = f.loadEmbedTheme(path, tfs); err != nil {
+		log.FatalDF(1, "%v", err)
 	}
+
+	log.DebugF("loaded embed theme: %v", t.Name)
+
 	f.AddTheme(t)
 	return f
 }
 
-func (f *CFeature) EmbedThemes(path string, fs embed.FS) MakeFeature {
+func (f *CFeature) EmbedThemes(path string, tfs embed.FS) MakeFeature {
 	var err error
 	var entries []os.DirEntry
-	if entries, err = fs.ReadDir(path); err != nil {
+	if entries, err = tfs.ReadDir(path); err != nil {
 		log.FatalF("error reading path: %v", err)
 	}
 	for _, info := range entries {
-		p := bePath.TrimSlashes(path + "/" + info.Name())
-		f.EmbedTheme(p, fs)
+		if t, e := f.loadEmbedTheme(path+"/"+info.Name(), tfs); e != nil {
+			log.FatalDF(1, "%s", err)
+		} else {
+			f.themes[t.Name] = t
+			log.DebugF("loaded embed theme: %v", t.Name)
+		}
 	}
 	return f
 }
