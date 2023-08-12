@@ -204,3 +204,6 @@ tidy: _golang
 		$(call _source_activate_run,go,mod,tidy); \
 	fi
 
+build-check: _golang
+	@echo "# build checking all packages"
+	@$(call _source_activate_run,go,build,-v,-tags,all,./...)
