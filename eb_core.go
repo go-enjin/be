@@ -16,17 +16,14 @@ package be
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/globals"
-	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/slices"
-	types "github.com/go-enjin/be/pkg/types/theme-types"
-	"github.com/go-enjin/be/pkg/userbase"
 )
 
 func (eb *EnjinBuilder) Set(key string, value interface{}) feature.Builder {
@@ -63,6 +60,20 @@ func checkRegisterFeature[T interface{}](f feature.Feature, list []T) []T {
 	return list
 }
 
+func checkRegisterSingleFeature[T interface{}](f feature.Feature, existing T) (typed T) {
+	if ff, ok := feature.AsTyped[T](f); ok {
+		label := fmt.Sprintf("%T", (*T)(nil))[1:]
+		if !reflect.ValueOf(&existing).Elem().IsZero() {
+			log.FatalDF(2, "only one %s feature allowed", label)
+		}
+		log.DebugDF(1, "registering %v as a %v", f.Tag(), label)
+		typed = ff
+	} else {
+		typed = existing
+	}
+	return
+}
+
 func (eb *EnjinBuilder) AddFeature(f feature.Feature) feature.Builder {
 	if f == nil {
 		return eb
@@ -72,34 +83,39 @@ func (eb *EnjinBuilder) AddFeature(f feature.Feature) feature.Builder {
 	}
 	log.DebugF("adding feature: %v", f.Tag())
 
-	eb.fFormatProviders = checkRegisterFeature[types.FormatProvider](f, eb.fFormatProviders)
-	eb.fRequestFilters = checkRegisterFeature[feature.RequestFilter](f, eb.fRequestFilters)
-	eb.fPageContextModifiers = checkRegisterFeature[feature.PageContextModifier](f, eb.fPageContextModifiers)
-	eb.fPageRestrictionHandlers = checkRegisterFeature[feature.PageRestrictionHandler](f, eb.fPageRestrictionHandlers)
-	eb.fMenuProviders = checkRegisterFeature[feature.MenuProvider](f, eb.fMenuProviders)
-	eb.fDataRestrictionHandlers = checkRegisterFeature[feature.DataRestrictionHandler](f, eb.fDataRestrictionHandlers)
-	eb.fOutputTranslators = checkRegisterFeature[feature.OutputTranslator](f, eb.fOutputTranslators)
-	eb.fOutputTransformers = checkRegisterFeature[feature.OutputTransformer](f, eb.fOutputTransformers)
-	eb.fPageTypeProcessors = checkRegisterFeature[feature.PageTypeProcessor](f, eb.fPageTypeProcessors)
-	eb.fServePathFeatures = checkRegisterFeature[feature.ServePathFeature](f, eb.fServePathFeatures)
-	eb.fDatabases = checkRegisterFeature[feature.Database](f, eb.fDatabases)
-	eb.fEmailSenders = checkRegisterFeature[feature.EmailSender](f, eb.fEmailSenders)
-	eb.fRequestModifiers = checkRegisterFeature[feature.RequestModifier](f, eb.fRequestModifiers)
-	eb.fRequestRewriters = checkRegisterFeature[feature.RequestRewriter](f, eb.fRequestRewriters)
-	eb.fPermissionsPolicyModifiers = checkRegisterFeature[feature.PermissionsPolicyModifier](f, eb.fPermissionsPolicyModifiers)
-	eb.fContentSecurityPolicyModifiers = checkRegisterFeature[feature.ContentSecurityPolicyModifier](f, eb.fContentSecurityPolicyModifiers)
-	eb.fUseMiddlewares = checkRegisterFeature[feature.UseMiddleware](f, eb.fUseMiddlewares)
-	eb.fHeadersModifiers = checkRegisterFeature[feature.HeadersModifier](f, eb.fHeadersModifiers)
-	eb.fProcessors = checkRegisterFeature[feature.Processor](f, eb.fProcessors)
-	eb.fApplyMiddlewares = checkRegisterFeature[feature.ApplyMiddleware](f, eb.fApplyMiddlewares)
-	eb.fPageProviders = checkRegisterFeature[feature.PageProvider](f, eb.fPageProviders)
-	eb.fFileProviders = checkRegisterFeature[feature.FileProvider](f, eb.fFileProviders)
-	eb.fQueryIndexFeatures = checkRegisterFeature[indexing.QueryIndexFeature](f, eb.fQueryIndexFeatures)
-	eb.fPageContextProviders = checkRegisterFeature[indexing.PageContextProvider](f, eb.fPageContextProviders)
-	eb.fAuthProviders = checkRegisterFeature[userbase.AuthProvider](f, eb.fAuthProviders)
-	eb.fUserActionsProviders = checkRegisterFeature[userbase.UserActionsProvider](f, eb.fUserActionsProviders)
-	eb.fEnjinContextProvider = checkRegisterFeature[feature.EnjinContextProvider](f, eb.fEnjinContextProvider)
-	eb.fPageShortcodeProcessors = checkRegisterFeature[feature.PageShortcodeProcessor](f, eb.fPageShortcodeProcessors)
+	eb.fFormatProviders = checkRegisterFeature(f, eb.fFormatProviders)
+	eb.fRequestFilters = checkRegisterFeature(f, eb.fRequestFilters)
+	eb.fPageContextModifiers = checkRegisterFeature(f, eb.fPageContextModifiers)
+	eb.fPageRestrictionHandlers = checkRegisterFeature(f, eb.fPageRestrictionHandlers)
+	eb.fMenuProviders = checkRegisterFeature(f, eb.fMenuProviders)
+	eb.fDataRestrictionHandlers = checkRegisterFeature(f, eb.fDataRestrictionHandlers)
+	eb.fOutputTranslators = checkRegisterFeature(f, eb.fOutputTranslators)
+	eb.fOutputTransformers = checkRegisterFeature(f, eb.fOutputTransformers)
+	eb.fPageTypeProcessors = checkRegisterFeature(f, eb.fPageTypeProcessors)
+	eb.fServePathFeatures = checkRegisterFeature(f, eb.fServePathFeatures)
+	eb.fDatabases = checkRegisterFeature(f, eb.fDatabases)
+	eb.fEmailSenders = checkRegisterFeature(f, eb.fEmailSenders)
+	eb.fRequestModifiers = checkRegisterFeature(f, eb.fRequestModifiers)
+	eb.fRequestRewriters = checkRegisterFeature(f, eb.fRequestRewriters)
+	eb.fPermissionsPolicyModifiers = checkRegisterFeature(f, eb.fPermissionsPolicyModifiers)
+	eb.fContentSecurityPolicyModifiers = checkRegisterFeature(f, eb.fContentSecurityPolicyModifiers)
+	eb.fUseMiddlewares = checkRegisterFeature(f, eb.fUseMiddlewares)
+	eb.fHeadersModifiers = checkRegisterFeature(f, eb.fHeadersModifiers)
+	eb.fProcessors = checkRegisterFeature(f, eb.fProcessors)
+	eb.fApplyMiddlewares = checkRegisterFeature(f, eb.fApplyMiddlewares)
+	eb.fPageProviders = checkRegisterFeature(f, eb.fPageProviders)
+	eb.fFileProviders = checkRegisterFeature(f, eb.fFileProviders)
+	eb.fQueryIndexFeatures = checkRegisterFeature(f, eb.fQueryIndexFeatures)
+	eb.fPageContextProviders = checkRegisterFeature(f, eb.fPageContextProviders)
+	eb.fAuthProviders = checkRegisterFeature(f, eb.fAuthProviders)
+	eb.fUserActionsProviders = checkRegisterFeature(f, eb.fUserActionsProviders)
+	eb.fEnjinContextProvider = checkRegisterFeature(f, eb.fEnjinContextProvider)
+	eb.fPageShortcodeProcessors = checkRegisterFeature(f, eb.fPageShortcodeProcessors)
+	eb.fFuncMapProviders = checkRegisterFeature(f, eb.fFuncMapProviders)
+	eb.fTemplatePartialsProvider = checkRegisterFeature(f, eb.fTemplatePartialsProvider)
+	eb.fThemeRenderers = checkRegisterFeature(f, eb.fThemeRenderers)
+
+	eb.fRoutePagesHandler = checkRegisterSingleFeature[feature.RoutePagesHandler](f, eb.fRoutePagesHandler)
 
 	return eb
 }

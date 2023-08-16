@@ -37,8 +37,6 @@ import (
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/theme"
-	"github.com/go-enjin/be/pkg/types/theme-types"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -57,7 +55,7 @@ type EnjinBuilder struct {
 	htmlHeadTags []htmlHeadTag
 	context      context.Context
 	theme        string
-	theming      map[string]*theme.Theme
+	theming      map[string]feature.Theme
 	features     *feature.FeaturesCache
 	headers      []headers.ModifyHeadersFn
 	domains      []string
@@ -84,7 +82,7 @@ type EnjinBuilder struct {
 	publicUser  userbase.Actions
 	userActions userbase.Actions
 
-	fFormatProviders                []types.FormatProvider
+	fFormatProviders                []feature.PageFormatProvider
 	fRequestFilters                 []feature.RequestFilter
 	fPageContextModifiers           []feature.PageContextModifier
 	fPageRestrictionHandlers        []feature.PageRestrictionHandler
@@ -112,8 +110,15 @@ type EnjinBuilder struct {
 	fUserActionsProviders           []userbase.UserActionsProvider
 	fEnjinContextProvider           []feature.EnjinContextProvider
 	fPageShortcodeProcessors        []feature.PageShortcodeProcessor
+	fFuncMapProviders               []feature.FuncMapProvider
+	fTemplatePartialsProvider       []feature.TemplatePartialsProvider
+	fThemeRenderers                 []feature.ThemeRenderer
+
+	fRoutePagesHandler feature.RoutePagesHandler
 
 	enjins []*EnjinBuilder
+
+	publicFileSystems fs.Registry
 }
 
 func New() (be *EnjinBuilder) {
@@ -124,7 +129,7 @@ func New() (be *EnjinBuilder) {
 	be.commands = make(cli.Commands, 0)
 	be.pages = make(map[string]*page.Page)
 	be.context = context.New()
-	be.theming = make(map[string]*theme.Theme)
+	be.theming = make(map[string]feature.Theme)
 	be.features = feature.NewFeaturesCache()
 	be.headers = make([]headers.ModifyHeadersFn, 0)
 	be.domains = make([]string, 0)
@@ -197,6 +202,8 @@ func (eb *EnjinBuilder) prepareBuild() {
 	eb.Set("LanguageMode", eb.langMode)
 	eb.Set("DefaultLanguage", eb.defaultLang.String())
 	eb.Set("DefaultLanguageTag", eb.defaultLang)
+
+	eb.publicFileSystems = fs.NewRegistry(eb.tag)
 
 	for _, f := range eb.features.List() {
 		if err = f.Self().Build(eb); err != nil {
