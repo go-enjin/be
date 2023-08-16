@@ -1,4 +1,4 @@
-// Copyright (c) 2022  The Go-Enjin Authors
+// Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package types
+package feature
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 )
 
@@ -31,6 +32,11 @@ func NewEnjinError(title, summary, content string) *EnjinError {
 		Summary: summary,
 		Content: content,
 	}
+}
+
+func (e *EnjinError) Error() (message string) {
+	message = fmt.Sprintf("%v: %v", e.Title, e.Summary)
+	return
 }
 
 func (e *EnjinError) NjnData() (data map[string]interface{}) {
