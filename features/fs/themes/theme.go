@@ -17,12 +17,13 @@
 package themes
 
 import (
+	"fmt"
+
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/slices"
-	"github.com/go-enjin/be/pkg/theme"
+	"github.com/go-enjin/be/types/theme"
 )
 
 const Tag feature.Tag = "fs-theme"
@@ -34,22 +35,12 @@ var (
 
 type Feature interface {
 	feature.Feature
-
-	// ListThemes returns the names of all themes added to this feature, in the order they were added
-	ListThemes() (names []string)
-
-	// GetTheme returns the theme by given name or nil if not found
-	GetTheme(name string) *theme.Theme
 }
 
 type MakeFeature interface {
 	// SetTheme is a convenience method for setting the current theme during the
 	// enjin build phase
 	SetTheme(name string) MakeFeature
-
-	// AddTheme is a convenience method for adding themes during the enjin build
-	// phase
-	AddTheme(t *theme.Theme) MakeFeature
 
 	// Include themes loaded with a different instance of this themes feature
 	Include(other Feature) MakeFeature
@@ -63,9 +54,8 @@ type MakeFeature interface {
 type CFeature struct {
 	feature.CFeature
 
-	theme      string
-	themes     map[string]*theme.Theme
-	orderAdded []string
+	theme   string
+	loading []*loadTheme
 }
 
 func New() MakeFeature {
@@ -81,7 +71,6 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
-	f.themes = make(map[string]*theme.Theme)
 }
 
 func (f *CFeature) SetTheme(name string) MakeFeature {
@@ -89,23 +78,15 @@ func (f *CFeature) SetTheme(name string) MakeFeature {
 	return f
 }
 
-func (f *CFeature) AddTheme(t *theme.Theme) MakeFeature {
-	if _, already := f.themes[t.Name]; already {
-		log.WarnDF(1, "replacing existing %v theme", t.Name)
-		f.orderAdded, _ = slices.Prune(f.orderAdded, t.Name)
-	}
-	f.orderAdded = append(f.orderAdded, t.Name)
-	f.themes[t.Name] = t
-	return f
-}
-
 func (f *CFeature) Include(other Feature) MakeFeature {
 	if other != nil {
-		for _, name := range other.ListThemes() {
-			if t := other.GetTheme(name); t != nil {
-				f.AddTheme(t)
-				log.DebugDF(1, "%v including %v theme: %v", f.Tag(), other.Tag(), name)
+		if of, ok := other.(*CFeature); ok {
+			for _, otherLoad := range of.loading {
+				f.loading = append(f.loading, otherLoad)
+				log.DebugDF(1, "%v including %v theme: %v - %v", f.Tag(), other.Tag(), otherLoad.support, otherLoad.path)
 			}
+		} else {
+			log.FatalDF(1, "unsupported themes.Feature implementation: %T", other)
 		}
 	}
 	return f
@@ -116,11 +97,18 @@ func (f *CFeature) Make() Feature {
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
-	for _, name := range f.orderAdded {
-		if t := f.themes[name]; t != nil {
-			b.AddTheme(t)
+	for _, ts := range f.loading {
+		var t feature.Theme
+		if t, err = theme.New(f.Tag().String(), ts.path, ts.themeFs, ts.staticFs); err != nil {
+			err = fmt.Errorf("error loading theme: %v - %v", ts.path, err)
+			return
+		} else if t.StaticFS() != nil {
+			b.RegisterPublicFileSystem("/", t.StaticFS())
 		}
+		b.AddTheme(t)
+		log.DebugF("loaded %v theme: %v", ts.support, t.Name())
 	}
+
 	if f.theme != "" {
 		b.SetTheme(f.theme)
 	}
@@ -137,15 +125,5 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *CFeature) Shutdown() {
-	return
-}
-
-func (f *CFeature) ListThemes() (names []string) {
-	names = append(names, f.orderAdded...)
-	return
-}
-
-func (f *CFeature) GetTheme(name string) (t *theme.Theme) {
-	t, _ = f.themes[name]
 	return
 }
