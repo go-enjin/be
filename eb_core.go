@@ -152,16 +152,6 @@ func (eb *EnjinBuilder) AddCommands(commands ...*cli.Command) feature.Builder {
 	return eb
 }
 
-func (eb *EnjinBuilder) MakeEnvKey(name string) (key string) {
-	key = globals.MakeEnvKey(name)
-	return
-}
-
-func (eb *EnjinBuilder) MakeEnvKeys(names ...string) (keys []string) {
-	keys = globals.MakeEnvKeys(names...)
-	return
-}
-
 func (eb *EnjinBuilder) AddModifyHeadersFn(fn headers.ModifyHeadersFn) feature.Builder {
 	if fn != nil {
 		eb.headers = append(eb.headers, fn)
