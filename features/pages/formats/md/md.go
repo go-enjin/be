@@ -31,7 +31,6 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 const Tag feature.Tag = "pages-formats-md"
@@ -43,7 +42,7 @@ var (
 
 type Feature interface {
 	feature.Feature
-	types.Format
+	feature.PageFormat
 }
 
 type MakeFeature interface {
@@ -88,7 +87,7 @@ func (f *CFeature) Prepare(ctx context.Context, content string) (out context.Con
 	return
 }
 
-func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, redirect string, err *types.EnjinError) {
+func (f *CFeature) Process(ctx context.Context, content string) (html template.HTML, redirect string, err *feature.EnjinError) {
 	html = template.HTML(f.Enjin.TranslateShortcodes(RenderMarkdown(content), ctx))
 	return
 }
@@ -106,7 +105,6 @@ func (f *CFeature) AddSearchDocumentMapping(tag language.Tag, indexMapping *mapp
 func (f *CFeature) IndexDocument(p interface{}) (out interface{}, err error) {
 	pg, _ := p.(*page.Page)
 
-	t := f.Enjin.MustGetTheme()
 	r, _ := http.NewRequest("GET", pg.Url, nil)
 	r = lang.SetTag(r, pg.LanguageTag)
 	for _, ptp := range feature.FilterTyped[feature.PageTypeProcessor](f.Enjin.Features().List()) {
@@ -119,7 +117,8 @@ func (f *CFeature) IndexDocument(p interface{}) (out interface{}, err error) {
 
 	var rendered string
 	if strings.HasSuffix(pg.Format, ".tmpl") {
-		if rendered, err = t.RenderTextTemplateContent(pg.Context, pg.Content); err != nil {
+		renderer := f.Enjin.GetThemeRenderer(pg.Context)
+		if rendered, err = renderer.RenderTextTemplateContent(pg.Context, pg.Content); err != nil {
 			err = fmt.Errorf("error rendering .md.tmpl content: %v", err)
 			return
 		}

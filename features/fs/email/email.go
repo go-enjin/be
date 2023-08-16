@@ -32,7 +32,6 @@ import (
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
-	"github.com/go-enjin/be/pkg/funcmaps"
 	"github.com/go-enjin/be/pkg/page/matter"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
@@ -239,7 +238,10 @@ func (f *CFeature) MakeEmailBody(path string, ctx beContext.Context) (fm beConte
 
 	if strings.HasSuffix(path, ".html.tmpl") {
 		var t *htmlTemplate.Template
-		if t, err = htmlTemplate.New(strcase.ToKebab(path)).Funcs(funcmaps.HtmlFuncMap()).Parse(pm.Body); err != nil {
+		if t, err = htmlTemplate.
+			New(strcase.ToKebab(path)).
+			Funcs(f.Enjin.MakeFuncMap(nil).AsHTML()).
+			Parse(pm.Body); err != nil {
 			err = fmt.Errorf("error parsing html.Template: %v", err)
 			return
 		}
@@ -253,7 +255,7 @@ func (f *CFeature) MakeEmailBody(path string, ctx beContext.Context) (fm beConte
 	}
 
 	var t *textTemplate.Template
-	if t, err = textTemplate.New(strcase.ToKebab(path)).Funcs(funcmaps.TextFuncMap()).Parse(pm.Body); err != nil {
+	if t, err = textTemplate.New(strcase.ToKebab(path)).Funcs(f.Enjin.MakeFuncMap(ctx).AsTEXT()).Parse(pm.Body); err != nil {
 		err = fmt.Errorf("error parsing text.Template: %v", err)
 		return
 	}

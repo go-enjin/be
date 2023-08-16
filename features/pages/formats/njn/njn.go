@@ -65,7 +65,6 @@ import (
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 var (
@@ -85,7 +84,7 @@ var (
 
 type Feature interface {
 	feature.Feature
-	types.Format
+	feature.PageFormat
 	feature.EnjinSystem
 }
 
@@ -309,7 +308,7 @@ func (f *CFeature) Prepare(ctx context.Context, content string) (out context.Con
 	return
 }
 
-func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (html template.HTML, redirect string, err *types.EnjinError) {
+func (f *CFeature) Process(ctx context.Context, content string) (html template.HTML, redirect string, err *feature.EnjinError) {
 	var data interface{}
 	if e := json.Unmarshal([]byte(content), &data); e != nil {
 		switch errType := e.(type) {
@@ -317,7 +316,7 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 			output := template.HTMLEscapeString(content[:errType.Offset])
 			output += fmt.Sprintf(`<span style="color:red;weight:bold;" id="json-error">&lt;-- %v</span>`, errType.Error())
 			output += template.HTMLEscapeString(content[errType.Offset:])
-			err = types.NewEnjinError(
+			err = feature.NewEnjinError(
 				"json syntax error",
 				fmt.Sprintf(`<a style="color:red;" href="#json-error">[%d] %v</a>`, errType.Offset, errType.Error()),
 				output,
@@ -326,13 +325,13 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 			output := template.HTMLEscapeString(content[:errType.Offset])
 			output += fmt.Sprintf(`<span style="color:red;weight:bold;" id="json-error">&lt;-- %v</span>`, errType.Error())
 			output += template.HTMLEscapeString(content[errType.Offset:])
-			err = types.NewEnjinError(
+			err = feature.NewEnjinError(
 				"json unmarshal error",
 				fmt.Sprintf(`<a style="color:red;" href="#json-error">[%d] %v</a>`, errType.Offset, errType.Error()),
 				output,
 			)
 		default:
-			err = types.NewEnjinError(
+			err = feature.NewEnjinError(
 				"json decoding error",
 				errType.Error(),
 				content,
@@ -340,7 +339,7 @@ func (f *CFeature) Process(ctx context.Context, t types.Theme, content string) (
 		}
 		return
 	}
-	html, redirect, err = renderNjnData(f, ctx, t, data)
+	html, redirect, err = renderNjnData(f, ctx, data)
 	return
 }
 
@@ -359,7 +358,6 @@ func (f *CFeature) IndexDocument(p interface{}) (out interface{}, err error) {
 
 	doc := NewEnjinDocument(pg.Language, pg.Url, pg.Title)
 
-	t := f.Enjin.MustGetTheme()
 	r, _ := http.NewRequest("GET", pg.Url, nil)
 	r = lang.SetTag(r, pg.LanguageTag)
 	for _, ptp := range feature.FilterTyped[feature.PageTypeProcessor](f.Enjin.Features().List()) {
@@ -372,7 +370,8 @@ func (f *CFeature) IndexDocument(p interface{}) (out interface{}, err error) {
 
 	var rendered string
 	if strings.HasSuffix(pg.Format, ".tmpl") {
-		if rendered, err = t.RenderTextTemplateContent(pg.Context, pg.Content); err != nil {
+		renderer := f.Enjin.GetThemeRenderer(pg.Context)
+		if rendered, err = renderer.RenderTextTemplateContent(pg.Context, pg.Content); err != nil {
 			err = fmt.Errorf("error rendering .njn.tmpl content: %v", err)
 			return
 		}

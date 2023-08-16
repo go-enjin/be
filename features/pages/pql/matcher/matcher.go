@@ -21,13 +21,13 @@ import (
 	"strings"
 
 	"github.com/go-enjin/be/pkg/cmp"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/regexps"
-	"github.com/go-enjin/be/pkg/theme"
 )
 
 // TODO: matcher constructor must specify the specific page context provider to use instead of always the first feature found
@@ -35,7 +35,7 @@ import (
 type cMatcher struct {
 	input string
 	feat  indexing.PageContextProvider
-	theme *theme.Theme
+	theme feature.Theme
 	stmnt *pageql.Statement
 	cache map[string]map[string]interface{}
 
@@ -47,7 +47,7 @@ type cMatcher struct {
 	err error
 }
 
-func NewProcessWith(input string, t *theme.Theme, f indexing.PageContextProvider) (matched []*fs.PageStub, err error) {
+func NewProcessWith(input string, t feature.Theme, f indexing.PageContextProvider) (matched []*fs.PageStub, err error) {
 	matcher := &cMatcher{
 		feat:    f,
 		theme:   t,

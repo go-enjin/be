@@ -37,7 +37,6 @@ import (
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/regexps"
 	"github.com/go-enjin/be/pkg/search"
-	"github.com/go-enjin/be/pkg/theme"
 )
 
 var (
@@ -109,7 +108,7 @@ func (f *CFeature) PrepareSearch(tag language.Tag, input string) (query string) 
 func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (results *bleve.SearchResult, err error) {
 	f.RLock()
 	defer f.RUnlock()
-	var t *theme.Theme
+	var t feature.Theme
 	if t, err = f.Enjin.GetTheme(); err != nil {
 		return
 	}

@@ -28,14 +28,13 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/request/argv"
-	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 var _ feature.EnjinRenderer = (*RenderEnjin)(nil)
 
 type RenderEnjin struct {
 	Njn   feature.EnjinSystem
-	Theme types.Theme
+	Theme feature.Theme
 	Enjin feature.Internals
 	ctx   context.Context
 
@@ -53,11 +52,11 @@ type RenderEnjin struct {
 	sync.RWMutex
 }
 
-func renderNjnData(f *CFeature, ctx context.Context, t types.Theme, data interface{}) (html template.HTML, redirect string, err *types.EnjinError) {
+func renderNjnData(f *CFeature, ctx context.Context, data interface{}) (html template.HTML, redirect string, err *feature.EnjinError) {
 	re := new(RenderEnjin)
 	re.Njn = f
-	re.Theme = t
 	re.Enjin = f.Enjin
+	re.Theme = f.Enjin.MustGetTheme()
 	re.ctx = ctx
 	re.headingLevel = 0
 	re.cache = make(map[string]string)
@@ -78,7 +77,7 @@ func (re *RenderEnjin) RequestContext() (ctx context.Context) {
 	return
 }
 
-func (re *RenderEnjin) Render(data interface{}) (html template.HTML, redirect string, err *types.EnjinError) {
+func (re *RenderEnjin) Render(data interface{}) (html template.HTML, redirect string, err *feature.EnjinError) {
 
 	if prepared, redir, e := re.PreparePageData(data); e != nil {
 		err = e
@@ -89,7 +88,7 @@ func (re *RenderEnjin) Render(data interface{}) (html template.HTML, redirect st
 	} else {
 		if h, ee := re.RenderNjnTemplateList("block-list", prepared); ee != nil {
 			content, _ := json.MarshalIndent(prepared, "", "    ")
-			err = types.NewEnjinError(
+			err = feature.NewEnjinError(
 				"error rendering njn template list",
 				ee.Error(),
 				string(content),
@@ -102,7 +101,7 @@ func (re *RenderEnjin) Render(data interface{}) (html template.HTML, redirect st
 	return
 }
 
-func (re *RenderEnjin) PreparePageData(data interface{}) (blocks []interface{}, redirect string, err *types.EnjinError) {
+func (re *RenderEnjin) PreparePageData(data interface{}) (blocks []interface{}, redirect string, err *feature.EnjinError) {
 
 	switch typedData := data.(type) {
 
@@ -131,7 +130,7 @@ func (re *RenderEnjin) PreparePageData(data interface{}) (blocks []interface{}, 
 		}
 
 	default:
-		err = types.NewEnjinError(
+		err = feature.NewEnjinError(
 			"unsupported njn data type",
 			fmt.Sprintf("unsupported njn data type received: %T", typedData),
 			fmt.Sprintf("%+v", typedData),
@@ -150,12 +149,12 @@ func (re *RenderEnjin) GetNjnTemplateContent(name string) (contents string, err 
 	path := bePath.JoinWithSlashes("layouts", "partials", "njn", name)
 	log.TraceF("looking for njn template: %v - %v", name, path)
 	var data []byte
-	if data, err = re.Theme.FS().ReadFile(path); err == nil {
+	if data, err = re.Theme.ThemeFS().ReadFile(path); err == nil {
 		contents = string(data)
 		re.cache[name] = contents
 		log.TraceF("caching new njn template: %v - %v", name, path)
-	} else if parent := re.Theme.GetParentTheme(); parent != nil && parent.FS() != nil {
-		if data, err = parent.FS().ReadFile(path); err == nil {
+	} else if parent := re.Theme.GetParent(); parent != nil && parent.ThemeFS() != nil {
+		if data, err = parent.ThemeFS().ReadFile(path); err == nil {
 			contents = string(data)
 			re.cache[name] = contents
 			log.TraceF("caching new parent njn template: %v - %v", name, path)
@@ -174,7 +173,7 @@ func (re *RenderEnjin) RenderNjnTemplateList(tag string, data []interface{}) (ht
 		return
 	} else {
 		var tt *template.Template
-		if tt, err = re.Theme.NewHtmlTemplateWithContext("render-enjin--"+tag, re.ctx); err == nil {
+		if tt, err = re.Theme.Layouts().NewHtmlTemplate(re.Enjin, "render-enjin--"+tag, re.ctx); err == nil {
 			if tt, err = tt.Parse(tmplContent); err == nil {
 				var w bytes.Buffer
 				if err = tt.Execute(&w, data); err == nil {
@@ -196,7 +195,7 @@ func (re *RenderEnjin) RenderNjnTemplate(tag string, data map[string]interface{}
 		return
 	} else {
 		var tt *template.Template
-		if tt, err = re.Theme.NewHtmlTemplateWithContext("render-enjin--"+tag, re.ctx); err == nil {
+		if tt, err = re.Theme.Layouts().NewHtmlTemplate(re.Enjin, "render-enjin--"+tag, re.ctx); err == nil {
 			if tt, err = tt.Parse(tmplContent); err == nil {
 				var w bytes.Buffer
 				if err = tt.Execute(&w, data); err == nil {

@@ -17,6 +17,7 @@
 package gtm
 
 import (
+	_ "embed"
 	"html/template"
 	"net/http"
 
@@ -26,13 +27,18 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
-	"github.com/go-enjin/be/pkg/theme"
 )
 
 var (
 	DefaultGtmDomain   = "www.googletagmanager.com"
 	DefaultGtmNonceTag = "google-tag-manager"
 )
+
+//go:embed gtm-head-tail.tmpl
+var HeadTailTmpl string
+
+//go:embed gtm-body-head.tmpl
+var BodyHeadTmpl string
 
 const Tag feature.Tag = "google-tag-manager"
 
@@ -43,21 +49,20 @@ var (
 
 type Feature interface {
 	feature.Feature
+	feature.FuncMapProvider
 	feature.RequestRewriter
 	feature.PageContextModifier
 	feature.ContentSecurityPolicyModifier
+}
+
+type MakeFeature interface {
+	Make() Feature
 }
 
 type CFeature struct {
 	feature.CFeature
 
 	googleGtmId string
-
-	theme *theme.Theme
-}
-
-type MakeFeature interface {
-	Make() Feature
 }
 
 func New() MakeFeature {
@@ -88,20 +93,13 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 			Category: f.Tag().String(),
 		},
 	)
+	_ = b.RegisterTemplatePartial("head", "tail", "gtm-script", HeadTailTmpl)
+	_ = b.RegisterTemplatePartial("head", "tail", "gtm-noscript", BodyHeadTmpl)
 	return
 }
 
 func (f *CFeature) Setup(enjin feature.Internals) {
 	f.CFeature.Setup(enjin)
-	var err error
-	if f.theme, err = f.Enjin.GetTheme(); err != nil {
-		log.FatalF("error getting enjin theme: %v - %v", f.Enjin.SiteName())
-	}
-
-	theme.RegisterPartialHeadTail("gtmHeadScriptTmpl", HeadScriptTmpl)
-	theme.RegisterPartialBodyHead("gtmBodyHeadScriptTmpl", HeadScriptTmpl)
-	theme.RegisterFuncMap("gtmNoScriptTag", f.GtmNoScriptTagFn)
-	theme.RegisterFuncMap("gtmHeadScriptTag", f.GtmHeadScriptTagFn)
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
@@ -111,6 +109,18 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if v := ctx.String("google-gtm-id"); v != "" {
 		f.googleGtmId = v
 		log.DebugF("using google-gtm-id: %v", f.googleGtmId)
+	}
+	return
+}
+
+func (f *CFeature) Shutdown() {
+
+}
+
+func (f *CFeature) MakeFuncMap(ctx context.Context) (fm feature.FuncMap) {
+	fm = feature.FuncMap{
+		"gtmNoScriptTag":   f.GtmNoScriptTagFn,
+		"gtmHeadScriptTag": f.GtmHeadScriptTagFn,
 	}
 	return
 }
@@ -126,9 +136,9 @@ func (f *CFeature) GetGoogleGtmId(ctx context.Context) (gtmCode string) {
 	} else if f.googleGtmId != "" {
 		// enjin cli env override
 		gtmCode = f.googleGtmId
-	} else if f.theme.Config.GoogleAnalytics.GTM != "" {
+	} else if v := f.Enjin.MustGetTheme().GetConfig().Context.String(".GoogleAnalytics.GTM", ""); v != "" {
 		// enjin theme setting
-		gtmCode = f.theme.Config.GoogleAnalytics.GTM
+		gtmCode = v
 	}
 	return
 }
@@ -171,6 +181,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 	}
 	return
 }
+
 func (f *CFeature) GtmNoScriptTagFn(gtmCode string) (embed template.HTML) {
 	embed = template.HTML(`<!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=` + gtmCode + `"

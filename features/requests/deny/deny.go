@@ -36,11 +36,6 @@ var (
 	_ MakeFeature = (*CFeature)(nil)
 )
 
-type Feature interface {
-	feature.Feature
-	feature.UseMiddleware
-}
-
 type MakeFeature interface {
 	Make() Feature
 
@@ -51,6 +46,11 @@ type MakeFeature interface {
 	RestrictGit() MakeFeature
 	RestrictWordPress() MakeFeature
 	Defaults() MakeFeature
+}
+
+type Feature interface {
+	feature.Feature
+	feature.UseMiddleware
 }
 
 type CFeature struct {

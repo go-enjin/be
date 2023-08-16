@@ -23,6 +23,7 @@ import (
 	"github.com/puzpuzpuz/xsync/v2"
 
 	"github.com/go-enjin/be/pkg/cmp"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/log"
@@ -32,13 +33,12 @@ import (
 	"github.com/go-enjin/be/pkg/regexps"
 	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/be/pkg/theme"
 )
 
 type cSelector struct {
 	input  string
 	feat   indexing.PageContextProvider
-	theme  *theme.Theme
+	theme  feature.Theme
 	sel    *pageql.Selection
 	cache  *xsync.MapOf[string, map[string]interface{}]
 	lookup *xsync.MapOf[string, map[interface{}][]string]
@@ -47,7 +47,7 @@ type cSelector struct {
 	err error
 }
 
-func NewProcessWith(input string, t *theme.Theme, f indexing.PageContextProvider) (selected map[string]interface{}, err error) {
+func NewProcessWith(input string, t feature.Theme, f indexing.PageContextProvider) (selected map[string]interface{}, err error) {
 	matcher := &cSelector{
 		feat:   f,
 		theme:  t,

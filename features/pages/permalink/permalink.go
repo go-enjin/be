@@ -31,7 +31,6 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
 	bePath "github.com/go-enjin/be/pkg/path"
-	"github.com/go-enjin/be/pkg/theme"
 )
 
 var (
@@ -48,14 +47,22 @@ type Feature interface {
 	feature.Feature
 	feature.UseMiddleware
 	feature.PageContextModifier
+	feature.FuncMapProvider
+}
+
+type MakeFeature interface {
+	Make() Feature
 }
 
 type CFeature struct {
 	feature.CFeature
 }
 
-type MakeFeature interface {
-	Make() Feature
+func (f *CFeature) MakeFuncMap(ctx context.Context) (fm feature.FuncMap) {
+	fm = feature.FuncMap{
+		"_permalink": f._permalink,
+	}
+	return
 }
 
 func New() MakeFeature {
@@ -72,7 +79,6 @@ func NewTagged(tag feature.Tag) MakeFeature {
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	page.RegisterMatcherFn(f._permalinkMatcher)
-	theme.RegisterFuncMap("_permalink", f._permalink)
 }
 
 func (f *CFeature) Make() Feature {

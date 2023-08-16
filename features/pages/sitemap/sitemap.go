@@ -46,16 +46,16 @@ type Feature interface {
 	feature.ApplyMiddleware
 }
 
-type CFeature struct {
-	feature.CFeature
-
-	domain string
-}
-
 type MakeFeature interface {
 	SetDomain(domain string) MakeFeature
 
 	Make() Feature
+}
+
+type CFeature struct {
+	feature.CFeature
+
+	domain string
 }
 
 func New() MakeFeature {
