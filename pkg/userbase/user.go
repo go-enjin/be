@@ -18,9 +18,9 @@ import (
 	"fmt"
 
 	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/page/matter"
-	types "github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 type User struct {
@@ -33,7 +33,7 @@ type User struct {
 	Actions Actions `json:"-"`
 }
 
-func NewUserFromPageMatter(user *AuthUser, pm *matter.PageMatter, formats types.FormatProvider, enjin beContext.Context) (u *User, err error) {
+func NewUserFromPageMatter(user *AuthUser, pm *matter.PageMatter, formats feature.PageFormatProvider, enjin beContext.Context) (u *User, err error) {
 	var pg *page.Page
 	if pg, err = page.NewFromPageMatter(pm, formats, enjin); err != nil {
 		err = fmt.Errorf("error creating page from given page matter: %v", err)

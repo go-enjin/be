@@ -21,13 +21,13 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
-func NewFromPageStub(s *fs.PageStub, formats types.FormatProvider) (p *Page, err error) {
+func NewFromPageStub(s *fs.PageStub, formats feature.PageFormatProvider) (p *Page, err error) {
 	var data []byte
 	if data, err = s.FS.ReadFile(s.Source); err != nil {
 		err = fmt.Errorf("error reading %v mount file: %v - %v", s.FS.Name(), s.Source, err)
