@@ -20,7 +20,7 @@ import (
 	"sort"
 	"strings"
 
-	strings2 "github.com/go-enjin/be/pkg/strings"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 func PruneRootPrefixes(path string) (pruned string) {
@@ -62,7 +62,7 @@ func PruneRootFrom[T string | []string](root string, path T) (pruned T) {
 }
 
 func LookupFilePath(fs FileSystem, basePath string, extensions ...string) (path string, present bool) {
-	sort.Sort(strings2.SortByLengthDesc(extensions))
+	sort.Sort(beStrings.SortByLengthDesc(extensions))
 	for _, extension := range extensions {
 		p := basePath + "." + extension
 		if present = fs.Exists(p); present {
