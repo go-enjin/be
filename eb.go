@@ -119,6 +119,8 @@ type EnjinBuilder struct {
 	enjins []*EnjinBuilder
 
 	publicFileSystems fs.Registry
+
+	buildPages map[string]string
 }
 
 func New() (be *EnjinBuilder) {
@@ -143,6 +145,7 @@ func New() (be *EnjinBuilder) {
 	be.langMode = lang.NewQueryMode().Make()
 	be.defaultLang = language.Und
 	be.publicUser = make(userbase.Actions, 0)
+	be.buildPages = make(map[string]string)
 	return be
 }
 
@@ -236,6 +239,8 @@ func (eb *EnjinBuilder) prepareBuild() {
 			t.AddFormatProvider(p)
 		}
 	}
+
+	eb.buildPagesFromStrings()
 
 	for tag, console := range eb.consoles {
 		if err = console.Build(eb); err != nil {

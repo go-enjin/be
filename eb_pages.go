@@ -18,16 +18,30 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/theme"
 )
 
 func (eb *EnjinBuilder) AddPageFromString(path, raw string) feature.Builder {
+	if _, exists := eb.buildPages[path]; exists {
+		log.WarnDF(1, "overriding existing page-from-string: %s", path)
+	}
+	eb.buildPages[path] = raw
+	return eb
+}
+
+func (eb *EnjinBuilder) buildPagesFromStrings() {
+	for _, path := range maps.SortedKeys(eb.buildPages) {
+		eb.buildPageFromString(path, eb.buildPages[path])
+	}
+}
+
+func (eb *EnjinBuilder) buildPageFromString(path, raw string) {
 	if eb.theme == "" {
 		log.FatalDF(1, "cannot add pages before theme is set")
 	}
 	var ok bool
-	var t *theme.Theme
+	var t feature.Theme
 	if t, ok = eb.theming[eb.theme]; !ok {
 		log.FatalDF(1, "cannot add pages before theme added")
 	}
@@ -38,13 +52,13 @@ func (eb *EnjinBuilder) AddPageFromString(path, raw string) feature.Builder {
 		}
 		updated = info.ModTime().Unix()
 	}
-	if p, err := page.New("enjin", path, raw, created, updated, t, eb.context); err == nil {
+	if p, err := page.New(feature.EnjinTag.String(), path, raw, created, updated, t, eb.context); err == nil {
 		eb.pages[p.Url] = p
 		log.DebugF("adding page from string: %v", p.Url)
 	} else {
 		log.FatalF("error adding page from string: %v", err)
 	}
-	return eb
+	return
 }
 
 func (eb *EnjinBuilder) SetStatusPage(status int, path string) feature.Builder {
