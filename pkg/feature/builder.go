@@ -21,7 +21,6 @@ import (
 
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/net/headers"
-	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -29,9 +28,11 @@ type Builder interface {
 	SiteTag(key string) Builder
 	SiteName(name string) Builder
 	SiteTagLine(title string) Builder
-	SiteLanguageMode(mode lang.Mode) Builder
+
 	SiteCopyrightName(name string) Builder
 	SiteCopyrightNotice(notice string) Builder
+
+	SiteLanguageMode(mode lang.Mode) Builder
 	SiteDefaultLanguage(tag language.Tag) Builder
 	SiteSupportedLanguages(tags ...language.Tag) Builder
 	SiteLanguageDisplayNames(names map[language.Tag]string) Builder
@@ -83,7 +84,7 @@ type Builder interface {
 	SetStatusPage(status int, path string) Builder
 
 	// AddTheme includes the given theme within the built Enjin
-	AddTheme(t *theme.Theme) Builder
+	AddTheme(t Theme) Builder
 
 	// SetTheme configures the default theme
 	SetTheme(name string) Builder

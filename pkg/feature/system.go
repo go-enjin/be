@@ -27,20 +27,18 @@ import (
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
-	"github.com/go-enjin/be/pkg/types/site"
 	"github.com/go-enjin/be/pkg/userbase"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/theme"
 )
 
 type Service interface {
 	Prefix() (prefix string)
 	Context() (ctx context.Context)
-	GetTheme() (t *theme.Theme, err error)
-	MustGetTheme() (t *theme.Theme)
+	GetTheme() (t Theme, err error)
+	MustGetTheme() (t Theme)
 	ThemeNames() (names []string)
 	ServerName() (name string)
 	ServiceInfo() (listen string, port int)
@@ -92,6 +90,8 @@ type Service interface {
 
 	TranslateShortcodes(content string, ctx context.Context) (modified string)
 
+	GetThemeRenderer(ctx context.Context) (renderer ThemeRenderer)
+
 	signaling.EmitterSupport
 }
 
@@ -111,7 +111,7 @@ type RootInternals interface {
 type Internals interface {
 	Service
 	signaling.SignalsSupport
-	site.Enjin
+	SiteEnjin
 
 	Self() (self interface{})
 
@@ -119,7 +119,7 @@ type Internals interface {
 
 	Pages() (pages map[string]*page.Page)
 	Theme() (theme string)
-	Theming() (theming map[string]*theme.Theme)
+	Theming() (theming map[string]Theme)
 	Headers() (headers []headers.ModifyHeadersFn)
 	Domains() (domains []string)
 	Consoles() (consoles map[Tag]Console)
@@ -132,6 +132,13 @@ type Internals interface {
 	MustDB(tag string) (db interface{})
 	SpecificDB(fTag Tag, tag string) (db interface{}, err error)
 	MustSpecificDB(fTag Tag, tag string) (db interface{})
+
+	MakeFuncMap(ctx context.Context) (fm FuncMap)
+
+	PublicFileSystems() (registry fs.Registry)
+
+	ListTemplatePartials(block, position string) (names []string)
+	GetTemplatePartial(block, position, name string) (tmpl string, ok bool)
 }
 
 type CanSetupInternals interface {

@@ -173,7 +173,7 @@ func (f *CFeature[MakeTypedFeature]) Setup(enjin feature.Internals) {
 	f.CFeature.Setup(enjin)
 	for _, point := range maps.SortedKeyLengths(f.MountPoints) {
 		for _, mp := range f.MountPoints[point] {
-			fs.RegisterFileSystem(point, mp.ROFS)
+			f.Enjin.PublicFileSystems().Register(point, mp.ROFS)
 		}
 	}
 }

@@ -14,6 +14,10 @@
 
 package feature
 
+import (
+	"github.com/go-enjin/be/pkg/fs"
+)
+
 type Buildable interface {
 	Builder
 
@@ -22,4 +26,15 @@ type Buildable interface {
 
 	// MakeEnvKeys returns name with EnvPrefix (SCREAMING_SNAKE formatted)
 	MakeEnvKeys(names ...string) (key []string)
+
+	// RegisterPublicFileSystem mounts the given static FileSystems
+	RegisterPublicFileSystem(mount string, filesystems ...fs.FileSystem)
+
+	// RegisterTemplatePartial sets the named go-template content for inclusion at the specified block and position
+	// Notes:
+	//    * "block" must be one of "head" or "body"
+	//    * position must be one of "head" or "tail"
+	//    * adds the given name tmpl to the first feature.TemplatePartialsProvider
+	//    * auto-adds a feature.TemplatePartialsProvider if none are present
+	RegisterTemplatePartial(block, position, name, tmpl string) (err error)
 }

@@ -67,3 +67,10 @@ type PageShortcodeProcessor interface {
 	Feature
 	TranslateShortcodes(content string, ctx context.Context) (modified string)
 }
+
+type TemplatePartialsProvider interface {
+	Feature
+	RegisterTemplatePartial(block, position, name, tmpl string) (err error)
+	ListTemplatePartials(block, position string) (names []string)
+	GetTemplatePartial(block, position, name string) (tmpl string, ok bool)
+}

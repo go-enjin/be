@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package format
+package feature
 
 import (
 	"html/template"
@@ -21,7 +21,6 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/feature"
 )
 
 type PageFormat interface {
@@ -30,7 +29,7 @@ type PageFormat interface {
 	Label() (label string)
 	Extensions() (extensions []string)
 	Prepare(ctx context.Context, content string) (out context.Context, err error)
-	Process(ctx context.Context, content string) (html template.HTML, redirect string, err *feature.EnjinError)
+	Process(ctx context.Context, content string) (html template.HTML, redirect string, err *EnjinError)
 	IndexDocument(pg interface{}) (doc interface{}, err error)
 	NewDocumentMapping(tag language.Tag) (doctype, analyzer string, dm *mapping.DocumentMapping)
 }
