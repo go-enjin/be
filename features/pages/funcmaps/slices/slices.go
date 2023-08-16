@@ -12,19 +12,110 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package funcmaps
+package slices
 
 import (
+	"reflect"
 	"regexp"
 	"sort"
 	"strings"
 
 	"github.com/maruel/natural"
+	"github.com/urfave/cli/v2"
 
+	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
+
+var (
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
+)
+
+const Tag feature.Tag = "pages-funcmaps-slices"
+
+type Feature interface {
+	feature.Feature
+	feature.FuncMapProvider
+}
+
+type MakeFeature interface {
+	Make() Feature
+}
+
+type CFeature struct {
+	feature.CFeature
+}
+
+func New() MakeFeature {
+	return NewTagged(Tag)
+}
+
+func NewTagged(tag feature.Tag) MakeFeature {
+	f := new(CFeature)
+	f.Init(f)
+	f.FeatureTag = tag
+	return f
+}
+
+func (f *CFeature) Init(this interface{}) {
+	f.CFeature.Init(this)
+	return
+}
+
+func (f *CFeature) Make() (feat Feature) {
+	return f
+}
+
+func (f *CFeature) Build(b feature.Buildable) (err error) {
+	return
+}
+
+func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	return
+}
+
+func (f *CFeature) Shutdown() {
+
+}
+
+func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
+	fm = feature.FuncMap{
+		"splitString":                SplitString,
+		"filterStrings":              FilterStrings,
+		"stringsAsList":              StringsAsList,
+		"reverseStrings":             ReverseStrings,
+		"sortedStrings":              SortedStrings,
+		"sortedKeys":                 SortedKeys,
+		"sortedFirstLetters":         SortedFirstLetters,
+		"sortedLastNameFirstLetters": SortedLastNameFirstLetters,
+		"iterate":                    Iterate,
+	}
+	return
+}
+
+func SortedKeys(v interface{}) (keys []string) {
+	t := reflect.TypeOf(v)
+	switch t.Kind() {
+	case reflect.Map:
+		if kt := t.Key(); kt.Kind() == reflect.String {
+			value := reflect.ValueOf(v)
+			mapKeys := value.MapKeys()
+			for _, k := range mapKeys {
+				keys = append(keys, k.String())
+			}
+			sort.Sort(natural.StringSlice(keys))
+			return
+		}
+		log.WarnF("unsupported sortedKeys map key type: %T", v)
+	default:
+		log.WarnF("unsupported sortedKeys type: %T", v)
+	}
+	return
+}
 
 func SplitString(v, delim string) (parts []string) {
 	parts = strings.Split(v, delim)

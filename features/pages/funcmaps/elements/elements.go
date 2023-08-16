@@ -12,16 +12,79 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package funcmaps
+package elements
 
 import (
 	"fmt"
 	"html/template"
 	"strings"
 
+	"github.com/urfave/cli/v2"
+
+	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
 )
+
+var _ Feature = (*CFeature)(nil)
+
+const Tag feature.Tag = "pages-funcmaps-elements"
+
+type Feature interface {
+	feature.Feature
+	feature.FuncMapProvider
+}
+
+type MakeFeature interface {
+	Make() Feature
+}
+
+type CFeature struct {
+	feature.CFeature
+}
+
+func New() MakeFeature {
+	return NewTagged(Tag)
+}
+
+func NewTagged(tag feature.Tag) MakeFeature {
+	f := new(CFeature)
+	f.Init(f)
+	f.FeatureTag = tag
+	return f
+}
+
+func (f *CFeature) Init(this interface{}) {
+	f.CFeature.Init(this)
+	return
+}
+
+func (f *CFeature) Make() (feat Feature) {
+	return f
+}
+
+func (f *CFeature) Build(b feature.Buildable) (err error) {
+	return
+}
+
+func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	return
+}
+
+func (f *CFeature) Shutdown() {
+
+}
+
+func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
+	fm = feature.FuncMap{
+		"element":           Element,
+		"elementOpen":       ElementOpen,
+		"elementClose":      ElementClose,
+		"elementAttributes": ElementAttributes,
+	}
+	return
+}
 
 func elementTextWork(v interface{}) (html template.HTML, err error) {
 	switch t := v.(type) {

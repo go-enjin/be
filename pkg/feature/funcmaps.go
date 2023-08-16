@@ -12,25 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package funcmaps
+package feature
 
 import (
-	"html/template"
+	htmlTemplate "html/template"
+	textTemplate "text/template"
 
-	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/context"
 )
 
-func LogDebug(format string, argv ...interface{}) (html template.HTML) {
-	log.DebugDF(2, format, argv...)
-	return
+type FuncMapProvider interface {
+	Feature
+
+	MakeFuncMap(ctx context.Context) (fm FuncMap)
 }
 
-func LogWarn(format string, argv ...interface{}) (html template.HTML) {
-	log.WarnDF(2, format, argv...)
-	return
+type FuncMap textTemplate.FuncMap
+
+func (fm FuncMap) Apply(other FuncMap) {
+	for k, v := range other {
+		fm[k] = v
+	}
 }
 
-func LogError(format string, argv ...interface{}) (html template.HTML) {
-	log.ErrorDF(2, format, argv...)
-	return
+func (fm FuncMap) AsTEXT() textTemplate.FuncMap {
+	return textTemplate.FuncMap(fm)
+}
+
+func (fm FuncMap) AsHTML() htmlTemplate.FuncMap {
+	return htmlTemplate.FuncMap(fm)
 }

@@ -12,13 +12,87 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package funcmaps
+package math
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 
+	"github.com/urfave/cli/v2"
+
+	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 )
+
+var (
+	_ Feature     = (*CFeature)(nil)
+	_ MakeFeature = (*CFeature)(nil)
+)
+
+const Tag feature.Tag = "pages-funcmaps-math"
+
+type Feature interface {
+	feature.Feature
+	feature.FuncMapProvider
+}
+
+type MakeFeature interface {
+	Make() Feature
+}
+
+type CFeature struct {
+	feature.CFeature
+}
+
+func New() MakeFeature {
+	return NewTagged(Tag)
+}
+
+func NewTagged(tag feature.Tag) MakeFeature {
+	f := new(CFeature)
+	f.Init(f)
+	f.FeatureTag = tag
+	return f
+}
+
+func (f *CFeature) Init(this interface{}) {
+	f.CFeature.Init(this)
+	return
+}
+
+func (f *CFeature) Make() (feat Feature) {
+	return f
+}
+
+func (f *CFeature) Build(b feature.Buildable) (err error) {
+	return
+}
+
+func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	return
+}
+
+func (f *CFeature) Shutdown() {
+
+}
+
+func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
+	fm = feature.FuncMap{
+		"numberAsInt": NumberAsInt,
+		"add":         Add,
+		"sub":         Sub,
+		"mul":         Mul,
+		"div":         Div,
+		"mod":         Mod,
+		"addFloat":    AddFloat,
+		"subFloat":    SubFloat,
+		"mulFloat":    MulFloat,
+		"divFloat":    DivFloat,
+	}
+	return
+}
 
 func Int(v interface{}) (i int64) {
 	switch t := v.(type) {
@@ -47,8 +121,10 @@ func Int(v interface{}) (i int64) {
 	case float64:
 		i = int64(t)
 	case string:
-		if vv, err := strconv.Atoi(t); err != nil {
-			i = int64(vv)
+		if ii, err := strconv.Atoi(strings.TrimSpace(t)); err == nil {
+			i = int64(ii)
+		} else {
+			log.ErrorF("error parsing string integer: %v", err)
 		}
 	}
 	return
@@ -81,8 +157,9 @@ func Float(v interface{}) (i float64) {
 	case float64:
 		i = t
 	case string:
-		if vv, err := strconv.ParseFloat(t, 64); err != nil {
-			i = vv
+		var err error
+		if i, err = strconv.ParseFloat(strings.TrimSpace(t), 64); err != nil {
+			log.ErrorF("error parsing string float: %v - %v", t, err)
 		}
 	}
 	return
@@ -116,10 +193,10 @@ func Mul(a, b interface{}) (result int64) {
 	return
 }
 
-func Div(a, b interface{}) (result int64) {
+func Div(a, b interface{}) (result int64, err error) {
 	ia, ib := Int(a), Int(b)
 	if ib == 0 {
-		log.WarnF("caught template divide by zero: %d / %d (%v / %v)", ia, ib, a, b)
+		err = fmt.Errorf("divide by zero")
 		return
 	}
 	result = ia / ib
@@ -159,12 +236,18 @@ func MulFloat(a, b interface{}) (result float64) {
 	return
 }
 
-func DivFloat(a, b interface{}) (result float64) {
+func DivFloat(a, b interface{}) (result float64, err error) {
 	ia, ib := Float(a), Float(b)
 	if ib == 0 {
-		log.WarnF("caught template divide by zero: %d / %d (%v / %v)", ia, ib, a, b)
+		err = fmt.Errorf("divide by zero")
 		return
 	}
 	result = ia / ib
+	return
+}
+
+func NumberAsInt(v interface{}) (value int) {
+	s := fmt.Sprintf("%v", v)
+	value, _ = strconv.Atoi(s)
 	return
 }
