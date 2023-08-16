@@ -58,7 +58,9 @@ import (
 	_select "github.com/go-enjin/be/features/pages/formats/njn/fields/select"
 	"github.com/go-enjin/be/features/pages/formats/njn/fields/table"
 	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/format"
 	beForms "github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
@@ -84,7 +86,7 @@ var (
 
 type Feature interface {
 	feature.Feature
-	feature.PageFormat
+	format.PageFormat
 	feature.EnjinSystem
 }
 
@@ -308,7 +310,7 @@ func (f *CFeature) Prepare(ctx context.Context, content string) (out context.Con
 	return
 }
 
-func (f *CFeature) Process(ctx context.Context, content string) (html template.HTML, redirect string, err *feature.EnjinError) {
+func (f *CFeature) Process(ctx context.Context, content string) (html template.HTML, redirect string, err *errors.EnjinError) {
 	var data interface{}
 	if e := json.Unmarshal([]byte(content), &data); e != nil {
 		switch errType := e.(type) {
@@ -316,7 +318,7 @@ func (f *CFeature) Process(ctx context.Context, content string) (html template.H
 			output := template.HTMLEscapeString(content[:errType.Offset])
 			output += fmt.Sprintf(`<span style="color:red;weight:bold;" id="json-error">&lt;-- %v</span>`, errType.Error())
 			output += template.HTMLEscapeString(content[errType.Offset:])
-			err = feature.NewEnjinError(
+			err = errors.NewEnjinError(
 				"json syntax error",
 				fmt.Sprintf(`<a style="color:red;" href="#json-error">[%d] %v</a>`, errType.Offset, errType.Error()),
 				output,
@@ -325,13 +327,13 @@ func (f *CFeature) Process(ctx context.Context, content string) (html template.H
 			output := template.HTMLEscapeString(content[:errType.Offset])
 			output += fmt.Sprintf(`<span style="color:red;weight:bold;" id="json-error">&lt;-- %v</span>`, errType.Error())
 			output += template.HTMLEscapeString(content[errType.Offset:])
-			err = feature.NewEnjinError(
+			err = errors.NewEnjinError(
 				"json unmarshal error",
 				fmt.Sprintf(`<a style="color:red;" href="#json-error">[%d] %v</a>`, errType.Offset, errType.Error()),
 				output,
 			)
 		default:
-			err = feature.NewEnjinError(
+			err = errors.NewEnjinError(
 				"json decoding error",
 				errType.Error(),
 				content,

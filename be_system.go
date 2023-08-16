@@ -27,6 +27,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/format"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
@@ -200,7 +201,7 @@ func (e *Enjin) ListFormats() (names []string) {
 	return
 }
 
-func (e *Enjin) GetFormat(name string) (format feature.PageFormat) {
+func (e *Enjin) GetFormat(name string) (format format.PageFormat) {
 	for _, p := range e.eb.fFormatProviders {
 		if format = p.GetFormat(name); format != nil {
 			return
@@ -209,7 +210,7 @@ func (e *Enjin) GetFormat(name string) (format feature.PageFormat) {
 	return
 }
 
-func (e *Enjin) MatchFormat(filename string) (format feature.PageFormat, match string) {
+func (e *Enjin) MatchFormat(filename string) (format format.PageFormat, match string) {
 	for _, p := range e.eb.fFormatProviders {
 		if format, match = p.MatchFormat(filename); format != nil {
 			return

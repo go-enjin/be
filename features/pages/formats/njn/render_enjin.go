@@ -24,6 +24,7 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -52,7 +53,7 @@ type RenderEnjin struct {
 	sync.RWMutex
 }
 
-func renderNjnData(f *CFeature, ctx context.Context, data interface{}) (html template.HTML, redirect string, err *feature.EnjinError) {
+func renderNjnData(f *CFeature, ctx context.Context, data interface{}) (html template.HTML, redirect string, err *errors.EnjinError) {
 	re := new(RenderEnjin)
 	re.Njn = f
 	re.Enjin = f.Enjin
@@ -77,7 +78,7 @@ func (re *RenderEnjin) RequestContext() (ctx context.Context) {
 	return
 }
 
-func (re *RenderEnjin) Render(data interface{}) (html template.HTML, redirect string, err *feature.EnjinError) {
+func (re *RenderEnjin) Render(data interface{}) (html template.HTML, redirect string, err *errors.EnjinError) {
 
 	if prepared, redir, e := re.PreparePageData(data); e != nil {
 		err = e
@@ -88,7 +89,7 @@ func (re *RenderEnjin) Render(data interface{}) (html template.HTML, redirect st
 	} else {
 		if h, ee := re.RenderNjnTemplateList("block-list", prepared); ee != nil {
 			content, _ := json.MarshalIndent(prepared, "", "    ")
-			err = feature.NewEnjinError(
+			err = errors.NewEnjinError(
 				"error rendering njn template list",
 				ee.Error(),
 				string(content),
@@ -101,7 +102,7 @@ func (re *RenderEnjin) Render(data interface{}) (html template.HTML, redirect st
 	return
 }
 
-func (re *RenderEnjin) PreparePageData(data interface{}) (blocks []interface{}, redirect string, err *feature.EnjinError) {
+func (re *RenderEnjin) PreparePageData(data interface{}) (blocks []interface{}, redirect string, err *errors.EnjinError) {
 
 	switch typedData := data.(type) {
 
@@ -130,7 +131,7 @@ func (re *RenderEnjin) PreparePageData(data interface{}) (blocks []interface{}, 
 		}
 
 	default:
-		err = feature.NewEnjinError(
+		err = errors.NewEnjinError(
 			"unsupported njn data type",
 			fmt.Sprintf("unsupported njn data type received: %T", typedData),
 			fmt.Sprintf("%+v", typedData),

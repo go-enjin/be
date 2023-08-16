@@ -20,6 +20,7 @@ import (
 	textTemplate "text/template"
 
 	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/format"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
@@ -72,8 +73,8 @@ type Theme interface {
 	Layouts() ThemeLayouts
 	FindLayout(named string) (layout ThemeLayout, name string, ok bool)
 
-	AddFormatProvider(providers ...PageFormatProvider)
-	PageFormatProvider
+	AddFormatProvider(providers ...format.PageFormatProvider)
+	format.PageFormatProvider
 
 	Middleware(next http.Handler) http.Handler
 }

@@ -26,7 +26,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/format"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page/matter"
@@ -69,12 +69,12 @@ type Page struct {
 
 	Context context.Context `json:"Context"`
 
-	Formats feature.PageFormatProvider `json:"-"`
+	Formats format.PageFormatProvider `json:"-"`
 
 	copied int
 }
 
-func New(origin string, path, raw string, created, updated int64, formats feature.PageFormatProvider, enjin context.Context) (p *Page, err error) {
+func New(origin string, path, raw string, created, updated int64, formats format.PageFormatProvider, enjin context.Context) (p *Page, err error) {
 	var pm *matter.PageMatter
 	if pm, err = matter.ParsePageMatter(origin, path, time.Unix(created, 0), time.Unix(updated, 0), []byte(raw)); err != nil {
 		return
@@ -83,7 +83,7 @@ func New(origin string, path, raw string, created, updated int64, formats featur
 	return
 }
 
-func NewFromPageMatter(pm *matter.PageMatter, formats feature.PageFormatProvider, enjin context.Context) (p *Page, err error) {
+func NewFromPageMatter(pm *matter.PageMatter, formats format.PageFormatProvider, enjin context.Context) (p *Page, err error) {
 	p = new(Page)
 	p.PageMatter = pm
 	p.Content = pm.Body

@@ -23,6 +23,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/format"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -49,7 +50,7 @@ type Theme struct {
 	fs       fs.FileSystem
 	staticFS fs.FileSystem
 
-	formatProviders []feature.PageFormatProvider
+	formatProviders []format.PageFormatProvider
 }
 
 func New(origin, path string, themeFs, staticFs fs.FileSystem) (ft feature.Theme, err error) {
@@ -179,7 +180,7 @@ func (t *Theme) GetBlockThemeNames() (names []string) {
 	return
 }
 
-func (t *Theme) AddFormatProvider(providers ...feature.PageFormatProvider) {
+func (t *Theme) AddFormatProvider(providers ...format.PageFormatProvider) {
 	t.formatProviders = append(t.formatProviders, providers...)
 }
 
@@ -191,7 +192,7 @@ func (t *Theme) ListFormats() (names []string) {
 	return
 }
 
-func (t *Theme) GetFormat(name string) (format feature.PageFormat) {
+func (t *Theme) GetFormat(name string) (format format.PageFormat) {
 	for _, provider := range t.formatProviders {
 		if format = provider.GetFormat(name); format != nil {
 			return
@@ -200,7 +201,7 @@ func (t *Theme) GetFormat(name string) (format feature.PageFormat) {
 	return
 }
 
-func (t *Theme) MatchFormat(filename string) (format feature.PageFormat, match string) {
+func (t *Theme) MatchFormat(filename string) (format format.PageFormat, match string) {
 	for _, provider := range t.formatProviders {
 		if format, match = provider.MatchFormat(filename); format != nil {
 			return

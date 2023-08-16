@@ -25,6 +25,7 @@ import (
 	"github.com/go-enjin/be/features/pages/formats/text"
 	"github.com/go-enjin/be/features/pages/formats/tmpl"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/format"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 )
@@ -38,12 +39,12 @@ var (
 
 type Feature interface {
 	feature.Feature
-	feature.PageFormatProvider
+	format.PageFormatProvider
 }
 
 type MakeFeature interface {
 	Defaults() MakeFeature
-	AddFormat(formats ...feature.PageFormat) MakeFeature
+	AddFormat(formats ...format.PageFormat) MakeFeature
 
 	Make() Feature
 }
@@ -51,7 +52,7 @@ type MakeFeature interface {
 type CFeature struct {
 	feature.CFeature
 
-	formats map[string]feature.PageFormat
+	formats map[string]format.PageFormat
 }
 
 func New() MakeFeature {
@@ -67,7 +68,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
-	f.formats = make(map[string]feature.PageFormat)
+	f.formats = make(map[string]format.PageFormat)
 }
 
 func (f *CFeature) Defaults() MakeFeature {
@@ -83,7 +84,7 @@ func (f *CFeature) Defaults() MakeFeature {
 	return f
 }
 
-func (f *CFeature) AddFormat(formats ...feature.PageFormat) MakeFeature {
+func (f *CFeature) AddFormat(formats ...format.PageFormat) MakeFeature {
 	for _, format := range formats {
 		log.DebugF("adding format: %v", format.Label())
 		for _, extn := range format.Extensions() {
@@ -115,12 +116,12 @@ func (f *CFeature) ListFormats() (names []string) {
 	return
 }
 
-func (f *CFeature) GetFormat(extn string) (format feature.PageFormat) {
+func (f *CFeature) GetFormat(extn string) (format format.PageFormat) {
 	format, _ = f.formats[extn]
 	return
 }
 
-func (f *CFeature) MatchFormat(filename string) (format feature.PageFormat, match string) {
+func (f *CFeature) MatchFormat(filename string) (format format.PageFormat, match string) {
 	for _, extn := range f.ListFormats() {
 		frmt := f.formats[extn]
 		if strings.HasSuffix(filename, "."+extn) {

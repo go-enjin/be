@@ -17,10 +17,10 @@ package renderer
 import (
 	htmlTemplate "html/template"
 
-	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/errors"
 )
 
 func (f *CFeature) renderErrorPage(title, summary, output string) (html htmlTemplate.HTML) {
-	html = feature.NewEnjinError(title, summary, output).Html()
+	html = errors.NewEnjinError(title, summary, output).Html()
 	return
 }

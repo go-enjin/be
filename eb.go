@@ -29,6 +29,7 @@ import (
 	beCli "github.com/go-enjin/be/pkg/cli"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/format"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/indexing"
@@ -82,7 +83,7 @@ type EnjinBuilder struct {
 	publicUser  userbase.Actions
 	userActions userbase.Actions
 
-	fFormatProviders                []feature.PageFormatProvider
+	fFormatProviders                []format.PageFormatProvider
 	fRequestFilters                 []feature.RequestFilter
 	fPageContextModifiers           []feature.PageContextModifier
 	fPageRestrictionHandlers        []feature.PageRestrictionHandler

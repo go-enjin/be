@@ -23,7 +23,9 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/format"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
@@ -38,7 +40,7 @@ var (
 
 type Feature interface {
 	feature.Feature
-	feature.PageFormat
+	format.PageFormat
 }
 
 type MakeFeature interface {
@@ -87,10 +89,10 @@ func (f *CFeature) Prepare(ctx context.Context, content string) (out context.Con
 	return
 }
 
-func (f *CFeature) Process(ctx context.Context, content string) (html htmlTemplate.HTML, redirect string, err *feature.EnjinError) {
+func (f *CFeature) Process(ctx context.Context, content string) (html htmlTemplate.HTML, redirect string, err *errors.EnjinError) {
 	renderer := f.Enjin.GetThemeRenderer(ctx)
 	if rendered, e := renderer.RenderTextTemplateContent(ctx, content); e != nil {
-		err = feature.NewEnjinError(
+		err = errors.NewEnjinError(
 			"tmpl render error",
 			e.Error(),
 			content,
