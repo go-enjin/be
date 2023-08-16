@@ -59,6 +59,12 @@ type Feature interface {
 	feature.PageTypeProcessor
 }
 
+type MakeFeature interface {
+	SetSearchPath(path string) MakeFeature
+
+	Make() Feature
+}
+
 type CFeature struct {
 	feature.CFeature
 
@@ -66,12 +72,6 @@ type CFeature struct {
 	search indexing.SearchEnjinFeature
 
 	sync.RWMutex
-}
-
-type MakeFeature interface {
-	SetSearchPath(path string) MakeFeature
-
-	Make() Feature
 }
 
 func New() MakeFeature {

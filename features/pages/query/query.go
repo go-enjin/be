@@ -41,14 +41,14 @@ type Feature interface {
 	feature.PageTypeProcessor
 }
 
+type MakeFeature interface {
+	Make() Feature
+}
+
 type CFeature struct {
 	feature.CFeature
 
 	sync.RWMutex
-}
-
-type MakeFeature interface {
-	Make() Feature
 }
 
 func New() MakeFeature {

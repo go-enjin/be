@@ -44,19 +44,19 @@ type Feature interface {
 	ShortcodeFeature
 }
 
-type CFeature struct {
-	feature.CFeature
-
-	known   map[string]Shortcode
-	aliases map[string]string
-}
-
 type MakeFeature interface {
 	Make() Feature
 
 	Defaults() MakeFeature
 
 	Add(shortcodes ...Shortcode) MakeFeature
+}
+
+type CFeature struct {
+	feature.CFeature
+
+	known   map[string]Shortcode
+	aliases map[string]string
 }
 
 func New() MakeFeature {

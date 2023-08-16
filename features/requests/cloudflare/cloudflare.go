@@ -40,17 +40,17 @@ type Feature interface {
 	feature.RequestFilter
 }
 
+type MakeFeature interface {
+	Make() Feature
+
+	AllowDirect() MakeFeature
+}
+
 type CFeature struct {
 	feature.CFeature
 
 	allowDirect bool
 	ipRanges    []string
-}
-
-type MakeFeature interface {
-	Make() Feature
-
-	AllowDirect() MakeFeature
 }
 
 func New() MakeFeature {

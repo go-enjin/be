@@ -38,16 +38,16 @@ type Feature interface {
 	feature.RequestModifier
 }
 
-type CFeature struct {
-	feature.CFeature
-
-	enabled bool
-}
-
 type MakeFeature interface {
 	Enable() MakeFeature
 
 	Make() Feature
+}
+
+type CFeature struct {
+	feature.CFeature
+
+	enabled bool
 }
 
 func New() MakeFeature {

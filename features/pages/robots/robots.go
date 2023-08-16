@@ -41,6 +41,16 @@ type Feature interface {
 	feature.ApplyMiddleware
 }
 
+type MakeFeature interface {
+	AddSitemap(sitemap string) MakeFeature
+	AddRuleGroup(rule RuleGroup) MakeFeature
+
+	SiteRobotsHeader(content string) MakeFeature
+	SiteRobotsMetaTag(content string) MakeFeature
+
+	Make() Feature
+}
+
 type CFeature struct {
 	feature.CFeature
 
@@ -51,16 +61,6 @@ type CFeature struct {
 	siteMetaTag string
 
 	metaRobots string
-}
-
-type MakeFeature interface {
-	AddSitemap(sitemap string) MakeFeature
-	AddRuleGroup(rule RuleGroup) MakeFeature
-
-	SiteRobotsHeader(content string) MakeFeature
-	SiteRobotsMetaTag(content string) MakeFeature
-
-	Make() Feature
 }
 
 func New() MakeFeature {
