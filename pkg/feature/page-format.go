@@ -1,4 +1,4 @@
-// Copyright (c) 2022  The Go-Enjin Authors
+// Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package types
+package format
 
 import (
 	"html/template"
@@ -21,21 +21,22 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/feature"
 )
 
-type Format interface {
+type PageFormat interface {
 	This() interface{}
 	Name() (name string)
 	Label() (label string)
 	Extensions() (extensions []string)
 	Prepare(ctx context.Context, content string) (out context.Context, err error)
-	Process(ctx context.Context, t Theme, content string) (html template.HTML, redirect string, err *EnjinError)
+	Process(ctx context.Context, content string) (html template.HTML, redirect string, err *feature.EnjinError)
 	IndexDocument(pg interface{}) (doc interface{}, err error)
 	NewDocumentMapping(tag language.Tag) (doctype, analyzer string, dm *mapping.DocumentMapping)
 }
 
-type FormatProvider interface {
+type PageFormatProvider interface {
 	ListFormats() (names []string)
-	GetFormat(name string) (format Format)
-	MatchFormat(filename string) (format Format, match string)
+	GetFormat(name string) (format PageFormat)
+	MatchFormat(filename string) (format PageFormat, match string)
 }
