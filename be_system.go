@@ -26,13 +26,11 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/theme"
-	"github.com/go-enjin/be/pkg/types/site"
-	"github.com/go-enjin/be/pkg/types/theme-types"
 )
 
 func (e *Enjin) Router() (router *chi.Mux) {
@@ -50,7 +48,7 @@ func (e *Enjin) ServerName() (name string) {
 	return
 }
 
-func (e *Enjin) GetTheme() (t *theme.Theme, err error) {
+func (e *Enjin) GetTheme() (t feature.Theme, err error) {
 	var ok bool
 	var name string
 	if name = e.eb.context.String("Theme", e.eb.theme); name == "" {
@@ -64,7 +62,7 @@ func (e *Enjin) GetTheme() (t *theme.Theme, err error) {
 	return
 }
 
-func (e *Enjin) MustGetTheme() (t *theme.Theme) {
+func (e *Enjin) MustGetTheme() (t feature.Theme) {
 	var err error
 	if t, err = e.GetTheme(); err != nil {
 		log.FatalDF(1, "error getting enjin theme: %v", err)
@@ -77,6 +75,17 @@ func (e *Enjin) ThemeNames() (names []string) {
 		names = append(names, name)
 	}
 	sort.Sort(sortorder.Natural(names))
+	return
+}
+
+func (e *Enjin) MakeFuncMap(ctx context.Context) (fm feature.FuncMap) {
+	fm = feature.FuncMap{}
+	for _, fmp := range e.eb.fFuncMapProviders {
+		made := fmp.MakeFuncMap(ctx)
+		for name, fn := range made {
+			fm[name] = fn
+		}
+	}
 	return
 }
 
@@ -114,8 +123,8 @@ func (e *Enjin) Context() (ctx context.Context) {
 	ctx.SetSpecific("CurrentYear", now.Year())
 	ctx.SetSpecific("Release", globals.BinHash)
 	ctx.SetSpecific("Version", globals.Version)
-	ctx.SetSpecific("SiteInfo", site.MakeInfo(e))
-	ctx.SetSpecific("SiteEnjin", site.Enjin(e))
+	ctx.SetSpecific("SiteInfo", feature.MakeSiteInfo(e))
+	ctx.SetSpecific("SiteEnjin", feature.SiteEnjin(e))
 	return
 }
 
@@ -191,7 +200,7 @@ func (e *Enjin) ListFormats() (names []string) {
 	return
 }
 
-func (e *Enjin) GetFormat(name string) (format types.Format) {
+func (e *Enjin) GetFormat(name string) (format feature.PageFormat) {
 	for _, p := range e.eb.fFormatProviders {
 		if format = p.GetFormat(name); format != nil {
 			return
@@ -200,7 +209,7 @@ func (e *Enjin) GetFormat(name string) (format types.Format) {
 	return
 }
 
-func (e *Enjin) MatchFormat(filename string) (format types.Format, match string) {
+func (e *Enjin) MatchFormat(filename string) (format feature.PageFormat, match string) {
 	for _, p := range e.eb.fFormatProviders {
 		if format, match = p.MatchFormat(filename); format != nil {
 			return

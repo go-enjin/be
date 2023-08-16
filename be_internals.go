@@ -2,11 +2,11 @@ package be
 
 import (
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
 	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/theme"
 )
 
 func (e *Enjin) Features() (cache *feature.FeaturesCache) {
@@ -24,7 +24,7 @@ func (e *Enjin) Theme() (theme string) {
 	return
 }
 
-func (e *Enjin) Theming() (theming map[string]*theme.Theme) {
+func (e *Enjin) Theming() (theming map[string]feature.Theme) {
 	theming = e.eb.theming
 	return
 }
@@ -71,5 +71,33 @@ func (e *Enjin) ContentSecurityPolicy() (handler *csp.PolicyHandler) {
 
 func (e *Enjin) PermissionsPolicy() (handler *permissions.PolicyHandler) {
 	handler = e.permissionsPolicy
+	return
+}
+
+func (e *Enjin) PublicFileSystems() (registry fs.Registry) {
+	registry = e.eb.publicFileSystems
+	return
+}
+
+func (e *Enjin) ListTemplatePartials(block, position string) (names []string) {
+	found := make(map[string]struct{})
+	for _, tpp := range e.eb.fTemplatePartialsProvider {
+		for _, name := range tpp.ListTemplatePartials(block, position) {
+			if _, present := found[name]; present {
+				continue
+			}
+			names = append(names, name)
+			found[name] = struct{}{}
+		}
+	}
+	return
+}
+
+func (e *Enjin) GetTemplatePartial(block, position, name string) (tmpl string, ok bool) {
+	for _, tpp := range e.eb.fTemplatePartialsProvider {
+		if tmpl, ok = tpp.GetTemplatePartial(block, position, name); ok {
+			return
+		}
+	}
 	return
 }

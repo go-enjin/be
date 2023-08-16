@@ -24,6 +24,8 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net"
@@ -32,7 +34,6 @@ import (
 	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/request/argv"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/be/pkg/theme"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -165,6 +166,9 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	if p.Url != "" && p.Url[0] == '!' {
 		err = fmt.Errorf("cannot serve not-path page: %v", p.Url)
 		return
+	} else if len(e.eb.fThemeRenderers) == 0 {
+		err = fmt.Errorf("enjin has no theme renderers, cannot ServePage")
+		return
 	}
 
 	if v, ok := r.Context().Value("userbase-denied-allow-error-page").(bool); ok && v {
@@ -221,13 +225,11 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	var t *theme.Theme
+	var t feature.Theme
 	if t, err = e.GetTheme(); err != nil {
 		return
-	}
-
-	if e.eb.hotReload {
-		log.DebugF("hot-reloading theme: %v", t.Name)
+	} else if e.eb.hotReload {
+		log.DebugF("hot-reloading theme: %v", t.Name())
 		if err = t.Reload(); err != nil {
 			err = fmt.Errorf("error reloading theme: %v", err)
 			return
@@ -251,8 +253,9 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	})
 	ctx.SetSpecific("RequestContext", r.Context())
 
+	tConfig := t.GetConfig()
 	var pccs *csp.PageContextContentSecurity
-	pccs, r = e.contentSecurityPolicy.PreparePageContext(t.Config.ContentSecurityPolicy, ctx, r)
+	pccs, r = e.contentSecurityPolicy.PreparePageContext(tConfig.ContentSecurityPolicy, ctx, r)
 	ctx.SetSpecific("RequestPolicy", map[string]interface{}{
 		"Permissions":     e.permissionsPolicy.GetRequestPolicy(r),
 		"ContentSecurity": pccs,
@@ -312,7 +315,10 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 
 	var data []byte
 	var redirect string
-	if data, redirect, err = t.RenderPage(ctx, p); err != nil {
+
+	renderer := e.GetThemeRenderer(ctx)
+
+	if data, redirect, err = renderer.RenderPage(ctx, p); err != nil {
 		log.ErrorRF(r, "error rendering page: %v - %v", p.Url, err)
 		return
 	} else if redirect != "" {
@@ -329,6 +335,23 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	e.permissionsPolicy.FinalizeRequest(w, r)
 	e.contentSecurityPolicy.FinalizeRequest(w, r)
 	e.ServeData(data, mime, w, r)
+	return
+}
+
+func (e *Enjin) GetThemeRenderer(ctx beContext.Context) (renderer feature.ThemeRenderer) {
+
+	if namedRenderer := ctx.String("ThemeRenderer", ""); namedRenderer != "" {
+		for _, tr := range e.eb.fThemeRenderers {
+			if tr.Tag().Equal(feature.Tag(namedRenderer)) {
+				renderer = tr
+				break
+			}
+		}
+	}
+	if renderer == nil {
+		renderer = e.eb.fThemeRenderers[0]
+	}
+
 	return
 }
 

@@ -47,8 +47,6 @@ import (
 
 //go:generate _scripts/be-pkg-list.sh
 
-const EnjinTag feature.Tag = "enjin"
-
 var (
 	_ feature.Runner    = (*Enjin)(nil)
 	_ feature.System    = (*Enjin)(nil)

@@ -24,10 +24,8 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/globals"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/headers"
@@ -133,7 +131,6 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	if t, ee := e.GetTheme(); ee != nil {
 		log.WarnF("not including any theme middleware: %v", ee)
 	} else {
-		log.DebugF("including %v theme middleware", t.Name)
 		router.Use(t.Middleware)
 		if tp := t.GetParent(); tp != nil {
 			router.Use(tp.Middleware)
@@ -201,49 +198,13 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	router.MethodNotAllowed(e.Serve405)
 
 	// standard page processing catch-all-not-already-routed
-	router.HandleFunc("/*", e.RoutingHTTP)
+	if e.eb.fRoutePagesHandler != nil {
+		log.DebugF("default routing handler: %s", e.eb.fRoutePagesHandler.Tag())
+		router.HandleFunc("/*", e.eb.fRoutePagesHandler.RoutePage)
+	} else {
+		log.DebugF("default routing handler: .ServeNotFound")
+		router.HandleFunc("/*", e.ServeNotFound)
+	}
 
 	return
-}
-
-func (e *Enjin) RoutingHTTP(w http.ResponseWriter, r *http.Request) {
-	path := r.URL.Path
-	tag := lang.GetTag(r)
-
-	// look for any page provider providing the requested page
-	for _, pp := range e.eb.fPageProviders {
-		if pg := pp.FindPage(tag, path); pg != nil {
-			if err := e.ServePage(pg, w, r); err == nil {
-				log.DebugRF(r, "enjin router served provided page: %v", pg.Url)
-				e.Emit(signaling.SignalServePage, pp.(feature.Feature).Tag().String(), pg)
-				return
-			} else {
-				log.ErrorRF(r, "error serving provided page: %v - %v", pg.Url, err)
-			}
-		}
-	}
-
-	// look for any serve-path feature handling the requested page
-	for _, spf := range e.eb.fServePathFeatures {
-		if ee := spf.ServePath(path, e, w, r); ee == nil {
-			log.DebugRF(r, "%v feature served path: %v", spf.(feature.Feature).Tag(), path)
-			e.Emit(signaling.SignalServePath, spf.(feature.Feature).Tag().String(), path)
-			return
-		}
-	}
-
-	// look for any fallback, enjin-built-in, pages
-	if pg, ok := e.eb.pages[path]; ok {
-		if err := e.ServePage(pg, w, r); err != nil {
-			log.ErrorRF(r, "serve page err: %v", err)
-			e.ServeInternalServerError(w, r)
-		} else {
-			log.DebugRF(r, "enjin router served page: %v", path)
-			e.Emit(signaling.SignalServePage, EnjinTag.String(), pg)
-		}
-		return
-	}
-
-	log.DebugRF(r, "enjin router did not find any page or path for: %v", path)
-	e.ServeNotFound(w, r)
 }
