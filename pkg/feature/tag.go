@@ -19,11 +19,24 @@ import (
 )
 
 const (
-	NilTag Tag = ""
+	NilTag   Tag = ""
+	EnjinTag Tag = "enjin"
 )
 
 // Tag is the primary identifier type for enjin Feature implementations
 type Tag string
+
+// IsNil returns true if the tag is empty
+func (t Tag) IsNil() (empty bool) {
+	empty = t == NilTag
+	return
+}
+
+// Equal returns true if the kebab-case of this Tag is the same as the kebab-case of the other Tag
+func (t Tag) Equal(other Tag) (same bool) {
+	same = t.Kebab() == other.Kebab()
+	return
+}
 
 // String returns the Tag as a string
 func (t Tag) String() string {
