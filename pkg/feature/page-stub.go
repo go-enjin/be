@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package fs
+package feature
 
 import (
 	"encoding/gob"
@@ -23,6 +23,7 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/fs"
 )
 
 func init() {
@@ -34,12 +35,9 @@ type ValueStubPair struct {
 	Stub  *PageStub
 }
 
-// TODO: serialization of PageStub for BigCache requires FS to be included, implement a means of looking up filesystems
-//       so as to only cache the lookup key and if enjin lacks fs, that's some sort of error, perhaps fatal
-
 type PageStub struct {
 	Origin   string
-	FS       FileSystem
+	FS       fs.FileSystem
 	Point    string
 	Shasum   string
 	Source   string
@@ -48,7 +46,7 @@ type PageStub struct {
 	EnjinCtx beContext.Context
 }
 
-func NewPageStub(origin string, enjin beContext.Context, bfs FileSystem, point, source, shasum string, fallback language.Tag) (s *PageStub) {
+func NewPageStub(origin string, enjin beContext.Context, bfs fs.FileSystem, point, source, shasum string, fallback language.Tag) (s *PageStub) {
 	s = &PageStub{
 		Origin:   origin,
 		FS:       bfs,
@@ -99,7 +97,7 @@ func (ps *PageStub) GobDecode(data []byte) (err error) {
 	}
 	ps.Origin = parts[0]
 	id := parts[1]
-	if v, ok := GetFileSystem(id); ok {
+	if v, ok := fs.GetFileSystem(id); ok {
 		ps.FS = v
 	} else {
 		err = fmt.Errorf("filesystem not found: %v", id)
