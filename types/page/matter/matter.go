@@ -62,7 +62,7 @@ type PageMatter struct {
 }
 
 func NewPageMatter(origin string, path, body string, frontMatterType FrontMatterType, matter beContext.Context) (pm *PageMatter) {
-	stanza := MakeFrontMatterStanza(frontMatterType, matter)
+	stanza := MakeStanza(frontMatterType, matter)
 	content := stanza + "\n" + body
 	now := time.Now()
 	var err error
@@ -83,20 +83,20 @@ func ParsePageMatter(origin string, path string, created, updated time.Time, raw
 	cleaned := lang.StripTranslatorComments(string(raw))
 
 	var ctx beContext.Context
-	matter, content, matterType := ParseFrontMatterContent(cleaned)
+	matter, content, matterType := ParseContent(cleaned)
 	switch matterType {
 	case JsonMatter:
-		if ctx, err = ParseJson(matter); err != nil {
+		if ctx, err = beContext.ParseJson(matter); err != nil {
 			err = fmt.Errorf("error parsing JSON front-matter: %v", err)
 			return
 		}
 	case TomlMatter:
-		if ctx, err = ParseToml(matter); err != nil {
+		if ctx, err = beContext.ParseToml(matter); err != nil {
 			err = fmt.Errorf("error parsing TOML front-matter: %v", err)
 			return
 		}
 	case YamlMatter:
-		if ctx, err = ParseYaml(matter); err != nil {
+		if ctx, err = beContext.ParseYaml(matter); err != nil {
 			err = fmt.Errorf("error parsing YAML front-matter: %v", err)
 			return
 		}

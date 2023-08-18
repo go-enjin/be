@@ -26,25 +26,7 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 )
 
-func ParseJson(content string) (m context.Context, err error) {
-	m = context.New()
-	err = json.Unmarshal([]byte(content), &m)
-	return
-}
-
-func ParseToml(content string) (m context.Context, err error) {
-	m = context.New()
-	_, err = toml.Decode(content, &m)
-	return
-}
-
-func ParseYaml(content string) (m context.Context, err error) {
-	m = context.New()
-	err = yaml.Unmarshal([]byte(content), m)
-	return
-}
-
-func ParseFrontMatterContent(raw string) (matter, content string, matterType FrontMatterType) {
+func ParseContent(raw string) (matter, content string, matterType FrontMatterType) {
 	scanner := bufio.NewScanner(strings.NewReader(raw))
 	scanner.Split(bufio.ScanLines)
 
@@ -94,7 +76,7 @@ func ParseFrontMatterContent(raw string) (matter, content string, matterType Fro
 	return
 }
 
-func MakeFrontMatterStanza(fmt FrontMatterType, ctx context.Context) (stanza string) {
+func MakeStanza(fmt FrontMatterType, ctx context.Context) (stanza string) {
 	switch fmt {
 	case JsonMatter:
 		stanza += "{{{\n"
