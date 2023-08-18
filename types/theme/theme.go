@@ -23,7 +23,6 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/format"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -35,10 +34,10 @@ var (
 )
 
 var (
-	_ feature.Theme = (*Theme)(nil)
+	_ feature.Theme = (*CTheme)(nil)
 )
 
-type Theme struct {
+type CTheme struct {
 	origin string
 	name   string
 	path   string
@@ -50,7 +49,7 @@ type Theme struct {
 	fs       fs.FileSystem
 	staticFS fs.FileSystem
 
-	formatProviders []format.PageFormatProvider
+	formatProviders []feature.PageFormatProvider
 }
 
 func New(origin, path string, themeFs, staticFs fs.FileSystem) (ft feature.Theme, err error) {
@@ -58,8 +57,8 @@ func New(origin, path string, themeFs, staticFs fs.FileSystem) (ft feature.Theme
 	return
 }
 
-func newTheme(origin, path string, themeFs, staticFs fs.FileSystem) (t *Theme, err error) {
-	t = new(Theme)
+func newTheme(origin, path string, themeFs, staticFs fs.FileSystem) (t *CTheme, err error) {
+	t = new(CTheme)
 	t.origin = origin
 	t.name = bePath.Base(path)
 	t.path = path
@@ -72,8 +71,8 @@ func newTheme(origin, path string, themeFs, staticFs fs.FileSystem) (t *Theme, e
 	return
 }
 
-func (t *Theme) Reload() (err error) {
-	var nt *Theme
+func (t *CTheme) Reload() (err error) {
+	var nt *CTheme
 	if nt, err = newTheme(t.origin, t.path, t.fs, t.staticFS); err == nil {
 		nt.formatProviders = t.formatProviders
 		*t = *nt
@@ -84,23 +83,23 @@ func (t *Theme) Reload() (err error) {
 	return
 }
 
-func (t *Theme) Name() string {
+func (t *CTheme) Name() string {
 	return t.name
 }
 
-func (t *Theme) ThemeFS() fs.FileSystem {
+func (t *CTheme) ThemeFS() fs.FileSystem {
 	return t.fs
 }
 
-func (t *Theme) StaticFS() fs.FileSystem {
+func (t *CTheme) StaticFS() fs.FileSystem {
 	return t.staticFS
 }
 
-func (t *Theme) Layouts() feature.ThemeLayouts {
+func (t *CTheme) Layouts() feature.ThemeLayouts {
 	return t.layouts
 }
 
-func (t *Theme) GetConfig() (config feature.ThemeConfig) {
+func (t *CTheme) GetConfig() (config feature.ThemeConfig) {
 	config = feature.ThemeConfig{
 		Name:                  t.config.Name,
 		Parent:                t.config.Parent,
@@ -172,7 +171,7 @@ func (t *Theme) GetConfig() (config feature.ThemeConfig) {
 	return
 }
 
-func (t *Theme) GetBlockThemeNames() (names []string) {
+func (t *CTheme) GetBlockThemeNames() (names []string) {
 	names = append(names, "primary", "secondary")
 	for k, _ := range t.GetConfig().BlockThemes {
 		names = append(names, k)
@@ -180,11 +179,11 @@ func (t *Theme) GetBlockThemeNames() (names []string) {
 	return
 }
 
-func (t *Theme) AddFormatProvider(providers ...format.PageFormatProvider) {
+func (t *CTheme) AddFormatProvider(providers ...feature.PageFormatProvider) {
 	t.formatProviders = append(t.formatProviders, providers...)
 }
 
-func (t *Theme) ListFormats() (names []string) {
+func (t *CTheme) ListFormats() (names []string) {
 	for _, p := range t.formatProviders {
 		names = append(names, p.ListFormats()...)
 	}
@@ -192,7 +191,7 @@ func (t *Theme) ListFormats() (names []string) {
 	return
 }
 
-func (t *Theme) GetFormat(name string) (format format.PageFormat) {
+func (t *CTheme) GetFormat(name string) (format feature.PageFormat) {
 	for _, provider := range t.formatProviders {
 		if format = provider.GetFormat(name); format != nil {
 			return
@@ -201,7 +200,7 @@ func (t *Theme) GetFormat(name string) (format format.PageFormat) {
 	return
 }
 
-func (t *Theme) MatchFormat(filename string) (format format.PageFormat, match string) {
+func (t *CTheme) MatchFormat(filename string) (format feature.PageFormat, match string) {
 	for _, provider := range t.formatProviders {
 		if format, match = provider.MatchFormat(filename); format != nil {
 			return
@@ -210,7 +209,7 @@ func (t *Theme) MatchFormat(filename string) (format format.PageFormat, match st
 	return
 }
 
-func (t *Theme) Locales() (locales fs.FileSystem, ok bool) {
+func (t *CTheme) Locales() (locales fs.FileSystem, ok bool) {
 	if _, err := t.fs.ReadDir("locales"); err == nil {
 		log.DebugF("found %v theme locales", t.name)
 		if locales, err = fs.Wrap("locales", t.fs); err == nil {
@@ -223,7 +222,7 @@ func (t *Theme) Locales() (locales fs.FileSystem, ok bool) {
 	return
 }
 
-func (t *Theme) FindLayout(named string) (layout feature.ThemeLayout, name string, ok bool) {
+func (t *CTheme) FindLayout(named string) (layout feature.ThemeLayout, name string, ok bool) {
 	if named == "" {
 		named = "_default"
 	}
@@ -240,7 +239,7 @@ func (t *Theme) FindLayout(named string) (layout feature.ThemeLayout, name strin
 	return
 }
 
-func (t *Theme) Middleware(next http.Handler) http.Handler {
+func (t *CTheme) Middleware(next http.Handler) http.Handler {
 	log.DebugF("including %v theme static middleware", t.name)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := bePath.TrimSlashes(r.URL.Path)

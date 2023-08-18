@@ -29,7 +29,7 @@ import (
 	"github.com/go-enjin/be/types/theme/layouts"
 )
 
-func (t *Theme) init() (err error) {
+func (t *CTheme) init() (err error) {
 	if t.fs == nil {
 		err = fmt.Errorf(`missing filesystem`)
 		return
@@ -49,7 +49,7 @@ func (t *Theme) init() (err error) {
 	return
 }
 
-func (t *Theme) initConfig(ctx context.Context) {
+func (t *CTheme) initConfig(ctx context.Context) {
 	t.config = feature.ThemeConfig{
 		Name:             ctx.String("name", t.name),
 		Parent:           ctx.String("parent", ""),

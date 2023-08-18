@@ -22,27 +22,27 @@ import (
 
 var (
 	gThemeRegistry = struct {
-		known map[string]*Theme
+		known map[string]*CTheme
 		sync.RWMutex
 	}{
-		known: make(map[string]*Theme),
+		known: make(map[string]*CTheme),
 	}
 )
 
-func (t *Theme) GetParent() (parent feature.Theme) {
+func (t *CTheme) GetParent() (parent feature.Theme) {
 	if v := t.getParentTheme(); v != nil {
 		parent = v
 	}
 	return
 }
 
-func (t *Theme) registerTheme() {
+func (t *CTheme) registerTheme() {
 	gThemeRegistry.Lock()
 	defer gThemeRegistry.Unlock()
 	gThemeRegistry.known[t.Name()] = t
 }
 
-func (t *Theme) getParentTheme() (parent *Theme) {
+func (t *CTheme) getParentTheme() (parent *CTheme) {
 	if t.config.Parent != "" {
 		gThemeRegistry.RLock()
 		defer gThemeRegistry.RUnlock()
