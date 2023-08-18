@@ -90,11 +90,11 @@ func (f *CFeature) RoutePage(w http.ResponseWriter, r *http.Request) {
 	for _, pp := range feature.FilterTyped[feature.PageProvider](f.Enjin.Features().List()) {
 		if pg := pp.FindPage(tag, path); pg != nil {
 			if err := f.Enjin.ServePage(pg, w, r); err == nil {
-				log.DebugRF(r, "enjin router served provided page: %v", pg.Url)
+				log.DebugRF(r, "enjin router served provided page: %v", pg.Url())
 				f.Enjin.Emit(signaling.SignalServePage, pp.Tag().String(), pg)
 				return
 			} else {
-				log.ErrorRF(r, "error serving provided page: %v - %v", pg.Url, err)
+				log.ErrorRF(r, "error serving provided page: %v - %v", pg.Url(), err)
 			}
 		}
 	}

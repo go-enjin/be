@@ -600,7 +600,7 @@ func (f *CFeature) RequireApiUser(next http.Handler) http.Handler {
 	})
 }
 
-func (f *CFeature) RequireUserCan(action userbase.Action) func(next http.Handler) http.Handler {
+func (f *CFeature) RequireUserCan(action feature.Action) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if au := userbase.GetCurrentAuthUser(r); au != nil {

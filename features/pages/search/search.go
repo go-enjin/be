@@ -31,10 +31,8 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
-	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/request/argv"
 	"github.com/go-enjin/be/pkg/slices"
 )
@@ -51,7 +49,7 @@ var (
 )
 
 type ResultsPostProcessor interface {
-	SearchResultsPostProcess(p *page.Page)
+	SearchResultsPostProcess(p feature.Page)
 }
 
 type Feature interface {
@@ -69,7 +67,7 @@ type CFeature struct {
 	feature.CFeature
 
 	path   string
-	search indexing.SearchEnjinFeature
+	search feature.SearchEnjinFeature
 
 	sync.RWMutex
 }
@@ -130,7 +128,7 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 	}
 
 	log.DebugF("using search path: %v", f.path)
-	f.search = feature.FirstTyped[indexing.SearchEnjinFeature](f.Enjin.Features().List())
+	f.search = feature.FirstTyped[feature.SearchEnjinFeature](f.Enjin.Features().List())
 	if f.search == nil {
 		// TODO: add a .SetSearchEnjinFeature(tag feature.Tag) MakeFeature method
 		log.FatalF("searching pages requires a pagecache.SearchEnjinFeature")
@@ -155,12 +153,12 @@ func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.
 	return
 }
 
-func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *page.Page, redirect string, processed bool, err error) {
-	if p.Type == "search" {
+func (f *CFeature) ProcessRequestPageType(r *http.Request, p feature.Page) (pg feature.Page, redirect string, processed bool, err error) {
+	if p.Type() == "search" {
 		if slices.Present(r.Method, "GET", "") {
 			if len(r.URL.Query()) > 0 {
 				if redirect, err = f.handleQueryRedirect(r); err != nil {
-					p.Context.SetSpecific("SiteSearchError", err.Error())
+					p.Context().SetSpecific("SiteSearchError", err.Error())
 					pg = p
 					err = nil
 					processed = true
@@ -175,9 +173,9 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 
 		// prepare arguments
 		reqArgv := argv.GetRequestArgv(r)
-		p.Context.SetSpecific(argv.RequestArgvConsumedKey, true)
+		p.Context().SetSpecific(argv.RequestArgvConsumedKey, true)
 		reqLangTag := lang.GetTag(r)
-		numPerPage, pageNumber := p.Context.ValueAsInt("DefaultNumPerPage", 10), 0
+		numPerPage, pageNumber := p.Context().ValueAsInt("DefaultNumPerPage", 10), 0
 		if reqArgv.NumPerPage > -1 {
 			numPerPage = reqArgv.NumPerPage
 		}
@@ -210,12 +208,12 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 			redirect = queryPath
 			return
 		}
-		p.Context.SetSpecific("SiteSearchQuery", query)
+		p.Context().SetSpecific("SiteSearchQuery", query)
 
 		if input != "" {
 			// perform search
 			if results, err := f.search.PerformSearch(reqLangTag, query, numPerPage, pageNumber); err != nil {
-				p.Context.SetSpecific("SiteSearchError", err.Error())
+				p.Context().SetSpecific("SiteSearchError", err.Error())
 			} else {
 				numPages := int(math.Ceil(float64(results.Total) / float64(numPerPage)))
 				numHits := len(results.Hits)
@@ -248,13 +246,13 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 					hitsSummary = printer.Sprintf("Showing %d-%d of %d", idStart, idEnd, results.Total)
 				}
 
-				p.Context.SetSpecific("SiteSearchSize", numPerPage)
-				p.Context.SetSpecific("SiteSearchPage", pageNumber)
-				p.Context.SetSpecific("SiteSearchPages", numPages)
-				p.Context.SetSpecific("SiteSearchResults", results)
-				p.Context.SetSpecific("SiteSearchPageSummary", template.HTML(pageSummary))
-				p.Context.SetSpecific("SiteSearchHitsSummary", template.HTML(hitsSummary))
-				p.Context.SetSpecific("SiteSearchResultSummary", template.HTML(resultSummary))
+				p.Context().SetSpecific("SiteSearchSize", numPerPage)
+				p.Context().SetSpecific("SiteSearchPage", pageNumber)
+				p.Context().SetSpecific("SiteSearchPages", numPages)
+				p.Context().SetSpecific("SiteSearchResults", results)
+				p.Context().SetSpecific("SiteSearchPageSummary", template.HTML(pageSummary))
+				p.Context().SetSpecific("SiteSearchHitsSummary", template.HTML(hitsSummary))
+				p.Context().SetSpecific("SiteSearchResultSummary", template.HTML(resultSummary))
 			}
 		}
 

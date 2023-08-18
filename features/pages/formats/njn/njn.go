@@ -60,11 +60,9 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/format"
 	beForms "github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
@@ -86,7 +84,7 @@ var (
 
 type Feature interface {
 	feature.Feature
-	format.PageFormat
+	feature.PageFormat
 	feature.EnjinSystem
 }
 
@@ -310,7 +308,7 @@ func (f *CFeature) Prepare(ctx context.Context, content string) (out context.Con
 	return
 }
 
-func (f *CFeature) Process(ctx context.Context, content string) (html template.HTML, redirect string, err *errors.EnjinError) {
+func (f *CFeature) Process(ctx context.Context, content string) (html template.HTML, redirect string, err error) {
 	var data interface{}
 	if e := json.Unmarshal([]byte(content), &data); e != nil {
 		switch errType := e.(type) {
@@ -355,30 +353,29 @@ func (f *CFeature) AddSearchDocumentMapping(tag language.Tag, indexMapping *mapp
 	indexMapping.AddDocumentMapping(doctype, dm)
 }
 
-func (f *CFeature) IndexDocument(p interface{}) (out interface{}, err error) {
-	pg, _ := p.(*page.Page)
+func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 
-	doc := NewEnjinDocument(pg.Language, pg.Url, pg.Title)
+	doc := NewEnjinDocument(pg.Language(), pg.Url(), pg.Title())
 
-	r, _ := http.NewRequest("GET", pg.Url, nil)
-	r = lang.SetTag(r, pg.LanguageTag)
+	r, _ := http.NewRequest("GET", pg.Url(), nil)
+	r = lang.SetTag(r, pg.LanguageTag())
 	for _, ptp := range feature.FilterTyped[feature.PageTypeProcessor](f.Enjin.Features().List()) {
 		if v, _, processed, e := ptp.ProcessRequestPageType(r, pg); e != nil {
-			log.ErrorF("error processing page type for njn format indexing: %v - %v", pg.Url, e)
+			log.ErrorF("error processing page type for njn format indexing: %v - %v", pg.Url(), e)
 		} else if processed {
 			pg = v
 		}
 	}
 
 	var rendered string
-	if strings.HasSuffix(pg.Format, ".tmpl") {
-		renderer := f.Enjin.GetThemeRenderer(pg.Context)
-		if rendered, err = renderer.RenderTextTemplateContent(pg.Context, pg.Content); err != nil {
+	if strings.HasSuffix(pg.Format(), ".tmpl") {
+		renderer := f.Enjin.GetThemeRenderer(pg.Context())
+		if rendered, err = renderer.RenderTextTemplateContent(pg.Context(), pg.Content()); err != nil {
 			err = fmt.Errorf("error rendering .njn.tmpl content: %v", err)
 			return
 		}
 	} else {
-		rendered = pg.Content
+		rendered = pg.Content()
 	}
 
 	var data []interface{}

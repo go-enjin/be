@@ -28,7 +28,6 @@ import (
 	"github.com/go-enjin/be/pkg/forms/nonce"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
-	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/pages"
 	"github.com/go-enjin/be/pkg/request/argv"
@@ -254,14 +253,14 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	if searchEnabled && argvSearch != "" {
 		if len(found) == 0 {
 			// nope
-		} else if matched, searchResults, e := pages.SearchWithin(argvSearch, totalFiltered, 0, found, f.Enjin.SiteDefaultLanguage(), reqArgv.Language, f.Enjin.SiteLanguageMode()); e != nil {
+		} else if matched, searchResults, e := pages.SearchWithin(argvSearch, totalFiltered, 0, found, f.Enjin.SiteDefaultLanguage(), reqArgv.Language, f.Enjin.SiteLanguageMode(), f.Enjin.MustGetTheme()); e != nil {
 			log.ErrorF("error searching within... %v", err)
 			found = nil
 		} else {
 			block["SearchWithinTotal"] = totalFiltered
 			block["SearchResults"] = searchResults
 
-			var updated []*page.Page
+			var updated []feature.Page
 
 			searchRanked := true
 			if ranked, ok := data["search-ranked"]; ok {
@@ -279,7 +278,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 				// use the already present found order
 				for _, pg := range found {
 					for _, hit := range searchResults.Hits {
-						if hitPg, hitOk := matched[hit.ID]; hitOk && pg.Url == hitPg.Url {
+						if hitPg, hitOk := matched[hit.ID]; hitOk && pg.Url() == hitPg.Url() {
 							updated = append(updated, pg)
 							break
 						}

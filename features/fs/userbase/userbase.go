@@ -26,9 +26,9 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
 	"github.com/go-enjin/be/pkg/feature/signaling"
-	"github.com/go-enjin/be/pkg/page/matter"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/userbase"
+	"github.com/go-enjin/be/types/page/matter"
 )
 
 const Tag feature.Tag = "fs-userbases"
@@ -55,7 +55,7 @@ type MakeFeature interface {
 	filesystem.MakeFeature[MakeFeature]
 
 	// IncludeGroup adds an in-memory group to the userbase
-	IncludeGroup(group userbase.Group, actions ...userbase.Action) MakeFeature
+	IncludeGroup(group userbase.Group, actions ...feature.Action) MakeFeature
 
 	// AddDefaultGroups adds the given groups to the list of default groups for
 	// all new users
@@ -96,7 +96,7 @@ type CFeature struct {
 
 	groupsPath string
 
-	fallbackGroups map[userbase.Group]userbase.Actions
+	fallbackGroups map[userbase.Group]feature.Actions
 
 	defaultGroups   userbase.Groups
 	defaultLanguage language.Tag
@@ -120,12 +120,12 @@ func (f *CFeature) Init(this interface{}) {
 	f.userPath = "/user"
 	f.groupPath = "/group"
 	f.groupsPath = "/groups"
-	f.fallbackGroups = make(map[userbase.Group]userbase.Actions)
+	f.fallbackGroups = make(map[userbase.Group]feature.Actions)
 	f.defaultGroups = DefaultNewUserGroups
 	f.defaultLanguage = language.Und
 }
 
-func (f *CFeature) IncludeGroup(group userbase.Group, actions ...userbase.Action) MakeFeature {
+func (f *CFeature) IncludeGroup(group userbase.Group, actions ...feature.Action) MakeFeature {
 	f.Lock()
 	defer f.Unlock()
 	f.fallbackGroups[group] = append(f.fallbackGroups[group], actions...)
@@ -250,22 +250,22 @@ func (f *CFeature) Shutdown() {
 	return
 }
 
-func (f *CFeature) UserActions() (list userbase.Actions) {
+func (f *CFeature) UserActions() (list feature.Actions) {
 
 	tag := f.Tag().Kebab()
-	list = userbase.Actions{
-		userbase.NewAction(tag, "view-own", "auth-user"),
-		userbase.NewAction(tag, "view-other", "auth-user"),
-		userbase.NewAction(tag, "edit-own", "auth-user"),
-		userbase.NewAction(tag, "edit-other", "auth-user"),
-		userbase.NewAction(tag, "delete-own", "auth-user"),
-		userbase.NewAction(tag, "delete-other", "auth-user"),
-		userbase.NewAction(tag, "view-own", "user"),
-		userbase.NewAction(tag, "view-other", "user"),
-		userbase.NewAction(tag, "edit-own", "user"),
-		userbase.NewAction(tag, "edit-other", "user"),
-		userbase.NewAction(tag, "delete-own", "user"),
-		userbase.NewAction(tag, "delete-other", "user"),
+	list = feature.Actions{
+		feature.NewAction(tag, "view-own", "auth-user"),
+		feature.NewAction(tag, "view-other", "auth-user"),
+		feature.NewAction(tag, "edit-own", "auth-user"),
+		feature.NewAction(tag, "edit-other", "auth-user"),
+		feature.NewAction(tag, "delete-own", "auth-user"),
+		feature.NewAction(tag, "delete-other", "auth-user"),
+		feature.NewAction(tag, "view-own", "user"),
+		feature.NewAction(tag, "view-other", "user"),
+		feature.NewAction(tag, "edit-own", "user"),
+		feature.NewAction(tag, "edit-other", "user"),
+		feature.NewAction(tag, "delete-own", "user"),
+		feature.NewAction(tag, "delete-other", "user"),
 	}
 
 	return
@@ -432,7 +432,7 @@ func (f *CFeature) RemoveUser(id string) (err error) {
 	return
 }
 
-func (f *CFeature) GetGroupActions(group userbase.Group) (actions userbase.Actions) {
+func (f *CFeature) GetGroupActions(group userbase.Group) (actions feature.Actions) {
 	// get all registered user actions
 	allActions := f.Enjin.FindAllUserActions()
 	// read the group actions file
@@ -455,13 +455,13 @@ func (f *CFeature) GetGroupActions(group userbase.Group) (actions userbase.Actio
 	return
 }
 
-func (f *CFeature) UpdateGroup(group userbase.Group, actions ...userbase.Action) (err error) {
+func (f *CFeature) UpdateGroup(group userbase.Group, actions ...feature.Action) (err error) {
 	f.Lock()
 	defer f.Unlock()
 
 	var exists bool
 	var pm *matter.PageMatter
-	var existing userbase.Actions
+	var existing feature.Actions
 
 	if pm, existing, exists = f.parseGroupActionsFile(group); !exists {
 		// new group, check if there's any fallback actions ready
@@ -477,7 +477,7 @@ func (f *CFeature) UpdateGroup(group userbase.Group, actions ...userbase.Action)
 		}
 	}
 
-	newActionLookup := make(map[userbase.Action]int)
+	newActionLookup := make(map[feature.Action]int)
 	for idx, action := range existing {
 		newActionLookup[action] = idx + 1
 	}

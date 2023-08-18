@@ -24,20 +24,18 @@ import (
 
 	"github.com/go-enjin/be/pkg/cmp"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/fs"
-	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
-	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/regexps"
 	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/types/page"
 )
 
 type cSelector struct {
 	input  string
-	feat   indexing.PageContextProvider
+	feat   feature.PageContextProvider
 	theme  feature.Theme
 	sel    *pageql.Selection
 	cache  *xsync.MapOf[string, map[string]interface{}]
@@ -47,7 +45,7 @@ type cSelector struct {
 	err error
 }
 
-func NewProcessWith(input string, t feature.Theme, f indexing.PageContextProvider) (selected map[string]interface{}, err error) {
+func NewProcessWith(input string, t feature.Theme, f feature.PageContextProvider) (selected map[string]interface{}, err error) {
 	matcher := &cSelector{
 		feat:   f,
 		theme:  t,
@@ -201,7 +199,7 @@ func (m *cSelector) processWithoutStatement() (selected map[string]interface{}, 
 
 func (m *cSelector) processWithStatement() (selected map[string]interface{}, err error) {
 	if m.sel.Statement != nil {
-		var matched fs.PageStubs
+		var matched feature.PageStubs
 		if matched, err = m.processQueryStatement(m.sel.Statement.Render()); err != nil {
 			log.ErrorF("pqs error: %v", err)
 			return
@@ -303,7 +301,7 @@ func (m *cSelector) processWithStatement() (selected map[string]interface{}, err
 	return
 }
 
-func (m *cSelector) processQueryStatement(stmnt *pageql.Statement) (matched []*fs.PageStub, err error) {
+func (m *cSelector) processQueryStatement(stmnt *pageql.Statement) (matched []*feature.PageStub, err error) {
 	if stmnt.Expression != nil {
 		if matched, err = m.processQueryExpression(stmnt.Expression); err != nil {
 			return
@@ -312,7 +310,7 @@ func (m *cSelector) processQueryStatement(stmnt *pageql.Statement) (matched []*f
 	return
 }
 
-func (m *cSelector) processQueryExpression(expr *pageql.Expression) (matched []*fs.PageStub, err error) {
+func (m *cSelector) processQueryExpression(expr *pageql.Expression) (matched []*feature.PageStub, err error) {
 	switch {
 	case expr.Condition != nil:
 		matched, err = m.processQueryCondition(expr.Condition)
@@ -323,9 +321,9 @@ func (m *cSelector) processQueryExpression(expr *pageql.Expression) (matched []*
 	return
 }
 
-func (m *cSelector) processQueryCondition(cond *pageql.Condition) (matched []*fs.PageStub, err error) {
+func (m *cSelector) processQueryCondition(cond *pageql.Condition) (matched []*feature.PageStub, err error) {
 
-	var lhsMatched, rhsMatched []*fs.PageStub
+	var lhsMatched, rhsMatched []*feature.PageStub
 	if lhsMatched, err = m.processQueryExpression(cond.Left); err != nil {
 		return
 	}
@@ -345,7 +343,7 @@ func (m *cSelector) processQueryCondition(cond *pageql.Condition) (matched []*fs
 		}
 
 	case "OR":
-		add := make(map[string]*fs.PageStub)
+		add := make(map[string]*feature.PageStub)
 		for _, stub := range lhsMatched {
 			add[stub.Shasum] = stub
 		}
@@ -359,7 +357,7 @@ func (m *cSelector) processQueryCondition(cond *pageql.Condition) (matched []*fs
 	return
 }
 
-func (m *cSelector) processQueryOperation(op *pageql.Operation) (matched []*fs.PageStub, err error) {
+func (m *cSelector) processQueryOperation(op *pageql.Operation) (matched []*feature.PageStub, err error) {
 	switch op.Type {
 	case "==":
 		matched, err = m.processOperationEquals(*op.Left, op.Right, true)
@@ -373,8 +371,8 @@ func (m *cSelector) processQueryOperation(op *pageql.Operation) (matched []*fs.P
 	return
 }
 
-func (m *cSelector) processOperationEquals(key string, opValue *pageql.Value, inclusive bool) (matched []*fs.PageStub, err error) {
-	results := make(map[string]*fs.PageStub)
+func (m *cSelector) processOperationEquals(key string, opValue *pageql.Value, inclusive bool) (matched []*feature.PageStub, err error) {
+	results := make(map[string]*feature.PageStub)
 
 	// TODO: implement more than string and regexp comparisons
 
@@ -393,8 +391,8 @@ func (m *cSelector) processOperationEquals(key string, opValue *pageql.Value, in
 					if (inclusive && match) || (!inclusive && !match) {
 						for _, shasum := range shasums {
 							results[shasum] = m.feat.FindPageStub(shasum)
-							p, _ := page.NewFromPageStub(results[shasum], m.theme)
-							ctx := p.Context.Copy()
+							p, _ := page.NewPageFromStub(results[shasum], m.theme)
+							ctx := p.Context().Copy()
 							ctx.CamelizeKeys()
 							m.cache.Store(shasum, ctx.Select(m.sel.Statement.ContextKeys...))
 						}
@@ -416,8 +414,8 @@ func (m *cSelector) processOperationEquals(key string, opValue *pageql.Value, in
 					if (inclusive && match) || (!inclusive && !match) {
 						for _, shasum := range shasums {
 							results[shasum] = m.feat.FindPageStub(shasum)
-							p, _ := page.NewFromPageStub(results[shasum], m.theme)
-							ctx := p.Context.Copy()
+							p, _ := page.NewPageFromStub(results[shasum], m.theme)
+							ctx := p.Context().Copy()
 							ctx.CamelizeKeys()
 							m.cache.Store(shasum, ctx.Select(m.sel.Statement.ContextKeys...))
 						}

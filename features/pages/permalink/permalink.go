@@ -29,7 +29,6 @@ import (
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/page"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -78,7 +77,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
-	page.RegisterMatcherFn(f._permalinkMatcher)
+	feature.RegisterPageMatcherFuncs(f._permalinkMatcher)
 }
 
 func (f *CFeature) Make() Feature {
@@ -129,12 +128,12 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 					if p := f.Enjin.FindPage(checkTag, permalinkPath); p != nil {
 
 						var destination string
-						if p.Url == "" || p.Url == "." || p.Url == "/" {
+						if p.Url() == "" || p.Url() == "." || p.Url() == "/" {
 							destination = "/"
 						} else {
-							destination = p.Url + "-"
+							destination = p.Url() + "-"
 						}
-						destination += p.PermalinkSha
+						destination += p.PermalinkSha()
 
 						if path != destination {
 							http.Redirect(w, r, destination, http.StatusSeeOther)
@@ -142,7 +141,7 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 						} else if err := f.Enjin.ServePage(p, w, r); err == nil {
 							return
 						} else {
-							log.ErrorRF(r, "error serving permalink page: [%v] %v - %v", p.Language, path, err)
+							log.ErrorRF(r, "error serving permalink page: [%v] %v - %v", p.Language(), path, err)
 						}
 
 					} else {
@@ -175,7 +174,7 @@ func (f *CFeature) _permalink(permalink uuid.UUID) (url string) {
 		for _, tag := range f.Enjin.SiteLocales() {
 			if f.Enjin.SiteSupportsLanguage(tag) {
 				if p := f.Enjin.FindPage(tag, url); p != nil {
-					url = p.Url + "-" + p.PermalinkSha
+					url = p.Url() + "-" + p.PermalinkSha()
 					return
 				}
 			}
@@ -184,13 +183,13 @@ func (f *CFeature) _permalink(permalink uuid.UUID) (url string) {
 	return
 }
 
-func (f *CFeature) _permalinkMatcher(path string, p *page.Page) (found string, ok bool) {
+func (f *CFeature) _permalinkMatcher(path string, p feature.Page) (found string, ok bool) {
 	found = path
-	if p.Permalink != uuid.Nil && p.PermalinkSha != "" {
+	if p.Permalink() != uuid.Nil {
 		if parsed, valid := f._parsePath(path); valid {
 			switch len(parsed) {
 			case 10:
-				ok = parsed == p.PermalinkSha
+				ok = parsed == p.PermalinkSha()
 			case 36:
 				// e0f7ae8b-85e0-4c3f-b6c7-4c84b59bd3e7
 				if parsedUuid := uuid.FromStringOrNil(parsed); parsedUuid != uuid.Nil {

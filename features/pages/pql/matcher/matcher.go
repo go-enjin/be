@@ -22,19 +22,17 @@ import (
 
 	"github.com/go-enjin/be/pkg/cmp"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/fs"
-	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/regexps"
+	"github.com/go-enjin/be/types/page"
 )
 
 // TODO: matcher constructor must specify the specific page context provider to use instead of always the first feature found
 
 type cMatcher struct {
 	input string
-	feat  indexing.PageContextProvider
+	feat  feature.PageContextProvider
 	theme feature.Theme
 	stmnt *pageql.Statement
 	cache map[string]map[string]interface{}
@@ -47,7 +45,7 @@ type cMatcher struct {
 	err error
 }
 
-func NewProcessWith(input string, t feature.Theme, f indexing.PageContextProvider) (matched []*fs.PageStub, err error) {
+func NewProcessWith(input string, t feature.Theme, f feature.PageContextProvider) (matched []*feature.PageStub, err error) {
 	matcher := &cMatcher{
 		feat:    f,
 		theme:   t,
@@ -69,7 +67,7 @@ func NewProcessWith(input string, t feature.Theme, f indexing.PageContextProvide
 	return
 }
 
-func (m *cMatcher) process() (matched []*fs.PageStub, err error) {
+func (m *cMatcher) process() (matched []*feature.PageStub, err error) {
 	var pErr *pageql.ParseError
 	if m.stmnt, pErr = pageql.CompileQuery(m.input); pErr != nil {
 		err = error(pErr)
@@ -132,7 +130,7 @@ func (m *cMatcher) process() (matched []*fs.PageStub, err error) {
 	return
 }
 
-func (m *cMatcher) processQueryStatement(stmnt *pageql.Statement) (matched []*fs.PageStub, err error) {
+func (m *cMatcher) processQueryStatement(stmnt *pageql.Statement) (matched []*feature.PageStub, err error) {
 	if stmnt.Expression != nil {
 		if matched, err = m.processQueryExpression(stmnt.Expression); err != nil {
 			return
@@ -141,7 +139,7 @@ func (m *cMatcher) processQueryStatement(stmnt *pageql.Statement) (matched []*fs
 	return
 }
 
-func (m *cMatcher) processQueryExpression(expr *pageql.Expression) (matched []*fs.PageStub, err error) {
+func (m *cMatcher) processQueryExpression(expr *pageql.Expression) (matched []*feature.PageStub, err error) {
 	switch {
 	case expr.Condition != nil:
 		matched, err = m.processQueryCondition(expr.Condition)
@@ -152,9 +150,9 @@ func (m *cMatcher) processQueryExpression(expr *pageql.Expression) (matched []*f
 	return
 }
 
-func (m *cMatcher) processQueryCondition(cond *pageql.Condition) (matched []*fs.PageStub, err error) {
+func (m *cMatcher) processQueryCondition(cond *pageql.Condition) (matched []*feature.PageStub, err error) {
 
-	var lhsMatched, rhsMatched []*fs.PageStub
+	var lhsMatched, rhsMatched []*feature.PageStub
 	if lhsMatched, err = m.processQueryExpression(cond.Left); err != nil {
 		return
 	}
@@ -174,7 +172,7 @@ func (m *cMatcher) processQueryCondition(cond *pageql.Condition) (matched []*fs.
 		}
 
 	case "OR":
-		add := make(map[string]*fs.PageStub)
+		add := make(map[string]*feature.PageStub)
 		for _, stub := range lhsMatched {
 			add[stub.Shasum] = stub
 		}
@@ -188,7 +186,7 @@ func (m *cMatcher) processQueryCondition(cond *pageql.Condition) (matched []*fs.
 	return
 }
 
-func (m *cMatcher) processQueryOperation(op *pageql.Operation) (matched []*fs.PageStub, err error) {
+func (m *cMatcher) processQueryOperation(op *pageql.Operation) (matched []*feature.PageStub, err error) {
 	switch op.Type {
 	case "==", "=~":
 		matched, err = m.processOperationEquals(*op.Left, op.Right, true)
@@ -208,8 +206,8 @@ func (m *cMatcher) processQueryOperation(op *pageql.Operation) (matched []*fs.Pa
 	return
 }
 
-func (m *cMatcher) processOperationEquals(key string, opValue *pageql.Value, inclusive bool) (matched []*fs.PageStub, err error) {
-	results := make(map[string]*fs.PageStub)
+func (m *cMatcher) processOperationEquals(key string, opValue *pageql.Value, inclusive bool) (matched []*feature.PageStub, err error) {
+	results := make(map[string]*feature.PageStub)
 
 	// TODO: implement more than string and regexp comparisons
 
@@ -228,8 +226,8 @@ func (m *cMatcher) processOperationEquals(key string, opValue *pageql.Value, inc
 				if (inclusive && match) || (!inclusive && !match) {
 					stub := pair.Stub
 					results[stub.Shasum] = stub
-					p, _ := page.NewFromPageStub(stub, m.theme)
-					ctx := p.Context.Copy()
+					p, _ := page.NewPageFromStub(stub, m.theme)
+					ctx := p.Context().Copy()
 					ctx.CamelizeKeys()
 					m.cache[stub.Shasum] = ctx.Select(m.stmnt.ContextKeys...)
 				}
@@ -248,8 +246,8 @@ func (m *cMatcher) processOperationEquals(key string, opValue *pageql.Value, inc
 				continue
 			}
 			results[stub.Shasum] = stub
-			p, _ := page.NewFromPageStub(stub, m.theme)
-			ctx := p.Context.Copy()
+			p, _ := page.NewPageFromStub(stub, m.theme)
+			ctx := p.Context().Copy()
 			ctx.CamelizeKeys()
 			m.cache[stub.Shasum] = ctx.Select(m.stmnt.ContextKeys...)
 		}

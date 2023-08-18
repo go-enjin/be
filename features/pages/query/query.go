@@ -26,7 +26,6 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/maps"
-	"github.com/go-enjin/be/pkg/page"
 )
 
 var (
@@ -77,15 +76,15 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *page.Page, redirect string, processed bool, err error) {
-	if p.Type != "query" {
+func (f *CFeature) ProcessRequestPageType(r *http.Request, p feature.Page) (pg feature.Page, redirect string, processed bool, err error) {
+	if p.Type() != "query" {
 		return
 	}
 
-	if ctxQueries, ok := p.Context.Get("Query").(map[string]interface{}); ok {
+	if ctxQueries, ok := p.Context().Get("Query").(map[string]interface{}); ok {
 		qErrors := make(map[string]error)
 		qInputs := make(map[string]string)
-		qResults := make(map[string][]*page.Page)
+		qResults := make(map[string][]feature.Page)
 		for _, queryKey := range maps.SortedKeys(ctxQueries) {
 			camelKey := strcase.ToCamel(queryKey)
 			queryInput := ctxQueries[queryKey]
@@ -102,14 +101,14 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 		}
 
 		if len(qErrors) > 0 {
-			p.Context.SetSpecific("QueryErrors", qErrors)
+			p.Context().SetSpecific("QueryErrors", qErrors)
 		}
-		p.Context.SetSpecific("Query", qInputs)
-		p.Context.SetSpecific("QueryResults", qResults)
+		p.Context().SetSpecific("Query", qInputs)
+		p.Context().SetSpecific("QueryResults", qResults)
 		processed = true
 	}
 
-	if ctxSelects, ok := p.Context.Get("Select").(map[string]interface{}); ok {
+	if ctxSelects, ok := p.Context().Get("Select").(map[string]interface{}); ok {
 		sErrors := make(map[string]error)
 		sInputs := make(map[string]string)
 		sResults := make(map[string]interface{})
@@ -133,10 +132,10 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p *page.Page) (pg *pa
 		}
 
 		if len(sErrors) > 0 {
-			p.Context.SetSpecific("SelectedErrors", sErrors)
+			p.Context().SetSpecific("SelectedErrors", sErrors)
 		}
-		p.Context.SetSpecific("Select", sInputs)
-		p.Context.SetSpecific("Selected", sResults)
+		p.Context().SetSpecific("Select", sInputs)
+		p.Context().SetSpecific("Selected", sResults)
 		processed = true
 	}
 

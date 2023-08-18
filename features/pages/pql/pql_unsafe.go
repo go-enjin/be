@@ -19,13 +19,13 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
-	"github.com/go-enjin/be/pkg/fs"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/types/page"
 )
 
-func (f *CFeature) processPageStub(shasum string, stub *fs.PageStub) (err error) {
+func (f *CFeature) processPageStub(shasum string, stub *feature.PageStub) (err error) {
 	if err = f.pageStubsBucket.Set(shasum, stub); err != nil {
 		err = fmt.Errorf("error setting shasum stubs bucket: %v", err)
 		return
@@ -124,10 +124,10 @@ func (f *CFeature) processPageContextValue(key, shasum string, value interface{}
 	return
 }
 
-func (f *CFeature) findStubPage(shasum string) (pg *page.Page) {
+func (f *CFeature) findStubPage(shasum string) (pg feature.Page) {
 	if stub := f.findStub(shasum); stub != nil {
 		theme, _ := f.Enjin.GetTheme()
-		if p, e := page.NewFromPageStub(stub, theme); e != nil {
+		if p, e := page.NewPageFromStub(stub, theme); e != nil {
 			log.ErrorF("error making page from stub: %v - %v", stub.Source, e)
 		} else {
 			pg = p
@@ -136,9 +136,9 @@ func (f *CFeature) findStubPage(shasum string) (pg *page.Page) {
 	return
 }
 
-func (f *CFeature) findStub(shasum string) (stub *fs.PageStub) {
+func (f *CFeature) findStub(shasum string) (stub *feature.PageStub) {
 	if vStub, e := f.pageStubsBucket.Get(shasum); e == nil {
-		if s, ok := vStub.(*fs.PageStub); ok {
+		if s, ok := vStub.(*feature.PageStub); ok {
 			stub = s
 		} else {
 			log.ErrorF("expected: *matter.PageStub, received: %T from stubs bucket: %v", vStub, gPageStubsBucketName)

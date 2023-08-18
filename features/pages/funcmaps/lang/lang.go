@@ -25,7 +25,6 @@ import (
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/page"
 )
 
 var (
@@ -144,17 +143,17 @@ func (f *CFeature) makeUnderscoreUnderscore(ctx beContext.Context) interface{} {
 			targetLang = f.Enjin.SiteDefaultLanguage()
 		}
 
-		var targetPage *page.Page
+		var targetPage feature.Page
 		if targetPage = f.Enjin.FindPage(targetLang, targetPath); targetPage == nil {
 			if found := f.Enjin.FindTranslations(targetPath); len(found) > 0 {
 				for _, pg := range found {
 					if pg.IsTranslation(targetPath) {
-						if language.Compare(pg.LanguageTag, targetLang) {
+						if language.Compare(pg.LanguageTag(), targetLang) {
 							targetPage = pg
 							break
 						}
 					} else {
-						targetPage = f.Enjin.FindPage(targetLang, pg.Translates)
+						targetPage = f.Enjin.FindPage(targetLang, pg.Translates())
 						break
 					}
 				}
@@ -179,8 +178,8 @@ func (f *CFeature) makeUnderscoreUnderscore(ctx beContext.Context) interface{} {
 			}
 		}
 
-		if targetPath != targetPage.Url {
-			targetPath = targetPage.Url
+		if targetPath != targetPage.Url() {
+			targetPath = targetPage.Url()
 		}
 
 		// log.WarnF("__: [%v] tp=%v ([%v] %v) - %#v", targetLang, targetPath, targetPage.LanguageTag, targetPage.Url, argv)

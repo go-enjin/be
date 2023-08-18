@@ -28,7 +28,6 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
-	"github.com/go-enjin/be/pkg/page"
 )
 
 var (
@@ -112,27 +111,28 @@ func (f *CFeature) Apply(s feature.System) (err error) {
 			domain = DefaultSiteScheme + "://" + r.Host
 		}
 
-		pages := make(map[string]*page.Page)
+		pages := make(map[string]feature.Page)
 		for _, found := range f.Enjin.FindPages("/") {
-			if ignored := found.Context.String("SitemapIgnored", "false"); ignored != "true" {
-				priority := found.Context.Float64("SitemapPriority", 0.5)
-				found.Context.SetSpecific("SitemapPriority", priority)
-				if changeFreq := found.Context.String("SitemapChangeFreq", ""); changeFreq != "" {
+			if ignored := found.Context().String("SitemapIgnored", "false"); ignored != "true" {
+				priority := found.Context().Float64("SitemapPriority", 0.5)
+				found.Context().SetSpecific("SitemapPriority", priority)
+
+				if changeFreq := found.Context().String("SitemapChangeFreq", ""); changeFreq != "" {
 					switch changeFreq {
 					case "always", "hourly", "daily", "weekly", "monthly", "yearly", "never":
-						found.Context.SetSpecific("SitemapChangeFreq", changeFreq)
+						found.Context().SetSpecific("SitemapChangeFreq", changeFreq)
 					default:
 						log.ErrorRF(r, "error: page has invalid sitemap-change-freq: %v", changeFreq)
-						found.Context.Delete("SitemapChangeFreq")
+						found.Context().Delete("SitemapChangeFreq")
 					}
 				}
 
-				tag := found.LanguageTag
+				tag := found.LanguageTag()
 				if language.Compare(tag, language.Und) {
 					tag = defaultTag
 				}
 
-				fullUrl := langMode.ToUrl(defaultTag, tag, found.Url)
+				fullUrl := langMode.ToUrl(defaultTag, tag, found.Url())
 				if !strings.HasPrefix(fullUrl, "http") && domain != "" {
 					fullUrl = domain + fullUrl
 				}
@@ -149,11 +149,11 @@ func (f *CFeature) Apply(s feature.System) (err error) {
 			pg := pages[fullUrl]
 			contents += "\t<url>\n"
 			contents += "\t\t<loc>" + html.EscapeString(fullUrl) + "</loc>\n"
-			contents += "\t\t<lastmod>" + pg.UpdatedAt.Format("2006-01-02") + "</lastmod>\n"
-			if priority := pg.Context.Float64("SitemapPriority", -1.0); priority >= 0.0 {
+			contents += "\t\t<lastmod>" + pg.UpdatedAt().Format("2006-01-02") + "</lastmod>\n"
+			if priority := pg.Context().Float64("SitemapPriority", -1.0); priority >= 0.0 {
 				contents += fmt.Sprintf("\t\t<priority>%0.1f</priority>\n", priority)
 			}
-			if changeFreq := pg.Context.String("SitemapChangeFreq", ""); changeFreq != "" {
+			if changeFreq := pg.Context().String("SitemapChangeFreq", ""); changeFreq != "" {
 				contents += fmt.Sprintf("\t\t<changefreq>%s</changefreq>\n", changeFreq)
 			}
 			contents += "\t</url>\n"

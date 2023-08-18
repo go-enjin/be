@@ -26,13 +26,10 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
-	"github.com/go-enjin/be/pkg/fs"
-	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
-	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/userbase"
+	"github.com/go-enjin/be/types/page"
 )
 
 var (
@@ -77,8 +74,8 @@ type CFeature struct {
 	indexProviderTags  feature.Tags
 	searchProviderTags feature.Tags
 
-	indexProviders  []indexing.PageIndexFeature
-	searchProviders []indexing.SearchEnjinFeature
+	indexProviders  []feature.PageIndexFeature
+	searchProviders []feature.SearchEnjinFeature
 
 	cache kvs.KeyValueCache
 }
@@ -135,7 +132,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	allFeatures := f.Enjin.Features().List()
 
 	var indexProviderTags feature.Tags
-	for _, pif := range feature.FilterTyped[indexing.PageIndexFeature](allFeatures) {
+	for _, pif := range feature.FilterTyped[feature.PageIndexFeature](allFeatures) {
 		tag := pif.(feature.Feature).Tag()
 		if f.indexProviderTags.Has(tag) {
 			f.indexProviders = append(f.indexProviders, pif)
@@ -156,7 +153,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	f.indexProviderTags = indexProviderTags // tags order matches providers order
 
 	var searchProviderTags feature.Tags
-	for _, sef := range feature.FilterTyped[indexing.SearchEnjinFeature](allFeatures) {
+	for _, sef := range feature.FilterTyped[feature.SearchEnjinFeature](allFeatures) {
 		tag := sef.(feature.Feature).Tag()
 		if f.searchProviderTags.Has(tag) {
 			f.searchProviders = append(f.searchProviders, sef)
@@ -181,11 +178,11 @@ func (f *CFeature) Shutdown() {
 	return
 }
 
-func (f *CFeature) UserActions() (list userbase.Actions) {
+func (f *CFeature) UserActions() (list feature.Actions) {
 
 	tag := f.Tag().Kebab()
-	list = userbase.Actions{
-		userbase.NewAction(tag, "view", "page"),
+	list = feature.Actions{
+		feature.NewAction(tag, "view", "page"),
 	}
 
 	return
@@ -241,9 +238,9 @@ func (f *CFeature) PopulateIndexes() (err error) {
 
 						log.ErrorF("error reading page matter: %v - %v", file, eee)
 
-					} else if pmStub, ok := pm.Stub.(*fs.PageStub); ok && pmStub != nil {
+					} else if pmStub, ok := pm.Stub.(*feature.PageStub); ok && pmStub != nil {
 
-						if pg, eeee := page.NewFromPageStub(pmStub, theme); eeee != nil {
+						if pg, eeee := page.NewPageFromStub(pmStub, theme); eeee != nil {
 
 							log.ErrorF("error making page from stub: %v - %v", file, eeee)
 

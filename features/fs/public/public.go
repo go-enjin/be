@@ -171,11 +171,11 @@ func (f *CFeature) Shutdown() {
 	return
 }
 
-func (f *CFeature) UserActions() (list userbase.Actions) {
+func (f *CFeature) UserActions() (list feature.Actions) {
 
 	tag := f.Tag().Kebab()
-	list = userbase.Actions{
-		userbase.NewAction(tag, "view", "public"),
+	list = feature.Actions{
+		feature.NewAction(tag, "view", "public"),
 	}
 
 	return

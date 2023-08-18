@@ -22,11 +22,12 @@ import (
 	"time"
 
 	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/page/matter"
 	"github.com/go-enjin/be/pkg/userbase"
+	"github.com/go-enjin/be/types/page"
+	"github.com/go-enjin/be/types/page/matter"
 )
 
 func (f *CFeature) makeAuthFilePath(eid string) (path string) {
@@ -206,16 +207,16 @@ func (f *CFeature) makeUserUnsafe(au *userbase.AuthUser) (user *userbase.User, c
 
 func (f *CFeature) setUserUnsafe(user *userbase.User) (err error) {
 	userUrlPath := f.userPath + "/" + user.EID
-	userFilename := f.userPath + "/" + user.EID + "." + user.Page.Format
-	if user.Page.PageMatter.Path != userFilename {
-		log.DebugF("correcting inconsistency: %v != [correct] %v", user.Page.PageMatter.Path, userFilename)
+	userFilename := f.userPath + "/" + user.EID + "." + user.CPage.Format()
+	if user.CPage.PageMatter().Path != userFilename {
+		log.DebugF("correcting inconsistency: %v != [correct] %v", user.CPage.PageMatter().Path, userFilename)
 		// user.Page.Path = userFilename
-		user.Page.PageMatter.Path = userFilename
+		user.CPage.PageMatter().Path = userFilename
 	}
-	user.Page.SetSlugUrl(userUrlPath)
+	user.CPage.SetSlugUrl(userUrlPath)
 
 	var pm *matter.PageMatter
-	if pm, err = page.NewMatterFromPage(&user.Page); err != nil {
+	if pm, err = page.NewMatterFromPage(&user.CPage); err != nil {
 		err = fmt.Errorf("error constructing new front-matter from user: %v - %v", user.EID, err)
 		return
 	}
@@ -231,7 +232,7 @@ func (f *CFeature) makeGroupActionsFilePath(group userbase.Group) (path string) 
 	return
 }
 
-func (f *CFeature) parseGroupActionsFile(group userbase.Group) (pm *matter.PageMatter, bodyList userbase.Actions, exists bool) {
+func (f *CFeature) parseGroupActionsFile(group userbase.Group) (pm *matter.PageMatter, bodyList feature.Actions, exists bool) {
 	groupFilename := f.makeGroupActionsFilePath(group)
 
 	if path, ee := f.FindPageMatterPath(groupFilename); ee == nil {
@@ -249,7 +250,7 @@ func (f *CFeature) parseGroupActionsFile(group userbase.Group) (pm *matter.PageM
 		pm = matter.NewPageMatter(f.Tag().String(), groupFilename+".text", "", matter.JsonMatter, beContext.Context{})
 	}
 
-	bodyList = userbase.NewActionsFromStringNL(pm.Body)
+	bodyList = feature.NewActionsFromStringNL(pm.Body)
 	return
 }
 

@@ -32,8 +32,8 @@ import (
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
-	"github.com/go-enjin/be/pkg/page/matter"
 	bePath "github.com/go-enjin/be/pkg/path"
+	"github.com/go-enjin/be/types/page/matter"
 )
 
 const Tag feature.Tag = "fs-email"

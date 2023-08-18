@@ -17,8 +17,8 @@ package index
 import (
 	"strings"
 
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/page"
 )
 
 type Filters [][]Filter
@@ -138,7 +138,7 @@ func (f Filters) UpdateUrls(tag, reqArgvPath string, argv ...string) {
 	return
 }
 
-func (f Filters) FilterPages(pages []*page.Page) (filtered []*page.Page) {
+func (f Filters) FilterPages(pages []feature.Page) (filtered []feature.Page) {
 	var present []Filter
 	for _, group := range f {
 		for _, filter := range group {
