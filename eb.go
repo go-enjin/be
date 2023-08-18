@@ -29,15 +29,12 @@ import (
 	beCli "github.com/go-enjin/be/pkg/cli"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/format"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
-	"github.com/go-enjin/be/pkg/indexing"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/headers"
-	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -52,7 +49,7 @@ type EnjinBuilder struct {
 	notes        map[feature.Tag][]string
 	flags        []cli.Flag
 	commands     cli.Commands
-	pages        map[string]*page.Page
+	pages        map[string]feature.Page
 	htmlHeadTags []htmlHeadTag
 	context      context.Context
 	theme        string
@@ -80,10 +77,10 @@ type EnjinBuilder struct {
 	localeNames map[language.Tag]string
 	defaultLang language.Tag
 
-	publicUser  userbase.Actions
-	userActions userbase.Actions
+	publicUser  feature.Actions
+	userActions feature.Actions
 
-	fFormatProviders                []format.PageFormatProvider
+	fFormatProviders                []feature.PageFormatProvider
 	fRequestFilters                 []feature.RequestFilter
 	fPageContextModifiers           []feature.PageContextModifier
 	fPageRestrictionHandlers        []feature.PageRestrictionHandler
@@ -105,8 +102,8 @@ type EnjinBuilder struct {
 	fApplyMiddlewares               []feature.ApplyMiddleware
 	fPageProviders                  []feature.PageProvider
 	fFileProviders                  []feature.FileProvider
-	fQueryIndexFeatures             []indexing.QueryIndexFeature
-	fPageContextProviders           []indexing.PageContextProvider
+	fQueryIndexFeatures             []feature.QueryIndexFeature
+	fPageContextProviders           []feature.PageContextProvider
 	fAuthProviders                  []userbase.AuthProvider
 	fUserActionsProviders           []userbase.UserActionsProvider
 	fEnjinContextProvider           []feature.EnjinContextProvider
@@ -130,7 +127,7 @@ func New() (be *EnjinBuilder) {
 	be.notes = make(map[feature.Tag][]string)
 	be.flags = make([]cli.Flag, 0)
 	be.commands = make(cli.Commands, 0)
-	be.pages = make(map[string]*page.Page)
+	be.pages = make(map[string]feature.Page)
 	be.context = context.New()
 	be.theming = make(map[string]feature.Theme)
 	be.features = feature.NewFeaturesCache()
@@ -145,7 +142,7 @@ func New() (be *EnjinBuilder) {
 	be.hotReload = false
 	be.langMode = lang.NewQueryMode().Make()
 	be.defaultLang = language.Und
-	be.publicUser = make(userbase.Actions, 0)
+	be.publicUser = make(feature.Actions, 0)
 	be.buildPages = make(map[string]string)
 	return be
 }
@@ -369,7 +366,7 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 	}
 
 	eb.AddUserAction(
-		userbase.NewAction("enjin", "view", "page"),
+		feature.NewAction("enjin", "view", "page"),
 	)
 
 	return newEnjin(eb)

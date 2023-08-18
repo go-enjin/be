@@ -16,15 +16,14 @@ package be
 
 import (
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/userbase"
 )
 
-func (eb *EnjinBuilder) SetPublicAccess(actions ...userbase.Action) feature.Builder {
+func (eb *EnjinBuilder) SetPublicAccess(actions ...feature.Action) feature.Builder {
 	eb.publicUser = eb.publicUser.Append(actions...)
 	return eb
 }
 
-func (eb *EnjinBuilder) AddUserAction(actions ...userbase.Action) feature.Builder {
+func (eb *EnjinBuilder) AddUserAction(actions ...feature.Action) feature.Builder {
 	eb.userActions = eb.userActions.Append(actions...)
 	return eb
 }

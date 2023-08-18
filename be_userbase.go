@@ -15,15 +15,15 @@
 package be
 
 import (
-	"github.com/go-enjin/be/pkg/userbase"
+	"github.com/go-enjin/be/pkg/feature"
 )
 
-func (e *Enjin) GetPublicAccess() (actions userbase.Actions) {
+func (e *Enjin) GetPublicAccess() (actions feature.Actions) {
 	actions = actions.Append(e.eb.publicUser...)
 	return
 }
 
-func (e *Enjin) FindAllUserActions() (list userbase.Actions) {
+func (e *Enjin) FindAllUserActions() (list feature.Actions) {
 
 	list = append(list, e.eb.userActions...)
 

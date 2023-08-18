@@ -19,7 +19,7 @@ import (
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
-	"github.com/go-enjin/be/pkg/page"
+	"github.com/go-enjin/be/types/page"
 )
 
 func (eb *EnjinBuilder) AddPageFromString(path, raw string) feature.Builder {
@@ -53,8 +53,8 @@ func (eb *EnjinBuilder) buildPageFromString(path, raw string) {
 		updated = info.ModTime().Unix()
 	}
 	if p, err := page.New(feature.EnjinTag.String(), path, raw, created, updated, t, eb.context); err == nil {
-		eb.pages[p.Url] = p
-		log.DebugF("adding page from string: %v", p.Url)
+		eb.pages[p.Url()] = p
+		log.DebugF("adding page from string: %v", p.Url())
 	} else {
 		log.FatalF("error adding page from string: %v", err)
 	}

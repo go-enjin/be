@@ -1,12 +1,12 @@
 package be
 
 import (
+	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
-	"github.com/go-enjin/be/pkg/page"
 )
 
 func (e *Enjin) Features() (cache *feature.FeaturesCache) {
@@ -14,7 +14,7 @@ func (e *Enjin) Features() (cache *feature.FeaturesCache) {
 	return
 }
 
-func (e *Enjin) Pages() (pages map[string]*page.Page) {
+func (e *Enjin) Pages() (pages map[string]feature.Page) {
 	pages = e.eb.pages
 	return
 }

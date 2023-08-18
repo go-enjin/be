@@ -24,14 +24,12 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/serve"
-	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/request/argv"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/userbase"
@@ -88,7 +86,7 @@ func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Reque
 	if path, ok := e.eb.statusPages[status]; ok {
 
 		if pg := e.FindPage(reqLangTag, path); pg != nil {
-			pg.Context.SetSpecific(argv.RequestArgvIgnoredKey, true)
+			pg.Context().SetSpecific(argv.RequestArgvIgnoredKey, true)
 			if err := e.ServePage(pg, w, r); err != nil {
 				log.ErrorRDF(r, 1, "enjin error serving %v (found) page: %v - %v", status, path, err)
 			} else {
@@ -162,9 +160,10 @@ func (e *Enjin) ServeStatusJSON(status int, v interface{}, w http.ResponseWriter
 	return
 }
 
-func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) (err error) {
-	if p.Url != "" && p.Url[0] == '!' {
-		err = fmt.Errorf("cannot serve not-path page: %v", p.Url)
+func (e *Enjin) ServePage(p feature.Page, w http.ResponseWriter, r *http.Request) (err error) {
+	pUrl := p.Url()
+	if pUrl != "" && pUrl[0] == '!' {
+		err = fmt.Errorf("cannot serve not-path page: %v", pUrl)
 		return
 	} else if len(e.eb.fThemeRenderers) == 0 {
 		err = fmt.Errorf("enjin has no theme renderers, cannot ServePage")
@@ -172,11 +171,11 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	}
 
 	if v, ok := r.Context().Value("userbase-denied-allow-error-page").(bool); ok && v {
-		log.DebugRF(r, "bypassing all user access controls to show an error page of some sort: %v", p.Url)
+		log.DebugRF(r, "bypassing all user access controls to show an error page of some sort: %v", pUrl)
 	} else {
 
 		// looking for view_<origin>_page actions... if any found, perform access
-		check := userbase.NewAction(p.PageMatter.Origin, "view", "page")
+		check := feature.NewAction(p.PageMatter().Origin, "view", "page")
 		if e.FindAllUserActions().Has(check) {
 
 			// found this page's particular view action
@@ -185,17 +184,17 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 
 			if user := userbase.GetCurrentUser(r); user != nil {
 				if !user.Can(check) {
-					log.WarnF("denying user %v access (%v) to: %v", user.EID, check, p.Url)
+					log.WarnF("denying user %v access (%v) to: %v", user.EID, check, pUrl)
 					r = r.Clone(context.WithValue(r.Context(), "userbase-denied-allow-error-page", true))
 					e.ServeNotFound(w, r)
 					return
 				} else {
-					log.DebugRF(r, "authenticated user allowed to: (%v) %v", check, p.Url)
+					log.DebugRF(r, "authenticated user allowed to: (%v) %v", check, pUrl)
 				}
 			} else if e.eb.publicUser.Has(check) {
-				log.DebugRF(r, "public user allowed to: (%v) %v", check, p.Url)
+				log.DebugRF(r, "public user allowed to: (%v) %v", check, pUrl)
 			} else {
-				log.ErrorRF(r, "denying access, authenticated user not found and public has no access: (%v) %v", check, p.Url)
+				log.ErrorRF(r, "denying access, authenticated user not found and public has no access: (%v) %v", check, pUrl)
 				r = r.Clone(context.WithValue(r.Context(), "userbase-denied-allow-error-page", true))
 				e.ServeNotFound(w, r)
 				return
@@ -211,7 +210,7 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	}
 
 	for _, ptp := range e.eb.fPageTypeProcessors {
-		var pg *page.Page
+		var pg feature.Page
 		var redirect string
 		var processed bool
 		if pg, redirect, processed, err = ptp.ProcessRequestPageType(r, p); err != nil {
@@ -282,8 +281,8 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	ctx.SetSpecific("Language", parsedTag.String())
 	ctx.SetSpecific("LanguageTag", parsedTag)
 
-	fpcPgCtx := p.Context.Copy()
-	fpcPgCtx.SetSpecific("Content", p.Content)
+	fpcPgCtx := p.Context().Copy()
+	fpcPgCtx.SetSpecific("Content", p.Content())
 	for _, pcm := range e.eb.fPageContextModifiers {
 		log.TraceRF(r, "filtering page context with: %v", pcm.Tag())
 		ctx = pcm.FilterPageContext(ctx, fpcPgCtx, r)
@@ -319,14 +318,14 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	renderer := e.GetThemeRenderer(ctx)
 
 	if data, redirect, err = renderer.RenderPage(ctx, p); err != nil {
-		log.ErrorRF(r, "error rendering page: %v - %v", p.Url, err)
+		log.ErrorRF(r, "error rendering page: %v - %v", pUrl, err)
 		return
 	} else if redirect != "" {
-		log.DebugRF(r, "redirecting from RenderPage: %v - %v", p.Url, redirect)
+		log.DebugRF(r, "redirecting from RenderPage: %v - %v", pUrl, redirect)
 		e.ServeRedirect(redirect, w, r)
 		return
 	}
-	if cacheControl := p.Context.String("CacheControl", ""); cacheControl != "" {
+	if cacheControl := p.Context().String("CacheControl", ""); cacheControl != "" {
 		r = serve.SetCacheControl(cacheControl, w, r)
 	}
 	mime := ctx.String("ContentType", "text/html; charset=utf-8")

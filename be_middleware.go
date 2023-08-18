@@ -78,7 +78,7 @@ func (e *Enjin) redirectionMiddleware(next http.Handler) http.Handler {
 		if rp := e.FindRedirection(path); rp != nil {
 			langMode := e.SiteLanguageMode()
 			reqLang := lang.GetTag(r)
-			dst := langMode.ToUrl(e.SiteDefaultLanguage(), reqLang, rp.Url)
+			dst := langMode.ToUrl(e.SiteDefaultLanguage(), reqLang, rp.Url())
 			log.DebugRF(r, "redirecting from %v to %v", path, dst)
 			e.ServeRedirect(dst, w, r)
 			return
