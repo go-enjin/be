@@ -30,13 +30,11 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/fs"
-	"github.com/go-enjin/be/pkg/indexing"
 	indexingSearch "github.com/go-enjin/be/pkg/indexing/search"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/regexps"
 	"github.com/go-enjin/be/pkg/search"
+	"github.com/go-enjin/be/types/page"
 )
 
 var (
@@ -48,8 +46,8 @@ const Tag feature.Tag = "PagesIndexingKeyWordSearch"
 
 type Feature interface {
 	feature.Feature
-	indexing.KeywordProvider
-	indexing.SearchEnjinFeature
+	feature.KeywordProvider
+	feature.SearchEnjinFeature
 }
 
 type CFeature struct {
@@ -134,7 +132,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 	}
 
 	scores := make(map[string]float64)
-	matches := make(map[string]*fs.PageStub)
+	matches := make(map[string]*feature.PageStub)
 
 	// pre-calculate word presence scores
 
@@ -166,7 +164,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 
 	numMustWords := len(mustWords)
 	if numMustWords > 0 {
-		mustMatch := make(map[string]fs.PageStubs)
+		mustMatch := make(map[string]feature.PageStubs)
 		mustCache := make(map[string]map[string]int)
 		for word, _ := range mustWords {
 			if shasums, ok := f.keyword.Load(word); ok {
@@ -256,8 +254,8 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 				maxScore = scores[shasum]
 			}
 			if count >= start && count < end {
-				if p, ee := page.NewFromPageStub(stub, t); ee == nil {
-					id := langMode.ToUrl(fallback, p.LanguageTag, p.Url)
+				if p, ee := page.NewPageFromStub(stub, t); ee == nil {
+					id := langMode.ToUrl(fallback, p.LanguageTag(), p.Url())
 					hit := &bleveSearch.DocumentMatch{
 						Index:     id,
 						ID:        id,
@@ -265,11 +263,11 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 						HitNumber: count + 1,
 						Fields: map[string]interface{}{
 							"url":         id,
-							"title":       p.Title,
-							"description": p.Description,
+							"title":       p.Title(),
+							"description": p.Description(),
 						},
 						Fragments: map[string][]string{
-							"summary": {p.Description},
+							"summary": {p.Description()},
 						},
 					}
 					hits = append(hits, hit)
@@ -295,11 +293,11 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 	return
 }
 
-func (f *CFeature) AddToSearchIndex(stub *fs.PageStub, p *page.Page) (err error) {
+func (f *CFeature) AddToSearchIndex(stub *feature.PageStub, p feature.Page) (err error) {
 	f.Lock()
 	defer f.Unlock()
 	var doc search.Document
-	if doc, err = indexingSearch.SearchDocument(p); err != nil {
+	if doc, err = indexingSearch.SearchDocument(p, f.Enjin.MustGetTheme()); err != nil {
 		log.ErrorF("error creating page search.Document: %v", err)
 		return
 	} else if doc == nil {
@@ -343,7 +341,7 @@ func (f *CFeature) KnownKeywords() (keywords []string) {
 	return
 }
 
-func (f *CFeature) KeywordStubs(keyword string) (stubs fs.PageStubs) {
+func (f *CFeature) KeywordStubs(keyword string) (stubs feature.PageStubs) {
 	//f.RLock()
 	//defer f.RUnlock()
 	shasums, _ := f.keyword.Load(keyword)

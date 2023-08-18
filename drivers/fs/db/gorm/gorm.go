@@ -35,8 +35,8 @@ import (
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/gob"
-	"github.com/go-enjin/be/pkg/page/matter"
 	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/types/page/matter"
 )
 
 func init() {
@@ -379,7 +379,7 @@ func (f *DBFileSystem) ReadPageMatter(path string) (pm *matter.PageMatter, err e
 		fmType = v
 	}
 
-	contents := matter.MakeFrontMatterStanza(fmType, entryCtx)
+	contents := matter.MakeStanza(fmType, entryCtx)
 	contents += "\n"
 	contents += string(entry.Content)
 

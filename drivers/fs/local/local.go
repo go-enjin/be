@@ -32,9 +32,9 @@ import (
 	"github.com/go-enjin/be/pkg/gob"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/page/matter"
 	bePath "github.com/go-enjin/be/pkg/path"
 	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/types/page/matter"
 )
 
 var (

@@ -24,7 +24,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/page/matter"
+	"github.com/go-enjin/be/types/page/matter"
 )
 
 func (f *DBFileSystem) BeginTransaction() {

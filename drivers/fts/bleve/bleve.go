@@ -30,11 +30,8 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/fs"
-	"github.com/go-enjin/be/pkg/indexing"
 	beIndexSearch "github.com/go-enjin/be/pkg/indexing/search"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/regexps"
 	beSearch "github.com/go-enjin/be/pkg/search"
 )
@@ -48,7 +45,7 @@ const Tag feature.Tag = "drivers-fts-bleve"
 
 type Feature interface {
 	feature.Feature
-	indexing.SearchEnjinFeature
+	feature.SearchEnjinFeature
 }
 
 type CFeature struct {
@@ -88,7 +85,7 @@ func (f *CFeature) Make() Feature {
 func (f *CFeature) Setup(enjin feature.Internals) {
 	f.CFeature.Setup(enjin)
 	locales := f.Enjin.SiteLocales()
-	for _, sdm := range feature.FilterTyped[indexing.SearchDocumentMapperFeature](f.Enjin.Features().List()) {
+	for _, sdm := range feature.FilterTyped[feature.SearchDocumentMapperFeature](f.Enjin.Features().List()) {
 		for _, tag := range locales {
 			if _, exists := f.docMaps[tag]; !exists {
 				f.docMaps[tag] = make(map[string]*mapping.DocumentMapping)
@@ -190,7 +187,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 	return
 }
 
-func (f *CFeature) AddToSearchIndex(stub *fs.PageStub, p *page.Page) (err error) {
+func (f *CFeature) AddToSearchIndex(stub *feature.PageStub, p feature.Page) (err error) {
 	f.Lock()
 	defer f.Unlock()
 	if f.indexes == nil {
@@ -198,23 +195,23 @@ func (f *CFeature) AddToSearchIndex(stub *fs.PageStub, p *page.Page) (err error)
 	}
 	var ok bool
 	var index bleve.Index
-	if index, ok = f.indexes[p.LanguageTag]; !ok {
-		if index, err = beSearch.NewMemOnlyIndexWithDocMaps(p.LanguageTag, f.docMaps[p.LanguageTag]); err != nil {
+	if index, ok = f.indexes[p.LanguageTag()]; !ok {
+		if index, err = beSearch.NewMemOnlyIndexWithDocMaps(p.LanguageTag(), f.docMaps[p.LanguageTag()]); err != nil {
 			return
 		}
-		f.indexes[p.LanguageTag] = index
+		f.indexes[p.LanguageTag()] = index
 	}
 	var doc beSearch.Document
-	if doc, err = beIndexSearch.SearchDocument(p); err != nil {
+	if doc, err = beIndexSearch.SearchDocument(p, f.Enjin.MustGetTheme()); err != nil {
 		return
 	} else if doc == nil {
 		return
 	}
-	pgUrl := p.Url
+	pgUrl := p.Url()
 	langMode := f.Enjin.SiteLanguageMode()
 	fallback := f.Enjin.SiteDefaultLanguage()
-	if !language.Compare(p.LanguageTag, fallback, language.Und) {
-		pgUrl = langMode.ToUrl(fallback, p.LanguageTag, p.Url)
+	if !language.Compare(p.LanguageTag(), fallback, language.Und) {
+		pgUrl = langMode.ToUrl(fallback, p.LanguageTag(), p.Url())
 	}
 	if err = index.Index(pgUrl, doc.Self()); err != nil {
 		return
@@ -226,7 +223,7 @@ func (f *CFeature) RemoveFromSearchIndex(tag language.Tag, file, shasum string) 
 	f.Lock()
 	defer f.Unlock()
 	// TODO: remove page from full-text-search index
-	for _, indexer := range feature.FilterTyped[indexing.PageIndexFeature](f.Enjin.Features().List()) {
+	for _, indexer := range feature.FilterTyped[feature.PageIndexFeature](f.Enjin.Features().List()) {
 		indexer.RemoveFromIndex(tag, file, shasum)
 	}
 	return

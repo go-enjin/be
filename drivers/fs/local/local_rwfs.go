@@ -21,8 +21,7 @@ import (
 	"os"
 
 	"github.com/go-enjin/be/pkg/fs"
-
-	"github.com/go-enjin/be/pkg/page/matter"
+	"github.com/go-enjin/be/types/page/matter"
 )
 
 // TODO: implement {Begin,End}Transaction(), flock-ing a top-level lock file blocking all other operations, this may be thread-safe

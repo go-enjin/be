@@ -32,10 +32,10 @@ import (
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/gob"
-	"github.com/go-enjin/be/pkg/page/matter"
 	bePath "github.com/go-enjin/be/pkg/path"
 	bePathZip "github.com/go-enjin/be/pkg/path/zip"
 	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/types/page/matter"
 )
 
 func init() {
