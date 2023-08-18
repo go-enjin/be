@@ -14,6 +14,10 @@
 
 package userbase
 
+import (
+	"github.com/go-enjin/be/pkg/feature"
+)
+
 type UsersManager interface {
 	UserProvider
 	UserManager
@@ -39,5 +43,5 @@ type UserManager interface {
 }
 
 type UserActionsProvider interface {
-	UserActions() (list Actions)
+	UserActions() (list feature.Actions)
 }

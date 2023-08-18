@@ -14,6 +14,10 @@
 
 package userbase
 
+import (
+	"github.com/go-enjin/be/pkg/feature"
+)
+
 type GroupsProvider interface {
 	// IsUserInGroup returns true if the user is in the given group
 	IsUserInGroup(eid string, group Group) (present bool)
@@ -24,11 +28,11 @@ type GroupsProvider interface {
 
 type GroupsManager interface {
 	// GetGroupActions returns the list of actions associated with group
-	GetGroupActions(group Group) (actions Actions)
+	GetGroupActions(group Group) (actions feature.Actions)
 
 	// UpdateGroup appends the given actions to the group, creating the group
 	// if non exists
-	UpdateGroup(group Group, actions ...Action) (err error)
+	UpdateGroup(group Group, actions ...feature.Action) (err error)
 
 	// RemoveGroup deletes the given group from the system. Does not delete any
 	// fallback groups

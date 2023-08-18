@@ -19,8 +19,8 @@ import (
 
 	"github.com/blevesearch/bleve/v2/mapping"
 
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/search"
 	"github.com/go-enjin/be/pkg/slices"
 )
@@ -35,25 +35,25 @@ func RegisterSearchPageType(pgtype string) {
 	}
 }
 
-func SearchMapping(p *page.Page) (doctype string, dm *mapping.DocumentMapping, err error) {
-	if format := p.Formats.GetFormat(p.Format); format != nil {
-		doctype, _, dm = format.NewDocumentMapping(p.LanguageTag)
+func SearchMapping(p feature.Page, pfp feature.PageFormatProvider) (doctype string, dm *mapping.DocumentMapping, err error) {
+	if format := pfp.GetFormat(p.Format()); format != nil {
+		doctype, _, dm = format.NewDocumentMapping(p.LanguageTag())
 	} else {
-		err = fmt.Errorf("unsupported page format: %v", p.Format)
+		err = fmt.Errorf("unsupported page format: %v", p.Format())
 	}
 	return
 }
 
-func SearchDocument(p *page.Page) (doc search.Document, err error) {
-	if pgType := p.Context.String("type", "page"); !slices.Within(pgType, knownSearchPageTypes) {
-		log.TraceF("skipping search index for (not known search page type): %v", p.Url)
+func SearchDocument(p feature.Page, pfp feature.PageFormatProvider) (doc search.Document, err error) {
+	if pgType := p.Context().String("type", "page"); !slices.Within(pgType, knownSearchPageTypes) {
+		log.TraceF("skipping search index for (not known search page type): %v", p.Url())
 		return
 	}
-	if pgSearchable := p.Context.String("Searchable", "true"); pgSearchable != "true" {
-		log.TraceF("skipping search index for (not searchable): %v", p.Url)
+	if pgSearchable := p.Context().String("Searchable", "true"); pgSearchable != "true" {
+		log.TraceF("skipping search index for (not searchable): %v", p.Url())
 		return
 	}
-	if format := p.Formats.GetFormat(p.Format); format != nil {
+	if format := pfp.GetFormat(p.Format()); format != nil {
 		if v, e := format.IndexDocument(p); e != nil {
 			err = e
 		} else if v != nil {
@@ -62,10 +62,10 @@ func SearchDocument(p *page.Page) (doc search.Document, err error) {
 				log.ErrorF("format.IndexDocument returned invalid structure: %T", v)
 			}
 		} else {
-			log.ErrorF("format indexing had nil result: %v - %v", p.Format, p.Url)
+			log.ErrorF("format indexing had nil result: %v - %v", p.Format(), p.Url())
 		}
 	} else {
-		err = fmt.Errorf("unsupported page format: %v (valid: %v)", p.Format, p.Formats.ListFormats())
+		err = fmt.Errorf("unsupported page format: %v (valid: %v)", p.Format(), pfp.ListFormats())
 	}
 	return
 }

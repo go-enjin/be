@@ -18,45 +18,45 @@ import (
 	"fmt"
 
 	beContext "github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/format"
-	"github.com/go-enjin/be/pkg/page"
-	"github.com/go-enjin/be/pkg/page/matter"
+	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/types/page"
+	"github.com/go-enjin/be/types/page/matter"
 )
 
 type User struct {
-	page.Page
+	page.CPage
 	AuthUser
 
 	Origin string `json:"origin"`
 
-	Groups  Groups  `json:"-"`
-	Actions Actions `json:"-"`
+	Groups  Groups          `json:"-"`
+	Actions feature.Actions `json:"-"`
 }
 
-func NewUserFromPageMatter(user *AuthUser, pm *matter.PageMatter, formats format.PageFormatProvider, enjin beContext.Context) (u *User, err error) {
-	var pg *page.Page
+func NewUserFromPageMatter(user *AuthUser, pm *matter.PageMatter, formats feature.PageFormatProvider, enjin beContext.Context) (u *User, err error) {
+	var pg *page.CPage
 	if pg, err = page.NewFromPageMatter(pm, formats, enjin); err != nil {
 		err = fmt.Errorf("error creating page from given page matter: %v", err)
 		return
 	}
 	rid, eid := user.RID, user.EID
-	pg.Context.SetSpecific("RID", rid)
-	pg.Context.SetSpecific("EID", eid)
-	pg.PageMatter.Matter.SetSpecific("RID", rid)
-	pg.PageMatter.Matter.SetSpecific("EID", eid)
+	pg.Context().SetSpecific("RID", rid)
+	pg.Context().SetSpecific("EID", eid)
+	pg.PageMatter().Matter.SetSpecific("RID", rid)
+	pg.PageMatter().Matter.SetSpecific("EID", eid)
 	u = &User{
 		Origin:   pm.Origin,
-		Page:     *pg,
+		CPage:    *pg,
 		AuthUser: *user,
 	}
 	return
 }
 
-func (u *User) AsPage() *page.Page {
-	return &u.Page
+func (u *User) AsPage() *page.CPage {
+	return &u.CPage
 }
 
-func (u *User) Can(action Action) (allowed bool) {
+func (u *User) Can(action feature.Action) (allowed bool) {
 	allowed = u.Actions.Has(action)
 	return
 }
@@ -68,7 +68,7 @@ func (u *User) FilteredContext(includeKeys ...string) (ctx beContext.Context) {
 	ctx["Email"] = u.Email
 	ctx["Image"] = u.Image
 	for _, key := range includeKeys {
-		ctx[key] = u.Page.Context.Get(key)
+		ctx[key] = u.CPage.Context().Get(key)
 	}
 	return
 }

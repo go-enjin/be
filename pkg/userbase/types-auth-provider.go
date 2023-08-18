@@ -16,6 +16,8 @@ package userbase
 
 import (
 	"net/http"
+
+	"github.com/go-enjin/be/pkg/feature"
 )
 
 type AuthProvider interface {
@@ -24,5 +26,5 @@ type AuthProvider interface {
 
 type AuthUserApi interface {
 	RequireApiUser(next http.Handler) http.Handler
-	RequireUserCan(action Action) func(next http.Handler) http.Handler
+	RequireUserCan(action feature.Action) func(next http.Handler) http.Handler
 }

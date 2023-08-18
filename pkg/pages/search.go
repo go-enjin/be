@@ -23,27 +23,27 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/pkg/feature"
 	indexing "github.com/go-enjin/be/pkg/indexing/search"
 	"github.com/go-enjin/be/pkg/lang"
-	"github.com/go-enjin/be/pkg/page"
 	"github.com/go-enjin/be/pkg/regexps"
 	"github.com/go-enjin/be/pkg/search"
 )
 
 // TODO: update SearchWithin to use pagecache.SearchEnjinFeature
 
-func SearchWithin(input string, numPerPage, pageNumber int, pages []*page.Page, defaultLang, tag language.Tag, langMode lang.Mode) (matches map[string]*page.Page, results *bleve.SearchResult, err error) {
+func SearchWithin(input string, numPerPage, pageNumber int, pages []feature.Page, defaultLang, tag language.Tag, langMode lang.Mode, pfp feature.PageFormatProvider) (matches map[string]feature.Page, results *bleve.SearchResult, err error) {
 	var locales []language.Tag
-	lookupPage := make(map[string]*page.Page)
+	lookupPage := make(map[string]feature.Page)
 
 	docMaps := make(map[string]*mapping.DocumentMapping)
 	for _, pg := range pages {
-		if !lang.TagInTagSlices(pg.LanguageTag, locales) {
-			locales = append(locales, pg.LanguageTag)
+		if !lang.TagInTagSlices(pg.LanguageTag(), locales) {
+			locales = append(locales, pg.LanguageTag())
 		}
-		if _, ok := docMaps[pg.Format]; !ok {
-			if doctype, dm, e := indexing.SearchMapping(pg); e != nil {
-				err = fmt.Errorf("error getting page search mapping: %v - %v", pg.Url, e)
+		if _, ok := docMaps[pg.Format()]; !ok {
+			if doctype, dm, e := indexing.SearchMapping(pg, pfp); e != nil {
+				err = fmt.Errorf("error getting page search mapping: %v - %v", pg.Url(), e)
 				return
 			} else if dm != nil {
 				docMaps[doctype] = dm
@@ -59,13 +59,13 @@ func SearchWithin(input string, numPerPage, pageNumber int, pages []*page.Page, 
 	}
 
 	for _, pg := range pages {
-		if doc, e := indexing.SearchDocument(pg); e != nil {
-			err = fmt.Errorf("error preparing search document: %v - %v", pg.Url, e)
+		if doc, e := indexing.SearchDocument(pg, pfp); e != nil {
+			err = fmt.Errorf("error preparing search document: %v - %v", pg.Url(), e)
 			return
 		} else if doc != nil {
-			key := langMode.ToUrl(defaultLang, pg.LanguageTag, pg.Url)
-			if ee := localeIndexed[pg.LanguageTag].Index(key, doc.Self()); ee != nil {
-				err = fmt.Errorf("error indexing search document: %v - %v", pg.Url, ee)
+			key := langMode.ToUrl(defaultLang, pg.LanguageTag(), pg.Url())
+			if ee := localeIndexed[pg.LanguageTag()].Index(key, doc.Self()); ee != nil {
+				err = fmt.Errorf("error indexing search document: %v - %v", pg.Url(), ee)
 				return
 			}
 			lookupPage[key] = pg
@@ -135,7 +135,7 @@ func SearchWithin(input string, numPerPage, pageNumber int, pages []*page.Page, 
 		return
 	}
 
-	matches = make(map[string]*page.Page)
+	matches = make(map[string]feature.Page)
 	for _, hit := range results.Hits {
 		if pg, ok := lookupPage[hit.ID]; ok {
 			matches[hit.ID] = pg

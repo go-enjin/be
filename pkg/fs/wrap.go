@@ -19,8 +19,8 @@ import (
 	"io/fs"
 	"time"
 
-	"github.com/go-enjin/be/pkg/page/matter"
 	bePath "github.com/go-enjin/be/pkg/path"
+	"github.com/go-enjin/be/types/page/matter"
 )
 
 type WrapFileSystem struct {
