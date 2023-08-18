@@ -475,6 +475,18 @@ func (c Context) LowerCamelizeKeys() {
 	c.DeleteKeys(remove...)
 }
 
+// KebabKeys transforms all keys within the Context to be of kebab-cased form
+func (c Context) KebabKeys() {
+	var remove []string
+	for k, v := range c {
+		if camelized := strcase.ToKebab(k); k != camelized {
+			remove = append(remove, k)
+			c.SetSpecific(camelized, v)
+		}
+	}
+	c.DeleteKeys(remove...)
+}
+
 func (c Context) Select(keys ...string) (selected map[string]interface{}) {
 	selected = make(map[string]interface{})
 	for _, key := range keys {
