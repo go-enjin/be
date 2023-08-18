@@ -338,23 +338,6 @@ func (e *Enjin) ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) 
 	return
 }
 
-func (e *Enjin) GetThemeRenderer(ctx beContext.Context) (renderer feature.ThemeRenderer) {
-
-	if namedRenderer := ctx.String("ThemeRenderer", ""); namedRenderer != "" {
-		for _, tr := range e.eb.fThemeRenderers {
-			if tr.Tag().Equal(feature.Tag(namedRenderer)) {
-				renderer = tr
-				break
-			}
-		}
-	}
-	if renderer == nil {
-		renderer = e.eb.fThemeRenderers[0]
-	}
-
-	return
-}
-
 func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request) {
 
 	for _, prh := range e.eb.fDataRestrictionHandlers {
