@@ -20,11 +20,9 @@ import (
 	textTemplate "text/template"
 
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/format"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
-	"github.com/go-enjin/be/pkg/page"
 )
 
 type Author struct {
@@ -73,8 +71,8 @@ type Theme interface {
 	Layouts() ThemeLayouts
 	FindLayout(named string) (layout ThemeLayout, name string, ok bool)
 
-	AddFormatProvider(providers ...format.PageFormatProvider)
-	format.PageFormatProvider
+	AddFormatProvider(providers ...PageFormatProvider)
+	PageFormatProvider
 
 	Middleware(next http.Handler) http.Handler
 }
@@ -103,7 +101,7 @@ type ThemeLayouts interface {
 type ThemeRenderer interface {
 	Feature
 	Render(view string, ctx context.Context) (data []byte, err error)
-	RenderPage(ctx context.Context, p *page.Page) (data []byte, redirect string, err error)
+	RenderPage(ctx context.Context, p Page) (data []byte, redirect string, err error)
 
 	NewHtmlTemplateWith(name string, ctx context.Context) (tt *htmlTemplate.Template, err error)
 	NewTextTemplateWith(name string, ctx context.Context) (tt *textTemplate.Template, err error)

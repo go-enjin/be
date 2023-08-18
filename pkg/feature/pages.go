@@ -20,7 +20,6 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/page"
 )
 
 type PageContextFilterFn = func(ctx context.Context, r *http.Request) (modCtx context.Context)
@@ -52,15 +51,15 @@ type FileProvider interface {
 
 type PageProvider interface {
 	Feature
-	FindRedirection(url string) (p *page.Page)
-	FindTranslations(url string) (pages []*page.Page)
-	FindPage(tag language.Tag, url string) (p *page.Page)
-	LookupPrefixed(prefix string) (pages []*page.Page)
+	FindRedirection(url string) (p Page)
+	FindTranslations(url string) (pages []Page)
+	FindPage(tag language.Tag, url string) (p Page)
+	LookupPrefixed(prefix string) (pages []Page)
 }
 
 type PageTypeProcessor interface {
 	Feature
-	ProcessRequestPageType(r *http.Request, p *page.Page) (pg *page.Page, redirect string, processed bool, err error)
+	ProcessRequestPageType(r *http.Request, p Page) (pg Page, redirect string, processed bool, err error)
 }
 
 type PageShortcodeProcessor interface {

@@ -20,7 +20,6 @@ import (
 
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/lang/catalog"
-	"github.com/go-enjin/be/pkg/page"
 )
 
 type SiteEnjin interface {
@@ -35,9 +34,9 @@ type SiteEnjin interface {
 	SiteSupportsLanguage(tag language.Tag) (supported bool)
 	SiteLanguageDisplayName(tag language.Tag) (name string, ok bool)
 
-	FindTranslations(url string) (pages []*page.Page)
-	FindPage(tag language.Tag, url string) (p *page.Page)
-	FindPages(prefix string) (pages []*page.Page)
+	FindTranslations(url string) (pages []Page)
+	FindPage(tag language.Tag, url string) (p Page)
+	FindPages(prefix string) (pages []Page)
 }
 
 type SiteInfo struct {

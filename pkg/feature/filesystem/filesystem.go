@@ -28,8 +28,8 @@ import (
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/maps"
-	"github.com/go-enjin/be/pkg/page/matter"
 	bePath "github.com/go-enjin/be/pkg/path"
+	"github.com/go-enjin/be/types/page/matter"
 )
 
 var (
@@ -322,7 +322,7 @@ func (f *CFeature[MakeTypedFeature]) FindReadPageMatter(path string) (pm *matter
 	}
 	if pm, err = mp.ROFS.ReadPageMatter(realpath); err == nil {
 		pm.Locale = locale
-		pm.Stub = fs.NewPageStub(f.Tag().String(), f.Enjin.Context(), mp.ROFS, mp.Mount, realpath, pm.Shasum, locale)
+		pm.Stub = feature.NewPageStub(f.Tag().String(), f.Enjin.Context(), mp.ROFS, mp.Mount, realpath, pm.Shasum, locale)
 		return
 	}
 	err = os.ErrNotExist
@@ -341,7 +341,7 @@ func (f *CFeature[MakeTypedFeature]) ReadPageMatter(path string) (pm *matter.Pag
 
 func (f *CFeature[MakeTypedFeature]) ReadMountPageMatter(mp *CMountPoint, path string) (pm *matter.PageMatter, err error) {
 	if pm, err = mp.ROFS.ReadPageMatter(path); err == nil {
-		pm.Stub = fs.NewPageStub(f.Tag().String(), f.Enjin.Context(), mp.ROFS, mp.Mount, path, pm.Shasum, pm.Locale)
+		pm.Stub = feature.NewPageStub(f.Tag().String(), f.Enjin.Context(), mp.ROFS, mp.Mount, path, pm.Shasum, pm.Locale)
 		return
 	}
 	err = os.ErrNotExist

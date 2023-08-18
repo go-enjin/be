@@ -23,15 +23,12 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/fs"
+	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
-	"github.com/go-enjin/be/pkg/userbase"
-
-	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/net/headers"
-	"github.com/go-enjin/be/pkg/page"
 )
 
 type Service interface {
@@ -61,29 +58,29 @@ type Service interface {
 	ServeInternalServerError(w http.ResponseWriter, r *http.Request)
 
 	ServeStatusPage(status int, w http.ResponseWriter, r *http.Request)
-	ServePage(p *page.Page, w http.ResponseWriter, r *http.Request) (err error)
+	ServePage(p Page, w http.ResponseWriter, r *http.Request) (err error)
 	ServePath(urlPath string, w http.ResponseWriter, r *http.Request) (err error)
 	ServeJSON(v interface{}, w http.ResponseWriter, r *http.Request) (err error)
 	ServeStatusJSON(status int, v interface{}, w http.ResponseWriter, r *http.Request) (err error)
 	ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request)
 
-	MatchQL(query string) (pages []*page.Page)
-	MatchStubsQL(query string) (stubs []*fs.PageStub)
+	MatchQL(query string) (pages []Page)
+	MatchStubsQL(query string) (stubs []*PageStub)
 	SelectQL(query string) (selected map[string]interface{})
 
-	CheckMatchQL(query string) (pages []*page.Page, err error)
-	CheckMatchStubsQL(query string) (stubs []*fs.PageStub, err error)
+	CheckMatchQL(query string) (pages []Page, err error)
+	CheckMatchStubsQL(query string) (stubs []*PageStub, err error)
 	CheckSelectQL(query string) (selected map[string]interface{}, err error)
 
-	FindPageStub(shasum string) (stub *fs.PageStub)
-	FindPage(tag language.Tag, url string) (p *page.Page)
+	FindPageStub(shasum string) (stub *PageStub)
+	FindPage(tag language.Tag, url string) (p Page)
 	FindFile(path string) (data []byte, mime string, err error)
 
 	FindEmailAccount(account string) (emailSender EmailSender)
 	SendEmail(account string, message *gomail.Message) (err error)
 
-	GetPublicAccess() (actions userbase.Actions)
-	FindAllUserActions() (list userbase.Actions)
+	GetPublicAccess() (actions Actions)
+	FindAllUserActions() (list Actions)
 
 	Notify(tag string)
 	NotifyF(tag, format string, argv ...interface{})
@@ -117,7 +114,7 @@ type Internals interface {
 
 	Features() (cache *FeaturesCache)
 
-	Pages() (pages map[string]*page.Page)
+	Pages() (pages map[string]Page)
 	Theme() (theme string)
 	Theming() (theming map[string]Theme)
 	Headers() (headers []headers.ModifyHeadersFn)

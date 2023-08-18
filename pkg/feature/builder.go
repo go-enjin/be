@@ -21,7 +21,6 @@ import (
 
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/net/headers"
-	"github.com/go-enjin/be/pkg/userbase"
 )
 
 type Builder interface {
@@ -95,11 +94,11 @@ type Builder interface {
 	// SetPublicAccess specifies the list of actions unauthorized visitors have
 	//
 	// Note: not specifying any public access results in no public access given
-	SetPublicAccess(actions ...userbase.Action) Builder
+	SetPublicAccess(actions ...Action) Builder
 
 	// AddUserAction adds the given actions to the overall known list of
 	// registered user actions across all features
-	AddUserAction(actions ...userbase.Action) Builder
+	AddUserAction(actions ...Action) Builder
 
 	// Build constructs an Enjin Runner from the Builder configuration
 	Build() Runner
