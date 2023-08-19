@@ -131,9 +131,13 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	if t, ee := e.GetTheme(); ee != nil {
 		log.WarnF("not including any theme middleware: %v", ee)
 	} else {
-		router.Use(t.Middleware)
+		if t.StaticFS() != nil {
+			router.Use(t.Middleware)
+		}
 		if tp := t.GetParent(); tp != nil {
-			router.Use(tp.Middleware)
+			if tp.StaticFS() != nil {
+				router.Use(tp.Middleware)
+			}
 		}
 	}
 
