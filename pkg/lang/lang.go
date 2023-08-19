@@ -119,12 +119,12 @@ func TagInTagSlices(needle language.Tag, haystacks ...[]language.Tag) (found boo
 	return
 }
 
-var rxTranslatorInlineComments = regexp.MustCompile(`\((\s*_\s+.+?\s*)/\*.+?\*/\s*\)`)
-var rxTranslatorPipelineComments = regexp.MustCompile(`\{\{(-??\s*_\s+.+?\s*)/\*.+?\*/(\s*-??)}}`)
+var rxTranslatorInlineComments = regexp.MustCompile(`(?ms)\((\s*_\s+.+?\s*)/\*.+?\*/\s*\)`)
+var rxTranslatorPipelineComments = regexp.MustCompile(`(?ms)\{\{(-??\s*_\s+.+?\s*)/\*.+?\*/(\s*-??)}}`)
 
 func StripTranslatorComments(raw string) (clean string) {
 	clean = rxTranslatorInlineComments.ReplaceAllString(raw, `(${1})`)
-	clean = rxTranslatorPipelineComments.ReplaceAllString(raw, `{{${1}${2}}}`)
+	clean = rxTranslatorPipelineComments.ReplaceAllString(clean, `{{${1}${2}}}`)
 	return
 }
 
