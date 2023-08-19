@@ -28,7 +28,6 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 type RequestKey string
@@ -195,12 +194,7 @@ func (c Context) SetSpecific(key string, value interface{}) Context {
 
 // SetKV allows for .Deep.Variable.Names
 func (c Context) SetKV(key string, value interface{}) (err error) {
-	if key != "" && key[0] == '.' {
-		err = maps.Set(key, value, c)
-		return
-	}
-	k := strcase.ToCamel(key)
-	c[k] = value
+	err = SetKV(c, key, value)
 	return
 }
 
@@ -213,29 +207,7 @@ func (c Context) Get(key string) (value interface{}) {
 // GetKV looks for the key as given first and if not found looks for CamelCased, kebab-case and snake_cased variations;
 // returning the actual key found and the generic value; returns an empty key and nil value if nothing found at all
 func (c Context) GetKV(key string) (k string, v interface{}) {
-	if key != "" && key[0] == '.' {
-		k = key
-		v = maps.Get(key, c)
-		return
-	}
-
-	k = key
-	var ok bool
-	if v, ok = c[k]; ok {
-		return
-	}
-	k = strcase.ToCamel(key)
-	if v, ok = c[k]; ok {
-		return
-	}
-	k = strcase.ToKebab(key)
-	if v, ok = c[k]; ok {
-		return
-	}
-	k = strcase.ToSnake(key)
-	if v, ok = c[k]; ok {
-		return
-	}
+	k, v = GetKV(c, key)
 	return
 }
 
@@ -243,15 +215,7 @@ func (c Context) GetKV(key string) (k string, v interface{}) {
 // lookup process to Get() for finding the key to delete and will only delete
 // the first matching key format (specific, Camel, kebab) found
 func (c Context) Delete(key string) (deleted bool) {
-	if key != "" && key[0] == '.' {
-		maps.Delete(key, c)
-		return
-	}
-	if k, v := c.GetKV(key); v != nil {
-		delete(c, k)
-		return true
-	}
-	return false
+	return DeleteKV(c, key)
 }
 
 // DeleteKeys is a batch wrapper around Delete()
