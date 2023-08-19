@@ -53,7 +53,7 @@ type RenderEnjin struct {
 	sync.RWMutex
 }
 
-func renderNjnData(f *CFeature, ctx context.Context, data interface{}) (html template.HTML, redirect string, err *errors.EnjinError) {
+func renderNjnData(f *CFeature, ctx context.Context, data interface{}) (html template.HTML, redirect string, err error) {
 	re := new(RenderEnjin)
 	re.Njn = f
 	re.Enjin = f.Enjin
@@ -78,7 +78,7 @@ func (re *RenderEnjin) RequestContext() (ctx context.Context) {
 	return
 }
 
-func (re *RenderEnjin) Render(data interface{}) (html template.HTML, redirect string, err *errors.EnjinError) {
+func (re *RenderEnjin) Render(data interface{}) (html template.HTML, redirect string, err error) {
 
 	if prepared, redir, e := re.PreparePageData(data); e != nil {
 		err = e
