@@ -15,6 +15,7 @@
 package slices
 
 import (
+	"fmt"
 	"reflect"
 	"regexp"
 	"sort"
@@ -93,6 +94,20 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		"sortedFirstLetters":         SortedFirstLetters,
 		"sortedLastNameFirstLetters": SortedLastNameFirstLetters,
 		"iterate":                    Iterate,
+		"makeSlice":                  MakeSlice,
+		"makeStringSlice":            MakeStringSlice,
+	}
+	return
+}
+
+func MakeSlice(values ...interface{}) (output []interface{}) {
+	output = append(output, values...)
+	return
+}
+
+func MakeStringSlice(values ...interface{}) (output []string) {
+	for _, value := range values {
+		output = append(output, fmt.Sprintf("%v", value))
 	}
 	return
 }
