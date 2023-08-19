@@ -400,7 +400,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 				pageCra := cra.Copy()
 				pageCra.PageNumber = pageIndex
 				pageCra.NumPerPage = numPerPage
-				if pageNumber > 0 {
+				if pageIndex > 0 {
 					pageCra.PageNumber = 0
 					view.FirstPage = pageCra.String() + "#" + tag + "-" + viewKey
 					pageCra.PageNumber = pageIndex - 1
@@ -411,7 +411,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 				view.PageNumber = pageNumber
 				view.TotalPages = totalPages
 
-				if pageNumber < totalPages-1 {
+				if pageIndex < totalPages-1 {
 					pageCra.PageNumber = pageIndex + 1
 					view.NextPage = pageCra.String() + "#" + tag + "-" + viewKey
 					pageCra.PageNumber = totalPages - 1
