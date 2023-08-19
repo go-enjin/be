@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-enjin/be/features/pages/funcmaps/casting"
 	"github.com/go-enjin/be/features/pages/funcmaps/dates"
+	"github.com/go-enjin/be/features/pages/funcmaps/dict"
 	"github.com/go-enjin/be/features/pages/funcmaps/elements"
 	"github.com/go-enjin/be/features/pages/funcmaps/forms"
 	"github.com/go-enjin/be/features/pages/funcmaps/gtf"
@@ -101,6 +102,7 @@ func (f *CFeature) Defaults() MakeFeature {
 	f.Include(
 		casting.New().Make(),
 		dates.New().Make(),
+		dict.New().Make(),
 		elements.New().Make(),
 		forms.New().Make(),
 		gtf.New().Make(),
