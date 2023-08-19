@@ -14,7 +14,11 @@
 
 package maths
 
-func Clamp[T Number](value, min, max T) T {
+import (
+	"math"
+)
+
+func Clamp[V Number](value, min, max V) V {
 	if value >= min && value <= max {
 		return value
 	}
@@ -24,16 +28,20 @@ func Clamp[T Number](value, min, max T) T {
 	return min
 }
 
-func Floor[T Number](value, min T) T {
+func Floor[V Number](value, min V) V {
 	if value < min {
 		return min
 	}
 	return value
 }
 
-func Ceil[T Number](value, max T) T {
+func Ceil[V Number](value, max V) V {
 	if value > max {
 		return max
 	}
 	return value
+}
+
+func Round[V Decimal](x V) (rounded int) {
+	return int(math.Floor(float64(x) + 0.5))
 }
