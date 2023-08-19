@@ -14,24 +14,18 @@
 
 package maths
 
-import "sort"
-
-func SortedNumbers[K Number, V interface{}](data map[K]V) (keys []K) {
-	for key, _ := range data {
-		keys = append(keys, key)
-	}
-	sort.Slice(keys, func(i, j int) bool {
-		return keys[i] < keys[j]
-	})
-	return
+type Number interface {
+	UnsignedInteger | SignedInteger | Decimal
 }
 
-func ReverseSortedNumbers[K Number, V interface{}](data map[K]V) (keys []K) {
-	for key, _ := range data {
-		keys = append(keys, key)
-	}
-	sort.Slice(keys, func(i, j int) bool {
-		return keys[i] > keys[j]
-	})
-	return
+type UnsignedInteger interface {
+	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
+}
+
+type SignedInteger interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64
+}
+
+type Decimal interface {
+	~float32 | ~float64
 }
