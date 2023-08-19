@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"html"
 	"html/template"
+	"math"
 	"net/url"
 	"strings"
 
@@ -103,7 +104,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		return
 	}
 
-	numPerPage, pageNumber := 10, 0
+	numPerPage, pageIndex, pageNumber := 10, 0, 1
 	if numPerPage, err = maps.ExtractIntValue("index-num-per-page", data); err != nil {
 		return
 	}
@@ -122,19 +123,6 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	filters := makeFilters(data)
 
 	reqArgv := re.RequestArgv()
-	// log.WarnF("reqArgv=%#v", reqArgv.String())
-
-	if reqArgv.NumPerPage > -1 {
-		numPerPage = reqArgv.NumPerPage
-	}
-	if reqArgv.PageNumber > -1 {
-		reqArgv.NumPerPage = numPerPage
-		pageNumber = reqArgv.PageNumber
-		reqArgv.PageNumber = pageNumber
-	} else {
-		reqArgv.PageNumber = -1
-		reqArgv.NumPerPage = -1
-	}
 
 	var csqp bool // correct search query paths
 	decArgv := argv.DecomposeHttpRequest(reqArgv.Request)
@@ -162,10 +150,6 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 				}
 			}
 		}
-	}
-	if csqp || reqArgv.String() != decArgv.String() {
-		redirect = decArgv.String()
-		return
 	}
 
 	searchEnabled := false
@@ -214,6 +198,26 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 				redirect = reqArgv.String()
 				return
 			}
+		}
+	}
+
+	if argvBlockPresent {
+		if len(decArgv.Argv) > 0 && len(decArgv.Argv[0]) > 0 {
+			if csqp || reqArgv.String() != decArgv.String() {
+				redirect = decArgv.String()
+				return
+			}
+		}
+		if reqArgv.NumPerPage > -1 {
+			numPerPage = reqArgv.NumPerPage
+		}
+		if reqArgv.PageNumber > -1 {
+			reqArgv.NumPerPage = numPerPage
+			pageIndex = reqArgv.PageNumber
+			pageNumber = pageIndex + 1
+		} else {
+			reqArgv.PageNumber = -1
+			reqArgv.NumPerPage = -1
 		}
 	}
 
@@ -293,7 +297,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		}
 	}
 
-	totalPages := totalFiltered / numPerPage
+	totalPages := int(math.Ceil(float64(totalFiltered) / float64(numPerPage)))
 
 	var pgntn string
 	if pgntn, ok = data["index-pagination"].(string); ok {
@@ -317,15 +321,14 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		}
 	}
 
-	if pageNumber > totalPages {
+	if pageIndex > totalPages {
 		reqArgv.PageNumber = totalPages - 1
-		pageNumber = reqArgv.PageNumber
 		redirect = reqArgv.String()
 		return
 	}
 
 	if numPerPage > 0 && totalFiltered > 0 {
-		start := pageNumber * numPerPage
+		start := pageIndex * numPerPage
 		end := start + numPerPage
 		if start < end && end < totalFiltered {
 			found = found[start:end]
@@ -377,6 +380,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		cra.Argv = append([][]string{}, args)
 
 		view.Paginate = pgntn
+		view.NumPerPage = numPerPage
 
 		if numPerPage < totalFiltered {
 
@@ -390,29 +394,33 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 				moreCra.NumPerPage = totalFiltered
 			}
 			view.NextMore = moreCra.String() + "#" + tag + "-" + viewKey
+
 			// page pagination
 			if totalPages > 0 {
 				pageCra := cra.Copy()
-				pageCra.PageNumber = pageNumber
+				pageCra.PageNumber = pageIndex
 				pageCra.NumPerPage = numPerPage
 				if pageNumber > 0 {
 					pageCra.PageNumber = 0
 					view.FirstPage = pageCra.String() + "#" + tag + "-" + viewKey
-					pageCra.PageNumber = pageNumber - 1
+					pageCra.PageNumber = pageIndex - 1
 					view.PrevPage = pageCra.String() + "#" + tag + "-" + viewKey
 				}
 
-				view.PageNumber = pageNumber + 1
+				view.PageIndex = pageIndex
+				view.PageNumber = pageNumber
 				view.TotalPages = totalPages
 
 				if pageNumber < totalPages-1 {
-					pageCra.PageNumber = pageNumber + 1
+					pageCra.PageNumber = pageIndex + 1
 					view.NextPage = pageCra.String() + "#" + tag + "-" + viewKey
 					pageCra.PageNumber = totalPages - 1
 					view.LastPage = pageCra.String() + "#" + tag + "-" + viewKey
 				}
 			}
-		}
+
+		} // end numPerPage < totalFiltered
+
 		view.Url = strings.TrimSuffix(reqArgv.Path, "/") + "/:" + tag + "," + viewKey + "#" + tag + "-" + viewKey
 		builtViews = append(builtViews, view)
 	}
