@@ -35,8 +35,10 @@ type View struct {
 	NextPage  string
 	LastPage  string
 
+	PageIndex  int
 	PageNumber int
 	TotalPages int
+	NumPerPage int
 
 	SearchAction string
 }
