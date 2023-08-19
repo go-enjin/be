@@ -83,6 +83,7 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		"asHTMLAttr": AsHTMLAttr,
 		"asCSS":      AsCSS,
 		"asJS":       AsJS,
+		"safeHTML":   AsHTML,
 	}
 	return
 }
