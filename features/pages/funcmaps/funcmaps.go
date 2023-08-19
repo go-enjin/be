@@ -24,7 +24,6 @@ import (
 	"github.com/go-enjin/be/features/pages/funcmaps/elements"
 	"github.com/go-enjin/be/features/pages/funcmaps/forms"
 	"github.com/go-enjin/be/features/pages/funcmaps/gtf"
-	"github.com/go-enjin/be/features/pages/funcmaps/hugo"
 	"github.com/go-enjin/be/features/pages/funcmaps/lang"
 	"github.com/go-enjin/be/features/pages/funcmaps/logging"
 	"github.com/go-enjin/be/features/pages/funcmaps/math"
@@ -105,7 +104,6 @@ func (f *CFeature) Defaults() MakeFeature {
 		elements.New().Make(),
 		forms.New().Make(),
 		gtf.New().Make(),
-		hugo.New().Make(),
 		lang.New().Make(),
 		logging.New().Make(),
 		math.New().Make(),
