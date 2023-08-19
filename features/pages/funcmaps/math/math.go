@@ -19,6 +19,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Pramod-Devireddy/go-exprtk"
 	"github.com/urfave/cli/v2"
 
 	beContext "github.com/go-enjin/be/pkg/context"
@@ -86,10 +87,12 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		"mul":         Mul,
 		"div":         Div,
 		"mod":         Mod,
+		"eval":        Evaluate,
 		"addFloat":    AddFloat,
 		"subFloat":    SubFloat,
 		"mulFloat":    MulFloat,
 		"divFloat":    DivFloat,
+		"evalFloat":   EvalFloat,
 	}
 	return
 }
@@ -249,5 +252,27 @@ func DivFloat(a, b interface{}) (result float64, err error) {
 func NumberAsInt(v interface{}) (value int) {
 	s := fmt.Sprintf("%v", v)
 	value, _ = strconv.Atoi(s)
+	return
+}
+
+func Evaluate(format string, argv ...interface{}) (output int, err error) {
+	if v, e := EvalFloat(format, argv...); e != nil {
+		err = e
+	} else {
+		output = int(v)
+	}
+	return
+}
+
+func EvalFloat(format string, argv ...interface{}) (output float64, err error) {
+	expr := fmt.Sprintf(format, argv...)
+	exp := exprtk.NewExprtk()
+	defer exp.Delete()
+	exp.SetExpression(expr)
+	if err = exp.CompileExpression(); err != nil {
+		err = fmt.Errorf(`%v: "%s"`, err, expr)
+		return
+	}
+	output = exp.GetEvaluatedValue()
 	return
 }
