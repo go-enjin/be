@@ -222,12 +222,12 @@ func NewPageFromStub(ps *feature.PageStub, formats feature.PageFormatProvider) (
 	return
 }
 
-func (p *CPage) Copy() (copy *CPage) {
+func (p *CPage) Copy() (copy feature.Page) {
 	if p.copied > 0 {
 		p.copied += 1
 		return p
 	}
-	copy = &CPage{
+	pg := &CPage{
 		fields: cPageData{
 			Type:         p.fields.Type,
 			Url:          p.fields.Url,
@@ -253,9 +253,11 @@ func (p *CPage) Copy() (copy *CPage) {
 			UpdatedAt:    p.fields.UpdatedAt,
 			DeletedAt:    p.fields.DeletedAt,
 		},
-		copied: 1,
+		copied:  1,
+		mutable: p.mutable,
 	}
 	// log.WarnDF(1, "copied page: %v", p.Url)
-	_ = copy.initFrontMatter()
+	_ = pg.initFrontMatter()
+	copy = pg
 	return
 }

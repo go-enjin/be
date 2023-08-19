@@ -93,4 +93,6 @@ type Page interface {
 	SetCreatedAt(at time.Time)
 	SetUpdatedAt(at time.Time)
 	SetDeletedAt(at sql.NullTime)
+
+	Copy() (copy Page)
 }
