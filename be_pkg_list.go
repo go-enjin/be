@@ -1,6 +1,6 @@
 // Code generated with _scripts/bg-pkg-list.sh DO NOT EDIT.
 
-// Copyright (c) 2022  The Go-Enjin Authors
+// Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -60,7 +60,6 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/pkg/notify",
 		"github.com/go-enjin/be/pkg/pageql",
 		"github.com/go-enjin/be/pkg/pages",
-		"github.com/go-enjin/be/pkg/page/matter",
 		"github.com/go-enjin/be/pkg/path",
 		"github.com/go-enjin/be/pkg/path/embed",
 		"github.com/go-enjin/be/pkg/path/zip",
@@ -130,11 +129,11 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/features/pages/funcmaps",
 		"github.com/go-enjin/be/features/pages/funcmaps/casting",
 		"github.com/go-enjin/be/features/pages/funcmaps/dates",
+		"github.com/go-enjin/be/features/pages/funcmaps/dict",
 		"github.com/go-enjin/be/features/pages/funcmaps/elements",
 		"github.com/go-enjin/be/features/pages/funcmaps/emojify",
 		"github.com/go-enjin/be/features/pages/funcmaps/forms",
 		"github.com/go-enjin/be/features/pages/funcmaps/gtf",
-		"github.com/go-enjin/be/features/pages/funcmaps/hugo",
 		"github.com/go-enjin/be/features/pages/funcmaps/lang",
 		"github.com/go-enjin/be/features/pages/funcmaps/logging",
 		"github.com/go-enjin/be/features/pages/funcmaps/math",
@@ -157,11 +156,29 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/features/requests/deny",
 		"github.com/go-enjin/be/features/requests/headers/proxy",
 		"github.com/go-enjin/be/features/srv/fastcgi",
+		"github.com/go-enjin/be/features/srv/listeners/httpd",
 		"github.com/go-enjin/be/features/srv/pages",
 		"github.com/go-enjin/be/features/user/auth/api",
 		"github.com/go-enjin/be/features/user/auth/basic",
 		"github.com/go-enjin/be/features/user/base/htenv",
 		"github.com/go-enjin/be/features/user/base/htpasswd",
+		"github.com/go-enjin/be/types/page",
+		"github.com/go-enjin/be/types/page/matter",
+		"github.com/go-enjin/be/types/theme",
+		"github.com/go-enjin/be/types/theme/layouts",
+		"github.com/go-enjin/be/drivers/db/gorm",
+		"github.com/go-enjin/be/drivers/email/gomail",
+		"github.com/go-enjin/be/drivers/fs/db/gorm",
+		"github.com/go-enjin/be/drivers/fs/embed",
+		"github.com/go-enjin/be/drivers/fs/local",
+		"github.com/go-enjin/be/drivers/fs/zip",
+		"github.com/go-enjin/be/drivers/fts/bleve",
+		"github.com/go-enjin/be/drivers/kvs/gocache",
+		"github.com/go-enjin/be/drivers/kvs/gorm",
+		"github.com/go-enjin/be/drivers/kws",
+		"github.com/go-enjin/be/drivers/theme/renderer",
+		"github.com/go-enjin/be/presets/defaults",
+		"github.com/go-enjin/be/presets/essentials",
 	)
 	return
 }
