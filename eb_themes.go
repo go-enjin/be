@@ -29,11 +29,13 @@ func (eb *EnjinBuilder) SetTheme(name string) feature.Builder {
 }
 
 func (eb *EnjinBuilder) AddTheme(t feature.Theme) feature.Builder {
-	eb.theming[t.Name()] = t
-	log.DebugF("including %v theme", t.Name())
+	name := t.Name()
+	eb.theming[name] = t
+	eb.themeOrder = append(eb.themeOrder, name)
+	log.DebugF("including %v theme", name)
 	if lfs, ok := t.Locales(); ok {
-		eb.localeFiles = append(eb.localeFiles, lfs)
-		log.DebugF("including %v theme locales", t.Name())
+		eb.localeFileSystems = append(eb.localeFileSystems, lfs)
+		log.DebugF("including %v theme locales", name)
 	}
 	return eb
 }

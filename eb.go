@@ -54,6 +54,7 @@ type EnjinBuilder struct {
 	context      context.Context
 	theme        string
 	theming      map[string]feature.Theme
+	themeOrder   []string
 	features     *feature.FeaturesCache
 	headers      []headers.ModifyHeadersFn
 	domains      []string
@@ -71,11 +72,11 @@ type EnjinBuilder struct {
 	copyrightNotice string
 	tagLine         string
 
-	langMode    lang.Mode
-	localeTags  []language.Tag
-	localeFiles []fs.FileSystem
-	localeNames map[language.Tag]string
-	defaultLang language.Tag
+	langMode          lang.Mode
+	localeTags        []language.Tag
+	localeNames       map[language.Tag]string
+	localeFileSystems []fs.FileSystem
+	defaultLang       language.Tag
 
 	publicUser  feature.Actions
 	userActions feature.Actions
