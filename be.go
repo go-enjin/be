@@ -81,6 +81,8 @@ type Enjin struct {
 
 	signaling     map[signaling.Signal][]*signalListener
 	signalingLock *sync.RWMutex
+
+	mutex *sync.RWMutex
 }
 
 func newEnjin(eb *EnjinBuilder) *Enjin {
@@ -121,6 +123,7 @@ func newEnjin(eb *EnjinBuilder) *Enjin {
 		// make variables
 		signaling:     make(map[signaling.Signal][]*signalListener),
 		signalingLock: &sync.RWMutex{},
+		mutex:         &sync.RWMutex{},
 	}
 	e.initLocales()
 	e.initConsoles()
@@ -136,6 +139,7 @@ func newIncludedEnjin(eb *EnjinBuilder, parent *Enjin) *Enjin {
 		permissionsPolicy:     permissions.NewPolicyHandler(),
 		signaling:             make(map[signaling.Signal][]*signalListener),
 		signalingLock:         &sync.RWMutex{},
+		mutex:                 &sync.RWMutex{},
 	}
 	e.initLocales()
 	e.initConsoles()

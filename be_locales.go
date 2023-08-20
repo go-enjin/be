@@ -24,6 +24,8 @@ import (
 )
 
 func (e *Enjin) initLocales() {
+	e.mutex.Lock()
+	defer e.mutex.Unlock()
 	e.catalog = pkgLangCatalog.NewCatalog()
 	for _, f := range e.eb.localeFiles {
 		e.catalog.AddLocalesFromFS(e.eb.defaultLang, f)
@@ -31,6 +33,8 @@ func (e *Enjin) initLocales() {
 }
 
 func (e *Enjin) SiteLocales() (locales []language.Tag) {
+	e.mutex.RLock()
+	defer e.mutex.RUnlock()
 	if len(e.eb.localeTags) == 0 {
 		locales = e.catalog.LocaleTagsWithDefault(e.eb.defaultLang)
 		return
@@ -40,16 +44,22 @@ func (e *Enjin) SiteLocales() (locales []language.Tag) {
 }
 
 func (e *Enjin) SiteLanguageMode() (mode lang.Mode) {
+	e.mutex.RLock()
+	defer e.mutex.RUnlock()
 	mode = e.eb.langMode
 	return
 }
 
 func (e *Enjin) SiteLangCatalog() (c *pkgLangCatalog.Catalog) {
+	e.mutex.RLock()
+	defer e.mutex.RUnlock()
 	c = e.catalog
 	return
 }
 
 func (e *Enjin) SiteLanguageCatalog() (c catalog.Catalog) {
+	e.mutex.RLock()
+	defer e.mutex.RUnlock()
 	if v, err := e.catalog.MakeGoTextCatalog(); err == nil {
 		c = v
 	} else {
@@ -60,11 +70,15 @@ func (e *Enjin) SiteLanguageCatalog() (c catalog.Catalog) {
 }
 
 func (e *Enjin) SiteDefaultLanguage() (tag language.Tag) {
+	e.mutex.RLock()
+	defer e.mutex.RUnlock()
 	tag = e.eb.defaultLang
 	return
 }
 
 func (e *Enjin) SiteSupportsLanguage(tag language.Tag) (supported bool) {
+	e.mutex.RLock()
+	defer e.mutex.RUnlock()
 	for _, known := range e.SiteLocales() {
 		if supported = language.Compare(tag, known); supported {
 			break
@@ -74,6 +88,8 @@ func (e *Enjin) SiteSupportsLanguage(tag language.Tag) (supported bool) {
 }
 
 func (e *Enjin) SiteLanguageDisplayName(tag language.Tag) (name string, ok bool) {
+	e.mutex.RLock()
+	defer e.mutex.RUnlock()
 	if len(e.eb.localeNames) > 0 {
 		name, ok = e.eb.localeNames[tag]
 	}
