@@ -19,14 +19,10 @@ package be
 // TODO: allow/deny requests (atlas-gonnect stuff?)
 
 import (
-	"context"
 	"fmt"
 	"net/http"
-	"os"
-	"os/signal"
 	"strings"
 	"sync"
-	"syscall"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -203,6 +199,9 @@ func (e *Enjin) SetupRootEnjin(ctx *cli.Context) (err error) {
 	if len(e.eb.theming) == 0 {
 		err = fmt.Errorf("builder error: at least one theme is required")
 		return
+	} else if e.eb.fServiceListener == nil {
+		err = fmt.Errorf("builder error: an http service listener is required")
+		return
 	}
 
 	middleware.DefaultLogger = func(next http.Handler) http.Handler {
@@ -255,7 +254,7 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 	}
 
 	if len(e.eb.enjins) == 0 {
-		return e.startupRoutedHttpListener(e.listen, e.port, e.router)
+		return e.eb.fServiceListener.StartListening(e.listen, e.port, e.router, e)
 	}
 
 	hr := hostrouter.New()
@@ -287,57 +286,15 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 
 	root := chi.NewRouter()
 	root.Mount("/", hr)
-	return e.startupRoutedHttpListener(e.listen, e.port, root)
-}
-
-func (e *Enjin) startupRoutedHttpListener(listen string, port int, router *chi.Mux) (err error) {
-	// TODO: cleanup this chain of functions
-	err = e.startupHandledHttpListener(listen, port, router)
-	return
-}
-
-func (e *Enjin) startupHandledHttpListener(listen string, port int, handler http.Handler) (err error) {
-	return startupHandledHttpListener(listen, port, handler, e)
-}
-
-func startupHandledHttpListener(listen string, port int, handler http.Handler, e feature.EnjinRunner) (err error) {
-	e.Notify("web process startup")
-	log.DebugF("web process info:\n%v", e.StartupString())
-
-	var srv http.Server
-
-	// TODO: implement signal handler features
-
-	idleConnectionsClosed := make(chan struct{})
-	go func() {
-		sigint := make(chan os.Signal, 1)
-		signal.Notify(sigint, syscall.SIGINT, syscall.SIGTERM)
-		<-sigint
-		// We received an interrupt signal, shut down.
-		if ee := srv.Shutdown(context.Background()); ee != nil {
-			// Error from closing listeners, or context timeout:
-			log.ErrorF("error shutting down http.Server: %v", ee)
-		}
-		e.Shutdown()
-		close(idleConnectionsClosed)
-	}()
-
-	srv.Addr = fmt.Sprintf("%s:%d", listen, port)
-	srv.Handler = handler
-	if err = srv.ListenAndServe(); err != http.ErrServerClosed {
-		// Error starting or closing listener:
-		log.ErrorF("unexpected error listening and serving http: %v", err)
-		close(idleConnectionsClosed)
-		return
-	}
-
-	<-idleConnectionsClosed
-	return
+	return e.eb.fServiceListener.StartListening(e.listen, e.port, root, e)
 }
 
 func (e *Enjin) Shutdown() {
 	for _, f := range e.eb.features.List() {
 		f.Shutdown()
 	}
-	e.Notify("web process shutdown")
+	if err := e.eb.fServiceListener.StopListening(); err != nil {
+		log.ErrorF("error stopping http listener: %v - %v", e.eb.fServiceListener.Tag(), err)
+	}
+	e.Notify("enjin shutdown")
 }
