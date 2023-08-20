@@ -71,11 +71,6 @@ func (f *CFeature) Make() (feat Feature) {
 	return f
 }
 
-func (f *CFeature) Tag() (tag feature.Tag) {
-	tag = Tag
-	return
-}
-
 func (f *CFeature) Build(b feature.Buildable) (err error) {
 	return
 }
