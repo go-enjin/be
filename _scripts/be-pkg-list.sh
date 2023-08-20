@@ -7,7 +7,7 @@ PKG_PREFIX="github.com/go-enjin/be"
 (
     echo "// Code generated with _scripts/bg-pkg-list.sh DO NOT EDIT.
 
-// Copyright (c) 2022  The Go-Enjin Authors
+// Copyright (c) $(date +%Y)  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the \"License\");
 // you may not use this file except in compliance with the License.
@@ -27,22 +27,16 @@ func GoEnjinPackageList() (list []string) {
 	list = append(list,
 		\"${PKG_PREFIX}\","
 
-    find pkg -type d | sort -V | while read DIR
+    for PARENT in pkg features types drivers presets
     do
-        fileCount=$(ls -1 "${DIR}" | egrep '\.go' | wc -l)
-        if [ ${fileCount} -gt 0 ]
-        then
-            echo -e "\t\t\"${PKG_PREFIX}/${DIR}\","
-        fi
-    done
-
-    find features -type d | sort -V | while read DIR
-    do
-        fileCount=$(ls -1 "${DIR}" | egrep '\.go' | wc -l)
-        if [ ${fileCount} -gt 0 ]
-        then
-            echo -e "\t\t\"${PKG_PREFIX}/${DIR}\","
-        fi
+        find ${PARENT} -type d | sort -V | while read DIR
+        do
+            fileCount=$(ls -1 "${DIR}" | egrep '\.go' | wc -l)
+            if [ ${fileCount} -gt 0 ]
+            then
+                echo -e "\t\t\"${PKG_PREFIX}/${DIR}\","
+            fi
+        done
     done
 
     echo -e "\t)"
