@@ -60,13 +60,19 @@ func (f *CFeature) Make() (feat Feature) {
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
+	if err = f.CFeature.Build(b); err != nil {
+		return
+	}
 	return
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	}
 	return
 }
 
 func (f *CFeature) Shutdown() {
-
+	f.CFeature.Shutdown()
 }
