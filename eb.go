@@ -112,6 +112,7 @@ type EnjinBuilder struct {
 	fTemplatePartialsProvider       []feature.TemplatePartialsProvider
 	fThemeRenderers                 []feature.ThemeRenderer
 
+	fServiceListener   feature.ServiceListener
 	fRoutePagesHandler feature.RoutePagesHandler
 
 	enjins []*EnjinBuilder
