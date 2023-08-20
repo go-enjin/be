@@ -116,7 +116,7 @@ func (eb *EnjinBuilder) AddFeature(f feature.Feature) feature.Builder {
 	eb.fThemeRenderers = checkRegisterFeature(f, eb.fThemeRenderers)
 
 	eb.fServiceListener = checkRegisterSingleFeature(f, eb.fServiceListener)
-	eb.fRoutePagesHandler = checkRegisterSingleFeature[feature.RoutePagesHandler](f, eb.fRoutePagesHandler)
+	eb.fRoutePagesHandler = checkRegisterSingleFeature(f, eb.fRoutePagesHandler)
 
 	return eb
 }
