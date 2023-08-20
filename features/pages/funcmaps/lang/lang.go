@@ -24,6 +24,7 @@ import (
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -90,12 +91,19 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 }
 
 func (f *CFeature) makeUnderscore(ctx beContext.Context) interface{} {
+	cache := map[string]string{}
 	return func(format string, argv ...interface{}) (translated string) {
-		printer, _ := ctx.Get("LangPrinter").(*message.Printer)
+		var ok bool
+		untranslated := fmt.Sprintf(format, argv...)
+		if translated, ok = cache[untranslated]; ok {
+			return
+		}
+		printer, _ := ctx.Get(lang.PrinterKey).(*message.Printer)
 		if printer != nil {
 			translated = printer.Sprintf(format, argv...)
-			if fmt.Sprintf(format, argv...) != translated {
-				log.DebugF("template translated: \"%v\" -> \"%v\"", format, translated)
+			cache[untranslated] = translated
+			if untranslated != translated {
+				log.DebugF("template underscore translated: \"%v\" -> \"%v\"", format, translated)
 			}
 		} else {
 			translated = fmt.Sprintf(format, argv...)
