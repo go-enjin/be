@@ -18,6 +18,7 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
 
+	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/lang"
 	pkgLangCatalog "github.com/go-enjin/be/pkg/lang/catalog"
 	"github.com/go-enjin/be/pkg/log"
@@ -27,7 +28,24 @@ func (e *Enjin) initLocales() {
 	e.mutex.Lock()
 	defer e.mutex.Unlock()
 	e.catalog = pkgLangCatalog.NewCatalog()
-	for _, f := range e.eb.localeFiles {
+	for _, f := range e.eb.localeFileSystems {
+		e.catalog.AddLocalesFromFS(e.eb.defaultLang, f)
+	}
+}
+
+func (e *Enjin) reloadLocales() {
+	e.mutex.Lock()
+	defer e.mutex.Unlock()
+	e.eb.localeFileSystems = make([]fs.FileSystem, 0)
+	for _, name := range e.eb.themeOrder {
+		t := e.eb.theming[name]
+		if lfs, ok := t.Locales(); ok {
+			e.eb.localeFileSystems = append(e.eb.localeFileSystems, lfs)
+			log.DebugF("reloading %v theme locales", t.Name())
+		}
+	}
+	e.catalog = pkgLangCatalog.NewCatalog()
+	for _, f := range e.eb.localeFileSystems {
 		e.catalog.AddLocalesFromFS(e.eb.defaultLang, f)
 	}
 }

@@ -61,6 +61,11 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	router.Use(middleware.RequestID)
 	router.Use(e.panicMiddleware)
 
+	if e.eb.hotReload {
+		log.DebugF("including hot-reload middleware")
+		router.Use(e.hotReloadMiddleware)
+	}
+
 	// request modifier features are expected to modify the request object
 	// in-place, before any further feature processing
 	if count := len(e.eb.fRequestModifiers); count > 0 {

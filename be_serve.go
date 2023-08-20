@@ -224,16 +224,7 @@ func (e *Enjin) ServePage(p feature.Page, w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	var t feature.Theme
-	if t, err = e.GetTheme(); err != nil {
-		return
-	} else if e.eb.hotReload {
-		log.DebugF("hot-reloading theme: %v", t.Name())
-		if err = t.Reload(); err != nil {
-			err = fmt.Errorf("error reloading theme: %v", err)
-			return
-		}
-	}
+	t := e.MustGetTheme()
 
 	ctx := e.Context()
 
