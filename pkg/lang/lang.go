@@ -34,6 +34,7 @@ const (
 	LanguageTag     beContext.RequestKey = "language-tag"
 	LanguagePrinter beContext.RequestKey = "language-printer"
 	LanguageDefault beContext.RequestKey = "language-default"
+	PrinterKey      string               = "LangPrinter"
 )
 
 func ParseLangPath(p string) (tag language.Tag, modified string, ok bool) {

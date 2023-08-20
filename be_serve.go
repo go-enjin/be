@@ -261,7 +261,7 @@ func (e *Enjin) ServePage(p feature.Page, w http.ResponseWriter, r *http.Request
 	})
 
 	ctx.SetSpecific("BaseUrl", net.BaseURL(r))
-	ctx.SetSpecific("LangPrinter", lang.GetPrinterFromRequest(r))
+	ctx.SetSpecific(lang.PrinterKey, lang.GetPrinterFromRequest(r))
 	ctx.SetSpecific(string(argv.RequestArgvKey), argv.GetRequestArgv(r))
 
 	parsedTag := e.eb.defaultLang
