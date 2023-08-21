@@ -18,6 +18,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/drivers/theme/renderer"
+	"github.com/go-enjin/be/features/outputs/htmlify"
 	"github.com/go-enjin/be/features/pages/formats"
 	"github.com/go-enjin/be/features/pages/formats/html"
 	"github.com/go-enjin/be/features/pages/formats/tmpl"
@@ -79,6 +80,7 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	b.AddFeature(funcmaps.New().Defaults().Make())
 	b.AddFeature(partials.New().Make())
 	b.AddFeature(renderer.New().Make())
+	b.AddFeature(htmlify.New().Make())
 	b.AddFeature(httpd.New().Make())
 	return
 }
