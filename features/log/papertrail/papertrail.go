@@ -1,4 +1,4 @@
-//go:build papertrail || all
+//go:build log_papertrail || papertrail || loggers || all
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //

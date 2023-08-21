@@ -1,4 +1,4 @@
-//go:build requests_deny || all
+//go:build requests_deny || requests || all
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //

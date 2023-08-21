@@ -1,3 +1,5 @@
+//go:build user_base_htpasswd || user_bases || all
+
 // Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");

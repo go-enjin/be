@@ -1,4 +1,4 @@
-//go:build cloudflare || requests || all
+//go:build requests_cloudflare || cloudflare || requests || all
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //

@@ -1,3 +1,5 @@
+//go:build !exclude_pages_formats
+
 // Copyright (c) 2022  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");

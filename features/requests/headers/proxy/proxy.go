@@ -1,4 +1,4 @@
-//go:build header_proxy || all
+//go:build requests_header_proxy || header_proxy || requests_headers || requests || all
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //

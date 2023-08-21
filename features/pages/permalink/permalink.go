@@ -1,4 +1,4 @@
-// disabled //go:build page_search || pages || all
+//go:build page_permalink || pages || all
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //

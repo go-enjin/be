@@ -1,4 +1,4 @@
-//go:build notify_slack || all
+//go:build notify_slack || notifiers || all
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //

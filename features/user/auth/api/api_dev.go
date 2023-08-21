@@ -1,4 +1,4 @@
-//go:build (user_auth_api && dev) || all
+//go:build (user_auth_api && dev) || (user_auths && dev) || all
 
 // Copyright (c) 2023  The Go-Enjin Authors
 //
@@ -21,10 +21,11 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/github-com-go-pkgz-auth/provider"
+
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/github-com-go-pkgz-auth/provider"
 )
 
 var DefaultDevAuthServerPort = 8086

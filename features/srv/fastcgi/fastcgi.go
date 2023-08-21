@@ -1,4 +1,4 @@
-//go:build srv_fastcgi || all
+//go:build srv_fastcgi || srv || all
 
 // Copyright (c) 2023  The Go-Enjin Authors
 //

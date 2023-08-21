@@ -1,4 +1,4 @@
-//go:build user_auth_api || all
+//go:build user_auth_api || user_auths || all
 
 // Copyright (c) 2023  The Go-Enjin Authors
 //

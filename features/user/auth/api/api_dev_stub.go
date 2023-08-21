@@ -1,4 +1,4 @@
-//go:build user_auth_api && !dev && !all
+//go:build ((user_auth_api && !dev) || (user_auths && !dev)) && !all
 
 // Copyright (c) 2023  The Go-Enjin Authors
 //

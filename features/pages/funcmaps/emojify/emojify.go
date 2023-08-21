@@ -1,3 +1,5 @@
+//go:build page_funcmaps || pages || all
+
 //go:build page_partials_emojify || pages_partials || pages || all
 
 // Copyright (c) 2022  The Go-Enjin Authors
