@@ -15,7 +15,8 @@
 package be
 
 import (
-	"github.com/go-enjin/be/features/pages/partials"
+	"fmt"
+
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 )
@@ -37,7 +38,8 @@ func (eb *EnjinBuilder) RegisterPublicFileSystem(mount string, filesystems ...fs
 
 func (eb *EnjinBuilder) RegisterTemplatePartial(block, position, name, tmpl string) (err error) {
 	if len(eb.fTemplatePartialsProvider) == 0 {
-		eb.AddFeature(partials.New().Make())
+		err = fmt.Errorf("missing page partials feature")
+		return
 	}
 	err = eb.fTemplatePartialsProvider[0].RegisterTemplatePartial(block, position, name, tmpl)
 	return
