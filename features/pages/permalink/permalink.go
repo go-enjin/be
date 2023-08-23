@@ -17,8 +17,8 @@
 package permalink
 
 import (
+	"fmt"
 	"net/http"
-	"regexp"
 
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/gofrs/uuid"
@@ -29,15 +29,13 @@ import (
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/pages"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
 var (
 	_ Feature     = (*CFeature)(nil)
 	_ MakeFeature = (*CFeature)(nil)
-
-	rxPermalinkRoot   = regexp.MustCompile(`^/([0-9a-f]{10}|[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})/??$`)
-	rxPermalinkedSlug = regexp.MustCompile(`-([0-9a-f]{10})$`)
 )
 
 const Tag feature.Tag = "pages-permalink"
@@ -156,14 +154,12 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 }
 
 func (f *CFeature) _parsePath(path string) (permalink string, ok bool) {
-	if ok = rxPermalinkRoot.MatchString(path); ok {
-		m := rxPermalinkRoot.FindAllStringSubmatch(path, 1)
-		permalink = m[0][1]
-		log.TraceDF(1, "found permalink root: %v - %v", path, permalink)
-	} else if ok = rxPermalinkedSlug.MatchString(path); ok {
-		m := rxPermalinkedSlug.FindAllStringSubmatch(path, 1)
-		permalink = m[0][1]
-		log.TraceDF(1, "found permalink slug: %v - %v", path, permalink)
+	if permalink, ok = pages.ParsePermalink(path); ok {
+		if size := len(permalink); size == 48 {
+			log.TraceDF(1, "found permalink root: %v - %v", path, permalink)
+		} else if size == 10 {
+			log.TraceDF(1, "found permalink slug: %v - %v", path, permalink)
+		}
 	}
 	return
 }
