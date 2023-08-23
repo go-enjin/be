@@ -45,9 +45,8 @@ func (l *Layout) ApplyTextTemplate(enjin feature.Internals, tt *textTemplate.Tem
 	l.RLock()
 	defer l.RUnlock()
 
-	tt.Funcs(enjin.MakeFuncMap(ctx).AsTEXT())
 	for _, name := range maps.SortedKeys(l.cache) {
-		if _, err = tt.New(name).Parse(l.cache[name]); err != nil {
+		if _, err = tt.New(name).Funcs(enjin.MakeFuncMap(ctx).AsTEXT()).Parse(l.cache[name]); err != nil {
 			err = fmt.Errorf("error parsing cached template: %v - %v", name, err)
 			return
 		} else {

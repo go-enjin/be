@@ -45,9 +45,8 @@ func (l *Layout) ApplyHtmlTemplate(enjin feature.Internals, tt *htmlTemplate.Tem
 	l.RLock()
 	defer l.RUnlock()
 
-	tt.Funcs(enjin.MakeFuncMap(ctx).AsHTML())
 	for _, name := range maps.SortedKeys(l.cache) {
-		if _, err = tt.New(name).Parse(l.cache[name]); err != nil {
+		if _, err = tt.New(name).Funcs(enjin.MakeFuncMap(ctx).AsHTML()).Parse(l.cache[name]); err != nil {
 			err = fmt.Errorf("error parsing cached template: %v - %v", name, err)
 			return
 		} else {
