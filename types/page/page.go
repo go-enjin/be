@@ -252,6 +252,7 @@ func (p *CPage) Copy() (copy feature.Page) {
 			CreatedAt:    p.fields.CreatedAt,
 			UpdatedAt:    p.fields.UpdatedAt,
 			DeletedAt:    p.fields.DeletedAt,
+			PageMatter:   p.fields.PageMatter.Copy(),
 		},
 		copied:  1,
 		mutable: p.mutable,
