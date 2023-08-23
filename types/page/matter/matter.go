@@ -189,3 +189,20 @@ func (pm *PageMatter) DecodeJsonBody() (data beContext.Context, err error) {
 	err = json.Unmarshal([]byte(pm.Body), &data)
 	return
 }
+
+func (pm *PageMatter) Copy() (copied *PageMatter) {
+	copied = &PageMatter{
+		Origin:          pm.Origin,
+		Path:            pm.Path,
+		Shasum:          pm.Shasum,
+		Body:            pm.Body,
+		Matter:          pm.Matter.Copy(),
+		Locale:          pm.Locale,
+		Created:         pm.Created,
+		Updated:         pm.Updated,
+		FrontMatter:     pm.FrontMatter,
+		FrontMatterType: pm.FrontMatterType,
+		Stub:            pm.Stub,
+	}
+	return
+}
