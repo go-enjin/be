@@ -126,7 +126,7 @@ func (f *CFeature[MakeTypedFeature]) Init(this interface{}) {
 func (f *CFeature[MakeTypedFeature]) CloneFileSystemFeature() (cloned CFeature[MakeTypedFeature]) {
 	//f.RLock()
 	//defer f.RUnlock()
-	c := &CFeature[MakeTypedFeature]{
+	cloned = CFeature[MakeTypedFeature]{
 		CFeature:    f.CFeature.CloneBaseFeature(),
 		MountPoints: make(map[string][]*CMountPoint),
 		txLock:      &sync.RWMutex{},
@@ -137,7 +137,7 @@ func (f *CFeature[MakeTypedFeature]) CloneFileSystemFeature() (cloned CFeature[M
 			if mp.RWFS != nil {
 				rwfs = mp.RWFS.CloneRWFS()
 			}
-			c.MountPoints[k] = append(c.MountPoints[k], &CMountPoint{
+			cloned.MountPoints[k] = append(cloned.MountPoints[k], &CMountPoint{
 				Mount: mp.Mount,
 				Path:  mp.Path,
 				ROFS:  mp.ROFS.CloneROFS(),
@@ -145,7 +145,6 @@ func (f *CFeature[MakeTypedFeature]) CloneFileSystemFeature() (cloned CFeature[M
 			})
 		}
 	}
-	cloned = *c
 	return
 }
 
