@@ -45,6 +45,7 @@ const (
 	gAllUrlsBucketName           = "page_urls_all"
 	gPageUrlsBucketName          = "page_urls"
 	gPageStubsBucketName         = "page_stubs"
+	gPermalinksBucketName        = "page_permalinks"
 	gPageRedirectionsBucketName  = "page_redirections"
 	gPageTranslationsBucketName  = "page_translations"
 	gPageTranslatedByBucketName  = "page_translated_by"

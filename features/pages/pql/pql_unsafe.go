@@ -35,6 +35,14 @@ func (f *CFeature) processPageStub(shasum string, stub *feature.PageStub) (err e
 	return
 }
 
+func (f *CFeature) processPermalink(id string, shasum string) (err error) {
+	if err = kvs.AppendToFlatList[string](f.permalinksBucket, id, shasum); err != nil {
+		err = fmt.Errorf("error appending page to permalinks list: %v - %v", id, err)
+		return
+	}
+	return
+}
+
 func (f *CFeature) processPageUrl(url, shasum string) (err error) {
 	//if err = kvs.AppendToSlice[string](f.pageUrlsBucket, url, shasum); err != nil {
 	//	err = fmt.Errorf("error appending page to page urls list: %v - %v", url, err)

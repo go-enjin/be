@@ -33,6 +33,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/pages"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/types/page"
@@ -85,6 +86,7 @@ type CFeature struct {
 	allUrlsBucket           kvs.KeyValueStore
 	pageUrlsBucket          kvs.KeyValueStore
 	pageStubsBucket         kvs.KeyValueStore
+	permalinksBucket        kvs.KeyValueStore
 	redirectionsBucket      kvs.KeyValueStore
 	translatedByBucket      kvs.KeyValueStore
 	translationsBucket      map[language.Tag]kvs.KeyValueStore
@@ -174,6 +176,9 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if f.pageStubsBucket, err = f.cache.Bucket(gPageStubsBucketName); err != nil {
 		return
 	}
+	if f.permalinksBucket, err = f.cache.Bucket(gPermalinksBucketName); err != nil {
+		return
+	}
 	if f.translatedByBucket, err = f.cache.Bucket(gPageTranslatedByBucketName); err != nil {
 		return
 	}
@@ -253,21 +258,22 @@ func (f *CFeature) AddToIndex(stub *feature.PageStub, p feature.Page) (err error
 	}
 
 	if p.Permalink() != uuid.Nil {
+		// long-form root permalink
 		permalinkUrl := "/" + p.Permalink().String()
 		if err = f.processPageUrl(permalinkUrl, p.Shasum()); err != nil {
 			return
-		}
-		if err = f.processTranslations(p.LanguageTag(), p.Shasum(), permalinkUrl); err != nil {
+		} else if err = f.processTranslations(p.LanguageTag(), p.Shasum(), permalinkUrl); err != nil {
+			return
+		} else if err = f.processPermalink(p.Permalink().String(), p.Shasum()); err != nil {
 			return
 		}
-	}
-
-	if p.PermalinkSha() != "" {
-		permalinkUrl := "/" + p.PermalinkSha()
+		// short-form root permalink
+		permalinkUrl = "/" + p.PermalinkSha()
 		if err = f.processPageUrl(permalinkUrl, p.Shasum()); err != nil {
 			return
-		}
-		if err = f.processTranslations(p.LanguageTag(), p.Shasum(), permalinkUrl); err != nil {
+		} else if err = f.processTranslations(p.LanguageTag(), p.Shasum(), permalinkUrl); err != nil {
+			return
+		} else if err = f.processPermalink(p.PermalinkSha(), p.Shasum()); err != nil {
 			return
 		}
 	}
@@ -548,6 +554,16 @@ func (f *CFeature) Lookup(tag language.Tag, path string) (pg feature.Page, err e
 	//defer f.RUnlock()
 
 	path = bePath.CleanWithSlash(path)
+
+	if id, ok := pages.ParsePermalink(path); ok {
+		if v, ee := f.permalinksBucket.Get(id); ee == nil {
+			shasum, _ := v.(string)
+			if p := f.findStubPage(shasum); p != nil {
+				pg = p
+				return
+			}
+		}
+	}
 
 	process := func(tag language.Tag, path string) (pg feature.Page, err error) {
 		if txBucket, ok := f.translationsBucket[tag]; ok {
