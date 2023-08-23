@@ -164,7 +164,18 @@ func (f *CFeature) _parsePath(path string) (permalink string, ok bool) {
 	return
 }
 
-func (f *CFeature) _permalink(permalink uuid.UUID) (url string) {
+func (f *CFeature) _permalink(input interface{}) (url string, err error) {
+	var permalink uuid.UUID
+	if vs, ok := input.(string); ok {
+		if permalink, err = uuid.FromString(vs); err != nil {
+			return
+		}
+	} else if vu, ok := input.(uuid.UUID); ok {
+		permalink = vu
+	} else {
+		err = fmt.Errorf("expected uuid.UUID or string; received %T", input)
+		return
+	}
 	if permalink != uuid.Nil {
 		url = "/" + permalink.String()
 		for _, tag := range f.Enjin.SiteLocales() {
