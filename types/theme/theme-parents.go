@@ -18,6 +18,7 @@ import (
 	"sync"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/log"
 )
 
 var (
@@ -48,6 +49,8 @@ func (t *CTheme) getParentTheme() (parent *CTheme) {
 		defer gThemeRegistry.RUnlock()
 		if v, ok := gThemeRegistry.known[t.config.Parent]; ok {
 			parent = v
+		} else {
+			log.FatalDF(2, "%v parent theme not found: %v", t.name, t.config.Parent)
 		}
 	}
 	return
