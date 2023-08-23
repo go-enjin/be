@@ -36,7 +36,7 @@ var (
 	_ MakeFeature = (*CFeature)(nil)
 )
 
-const Tag feature.Tag = "srv-listener-http"
+const Tag feature.Tag = "srv-listener-httpd"
 
 type Feature interface {
 	feature.Feature
