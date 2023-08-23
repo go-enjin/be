@@ -72,14 +72,19 @@ func newTheme(origin, path string, themeFs, staticFs fs.FileSystem) (t *CTheme, 
 }
 
 func (t *CTheme) Reload() (err error) {
-	var nt *CTheme
-	if nt, err = newTheme(t.origin, t.path, t.fs, t.staticFS); err == nil {
-		nt.formatProviders = t.formatProviders
-		*t = *nt
-		if parent := t.GetParent(); parent != nil {
-			err = parent.Reload()
+
+	if parent := t.GetParent(); parent != nil {
+		if err = parent.Reload(); err != nil {
+			return
 		}
 	}
+
+	var nt *CTheme
+	if nt, err = newTheme(t.origin, t.path, t.fs, t.staticFS); err == nil {
+		nt.formatProviders = append(nt.formatProviders, t.formatProviders...)
+		*t = *nt
+	}
+
 	return
 }
 
@@ -211,7 +216,7 @@ func (t *CTheme) MatchFormat(filename string) (format feature.PageFormat, match 
 
 func (t *CTheme) Locales() (locales fs.FileSystem, ok bool) {
 	if _, err := t.fs.ReadDir("locales"); err == nil {
-		log.DebugF("found %v theme locales", t.name)
+		log.TraceDF(1, "found %v theme locales", t.name)
 		if locales, err = fs.Wrap("locales", t.fs); err == nil {
 			ok = true
 		} else {
