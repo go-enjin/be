@@ -30,14 +30,13 @@ import (
 func (f *CFeature) NewHtmlTemplateWith(name string, ctx context.Context) (tmpl *htmlTemplate.Template, err error) {
 	t := f.Enjin.MustGetTheme()
 
-	var makeTemplate func(t feature.Theme, name string, ctx context.Context) (tmpl *htmlTemplate.Template)
-	makeTemplate = func(t feature.Theme, name string, ctx context.Context) (tmpl *htmlTemplate.Template) {
+	var makeTemplate func(t feature.Theme, name string, ctx context.Context) (tmpl *htmlTemplate.Template, err error)
+	makeTemplate = func(t feature.Theme, name string, ctx context.Context) (tmpl *htmlTemplate.Template, err error) {
 		if parent := t.GetParent(); parent != nil {
-			tmpl = makeTemplate(parent, name, ctx)
+			tmpl, err = makeTemplate(parent, name, ctx)
 			return
 		}
-		fm := f.Enjin.MakeFuncMap(ctx).AsHTML()
-		tmpl = htmlTemplate.New(name).Funcs(fm)
+		tmpl, err = t.NewHtmlTemplate(f.Enjin, name, ctx)
 		return
 	}
 
@@ -46,7 +45,13 @@ func (f *CFeature) NewHtmlTemplateWith(name string, ctx context.Context) (tmpl *
 		return
 	}
 
-	tmpl = makeTemplate(t, name, ctx)
+	if tmpl, err = makeTemplate(t, name, ctx); err != nil {
+		return
+	}
+
+	fm := f.Enjin.MakeFuncMap(ctx).AsTEXT()
+	tmpl = tmpl.Funcs(fm)
+
 	err = templates.AddHtmlParseTree(layoutsTmpl, tmpl)
 	return
 }
