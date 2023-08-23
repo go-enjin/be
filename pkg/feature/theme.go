@@ -75,6 +75,9 @@ type Theme interface {
 	PageFormatProvider
 
 	Middleware(next http.Handler) http.Handler
+
+	NewHtmlTemplate(enjin Internals, name string, ctx context.Context) (tmpl *htmlTemplate.Template, err error)
+	NewTextTemplate(enjin Internals, name string, ctx context.Context) (tmpl *textTemplate.Template, err error)
 }
 
 type ThemeLayout interface {
@@ -96,6 +99,9 @@ type ThemeLayouts interface {
 
 	NewHtmlTemplate(enjin Internals, name string, ctx context.Context) (tmpl *htmlTemplate.Template, err error)
 	NewTextTemplate(enjin Internals, name string, ctx context.Context) (tmpl *textTemplate.Template, err error)
+
+	ApplyHtmlTemplates(enjin Internals, tmpl *htmlTemplate.Template, ctx context.Context) (err error)
+	ApplyTextTemplates(enjin Internals, tmpl *textTemplate.Template, ctx context.Context) (err error)
 }
 
 type ThemeRenderer interface {
