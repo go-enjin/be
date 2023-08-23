@@ -24,38 +24,42 @@ import (
 )
 
 func (l *Layouts) NewHtmlTemplate(enjin feature.Internals, name string, ctx context.Context) (tmpl *htmlTemplate.Template, err error) {
-	l.RLock()
-	defer l.RUnlock()
 
 	if tmpl, err = htmlTemplate.New(name).Parse(`{{/* empty */}}`); err == nil {
-
-		if partials := l.GetLayout("partials"); partials != nil {
-			if err = partials.ApplyHtmlTemplate(enjin, tmpl, ctx); err != nil {
-				return
-			}
-		}
-
-		if _default := l.GetLayout("_default"); _default != nil {
-			if err = _default.ApplyHtmlTemplate(enjin, tmpl, ctx); err != nil {
-				return
-			}
-		}
-
-		for _, layoutName := range maps.SortedKeys(l.cache) {
-			switch layoutName {
-			case "partials", "_default":
-				continue
-			}
-
-			if layout, ok := l.cache[layoutName]; ok {
-				if err = layout.ApplyHtmlTemplate(enjin, tmpl, ctx); err != nil {
-					return
-				}
-			} else {
-				log.ErrorF("inconsistent cache key: %v", layoutName)
-			}
-		}
-
+		err = l.ApplyHtmlTemplates(enjin, tmpl, ctx)
 	}
+
+	return
+}
+
+func (l *Layouts) ApplyHtmlTemplates(enjin feature.Internals, tmpl *htmlTemplate.Template, ctx context.Context) (err error) {
+
+	if partials := l.GetLayout("partials"); partials != nil {
+		if err = partials.ApplyHtmlTemplate(enjin, tmpl, ctx); err != nil {
+			return
+		}
+	}
+
+	if _default := l.GetLayout("_default"); _default != nil {
+		if err = _default.ApplyHtmlTemplate(enjin, tmpl, ctx); err != nil {
+			return
+		}
+	}
+
+	for _, layoutName := range maps.SortedKeys(l.cache) {
+		switch layoutName {
+		case "partials", "_default":
+			continue
+		}
+
+		if layout, ok := l.cache[layoutName]; ok {
+			if err = layout.ApplyHtmlTemplate(enjin, tmpl, ctx); err != nil {
+				return
+			}
+		} else {
+			log.ErrorF("inconsistent cache key: %v", layoutName)
+		}
+	}
+
 	return
 }

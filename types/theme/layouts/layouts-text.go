@@ -24,38 +24,42 @@ import (
 )
 
 func (l *Layouts) NewTextTemplate(enjin feature.Internals, name string, ctx context.Context) (tmpl *textTemplate.Template, err error) {
-	l.RLock()
-	defer l.RUnlock()
 
 	if tmpl, err = textTemplate.New(name).Parse(`{{/* empty */}}`); err == nil {
-
-		if partials := l.GetLayout("partials"); partials != nil {
-			if err = partials.ApplyTextTemplate(enjin, tmpl, ctx); err != nil {
-				return
-			}
-		}
-
-		if _default := l.GetLayout("_default"); _default != nil {
-			if err = _default.ApplyTextTemplate(enjin, tmpl, ctx); err != nil {
-				return
-			}
-		}
-
-		for _, layoutName := range maps.SortedKeys(l.cache) {
-			switch layoutName {
-			case "partials", "_default":
-				continue
-			}
-
-			if layout, ok := l.cache[layoutName]; ok {
-				if err = layout.ApplyTextTemplate(enjin, tmpl, ctx); err != nil {
-					return
-				}
-			} else {
-				log.ErrorF("inconsistent cache key: %v", layoutName)
-			}
-		}
-
+		err = l.ApplyTextTemplates(enjin, tmpl, ctx)
 	}
+
+	return
+}
+
+func (l *Layouts) ApplyTextTemplates(enjin feature.Internals, tmpl *textTemplate.Template, ctx context.Context) (err error) {
+
+	if partials := l.GetLayout("partials"); partials != nil {
+		if err = partials.ApplyTextTemplate(enjin, tmpl, ctx); err != nil {
+			return
+		}
+	}
+
+	if _default := l.GetLayout("_default"); _default != nil {
+		if err = _default.ApplyTextTemplate(enjin, tmpl, ctx); err != nil {
+			return
+		}
+	}
+
+	for _, layoutName := range maps.SortedKeys(l.cache) {
+		switch layoutName {
+		case "partials", "_default":
+			continue
+		}
+
+		if layout, ok := l.cache[layoutName]; ok {
+			if err = layout.ApplyTextTemplate(enjin, tmpl, ctx); err != nil {
+				return
+			}
+		} else {
+			log.ErrorF("inconsistent cache key: %v", layoutName)
+		}
+	}
+
 	return
 }
