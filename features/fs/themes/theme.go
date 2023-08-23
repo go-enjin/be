@@ -100,7 +100,7 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	for _, ts := range f.loading {
 		var t feature.Theme
 		if t, err = theme.New(f.Tag().String(), ts.path, ts.themeFs, ts.staticFs); err != nil {
-			err = fmt.Errorf("error loading theme: %v - %v", ts.path, err)
+			err = fmt.Errorf("error loading %v theme: %v - %v", ts.support, ts.path, err)
 			return
 		} else if t.StaticFS() != nil {
 			b.RegisterPublicFileSystem("/", t.StaticFS())
