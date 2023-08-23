@@ -43,10 +43,16 @@ type Feature interface {
 
 type MakeFeature interface {
 	Make() Feature
+
+	SetRenderer(r feature.ThemeRenderer) MakeFeature
+	SetListener(l feature.ServiceListener) MakeFeature
 }
 
 type CFeature struct {
 	feature.CFeature
+
+	fRenderer feature.ThemeRenderer
+	fListener feature.ServiceListener
 }
 
 func New() MakeFeature {
@@ -65,6 +71,16 @@ func (f *CFeature) Init(this interface{}) {
 	return
 }
 
+func (f *CFeature) SetRenderer(r feature.ThemeRenderer) MakeFeature {
+	f.fRenderer = r
+	return f
+}
+
+func (f *CFeature) SetListener(l feature.ServiceListener) MakeFeature {
+	f.fListener = l
+	return f
+}
+
 func (f *CFeature) Make() (feat Feature) {
 	return f
 }
@@ -73,16 +89,46 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	if err = f.CFeature.Build(b); err != nil {
 		return
 	}
-	b.AddFeature(formats.New().Defaults().Make())
-	b.AddFeature(funcmaps.New().Defaults().Make())
-	b.AddFeature(partials.New().Make())
-	b.AddFeature(permalink.New().Make())
-	b.AddFeature(query.New().Make())
-	b.AddFeature(renderer.New().Make())
-	b.AddFeature(htmlify.New().Make())
-	b.AddFeature(proxy.New().Enable().Make())
-	b.AddFeature(pages.New().Make())
-	b.AddFeature(httpd.New().Make())
+
+	add := func(feat feature.Feature) (err error) {
+		if err = feat.Build(b); err != nil {
+			return
+		}
+		b.AddFeature(feat)
+		return
+	}
+
+	for _, feat := range []feature.Feature{
+		formats.New().Defaults().Make(),
+		funcmaps.New().Defaults().Make(),
+		partials.New().Make(),
+		permalink.New().Make(),
+		query.New().Make(),
+		pages.New().Make(),
+		htmlify.New().Make(),
+		proxy.New().Enable().Make(),
+	} {
+		if err = add(feat); err != nil {
+			return
+		}
+	}
+
+	if f.fRenderer != nil {
+		if err = add(f.fRenderer); err != nil {
+			return
+		}
+	} else if err = add(renderer.New().Make()); err != nil {
+		return
+	}
+
+	if f.fListener != nil {
+		if err = add(f.fListener); err != nil {
+			return
+		}
+	} else if err = add(httpd.New().Make()); err != nil {
+		return
+	}
+
 	return
 }
 
