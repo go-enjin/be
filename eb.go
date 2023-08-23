@@ -217,7 +217,7 @@ func (eb *EnjinBuilder) prepareBuild() {
 
 	if eb.theme != "" {
 		if _, ok := eb.theming[eb.theme]; !ok {
-			log.FatalDF(2, "theme not found: %v", eb.theme)
+			log.FatalDF(2, "specified theme not found: %v", eb.theme)
 		}
 	}
 

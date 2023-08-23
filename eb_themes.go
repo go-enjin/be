@@ -32,7 +32,7 @@ func (eb *EnjinBuilder) AddTheme(t feature.Theme) feature.Builder {
 	name := t.Name()
 	eb.theming[name] = t
 	eb.themeOrder = append(eb.themeOrder, name)
-	log.DebugF("including %v theme", name)
+	log.DebugF("adding %v theme", name)
 	if lfs, ok := t.Locales(); ok {
 		eb.localeFileSystems = append(eb.localeFileSystems, lfs)
 		log.DebugF("including %v theme locales", name)
