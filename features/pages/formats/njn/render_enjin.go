@@ -176,7 +176,7 @@ func (re *RenderEnjin) RenderNjnTemplateList(tag string, data []interface{}) (ht
 		return
 	} else {
 		var tt *template.Template
-		if tt, err = re.Theme.Layouts().NewHtmlTemplate(re.Enjin, "render-enjin--"+tag, re.ctx); err == nil {
+		if tt, err = re.Theme.NewHtmlTemplate(re.Enjin, "render-enjin--"+tag, re.ctx); err == nil {
 			if tt, err = tt.Parse(tmplContent); err == nil {
 				var w bytes.Buffer
 				if err = tt.Execute(&w, data); err == nil {
@@ -198,7 +198,7 @@ func (re *RenderEnjin) RenderNjnTemplate(tag string, data map[string]interface{}
 		return
 	} else {
 		var tt *template.Template
-		if tt, err = re.Theme.Layouts().NewHtmlTemplate(re.Enjin, "render-enjin--"+tag, re.ctx); err == nil {
+		if tt, err = re.Theme.NewHtmlTemplate(re.Enjin, "render-enjin--"+tag, re.ctx); err == nil {
 			if tt, err = tt.Parse(tmplContent); err == nil {
 				var w bytes.Buffer
 				if err = tt.Execute(&w, data); err == nil {
