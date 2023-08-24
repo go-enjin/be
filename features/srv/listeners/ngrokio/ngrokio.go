@@ -50,10 +50,15 @@ type Feature interface {
 type MakeFeature interface {
 	Make() Feature
 
+	// WithDomain specifies the ngrok/config.WithDomain setting
 	WithDomain(name string) MakeFeature
+	// WithRegion specifies the ngrok/config.WithRegion setting
 	WithRegion(code string) MakeFeature
+	// WithLogging attaches the ngrok tunnel to the enjin logger
 	WithLogging(enabled bool) MakeFeature
-	UseNgrokAuthTokenEnv(enabled bool) MakeFeature
+
+	// IncludeNgrokEnv includes the "NGROK_AUTHTOKEN" environment key
+	IncludeNgrokEnv(enabled bool) MakeFeature
 }
 
 type CFeature struct {
@@ -84,7 +89,7 @@ func (f *CFeature) Init(this interface{}) {
 	return
 }
 
-func (f *CFeature) UseNgrokAuthTokenEnv(enabled bool) MakeFeature {
+func (f *CFeature) IncludeNgrokEnv(enabled bool) MakeFeature {
 	f.ngrokEnvKey = enabled
 	return f
 }
@@ -178,6 +183,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		log.DebugF("ngrok auth-token present")
 	} else {
 		err = fmt.Errorf("%v feature requires --%s", f.Tag(), authToken)
+		return
 	}
 
 	if ctx.IsSet(withDomain) {
