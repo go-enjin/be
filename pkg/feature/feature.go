@@ -28,6 +28,7 @@ const NotImplemented Tag = "not-implemented"
 type Feature interface {
 	Init(this interface{})
 	Tag() (tag Tag)
+	BaseTag() (pkg Tag)
 	This() (this interface{})
 	Self() (f Feature)
 	Depends() (deps Tags)
@@ -45,6 +46,7 @@ type CFeature struct {
 	this interface{}
 	ctx  context.Context
 
+	PackageTag Tag
 	FeatureTag Tag
 
 	Enjin Internals
@@ -55,6 +57,7 @@ type CFeature struct {
 func (f *CFeature) Init(this interface{}) {
 	f.this = this
 	f.ctx = context.New()
+	f.PackageTag = NotImplemented
 	f.FeatureTag = NotImplemented
 }
 
@@ -63,6 +66,13 @@ func (f *CFeature) Tag() (tag Tag) {
 		panic("not implemented")
 	}
 	return f.FeatureTag
+}
+
+func (f *CFeature) BaseTag() (pkg Tag) {
+	if f.PackageTag == NotImplemented {
+		panic("not implemented")
+	}
+	return
 }
 
 func (f *CFeature) This() (this interface{}) {
