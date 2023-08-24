@@ -36,7 +36,7 @@ var (
 	_ MakeFeature = (*CFeature)(nil)
 )
 
-const Tag feature.Tag = "driver-theme-renderer"
+const Tag feature.Tag = "srv-theme-renderer"
 
 type Feature interface {
 	feature.Feature
