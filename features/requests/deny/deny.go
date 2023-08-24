@@ -40,12 +40,15 @@ type MakeFeature interface {
 	Make() Feature
 
 	SetDenyDuration(seconds int64) MakeFeature
+
 	Block(address string) MakeFeature
 	Restrict(path string) MakeFeature
+
+	Defaults() MakeFeature
+
 	RestrictEnv() MakeFeature
 	RestrictGit() MakeFeature
 	RestrictWordPress() MakeFeature
-	Defaults() MakeFeature
 }
 
 type Feature interface {
