@@ -46,6 +46,11 @@ type MakeFeature interface {
 
 	SetRenderer(r feature.ThemeRenderer) MakeFeature
 	SetListener(l feature.ServiceListener) MakeFeature
+
+	AddFormats(formats ...feature.PageFormat) MakeFeature
+	AddFuncmaps(funcmaps ...feature.FuncMapProvider) MakeFeature
+
+	OmitFeatures(features ...feature.Tag) MakeFeature
 }
 
 type CFeature struct {
@@ -53,6 +58,10 @@ type CFeature struct {
 
 	fRenderer feature.ThemeRenderer
 	fListener feature.ServiceListener
+
+	addFormats   []feature.PageFormat
+	addFuncmaps  []feature.FuncMapProvider
+	omitFeatures []feature.Tag
 }
 
 func New() MakeFeature {
@@ -82,6 +91,21 @@ func (f *CFeature) SetListener(l feature.ServiceListener) MakeFeature {
 	return f
 }
 
+func (f *CFeature) AddFormats(formats ...feature.PageFormat) MakeFeature {
+	f.addFormats = append(f.addFormats, formats...)
+	return f
+}
+
+func (f *CFeature) AddFuncmaps(funcmaps ...feature.FuncMapProvider) MakeFeature {
+	f.addFuncmaps = append(f.addFuncmaps, funcmaps...)
+	return f
+}
+
+func (f *CFeature) OmitFeatures(features ...feature.Tag) MakeFeature {
+	f.omitFeatures = append(f.omitFeatures, features...)
+	return f
+}
+
 func (f *CFeature) Make() (feat Feature) {
 	return f
 }
@@ -92,6 +116,9 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	}
 
 	add := func(feat feature.Feature) (err error) {
+		if slices.AnyWithin([]feature.Tag{feat.Tag(), feat.BaseTag()}, f.omitFeatures) {
+			return
+		}
 		if err = feat.Build(b); err != nil {
 			return
 		}
@@ -103,8 +130,9 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 		formats.New().
 			AddFormat(tmpl.New().Make()).
 			AddFormat(html.New().Make()).
+			AddFormat(f.addFormats...).
 			Make(),
-		funcmaps.New().Defaults().Make(),
+		funcmaps.New().Defaults().Include(f.addFuncmaps...).Make(),
 		partials.New().Make(),
 		pages.New().Make(),
 		htmlify.New().Make(),
