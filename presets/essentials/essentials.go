@@ -17,7 +17,6 @@ package essentials
 import (
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/be/drivers/theme/renderer"
 	"github.com/go-enjin/be/features/outputs/htmlify"
 	"github.com/go-enjin/be/features/pages/formats"
 	"github.com/go-enjin/be/features/pages/formats/html"
@@ -27,6 +26,7 @@ import (
 	"github.com/go-enjin/be/features/requests/headers/proxy"
 	"github.com/go-enjin/be/features/srv/listeners/httpd"
 	"github.com/go-enjin/be/features/srv/pages"
+	"github.com/go-enjin/be/features/srv/theme/renderer"
 	"github.com/go-enjin/be/pkg/feature"
 )
 
