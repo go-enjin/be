@@ -24,7 +24,7 @@ import (
 )
 
 type PageFormat interface {
-	This() interface{}
+	Feature
 	Name() (name string)
 	Label() (label string)
 	Extensions() (extensions []string)
