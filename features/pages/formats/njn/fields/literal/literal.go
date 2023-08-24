@@ -65,6 +65,7 @@ type CField struct {
 func New() (field MakeField) {
 	f := new(CField)
 	f.Init(f)
+	f.PackageTag = Tag
 	f.FeatureTag = Tag
 	return f
 }

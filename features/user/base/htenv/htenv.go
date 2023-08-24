@@ -59,22 +59,19 @@ type CFeature struct {
 }
 
 func New() MakeFeature {
-	f := new(CFeature)
-	f.Init(f)
-	f.FeatureTag = Tag
-	return f
+	return NewTagged(Tag)
 }
 
 func NewTagged(tag feature.Tag) MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
+	f.PackageTag = Tag
 	f.FeatureTag = tag
 	return f
 }
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
-	f.FeatureTag = Tag
 	f.users = make(map[string]*userbase.AuthUser)
 	f.hashes = make(map[string]string)
 	f.groups = make(map[userbase.Group][]string)

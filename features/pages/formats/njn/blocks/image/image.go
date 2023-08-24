@@ -48,6 +48,7 @@ type CBlock struct {
 func New() (field MakeBlock) {
 	f := new(CBlock)
 	f.Init(f)
+	f.PackageTag = Tag
 	f.FeatureTag = Tag
 	return f
 }

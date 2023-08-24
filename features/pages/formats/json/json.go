@@ -52,9 +52,14 @@ type CFeature struct {
 }
 
 func New() MakeFeature {
+	return NewTagged(Tag)
+}
+
+func NewTagged(tag feature.Tag) MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
-	f.FeatureTag = Tag
+	f.PackageTag = Tag
+	f.FeatureTag = tag
 	return f
 }
 

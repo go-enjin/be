@@ -109,6 +109,7 @@ func New() MakeFeature {
 func NewTagged(tag feature.Tag) MakeFeature {
 	f := new(CFeature)
 	f.Init(f)
+	f.PackageTag = Tag
 	f.FeatureTag = tag
 	return f
 }
