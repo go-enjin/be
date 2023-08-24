@@ -56,6 +56,7 @@ type MakeConsole interface {
 }
 
 type CConsole struct {
+	PackageTag Tag
 	ConsoleTag Tag
 	Enjin      Internals
 
@@ -78,7 +79,14 @@ func (c *CConsole) Make() Console {
 
 func (c *CConsole) Tag() (tag Tag) {
 	if c.ConsoleTag == NotImplemented {
-		panic(fmt.Errorf("%T console tag not implemented", c))
+		panic(fmt.Errorf("%T console feature tag not implemented", c))
+	}
+	return c.ConsoleTag
+}
+
+func (c *CConsole) BaseTag() (tag Tag) {
+	if c.PackageTag == NotImplemented {
+		panic(fmt.Errorf("%T console package tag not implemented", c))
 	}
 	return c.ConsoleTag
 }
