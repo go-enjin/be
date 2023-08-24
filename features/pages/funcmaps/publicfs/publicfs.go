@@ -76,25 +76,27 @@ func (f *CFeature) Shutdown() {
 }
 
 func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
-	pfs := f.Enjin.PublicFileSystems().Lookup()
-	fm = feature.FuncMap{
-		"fsHash": func(path string) (shasum string) {
-			shasum, _ = pfs.FindFileShasum(path)
-			return
-		},
-		"fsUrl": func(path string) (url string) {
-			url = path
-			if shasum, err := pfs.FindFileShasum(path); err == nil {
-				url += "?rev=" + shasum
-			}
-			return
-		},
-		"fsMime":         pfs.FindFileMime,
-		"fsExists":       pfs.FileExists,
-		"fsListFiles":    pfs.ListFiles,
-		"fsListAllFiles": pfs.ListAllFiles,
-		"fsListDirs":     pfs.ListDirs,
-		"fsListAllDirs":  pfs.ListAllDirs,
+	if f.Enjin != nil {
+		pfs := f.Enjin.PublicFileSystems().Lookup()
+		fm = feature.FuncMap{
+			"fsHash": func(path string) (shasum string) {
+				shasum, _ = pfs.FindFileShasum(path)
+				return
+			},
+			"fsUrl": func(path string) (url string) {
+				url = path
+				if shasum, err := pfs.FindFileShasum(path); err == nil {
+					url += "?rev=" + shasum
+				}
+				return
+			},
+			"fsMime":         pfs.FindFileMime,
+			"fsExists":       pfs.FileExists,
+			"fsListFiles":    pfs.ListFiles,
+			"fsListAllFiles": pfs.ListAllFiles,
+			"fsListDirs":     pfs.ListDirs,
+			"fsListAllDirs":  pfs.ListAllDirs,
+		}
 	}
 	return
 }

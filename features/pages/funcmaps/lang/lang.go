@@ -84,10 +84,12 @@ func (f *CFeature) Shutdown() {
 
 func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 	fm = feature.FuncMap{
-		"_":       f.makeUnderscore(ctx),
-		"__":      f.makeUnderscoreUnderscore(ctx),
-		"_tag":    f.makeUnderscoreTag(ctx),
 		"cmpLang": CmpLang,
+	}
+	if f.Enjin != nil {
+		fm["_"] = f.makeUnderscore(ctx)
+		fm["__"] = f.makeUnderscoreUnderscore(ctx)
+		fm["_tag"] = f.makeUnderscoreTag(ctx)
 	}
 	return
 }
