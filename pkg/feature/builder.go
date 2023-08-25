@@ -60,8 +60,13 @@ type Builder interface {
 	// AddConsole adds custom command line go-curses consoles (ctk.Window)
 	AddConsole(c Console) Builder
 
-	// AddFeature includes the given feature within the built Enjin
+	// AddFeature appends the given feature within the built Enjin (appends it to the end of the list of features
+	// included)
 	AddFeature(f Feature) Builder
+
+	// PrependFeature prepends the given feature within the built Enjin (inserts it at the start of the list of
+	// features included)
+	PrependFeature(f Feature) Builder
 
 	// AddRouteProcessor adds the given route processor to the Enjin route
 	// processing middleware
