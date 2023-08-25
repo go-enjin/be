@@ -34,10 +34,27 @@ func NewFeaturesCache() (cache *FeaturesCache) {
 	return
 }
 
+func (c *FeaturesCache) checkDupe(tag Tag) (err error) {
+	if _, present := c.tags[tag]; present {
+		err = fmt.Errorf("duplicate feature.Tag: %v", tag)
+		return
+	}
+	return
+}
+
+func (c *FeaturesCache) Prepend(f Feature) (err error) {
+	tag := f.Tag()
+	if err = c.checkDupe(tag); err != nil {
+		return
+	}
+	c.list = append(Features{f}, c.list...)
+	c.tags[tag] = f
+	return
+}
+
 func (c *FeaturesCache) Add(f Feature) (err error) {
 	tag := f.Tag()
-	if _, present := c.tags[tag]; present {
-		err = fmt.Errorf("duplicated feature.Tag: %v", tag)
+	if err = c.checkDupe(tag); err != nil {
 		return
 	}
 	c.list = append(c.list, f)
