@@ -15,14 +15,13 @@
 package essentials
 
 import (
-	"github.com/urfave/cli/v2"
-
 	"github.com/go-enjin/be/features/outputs/htmlify"
 	"github.com/go-enjin/be/features/pages/formats"
 	"github.com/go-enjin/be/features/pages/formats/html"
 	"github.com/go-enjin/be/features/pages/formats/tmpl"
 	"github.com/go-enjin/be/features/pages/funcmaps"
 	"github.com/go-enjin/be/features/pages/partials"
+	"github.com/go-enjin/be/features/requests/deny"
 	"github.com/go-enjin/be/features/requests/headers/proxy"
 	"github.com/go-enjin/be/features/srv/listeners/httpd"
 	"github.com/go-enjin/be/features/srv/pages"
@@ -31,144 +30,103 @@ import (
 )
 
 var (
-	_ Feature     = (*CFeature)(nil)
-	_ MakeFeature = (*CFeature)(nil)
+	_ Preset     = (*CPreset[MakePreset])(nil)
+	_ MakePreset = (*CPreset[MakePreset])(nil)
 )
 
-const Tag feature.Tag = "preset-essentials"
+const Name = "preset-essentials"
 
-type Feature interface {
-	feature.Feature
+type Preset interface {
+	feature.Preset
 }
 
-type MakeFeature interface {
-	Make() Feature
+type MakePreset interface {
+	feature.BaseMakePreset[MakePreset]
 
-	SetRenderer(r feature.ThemeRenderer) MakeFeature
-	SetListener(l feature.ServiceListener) MakeFeature
+	Make() Preset
 
-	AddFormats(formats ...feature.PageFormat) MakeFeature
-	AddFuncmaps(funcmaps ...feature.FuncMapProvider) MakeFeature
+	SetRenderer(r feature.ThemeRenderer) MakePreset
+	SetListener(l feature.ServiceListener) MakePreset
 
-	OmitFeatures(features ...feature.Tag) MakeFeature
+	AddFormats(formats ...feature.PageFormat) MakePreset
+	AddFuncmaps(funcmaps ...feature.FuncMapProvider) MakePreset
 }
 
-type CFeature struct {
-	feature.CFeature
+type CPreset[MakeTypedPreset interface{}] struct {
+	feature.CPreset[MakeTypedPreset]
 
-	fRenderer feature.ThemeRenderer
-	fListener feature.ServiceListener
-
-	addFormats   []feature.PageFormat
-	addFuncmaps  []feature.FuncMapProvider
-	omitFeatures []feature.Tag
+	formats  []feature.PageFormat
+	funcmaps []feature.FuncMapProvider
+	renderer feature.ThemeRenderer
+	listener feature.ServiceListener
 }
 
-func New() MakeFeature {
-	return NewTagged(Tag)
-}
-
-func NewTagged(tag feature.Tag) MakeFeature {
-	f := new(CFeature)
-	f.Init(f)
-	f.PackageTag = Tag
-	f.FeatureTag = tag
-	return f
-}
-
-func (f *CFeature) Init(this interface{}) {
-	f.CFeature.Init(this)
-	return
-}
-
-func (f *CFeature) SetRenderer(r feature.ThemeRenderer) MakeFeature {
-	f.fRenderer = r
-	return f
-}
-
-func (f *CFeature) SetListener(l feature.ServiceListener) MakeFeature {
-	f.fListener = l
-	return f
-}
-
-func (f *CFeature) AddFormats(formats ...feature.PageFormat) MakeFeature {
-	f.addFormats = append(f.addFormats, formats...)
-	return f
-}
-
-func (f *CFeature) AddFuncmaps(funcmaps ...feature.FuncMapProvider) MakeFeature {
-	f.addFuncmaps = append(f.addFuncmaps, funcmaps...)
-	return f
-}
-
-func (f *CFeature) OmitFeatures(features ...feature.Tag) MakeFeature {
-	f.omitFeatures = append(f.omitFeatures, features...)
-	return f
-}
-
-func (f *CFeature) Make() (feat Feature) {
-	return f
-}
-
-func (f *CFeature) Build(b feature.Buildable) (err error) {
-	if err = f.CFeature.Build(b); err != nil {
-		return
-	}
-
-	add := func(feat feature.Feature) (err error) {
-		if slices.AnyWithin([]feature.Tag{feat.Tag(), feat.BaseTag()}, f.omitFeatures) {
-			return
-		}
-		if err = feat.Build(b); err != nil {
-			return
-		}
-		b.AddFeature(feat)
-		return
-	}
-
-	for _, feat := range []feature.Feature{
-		formats.New().
-			AddFormat(tmpl.New().Make()).
-			AddFormat(html.New().Make()).
-			AddFormat(f.addFormats...).
-			Make(),
-		funcmaps.New().Defaults().Include(f.addFuncmaps...).Make(),
+func New() MakePreset {
+	p := new(CPreset[MakePreset])
+	p.Name = Name
+	p.Features = feature.Features{
+		deny.New().Defaults().Make(),
 		partials.New().Make(),
 		pages.New().Make(),
 		htmlify.New().Make(),
 		proxy.New().Enable().Make(),
-	} {
-		if err = add(feat); err != nil {
-			return
-		}
 	}
+	p.Init(p)
+	return p
+}
 
-	if f.fRenderer != nil {
-		if err = add(f.fRenderer); err != nil {
-			return
-		}
-	} else if err = add(renderer.New().Make()); err != nil {
+func (p *CPreset[MakeTypedPreset]) SetRenderer(r feature.ThemeRenderer) MakeTypedPreset {
+	p.renderer = r
+	return interface{}(p).(MakeTypedPreset)
+}
+
+func (p *CPreset[MakeTypedPreset]) SetListener(l feature.ServiceListener) MakeTypedPreset {
+	p.listener = l
+	return interface{}(p).(MakeTypedPreset)
+}
+
+func (p *CPreset[MakeTypedPreset]) AddFormats(formats ...feature.PageFormat) MakeTypedPreset {
+	p.formats = append(p.formats, formats...)
+	return interface{}(p).(MakeTypedPreset)
+}
+
+func (p *CPreset[MakeTypedPreset]) AddFuncmaps(funcmaps ...feature.FuncMapProvider) MakeTypedPreset {
+	p.funcmaps = append(p.funcmaps, funcmaps...)
+	return interface{}(p).(MakeTypedPreset)
+}
+
+func (p *CPreset[MakeTypedPreset]) Make() (feat Preset) {
+	return p
+}
+
+func (p *CPreset[MakeTypedPreset]) Preset(b feature.Builder) (err error) {
+
+	p.IncludeFeature(b, funcmaps.New().
+		Defaults().
+		Include(p.funcmaps...).
+		Make())
+
+	p.IncludeFeature(b, formats.New().
+		AddFormat(tmpl.New().Make()).
+		AddFormat(html.New().Make()).
+		AddFormat(p.formats...).
+		Make())
+
+	if err = p.CPreset.Preset(b); err != nil {
 		return
 	}
 
-	if f.fListener != nil {
-		if err = add(f.fListener); err != nil {
-			return
-		}
-	} else if err = add(httpd.New().Make()); err != nil {
-		return
+	if p.renderer != nil {
+		p.IncludeFeature(b, p.renderer)
+	} else {
+		p.IncludeFeature(b, renderer.New().Make())
+	}
+
+	if p.listener != nil {
+		p.IncludeFeature(b, p.listener)
+	} else {
+		p.IncludeFeature(b, httpd.New().Make())
 	}
 
 	return
-}
-
-func (f *CFeature) Startup(ctx *cli.Context) (err error) {
-	if err = f.CFeature.Startup(ctx); err != nil {
-		return
-	}
-	return
-}
-
-func (f *CFeature) Shutdown() {
-	f.CFeature.Shutdown()
 }
