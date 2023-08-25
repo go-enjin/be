@@ -157,7 +157,9 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/features/requests/headers/proxy",
 		"github.com/go-enjin/be/features/srv/fastcgi",
 		"github.com/go-enjin/be/features/srv/listeners/httpd",
+		"github.com/go-enjin/be/features/srv/listeners/ngrokio",
 		"github.com/go-enjin/be/features/srv/pages",
+		"github.com/go-enjin/be/features/srv/theme/renderer",
 		"github.com/go-enjin/be/features/user/auth/api",
 		"github.com/go-enjin/be/features/user/auth/basic",
 		"github.com/go-enjin/be/features/user/base/htenv",
@@ -176,7 +178,6 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/drivers/kvs/gocache",
 		"github.com/go-enjin/be/drivers/kvs/gorm",
 		"github.com/go-enjin/be/drivers/kws",
-		"github.com/go-enjin/be/drivers/theme/renderer",
 		"github.com/go-enjin/be/presets/defaults",
 		"github.com/go-enjin/be/presets/essentials",
 	)
