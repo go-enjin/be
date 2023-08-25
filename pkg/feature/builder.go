@@ -39,6 +39,10 @@ type Builder interface {
 	// Set a custom context key with value
 	Set(key string, value interface{}) Builder
 
+	// AddPreset includes the given presets just before the normal enjin Build() phase, presets are added in the same
+	// order given and any features added will be inserted before all other enjin features present
+	AddPreset(presets ...Preset) Builder
+
 	// AddHtmlHeadTag adds a custom (singleton) HTML tag to the <head> section
 	// of the page output, example meta tag:
 	//   AddHtmlHeadTag("meta",map[string]string{"name":"og:thing","content":"stuff"})
