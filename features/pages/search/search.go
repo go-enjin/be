@@ -176,12 +176,13 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p feature.Page) (pg f
 		reqArgv := argv.GetRequestArgv(r)
 		p.Context().SetSpecific(argv.RequestArgvConsumedKey, true)
 		reqLangTag := lang.GetTag(r)
-		numPerPage, pageNumber := p.Context().ValueAsInt("DefaultNumPerPage", 10), 0
+		numPerPage, pageIndex, pageNumber := p.Context().ValueAsInt("DefaultNumPerPage", 10), 0, 1
 		if reqArgv.NumPerPage > -1 {
 			numPerPage = reqArgv.NumPerPage
 		}
 		if reqArgv.PageNumber > -1 {
-			pageNumber = reqArgv.PageNumber
+			pageIndex = reqArgv.PageNumber
+			pageNumber = pageIndex + 1
 		}
 		var input string
 		if len(reqArgv.Argv) > 0 {
@@ -213,12 +214,12 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p feature.Page) (pg f
 
 		if input != "" {
 			// perform search
-			if results, err := f.search.PerformSearch(reqLangTag, query, numPerPage, pageNumber); err != nil {
+			if results, err := f.search.PerformSearch(reqLangTag, query, numPerPage, pageIndex); err != nil {
 				p.Context().SetSpecific("SiteSearchError", err.Error())
 			} else {
 				numPages := int(math.Ceil(float64(results.Total) / float64(numPerPage)))
 				numHits := len(results.Hits)
-				idStart := pageNumber*numPerPage + 1
+				idStart := pageIndex*numPerPage + 1
 				idEnd := idStart + numHits - 1
 
 				printer := lang.GetPrinterFromRequest(r)
@@ -237,18 +238,18 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p feature.Page) (pg f
 				switch numHits {
 				case 1:
 					// Search page summary, <number> of <pages>
-					pageSummary = printer.Sprintf("Page %d of %d", pageNumber+1, numPages)
+					pageSummary = printer.Sprintf("Page %d of %d", pageNumber, numPages)
 					// Search hits summary with only one hit, <hit-number> of <total-hits>
 					hitsSummary = printer.Sprintf("Showing #%d of %d", idStart, results.Total)
 				default:
 					// Search page summary, <number> of <pages>
-					pageSummary = printer.Sprintf("Page %d of %d", pageNumber+1, numPages)
+					pageSummary = printer.Sprintf("Page %d of %d", pageNumber, numPages)
 					// Search hits summary with more than one hit, <first-hit-number>-<last-hit-number> of <total-hits>
 					hitsSummary = printer.Sprintf("Showing %d-%d of %d", idStart, idEnd, results.Total)
 				}
 
 				p.Context().SetSpecific("SiteSearchSize", numPerPage)
-				p.Context().SetSpecific("SiteSearchPage", pageNumber)
+				p.Context().SetSpecific("SiteSearchPage", pageIndex)
 				p.Context().SetSpecific("SiteSearchPages", numPages)
 				p.Context().SetSpecific("SiteSearchResults", results)
 				p.Context().SetSpecific("SiteSearchPageSummary", template.HTML(pageSummary))
