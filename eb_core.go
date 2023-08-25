@@ -51,6 +51,21 @@ func (eb *EnjinBuilder) AddDomains(domains ...string) feature.Builder {
 	return eb
 }
 
+func (eb *EnjinBuilder) AddPreset(presets ...feature.Preset) feature.Builder {
+	// reverse order the presets in order to end up with the dev's specified order of features because the standard
+	// preset inclusion policy is to prepend instead of append, this way the first preset added results in those
+	// features to be at the start of the features list
+	for idx := len(presets) - 1; idx >= 0; idx-- {
+		preset := presets[idx]
+		eb.presets = append(eb.presets, preset)
+		log.DebugDF(1, "including %v preset features...", preset.Label())
+		if err := preset.Preset(eb); err != nil {
+			log.FatalDF(1, "preset [%v] - %v", preset.Label(), err)
+		}
+	}
+	return eb
+}
+
 func checkRegisterFeature[T interface{}](f feature.Feature, list []T) []T {
 	var check *T
 	if ff, ok := feature.AsTyped[T](f); ok {

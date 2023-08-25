@@ -80,6 +80,8 @@ type EnjinBuilder struct {
 	publicUser  feature.Actions
 	userActions feature.Actions
 
+	presets []feature.Preset
+
 	fFormatProviders                []feature.PageFormatProvider
 	fRequestFilters                 []feature.RequestFilter
 	fPageContextModifiers           []feature.PageContextModifier
