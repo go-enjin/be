@@ -69,7 +69,7 @@ func (eb *EnjinBuilder) AddPreset(presets ...feature.Preset) feature.Builder {
 func checkRegisterFeature[T interface{}](f feature.Feature, list []T) []T {
 	var check *T
 	if ff, ok := feature.AsTyped[T](f); ok {
-		log.DebugDF(1, "registering %v as a %v", f.Tag(), fmt.Sprintf("%T", check)[1:])
+		log.DebugDF(2, "registering %v as a %v", f.Tag(), fmt.Sprintf("%T", check)[1:])
 		list = append(list, ff)
 	}
 	return list
@@ -81,7 +81,7 @@ func checkRegisterSingleFeature[T interface{}](f feature.Feature, existing T) (t
 		if !reflect.ValueOf(&existing).Elem().IsZero() {
 			log.FatalDF(2, "only one %s feature allowed", label)
 		}
-		log.DebugDF(1, "registering %v as a %v", f.Tag(), label)
+		log.DebugDF(2, "registering %v as a %v", f.Tag(), label)
 		typed = ff
 	} else {
 		typed = existing
