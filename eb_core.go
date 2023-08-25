@@ -74,15 +74,7 @@ func checkRegisterSingleFeature[T interface{}](f feature.Feature, existing T) (t
 	return
 }
 
-func (eb *EnjinBuilder) AddFeature(f feature.Feature) feature.Builder {
-	if f == nil {
-		return eb
-	}
-	if err := eb.features.Add(f); err != nil {
-		log.FatalDF(1, "error adding feature: %T - %v", f, err)
-	}
-	log.DebugF("adding feature: %v", f.Tag())
-
+func (eb *EnjinBuilder) includeFeature(f feature.Feature) {
 	eb.fFormatProviders = checkRegisterFeature(f, eb.fFormatProviders)
 	eb.fRequestFilters = checkRegisterFeature(f, eb.fRequestFilters)
 	eb.fPageContextModifiers = checkRegisterFeature(f, eb.fPageContextModifiers)
@@ -117,7 +109,29 @@ func (eb *EnjinBuilder) AddFeature(f feature.Feature) feature.Builder {
 
 	eb.fServiceListener = checkRegisterSingleFeature(f, eb.fServiceListener)
 	eb.fRoutePagesHandler = checkRegisterSingleFeature(f, eb.fRoutePagesHandler)
+}
 
+func (eb *EnjinBuilder) PrependFeature(f feature.Feature) feature.Builder {
+	if f == nil {
+		return eb
+	}
+	log.DebugF("prepending feature: %v", f.Tag())
+	if err := eb.features.Prepend(f); err != nil {
+		log.FatalDF(1, "error prepending feature: %T - %v", f, err)
+	}
+	eb.includeFeature(f)
+	return eb
+}
+
+func (eb *EnjinBuilder) AddFeature(f feature.Feature) feature.Builder {
+	if f == nil {
+		return eb
+	}
+	log.DebugF("adding feature: %v", f.Tag())
+	if err := eb.features.Add(f); err != nil {
+		log.FatalDF(1, "error adding feature: %T - %v", f, err)
+	}
+	eb.includeFeature(f)
 	return eb
 }
 
