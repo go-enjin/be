@@ -39,6 +39,9 @@ type BaseMakePreset[MakeTypedPreset interface{}] interface {
 	// Include specifies additional features to be included during the build phase
 	Include(features ...Feature) MakeTypedPreset
 
+	// Prepend includes the specified features before all other features within the preset
+	Prepend(features ...Feature) MakeTypedPreset
+
 	// OmitTags specifies preset Feature.Tag()s to be omitted during the build phase
 	OmitTags(features ...Tag) MakeTypedPreset
 
@@ -72,6 +75,11 @@ func (p *CPreset[MakeTypedPreset]) Init(this interface{}) {
 		p.tags = append(p.tags, f.Tag())
 	}
 	return
+}
+
+func (p *CPreset[MakeTypedPreset]) Prepend(features ...Feature) MakeTypedPreset {
+	p.Features = append(features, p.Features...)
+	return p.this.(MakeTypedPreset)
 }
 
 func (p *CPreset[MakeTypedPreset]) Include(features ...Feature) MakeTypedPreset {
