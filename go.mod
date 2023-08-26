@@ -52,6 +52,8 @@ require (
 	github.com/yookoala/gofast v0.7.0
 	github.com/yookoala/realpath v1.0.0
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
+	golang.ngrok.com/ngrok v1.3.1
+	golang.ngrok.com/ngrok/log/logrus v0.0.0-20230822153055-af0e72039c71
 	golang.org/x/net v0.14.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/datatypes v1.2.0
@@ -100,6 +102,7 @@ require (
 	github.com/go-pkgz/repeater v1.1.3 // indirect
 	github.com/go-pkgz/rest v1.17.0 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
+	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/geo v0.0.0-20210211234256-740aa86cb551 // indirect
 	github.com/golang/glog v1.0.0 // indirect
@@ -110,19 +113,21 @@ require (
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
+	github.com/inconshreveable/log15 v3.0.0-testing.3+incompatible // indirect
+	github.com/inconshreveable/log15/v3 v3.0.0-testing.5 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgx/v5 v5.3.1 // indirect
 	github.com/jackdoe/go-gpmctl v0.0.0-20200317085308-34b4a75160c2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/jpillora/backoff v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/jtolio/gls v4.20.0+incompatible // indirect
 	github.com/klauspost/compress v1.15.0 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
-	github.com/mattn/go-colorable v0.1.12 // indirect
-	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
@@ -151,6 +156,8 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	go.etcd.io/bbolt v1.3.7 // indirect
 	go.mongodb.org/mongo-driver v1.11.6 // indirect
+	go.uber.org/multierr v1.10.0 // indirect
+	golang.ngrok.com/muxado/v2 v2.0.0 // indirect
 	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/exp v0.0.0-20230315142452-642cacee5cc0 // indirect
 	golang.org/x/image v0.7.0 // indirect
