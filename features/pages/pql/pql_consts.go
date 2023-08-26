@@ -38,7 +38,7 @@ func MustExcludeContextKeys() []string {
 // Page Query Language purposes; these keys are currently: "Type", "Language",
 // "Url", "Title" and "Description"
 func BaseIncludeContextKeys() []string {
-	return []string{"type", "language", "url", "title", "description"}
+	return []string{"type", "language", "url", "title", "description", "archetype"}
 }
 
 const (
