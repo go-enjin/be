@@ -220,7 +220,7 @@ func (e *Enjin) ServePage(p feature.Page, w http.ResponseWriter, r *http.Request
 			return
 		} else if processed {
 			p = pg
-			break
+			//break
 		}
 	}
 
