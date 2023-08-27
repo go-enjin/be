@@ -75,9 +75,6 @@ type MakeFeature interface {
 type CFeature struct {
 	feature.CFeature
 
-	cliCtx *cli.Context
-	enjin  feature.Internals
-
 	cacheControl string
 
 	realm          string
@@ -265,7 +262,7 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 }
 
 func (f *CFeature) Setup(enjin feature.Internals) {
-	f.enjin = enjin
+	f.CFeature.Setup(enjin)
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
@@ -281,7 +278,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 
 	category := f.Tag().String()
 
-	f.cliCtx = ctx
 	if flagName := globals.MakeFlagName(category, "realm"); ctx.IsSet(flagName) {
 		if v, ok := ctx.Value(flagName).(string); ok {
 			if v == "" && f.realm == "" {
@@ -384,7 +380,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
-	for _, ef := range f.enjin.Features().List() {
+	for _, ef := range f.Enjin.Features().List() {
 		efTag := ef.Tag().String()
 		for _, upName := range f.upNames {
 			if efTag == upName {
@@ -514,7 +510,7 @@ func (f *CFeature) RestrictServePage(pgCtx beContext.Context, w http.ResponseWri
 				return
 			}
 		}
-		f.enjin.Serve403(w, r)
+		f.Enjin.Serve403(w, r)
 		return
 	}
 
@@ -530,7 +526,7 @@ func (f *CFeature) RestrictServeData(data []byte, mime string, w http.ResponseWr
 				return
 			}
 		}
-		f.enjin.Serve403(w, modReq)
+		f.Enjin.Serve403(w, modReq)
 		return
 	}
 	allow = true
