@@ -20,6 +20,7 @@ import (
 
 type ServiceListener interface {
 	Feature
+	ServiceInfo() (scheme, listen string, port int)
 	StopListening() (err error)
 	StartListening(router *chi.Mux, e EnjinRunner) (err error)
 }

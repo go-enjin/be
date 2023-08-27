@@ -38,7 +38,7 @@ type Service interface {
 	MustGetTheme() (t Theme)
 	ThemeNames() (names []string)
 	ServerName() (name string)
-	ServiceInfo() (listen string, port int)
+	ServiceInfo() (scheme, listen string, port int)
 
 	ContentSecurityPolicy() (handler *csp.PolicyHandler)
 	PermissionsPolicy() (handler *permissions.PolicyHandler)
