@@ -47,7 +47,7 @@ require (
 	github.com/spkg/zipfs v0.7.1
 	github.com/tdewolff/minify/v2 v2.12.8
 	github.com/tg123/go-htpasswd v1.2.1
-	github.com/urfave/cli/v2 v2.14.1
+	github.com/urfave/cli/v2 v2.25.7
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	github.com/yookoala/gofast v0.7.0
 	github.com/yookoala/realpath v1.0.0
