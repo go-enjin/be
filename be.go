@@ -82,6 +82,11 @@ type Enjin struct {
 func newEnjin(eb *EnjinBuilder) *Enjin {
 	var description string
 	notes := make(map[feature.Tag][]string)
+	for _, f := range eb.features.List() {
+		if un := f.UsageNotes(); len(un) > 0 {
+			notes[f.Tag()] = un
+		}
+	}
 	for tag, note := range eb.notes {
 		notes[tag] = append(notes[tag], note...)
 	}
