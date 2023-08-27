@@ -24,9 +24,11 @@ func (e *Enjin) String() string {
 	return strcase.ToKebab(e.eb.tag)
 }
 
-func (e *Enjin) ServiceInfo() (listen string, port int) {
-	listen = e.listen
-	port = e.port
+func (e *Enjin) ServiceInfo() (scheme, listen string, port int) {
+	port = -1
+	if e.eb.fServiceListener != nil {
+		scheme, listen, port = e.eb.fServiceListener.ServiceInfo()
+	}
 	return
 }
 
@@ -36,17 +38,20 @@ func (e *Enjin) StartupString() string {
 	for _, enjin := range e.eb.enjins {
 		domains = append(domains, enjin.domains...)
 	}
+	scheme, listen, port := e.ServiceInfo()
 	return fmt.Sprintf(
 		`{
-	listen: "%v",
-	port: %v,
-	debug: %v,
-	prefix: "%v",
-	themes: %v,
-	domains: %v
+	"scheme": "%v",
+	"listen": "%v",
+	"port": %v,
+	"debug": %v,
+	"prefix": "%v",
+	"themes": %v,
+	"domains": %v
 }`,
-		e.listen,
-		e.port,
+		scheme,
+		listen,
+		port,
 		e.debug,
 		e.prefix,
 		e.ThemeNames(),
