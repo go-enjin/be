@@ -36,6 +36,7 @@ import (
 	"github.com/go-enjin/be/pkg/pages"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-enjin/be/pkg/values"
 	"github.com/go-enjin/be/types/page"
 )
 
@@ -295,6 +296,8 @@ func (f *CFeature) AddToIndex(stub *feature.PageStub, p feature.Page) (err error
 		if _, exclude := excluded[kebab]; exclude {
 			continue
 		} else if _, include := included[kebab]; !include {
+			continue
+		} else if values.IsEmpty(pCtxValue) {
 			continue
 		}
 
