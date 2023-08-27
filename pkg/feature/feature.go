@@ -32,6 +32,7 @@ type Feature interface {
 	This() (this interface{})
 	Self() (f Feature)
 	Depends() (deps Tags)
+	UsageNotes() (notes []string)
 	Build(c Buildable) (err error)
 	Setup(enjin Internals)
 	Startup(ctx *cli.Context) (err error)
@@ -52,6 +53,10 @@ type CFeature struct {
 	Enjin Internals
 
 	sync.RWMutex
+}
+
+func (f *CFeature) UsageNotes() (notes []string) {
+	return
 }
 
 func (f *CFeature) Init(this interface{}) {
