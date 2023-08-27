@@ -484,8 +484,14 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 
 	defaultUrl := DefaultUrl
-	if _, port := f.Enjin.ServiceInfo(); port != globals.DefaultPort {
-		defaultUrl = "http://localhost:" + strconv.Itoa(port)
+	if scheme, host, port := f.Enjin.ServiceInfo(); port != globals.DefaultPort {
+		if scheme == "" {
+			scheme = "http"
+		}
+		if host == "" || host == "0.0.0.0" {
+			host = "localhost"
+		}
+		defaultUrl = fmt.Sprintf(`%s://%s:%d`, scheme, host, port)
 	}
 
 	if f.authOpts.URL == "" || f.authOpts.URL == defaultUrl {
