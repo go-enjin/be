@@ -28,6 +28,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -49,6 +50,9 @@ type MakeFeature interface {
 
 type CFeature struct {
 	feature.CFeature
+
+	port   int
+	listen string
 
 	srv *http.Server
 }
@@ -75,15 +79,46 @@ func (f *CFeature) Make() (feat Feature) {
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
+	category := f.Tag().String()
+	b.AddFlags(
+		&cli.StringFlag{
+			Name:     "listen",
+			Usage:    "the address to listen on",
+			Value:    globals.DefaultListen,
+			Aliases:  []string{"L"},
+			EnvVars:  b.MakeEnvKeys("LISTEN"),
+			Category: category,
+		},
+		&cli.IntFlag{
+			Name:     "port",
+			Usage:    "the port to listen on",
+			Value:    globals.DefaultPort,
+			Aliases:  []string{"p"},
+			EnvVars:  append(b.MakeEnvKeys("PORT"), "PORT"),
+			Category: category,
+		},
+	)
 	return
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	}
+	f.port = ctx.Int("port")
+	f.listen = ctx.String("listen")
 	return
 }
 
 func (f *CFeature) Shutdown() {
 
+}
+
+func (f *CFeature) ServiceInfo() (scheme, listen string, port int) {
+	port = f.port
+	listen = f.listen
+	scheme = "http"
+	return
 }
 
 func (f *CFeature) StopListening() (err error) {
@@ -93,13 +128,13 @@ func (f *CFeature) StopListening() (err error) {
 	return
 }
 
-func (f *CFeature) StartListening(listen string, port int, router *chi.Mux, e feature.EnjinRunner) (err error) {
+func (f *CFeature) StartListening(router *chi.Mux, e feature.EnjinRunner) (err error) {
 	e.Notify("http listener starting")
 	log.DebugF("http listener info:\n%v", e.StartupString())
 
 	// TODO: implement signal handler features for http listeners
 	f.srv = &http.Server{
-		Addr:    fmt.Sprintf("%s:%d", listen, port),
+		Addr:    fmt.Sprintf("%s:%d", f.listen, f.port),
 		Handler: router,
 	}
 
