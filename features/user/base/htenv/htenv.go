@@ -48,11 +48,6 @@ type MakeFeature interface {
 type CFeature struct {
 	feature.CFeature
 
-	tag feature.Tag
-
-	cliCtx *cli.Context
-	enjin  feature.Internals
-
 	users  map[string]*userbase.AuthUser
 	hashes map[string]string
 	groups map[userbase.Group][]string
@@ -96,14 +91,13 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 }
 
 func (f *CFeature) Setup(enjin feature.Internals) {
-	f.enjin = enjin
+	f.CFeature.Setup(enjin)
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CFeature.Startup(ctx); err != nil {
 		return
 	}
-	f.cliCtx = ctx
 	err = f.loadEnvironment()
 	return
 }
