@@ -31,7 +31,7 @@ require (
 	github.com/go-enjin/golang-org-x-text v0.7.1-enjin.0
 	github.com/goccy/go-json v0.10.2
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/gomarkdown/markdown v0.0.0-20220905174103-7b278df48cfb
+	github.com/gomarkdown/markdown v0.0.0-20230716120725-531d2d74bc12
 	github.com/iancoleman/strcase v0.3.0
 	github.com/kenshaw/emoji v0.3.3
 	github.com/leekchan/gtf v0.0.0-20190214083521-5fba33c5b00b
@@ -42,7 +42,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.9
 	github.com/pkg/profile v1.7.0
 	github.com/polds/logrus-papertrail-hook v0.0.0-20180214143432-bcfe7b72c1a4
-	github.com/puzpuzpuz/xsync/v2 v2.4.1
+	github.com/puzpuzpuz/xsync/v2 v2.5.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spkg/zipfs v0.7.1
 	github.com/tdewolff/minify/v2 v2.12.8
@@ -60,7 +60,7 @@ require (
 	gorm.io/driver/mysql v1.5.1
 	gorm.io/driver/postgres v1.5.2
 	gorm.io/driver/sqlite v1.5.3
-	gorm.io/gorm v1.25.3
+	gorm.io/gorm v1.25.4
 )
 
 require (
