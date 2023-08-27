@@ -65,6 +65,19 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	return f
 }
 
+func (f *CFeature) UsageNotes() (notes []string) {
+	tag := f.Tag().String()
+	notes = []string{
+		"this feature looks for dynamic environment variable keys",
+		"YOUR_NAME translates to the user name \"your-name\"",
+		"GROUP_NAME translates to the group name \"group-name\"",
+		"add users: " + globals.MakeFlagEnvKey(tag, "USER_YOUR_NAME") + "='<bcrypt-password-hash>'",
+		"add groups: " + globals.MakeFlagEnvKey(tag, "GROUP_GROUP_NAME") + "='<space separated usernames>'",
+		"use 'enjenv be-crypt <password>' to generate user passwords",
+	}
+	return
+}
+
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.users = make(map[string]*userbase.AuthUser)
@@ -77,16 +90,6 @@ func (f *CFeature) Make() Feature {
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
-	tag := f.Tag().String()
-	b.AddFeatureNotes(
-		f.Tag(),
-		"this feature looks for dynamic environment variable keys",
-		"YOUR_NAME translates to the user name \"your-name\"",
-		"GROUP_NAME translates to the group name \"group-name\"",
-		"add users: "+globals.MakeFlagEnvKey(tag, "USER_YOUR_NAME")+"='<bcrypt-password-hash>'",
-		"add groups: "+globals.MakeFlagEnvKey(tag, "GROUP_GROUP_NAME")+"='<space separated usernames>'",
-		"use 'enjenv be-crypt <password>' to generate user passwords",
-	)
 	return
 }
 
