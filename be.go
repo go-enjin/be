@@ -57,8 +57,6 @@ func init() {
 }
 
 type Enjin struct {
-	port       int
-	listen     string
 	prefix     string
 	production bool
 
@@ -168,8 +166,6 @@ func (e *Enjin) Self() (self interface{}) {
 
 func (e *Enjin) SetupRootEnjin(ctx *cli.Context) (err error) {
 
-	e.port = ctx.Int("port")
-	e.listen = ctx.String("listen")
 	e.debug = ctx.Bool("debug")
 	e.prefix = ctx.String("prefix")
 	e.prefix = strings.ToLower(e.prefix)
@@ -254,7 +250,7 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 	}
 
 	if len(e.eb.enjins) == 0 {
-		return e.eb.fServiceListener.StartListening(e.listen, e.port, e.router, e)
+		return e.eb.fServiceListener.StartListening(e.router, e)
 	}
 
 	hr := hostrouter.New()
@@ -286,7 +282,7 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 
 	root := chi.NewRouter()
 	root.Mount("/", hr)
-	return e.eb.fServiceListener.StartListening(e.listen, e.port, root, e)
+	return e.eb.fServiceListener.StartListening(root, e)
 }
 
 func (e *Enjin) Shutdown() {

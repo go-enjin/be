@@ -21,5 +21,5 @@ import (
 type ServiceListener interface {
 	Feature
 	StopListening() (err error)
-	StartListening(listen string, port int, router *chi.Mux, e EnjinRunner) (err error)
+	StartListening(router *chi.Mux, e EnjinRunner) (err error)
 }

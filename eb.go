@@ -276,22 +276,6 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 	eb.flags = append(
 		eb.flags,
 		&cli.StringFlag{
-			Name:     "listen",
-			Usage:    "the address to listen on",
-			Value:    globals.DefaultListen,
-			Aliases:  []string{"L"},
-			EnvVars:  eb.MakeEnvKeys("LISTEN"),
-			Category: "service",
-		},
-		&cli.IntFlag{
-			Name:     "port",
-			Usage:    "the port to listen on",
-			Value:    globals.DefaultPort,
-			Aliases:  []string{"p"},
-			EnvVars:  append(eb.MakeEnvKeys("PORT"), "PORT"),
-			Category: "service",
-		},
-		&cli.StringFlag{
 			Name:     "prefix",
 			Usage:    "for dev and stg sites to prefix labels",
 			Value:    os.Getenv("USER"),
