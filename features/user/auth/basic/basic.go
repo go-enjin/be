@@ -112,6 +112,25 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	return f
 }
 
+func (f *CFeature) UsageNotes() (notes []string) {
+	category := f.Tag().String()
+	patternKey := globals.MakeFlagEnvKey(category, "PROTECT_PATH_REGEX")
+	groupKey := globals.MakeFlagEnvKey(category, "PROTECT_PATH_GROUP")
+
+	notes = []string{
+		"this feature supports dynamically restricting content through environment variables",
+		"two variables are required to protect any given path",
+		"make as many pairs to protect all the paths required",
+		"the pair is:",
+		patternKey + "_<KEY>=<PATTERN>",
+		groupKey + "_<KEY>=<GROUPS>",
+		"<KEY>     is a unique identifier for the pair",
+		"<PATTERN> is a regular expression",
+		"<GROUPS>  is a space separated list of groups allowed",
+	}
+	return
+}
+
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.realm = "-"
@@ -209,21 +228,6 @@ func (f *CFeature) Make() Feature {
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
 	category := f.Tag().String()
-	patternKey := globals.MakeFlagEnvKey(category, "PROTECT_PATH_REGEX")
-	groupKey := globals.MakeFlagEnvKey(category, "PROTECT_PATH_GROUP")
-
-	b.AddFeatureNotes(
-		f.Tag(),
-		"this feature supports dynamically restricting content through environment variables",
-		"two variables are required to protect any given path",
-		"make as many pairs to protect all the paths required",
-		"the pair is:",
-		patternKey+"_<KEY>=<PATTERN>",
-		groupKey+"_<KEY>=<GROUPS>",
-		"<KEY>     is a unique identifier for the pair",
-		"<PATTERN> is a regular expression",
-		"<GROUPS>  is a space separated list of groups allowed",
-	)
 
 	b.AddFlags(
 		&cli.StringFlag{
