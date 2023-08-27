@@ -19,9 +19,12 @@ package ngrokio
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/go-chi/chi/v5"
@@ -209,9 +212,31 @@ func (f *CFeature) Shutdown() {
 	f.CFeature.Shutdown()
 }
 
-func (f *CFeature) StartListening(listen string, port int, router *chi.Mux, e feature.EnjinRunner) (err error) {
+func (f *CFeature) ServiceInfo() (scheme, listen string, port int) {
+	port = -1
+	if f.tunnel != nil {
+		if v := f.tunnel.URL(); v != "" {
+			if u, err := url.Parse(v); err == nil {
+				scheme = u.Scheme
+				if h, p, e := net.SplitHostPort(u.Host); e == nil {
+					port, _ = strconv.Atoi(p)
+					listen = h
+					return
+				}
+				if u.Scheme == "https" {
+					port = 443
+				} else if u.Scheme == "http" {
+					port = 80
+				}
+				listen = u.Host
+			}
+		}
+	}
+	return
+}
+
+func (f *CFeature) StartListening(router *chi.Mux, e feature.EnjinRunner) (err error) {
 	e.Notify("ngrok listener starting")
-	log.DebugF("ngrok listener info:\n%v", e.StartupString())
 
 	// TODO: implement signal handler features for ngrok listeners
 
@@ -240,7 +265,8 @@ func (f *CFeature) StartListening(listen string, port int, router *chi.Mux, e fe
 	if f.tunnel, err = ngrok.Listen(f.background, ngrokConfig.HTTPEndpoint(tunOpts...), conOpts...); err != nil {
 		return
 	}
-	log.InfoF("ngrok.io tunnel created: %v", f.tunnel.URL())
+	//log.InfoF("ngrok.io tunnel created: %v", f.tunnel.URL())
+	log.DebugF("ngrok listener info:\n%v", e.StartupString())
 
 	idleConnectionsClosed := make(chan struct{})
 	go func() {
