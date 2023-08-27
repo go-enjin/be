@@ -264,8 +264,6 @@ func Interactive(environ []string, dir, name string, argv ...string) (err error)
 	cmd := exec.Command(name, argv...)
 	cmd.Env = environ
 	cmd.Dir = dir
-	cmd.Path = name
-	cmd.Args = argv
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
