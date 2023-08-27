@@ -16,7 +16,6 @@ package be
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/urfave/cli/v2"
 
@@ -24,6 +23,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-enjin/be/pkg/values"
 )
 
 func (eb *EnjinBuilder) Set(key string, value interface{}) feature.Builder {
@@ -78,7 +78,7 @@ func checkRegisterFeature[T interface{}](f feature.Feature, list []T) []T {
 func checkRegisterSingleFeature[T interface{}](f feature.Feature, existing T) (typed T) {
 	if ff, ok := feature.AsTyped[T](f); ok {
 		label := fmt.Sprintf("%T", (*T)(nil))[1:]
-		if !reflect.ValueOf(&existing).Elem().IsZero() {
+		if !values.IsEmpty(existing) {
 			log.FatalDF(2, "only one %s feature allowed", label)
 		}
 		log.DebugDF(2, "registering %v as a %v", f.Tag(), label)
