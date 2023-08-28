@@ -24,6 +24,8 @@ import (
 	"github.com/go-enjin/be/features/requests/deny"
 	"github.com/go-enjin/be/features/requests/headers/proxy"
 	"github.com/go-enjin/be/features/srv/listeners/httpd"
+	beLogHandler "github.com/go-enjin/be/features/srv/logging/handler"
+	beLogger "github.com/go-enjin/be/features/srv/logging/logger"
 	"github.com/go-enjin/be/features/srv/pages"
 	"github.com/go-enjin/be/features/srv/theme/renderer"
 	"github.com/go-enjin/be/pkg/feature"
@@ -66,10 +68,12 @@ func New() MakePreset {
 	p.Name = Name
 	p.Features = feature.Features{
 		deny.New().Defaults().Make(),
+		proxy.New().Enable().Make(),
 		partials.New().Make(),
 		pages.New().Make(),
 		htmlify.New().Make(),
-		proxy.New().Enable().Make(),
+		beLogHandler.New().Make(),
+		beLogger.New().SetCombined(true).Make(),
 	}
 	p.Init(p)
 	return p
