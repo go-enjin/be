@@ -87,13 +87,10 @@ func newEnjin(eb *EnjinBuilder) *Enjin {
 			notes[f.Tag()] = un
 		}
 	}
-	for tag, note := range eb.notes {
-		notes[tag] = append(notes[tag], note...)
-	}
 	for _, ie := range eb.enjins {
-		for tag, note := range ie.notes {
-			if _, present := notes[tag]; !present {
-				notes[tag] = append(notes[tag], note...)
+		for _, f := range ie.features.List() {
+			if un := f.UsageNotes(); len(un) > 0 {
+				notes[f.Tag()] = un
 			}
 		}
 	}

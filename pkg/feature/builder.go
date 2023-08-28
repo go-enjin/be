@@ -51,10 +51,6 @@ type Builder interface {
 	// AddDomains restricts inbound requests to only the domain names given
 	AddDomains(domains ...string) Builder
 
-	// AddFeatureNotes appends bullet-pointed notes to the CLI App's main
-	// description field
-	AddFeatureNotes(tag Tag, notes ...string) Builder
-
 	// AddFlags adds custom command line flags
 	AddFlags(flags ...cli.Flag) Builder
 
