@@ -15,6 +15,10 @@
 package feature
 
 import (
+	"net/http"
+	"net/url"
+	"time"
+
 	"github.com/go-chi/chi/v5"
 )
 
@@ -23,4 +27,37 @@ type ServiceListener interface {
 	ServiceInfo() (scheme, listen string, port int)
 	StopListening() (err error)
 	StartListening(router *chi.Mux, e EnjinRunner) (err error)
+}
+
+// LoggerContext is a per-request context used with ServiceLogger implementations
+type LoggerContext interface {
+	// URL is the parsed request URL
+	URL() (parsed *url.URL)
+	// Size is the number of response bytes
+	Size() (size int)
+	// StatusCode is the HTTP status code of the response
+	StatusCode() (status int)
+	// TimeStamp returns when the request was first received
+	TimeStamp() (when time.Time)
+	// Duration returns the total time taken to complete the request
+	Duration() (duration time.Duration)
+	// Request returns the request object
+	Request() (r *http.Request)
+}
+
+type ServiceLogger interface {
+	Feature
+
+	RequestLogger(ctx LoggerContext) (err error)
+}
+
+type ServiceLogHandler interface {
+	Feature
+
+	LogHandler(next http.Handler) (this http.Handler)
+}
+
+type ServiceResponseLogger interface {
+	Size() int
+	Status() int
 }
