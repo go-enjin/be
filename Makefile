@@ -48,7 +48,7 @@ _INTERNAL_BUILD_LOG_ := /dev/null
 #_INTERNAL_BUILD_LOG_ := ./build.log
 
 help:
-	@echo "usage: make <generate|local|unlocal|tidy>"
+	@echo "usage: make <build|generate|local|unlocal|tidy>"
 
 ifeq ($(origin ENJENV_BIN),undefined)
 ENJENV_BIN:=$(shell which enjenv)
@@ -204,6 +204,6 @@ tidy: _golang
 		$(call _source_activate_run,go,mod,tidy); \
 	fi
 
-build-check: _golang
+build: generate
 	@echo "# build checking all packages"
 	@$(call _source_activate_run,go,build,-v,-tags,all,./...)
