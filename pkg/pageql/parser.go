@@ -55,8 +55,7 @@ var (
 		{Name: `Operators`, Pattern: Operators},
 		{Name: `whitespace`, Pattern: Whitespace},
 	})
-	stmntParser = participle.MustBuild(
-		&Statement{},
+	stmntParser = participle.MustBuild[Statement](
 		participle.Lexer(stmntLexer),
 		// UnquoteRegexp("Regexp"),
 		// participle.Unquote("String"),
@@ -75,8 +74,7 @@ var (
 		{Name: `Operators`, Pattern: Operators},
 		{Name: `whitespace`, Pattern: Whitespace},
 	})
-	selParser = participle.MustBuild(
-		&Selection{},
+	selParser = participle.MustBuild[Selection](
 		participle.Lexer(selLexer),
 		// UnquoteRegexp("Regexp"),
 		// participle.Unquote("String"),
@@ -92,9 +90,8 @@ func SanitizeQuery(query string) (sanitized string) {
 func parseQueryString(query string) (stmnt *Statement, err *ParseError) {
 	query = SanitizeQuery(query)
 
-	stmnt = &Statement{}
 	var participleError error
-	if participleError = stmntParser.ParseString("pageql", query, stmnt); participleError != nil && participleError.Error() != "" {
+	if stmnt, participleError = stmntParser.ParseString("pageql", query); participleError != nil && participleError.Error() != "" {
 		err = newParseError(query, participleError)
 		return
 	}
@@ -138,9 +135,8 @@ func parseQueryString(query string) (stmnt *Statement, err *ParseError) {
 func parseSelectString(query string) (sel *Selection, err *ParseError) {
 	query = SanitizeQuery(query)
 
-	sel = &Selection{}
 	var participleError error
-	if participleError = selParser.ParseString("pageql", query, sel); participleError != nil {
+	if sel, participleError = selParser.ParseString("pageql", query); participleError != nil {
 		err = newParseError(query, participleError)
 		return
 	}
