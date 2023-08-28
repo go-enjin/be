@@ -20,7 +20,6 @@ package be
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 	"sync"
 
@@ -35,7 +34,6 @@ import (
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/lang/catalog"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/net/gorilla-handlers"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
 	"github.com/go-enjin/be/pkg/slices"
@@ -198,12 +196,18 @@ func (e *Enjin) SetupRootEnjin(ctx *cli.Context) (err error) {
 		err = fmt.Errorf("builder error: at least one theme is required")
 		return
 	} else if e.eb.fServiceListener == nil {
-		err = fmt.Errorf("builder error: an http service listener is required")
+		err = fmt.Errorf("builder error: a feature.ServiceListener is required")
 		return
 	}
 
-	middleware.DefaultLogger = func(next http.Handler) http.Handler {
-		return handlers.LoggingHandler(log.InfoWriter(), next)
+	if e.eb.fServiceLogHandler == nil {
+		err = fmt.Errorf("builder error: a feature.ServiceLogHandler is required")
+		return
+	} else if list := feature.FilterTyped[feature.ServiceLogger](e.eb.features.List()); len(list) == 0 {
+		err = fmt.Errorf("builder error: at least one feature.ServiceLogger is required")
+		return
+	} else {
+		middleware.DefaultLogger = e.eb.fServiceLogHandler.LogHandler
 	}
 
 	if domains := ctx.StringSlice("domain"); domains != nil && len(domains) > 0 {

@@ -112,9 +112,11 @@ type EnjinBuilder struct {
 	fFuncMapProviders               []feature.FuncMapProvider
 	fTemplatePartialsProvider       []feature.TemplatePartialsProvider
 	fThemeRenderers                 []feature.ThemeRenderer
+	fServiceLoggers                 []feature.ServiceLogger
 
 	fServiceListener   feature.ServiceListener
 	fRoutePagesHandler feature.RoutePagesHandler
+	fServiceLogHandler feature.ServiceLogHandler
 
 	enjins []*EnjinBuilder
 
