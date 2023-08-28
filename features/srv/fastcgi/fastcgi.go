@@ -96,6 +96,8 @@ func (f *CFeature) SetMount(path string) MakeFeature {
 func (f *CFeature) SetDocRoot(path string) MakeFeature {
 	if bePath.IsDir(path) {
 		f.docroot = path
+	} else if bePath.IsFile(path) {
+		f.docroot = path
 	} else {
 		log.FatalDF(1, "path not found or not a directory: %v", path)
 	}
