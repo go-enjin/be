@@ -40,8 +40,9 @@ type service struct {
 	handler http.Handler
 }
 
-func newHandler(dirIndex, target, network, source string, envKeys []string) (s *service, err error) {
+func (f *CFeature) newHandler(dirIndex, target, network, source string, envKeys []string) (s *service, err error) {
 	if target, err = bePath.Abs(target); err != nil {
+		err = fmt.Errorf("abs target path error: %v", err)
 		return
 	}
 	if network == "auto" {
@@ -65,15 +66,15 @@ func newHandler(dirIndex, target, network, source string, envKeys []string) (s *
 		)
 		log.DebugF("fastcgi target is a file: %v", target)
 	} else {
-		err = fmt.Errorf("target is not a file or a directory")
+		err = fmt.Errorf("target is not a file or a directory: %v", target)
 		return
 	}
-	lh := &logger{next: h}
 	s = &service{
-		EnvKeys:  envKeys,
 		DirIndex: dirIndex,
 		Target:   target,
-		handler:  lh,
+		Domains:  nil,
+		EnvKeys:  envKeys,
+		handler:  h,
 	}
 	return
 }

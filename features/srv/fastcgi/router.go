@@ -28,6 +28,9 @@ import (
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
+// TODO: figure out fix for wp urls including index.php, ie: `/index.php/category/slug...`
+//       gofast: unable to process request error access path outside of filesystem docroot: /.../src/github.com/go-enjin/be-wordpress/docroot - /wordpress/2023/07/28/hello-world
+
 var (
 	DefaultDirIndex = "index.php"
 )

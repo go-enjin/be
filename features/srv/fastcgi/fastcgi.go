@@ -152,7 +152,7 @@ func (f *CFeature) Shutdown() {
 
 func (f *CFeature) Apply(s feature.System) (err error) {
 	var handler http.Handler
-	if handler, err = newHandler(f.dirIndex, f.docroot, f.network, f.source, f.envKeys); err != nil {
+	if handler, err = f.newHandler(f.dirIndex, f.docroot, f.network, f.source, f.envKeys); err != nil {
 		return
 	}
 	s.Router().Mount(f.mount, handler)
