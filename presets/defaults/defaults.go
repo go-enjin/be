@@ -25,6 +25,8 @@ import (
 	"github.com/go-enjin/be/features/requests/deny"
 	"github.com/go-enjin/be/features/requests/headers/proxy"
 	"github.com/go-enjin/be/features/srv/listeners/httpd"
+	beLogHandler "github.com/go-enjin/be/features/srv/logging/handler"
+	beLogger "github.com/go-enjin/be/features/srv/logging/logger"
 	"github.com/go-enjin/be/features/srv/pages"
 	"github.com/go-enjin/be/features/srv/theme/renderer"
 	"github.com/go-enjin/be/features/user/auth/basic"
@@ -79,14 +81,16 @@ func New() MakePreset {
 	p := new(CPreset[MakePreset])
 	p.Name = Name
 	p.Features = feature.Features{
-		papertrail.New().Make(),
-		proxy.New().Enable().Make(),
-		pages.New().Make(),
 		deny.New().Defaults().Make(),
+		proxy.New().Enable().Make(),
 		partials.New().Make(),
 		permalink.New().Make(),
 		query.New().Make(),
 		htmlify.New().Make(),
+		papertrail.New().Make(),
+		pages.New().Make(),
+		beLogHandler.New().Make(),
+		beLogger.New().SetCombined(true).Make(),
 	}
 	p.htenvTag = "htenv"
 	p.htenvIgnored = []string{`^/favicon.ico$`}
