@@ -7,7 +7,7 @@ require (
 	github.com/Pramod-Devireddy/go-exprtk v1.1.0
 	github.com/Shopify/gomail v0.0.0-20220729171026-0784ece65e69
 	github.com/abbot/go-http-auth v0.4.0
-	github.com/alecthomas/participle/v2 v2.0.0-beta.1
+	github.com/alecthomas/participle/v2 v2.0.0
 	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 	github.com/blevesearch/bleve/v2 v2.3.9
@@ -68,8 +68,6 @@ require (
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	github.com/GehirnInc/crypt v0.0.0-20200316065508-bb7000b8a962 // indirect
 	github.com/RoaringBitmap/roaring v1.2.3 // indirect
-	github.com/alecthomas/assert/v2 v2.2.1 // indirect
-	github.com/alecthomas/repr v0.2.0 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
