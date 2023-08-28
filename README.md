@@ -1,4 +1,4 @@
-# Enjin Golang Package
+# Go-Enjin
 
 This package is the core of the Go-Enjin project and is named `be` mainly for
 artistic purposes. It can be thought of as an acronym with the `b` meaning
@@ -8,27 +8,27 @@ artistic purposes. It can be thought of as an acronym with the `b` meaning
 
 Enjin (noun), meaning an engine for doing things.
 
-In the context of the Go-Enjin project, this is an engine for making and
-managing HTTP servers and microservices.
+In the context of the Go-Enjin project, this is an engine for building servers
+and microservices.
 
 ### Is it even a word?
 
 No, the word `enjin` is not an actual word in any language, though it is an
-homage to Heroku which is a really cool word which has it's own backstory and
-is the hosting platform of choice for Go-Enjin projects at this time.
+homage to Heroku (which is a really cool word and has its own
+[backstory](https://en.wikipedia.org/wiki/Heroku#Etymology)).
 
-The word `enjin` is comprised of two main parts:
+The word `enjin` consists of two main parts:
 
 - `en`, this was chosen for "English language", or "English speaking" (this must
   not to be confused with any countries, nationalities or personalities in any
   way)
-- `jin`, this was chosen for it's roots in Japanese such as:
+- `jin`, this was chosen for its roots in Japanese such as:
   - `gaijin` (meaning "foreigner" - which this author is) or
   - `henjin` (meaning "strange person" - which this author also is)
 
 # Author
 
-- Kevin C. Krinke - [github](https://github.com/kckrinke)
+- The Go-Enjin Team - [github](https://github.com/go-enjin)
 
 # LICENSE
 
