@@ -48,6 +48,11 @@ func (p *CPage) SetFormat(filepath string) (path string) {
 
 func (p *CPage) SetSlugUrl(filepath string) {
 	p.fields.Url, p.fields.Path, p.fields.Section, p.fields.Slug = pages.GetUrlPathSectionSlug(filepath)
+	if strings.HasPrefix(p.fields.Slug, "~index") {
+		if p.fields.Url = strings.TrimSuffix(p.fields.Url, "/"+p.fields.Slug); p.fields.Url == "" {
+			p.fields.Url = "/"
+		}
+	}
 	p.fields.Context.SetSpecific("Url", p.fields.Url)
 	p.fields.Context.SetSpecific("Path", p.fields.Path)
 	p.fields.Context.SetSpecific("Section", p.fields.Section)
