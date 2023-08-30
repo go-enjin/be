@@ -24,6 +24,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/go-enjin/be/pkg/hash/sha"
+	"github.com/go-enjin/be/pkg/pages"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -46,7 +47,7 @@ func (p *CPage) SetFormat(filepath string) (path string) {
 }
 
 func (p *CPage) SetSlugUrl(filepath string) {
-	p.fields.Url, p.fields.Path, p.fields.Section, p.fields.Slug = GetUrlPathSectionSlug(filepath)
+	p.fields.Url, p.fields.Path, p.fields.Section, p.fields.Slug = pages.GetUrlPathSectionSlug(filepath)
 	p.fields.Context.SetSpecific("Url", p.fields.Url)
 	p.fields.Context.SetSpecific("Path", p.fields.Path)
 	p.fields.Context.SetSpecific("Section", p.fields.Section)
