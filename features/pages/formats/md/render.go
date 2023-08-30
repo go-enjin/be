@@ -27,17 +27,13 @@ func RenderMarkdown(content string) (text string) {
 	normalizedNewlines := markdown.NormalizeNewlines([]byte(content))
 	extensions := mdParser.CommonExtensions |
 		mdParser.AutoHeadingIDs |
-		mdParser.NoIntraEmphasis |
 		mdParser.Strikethrough |
 		mdParser.Attributes |
 		mdParser.Footnotes |
-		mdParser.DefinitionLists |
 		mdParser.FencedCode |
-		mdParser.MathJax |
-		mdParser.OrderedListStart |
-		mdParser.Tables
+		mdParser.OrderedListStart
 	pageParser := mdParser.NewWithExtensions(extensions)
-	mdHtmlFlags := mdHtml.CommonFlags
+	mdHtmlFlags := mdHtml.CommonFlags | mdHtml.FootnoteReturnLinks
 	opts := mdHtml.RendererOptions{Flags: mdHtmlFlags}
 	pageRenderer := mdHtml.NewRenderer(opts)
 	parsedBytes := markdown.ToHTML(normalizedNewlines, pageParser, pageRenderer)
