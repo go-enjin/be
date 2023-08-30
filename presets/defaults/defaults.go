@@ -22,6 +22,7 @@ import (
 	"github.com/go-enjin/be/features/pages/partials"
 	"github.com/go-enjin/be/features/pages/permalink"
 	"github.com/go-enjin/be/features/pages/query"
+	"github.com/go-enjin/be/features/pages/status"
 	"github.com/go-enjin/be/features/requests/deny"
 	"github.com/go-enjin/be/features/requests/headers/proxy"
 	"github.com/go-enjin/be/features/srv/listeners/httpd"
@@ -83,6 +84,7 @@ func New() MakePreset {
 	p.Features = feature.Features{
 		deny.New().Defaults().Make(),
 		proxy.New().Enable().Make(),
+		status.New().Make(),
 		partials.New().Make(),
 		permalink.New().Make(),
 		query.New().Make(),
