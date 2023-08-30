@@ -15,7 +15,7 @@
 package feature
 
 type EnjinField interface {
-	EnjinFeature
+	NjnFeature
 
 	NjnFieldNames() (tagNames []string)
 
@@ -23,5 +23,5 @@ type EnjinField interface {
 }
 
 type CEnjinField struct {
-	CEnjinFeature
+	CNjnFeature
 }

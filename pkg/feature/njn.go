@@ -38,7 +38,7 @@ func (nc NjnClass) String() string {
 	return "error"
 }
 
-type EnjinFeature interface {
+type NjnFeature interface {
 	Feature
 
 	NjnClass() (tagClass NjnClass)
@@ -49,11 +49,11 @@ type EnjinFeature interface {
 	NjnClassAllowed() (allowed NjnClass, ok bool)
 }
 
-type CEnjinFeature struct {
+type CNjnFeature struct {
 	CFeature
 }
 
-func (f *CEnjinFeature) NjnCheckTag(tagName string) (allow bool) {
+func (f *CNjnFeature) NjnCheckTag(tagName string) (allow bool) {
 	allowed, checkAllowed := f.NjnTagsAllowed()
 	denied, checkDenied := f.NjnTagsDenied()
 	switch {
@@ -69,7 +69,7 @@ func (f *CEnjinFeature) NjnCheckTag(tagName string) (allow bool) {
 	return
 }
 
-func (f *CEnjinFeature) NjnCheckClass(tagClass NjnClass) (allow bool) {
+func (f *CNjnFeature) NjnCheckClass(tagClass NjnClass) (allow bool) {
 	if allowed, checkAllowed := f.NjnClassAllowed(); checkAllowed {
 		switch allowed {
 		case AnyNjnClass:
@@ -83,14 +83,14 @@ func (f *CEnjinFeature) NjnCheckClass(tagClass NjnClass) (allow bool) {
 	return
 }
 
-func (f *CEnjinFeature) NjnTagsAllowed() (allowed []string, ok bool) {
+func (f *CNjnFeature) NjnTagsAllowed() (allowed []string, ok bool) {
 	return
 }
 
-func (f *CEnjinFeature) NjnTagsDenied() (denied []string, ok bool) {
+func (f *CNjnFeature) NjnTagsDenied() (denied []string, ok bool) {
 	return
 }
 
-func (f *CEnjinFeature) NjnClassAllowed() (allowed NjnClass, ok bool) {
+func (f *CNjnFeature) NjnClassAllowed() (allowed NjnClass, ok bool) {
 	return
 }

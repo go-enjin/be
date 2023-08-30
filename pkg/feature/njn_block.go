@@ -17,7 +17,7 @@ package feature
 import "html/template"
 
 type EnjinBlock interface {
-	EnjinFeature
+	NjnFeature
 
 	NjnBlockType() (name string)
 
@@ -28,5 +28,5 @@ type EnjinBlock interface {
 }
 
 type CEnjinBlock struct {
-	CEnjinFeature
+	CNjnFeature
 }
