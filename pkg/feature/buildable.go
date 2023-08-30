@@ -37,4 +37,7 @@ type Buildable interface {
 	//    * adds the given name tmpl to the first feature.TemplatePartialsProvider
 	//    * auto-adds a feature.TemplatePartialsProvider if none are present
 	RegisterTemplatePartial(block, position, name, tmpl string) (err error)
+
+	// Features provides access to the cache of enjin features
+	Features() (cache *FeaturesCache)
 }
