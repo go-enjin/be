@@ -55,6 +55,7 @@ type ResultsPostProcessor interface {
 type Feature interface {
 	feature.Feature
 	feature.PageTypeProcessor
+	feature.PageContextModifier
 }
 
 type MakeFeature interface {
