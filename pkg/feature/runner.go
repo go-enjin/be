@@ -18,3 +18,14 @@ type Runner interface {
 	String() string
 	Run(argv []string) (err error)
 }
+
+type EnjinRunner interface {
+	Runner
+
+	StartupString() (info string)
+
+	Shutdown()
+
+	Notify(tag string)
+	NotifyF(tag, format string, argv ...interface{})
+}
