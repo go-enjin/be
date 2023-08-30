@@ -17,6 +17,7 @@ package be
 import (
 	"fmt"
 
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 )
@@ -42,5 +43,10 @@ func (eb *EnjinBuilder) RegisterTemplatePartial(block, position, name, tmpl stri
 		return
 	}
 	err = eb.fTemplatePartialsProvider[0].RegisterTemplatePartial(block, position, name, tmpl)
+	return
+}
+
+func (eb *EnjinBuilder) Features() (cache *feature.FeaturesCache) {
+	cache = eb.features
 	return
 }
