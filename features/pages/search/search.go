@@ -60,6 +60,7 @@ type Feature interface {
 
 type MakeFeature interface {
 	SetSearchPath(path string) MakeFeature
+	SetSearchEnjin(tag feature.Tag) MakeFeature
 
 	Make() Feature
 }
@@ -68,6 +69,7 @@ type CFeature struct {
 	feature.CFeature
 
 	path   string
+	sefTag feature.Tag
 	search feature.SearchEnjinFeature
 
 	sync.RWMutex
@@ -88,10 +90,16 @@ func NewTagged(tag feature.Tag) MakeFeature {
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.path = DefaultSearchPath
+	f.sefTag = feature.NilTag
 }
 
 func (f *CFeature) SetSearchPath(path string) MakeFeature {
 	f.path = path
+	return f
+}
+
+func (f *CFeature) SetSearchEnjin(tag feature.Tag) MakeFeature {
+	f.sefTag = tag
 	return f
 }
 
@@ -100,6 +108,23 @@ func (f *CFeature) Make() Feature {
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
+	if f.sefTag == feature.NilTag {
+		if f.search = feature.FirstTyped[feature.SearchEnjinFeature](b.Features().List()); f.search == nil {
+			err = fmt.Errorf("%v feature requires at least one feature.SearchEnjinFeature present", f.Tag())
+			return
+		}
+	} else if v, ok := b.Features().Get(f.sefTag); ok {
+		if sef, ok := v.(feature.SearchEnjinFeature); ok {
+			f.search = sef
+		} else {
+			err = fmt.Errorf("%v is not a feature.SearchEnjinFeature", v.Tag())
+			return
+		}
+	} else {
+		err = fmt.Errorf("%v feature.SearchEnjinFeature not found", f.sefTag)
+		return
+	}
+
 	b.AddCommands(&cli.Command{
 		Name:        "search",
 		Usage:       "search through content",
@@ -130,11 +155,7 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 	}
 
 	log.DebugF("using search path: %v", f.path)
-	f.search = feature.FirstTyped[feature.SearchEnjinFeature](f.Enjin.Features().List())
-	if f.search == nil {
-		// TODO: add a .SetSearchEnjinFeature(tag feature.Tag) MakeFeature method
-		log.FatalF("searching pages requires a pagecache.SearchEnjinFeature")
-	}
+	log.DebugF("using search enjin: %v", f.search.Tag())
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
@@ -143,10 +164,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 	return
 }
-
-// func (f *CFeature) Apply(s feature.System) (err error) {
-// 	return
-// }
 
 func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.Request) (out context.Context) {
 	out = themeCtx
