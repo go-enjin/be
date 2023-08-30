@@ -49,9 +49,11 @@ func (p *CPage) SetFormat(filepath string) (path string) {
 
 func (p *CPage) SetSlugUrl(filepath string) {
 	p.fields.Url, p.fields.Path, p.fields.Section, p.fields.Slug = pages.GetUrlPathSectionSlug(filepath)
-	if strings.HasPrefix(p.fields.Slug, globals.DirectoryIndexPageName) {
-		if p.fields.Url = strings.TrimSuffix(p.fields.Url, "/"+p.fields.Slug); p.fields.Url == "" {
+	if p.fields.Slug == globals.DirectoryIndexPageName {
+		if trimmed := strings.TrimSuffix(p.fields.Url, "/"+p.fields.Slug); trimmed == "" {
 			p.fields.Url = "/"
+		} else {
+			p.fields.Url = trimmed
 		}
 	}
 	p.fields.Context.SetSpecific("Url", p.fields.Url)
