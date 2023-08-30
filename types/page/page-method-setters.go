@@ -23,6 +23,7 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/gofrs/uuid"
 
+	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/pages"
 	"github.com/go-enjin/be/types/page/matter"
@@ -48,7 +49,7 @@ func (p *CPage) SetFormat(filepath string) (path string) {
 
 func (p *CPage) SetSlugUrl(filepath string) {
 	p.fields.Url, p.fields.Path, p.fields.Section, p.fields.Slug = pages.GetUrlPathSectionSlug(filepath)
-	if strings.HasPrefix(p.fields.Slug, "~index") {
+	if strings.HasPrefix(p.fields.Slug, globals.DirectoryIndexPageName) {
 		if p.fields.Url = strings.TrimSuffix(p.fields.Url, "/"+p.fields.Slug); p.fields.Url == "" {
 			p.fields.Url = "/"
 		}

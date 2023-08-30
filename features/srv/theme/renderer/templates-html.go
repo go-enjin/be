@@ -23,6 +23,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/templates"
 )
@@ -97,7 +98,7 @@ func (f *CFeature) NewHtmlTemplateFromContext(view string, ctx context.Context) 
 	}
 
 	if parent := t.GetParent(); parent != nil {
-		if partials, _, ok := parent.FindLayout("partials"); ok {
+		if partials, _, ok := parent.FindLayout(globals.PartialThemeLayoutName); ok {
 			if ee := partials.ApplyHtmlTemplate(f.Enjin, tmpl, ctx); ee != nil {
 				err = fmt.Errorf("error applying parent partials to %v: %v", layoutName, ee)
 				return
@@ -105,7 +106,7 @@ func (f *CFeature) NewHtmlTemplateFromContext(view string, ctx context.Context) 
 		}
 	}
 
-	if partials, _, ok := t.FindLayout("partials"); ok {
+	if partials, _, ok := t.FindLayout(globals.PartialThemeLayoutName); ok {
 		if ee := partials.ApplyHtmlTemplate(f.Enjin, tmpl, ctx); ee != nil {
 			err = fmt.Errorf("error applying partials to %v: %v", layoutName, ee)
 			return

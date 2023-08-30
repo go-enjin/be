@@ -22,11 +22,12 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/globals"
 )
 
 func prepareNewTemplateVars(t feature.Theme, ctx context.Context) (ctxLayout, parentLayout feature.ThemeLayout, layoutName, pagetype, archetype, pageFormat string, err error) {
 	var ok bool
-	layoutName = ctx.String("Layout", "_default")
+	layoutName = ctx.String("Layout", globals.DefaultThemeLayoutName)
 	if ctxLayout, layoutName, ok = t.FindLayout(layoutName); !ok {
 		if parent := t.GetParent(); parent != nil {
 			if ctxLayout, _, ok = parent.FindLayout(layoutName); !ok {
@@ -50,19 +51,19 @@ func prepareNewTemplateVars(t feature.Theme, ctx context.Context) (ctxLayout, pa
 
 func makeLookupList(pagetype, pageFormat, archetype, layoutName, view string) (lookups []string) {
 
-	//  - layouts/_default/blog-single.fmt.tmpl
-	//  - layouts/_default/blog.fmt.tmpl
-	//  - layouts/_default/blog.tmpl
+	//  - layouts/~default/blog-single.fmt.tmpl
+	//  - layouts/~default/blog.fmt.tmpl
+	//  - layouts/~default/blog.tmpl
 
 	/*
 		layouts/posts/single-baseof.html.html
 		layouts/posts/baseof.html.html
 		layouts/posts/single-baseof.html
 		layouts/posts/baseof.html
-		layouts/_default/single-baseof.html.html
-		layouts/_default/baseof.html.html
-		layouts/_default/single-baseof.html
-		layouts/_default/baseof.html
+		layouts/~default/single-baseof.html.html
+		layouts/~default/baseof.html.html
+		layouts/~default/single-baseof.html
+		layouts/~default/baseof.html
 	*/
 
 	addLookup := func(layoutName, archetype, view, format, extn string) {
@@ -92,14 +93,14 @@ func makeLookupList(pagetype, pageFormat, archetype, layoutName, view string) (l
 		layouts/{layoutName}/{archetype,pagetype}.{html,tmpl}
 		layouts/{layoutName}/{view}.{html,tmpl}
 		layouts/{layoutName}/baseof.{html,tmpl}
-		layouts/_default/{archetype,pagetype}-{view}.{fmt}.{html,tmpl}
-		layouts/_default/{archetype,pagetype}.{fmt}.{html,tmpl}
-		layouts/_default/{view}.{fmt}.{html,tmpl}
-		layouts/_default/baseof.{fmt}.{html,tmpl}
-		layouts/_default/{archetype,pagetype}-{view}.{html,tmpl}
-		layouts/_default/{archetype,pagetype}.{html,tmpl}
-		layouts/_default/{view}.{html,tmpl}
-		layouts/_default/baseof.{html,tmpl}
+		layouts/~default/{archetype,pagetype}-{view}.{fmt}.{html,tmpl}
+		layouts/~default/{archetype,pagetype}.{fmt}.{html,tmpl}
+		layouts/~default/{view}.{fmt}.{html,tmpl}
+		layouts/~default/baseof.{fmt}.{html,tmpl}
+		layouts/~default/{archetype,pagetype}-{view}.{html,tmpl}
+		layouts/~default/{archetype,pagetype}.{html,tmpl}
+		layouts/~default/{view}.{html,tmpl}
+		layouts/~default/baseof.{html,tmpl}
 	*/
 
 	if pageFormat != "" {
@@ -133,37 +134,37 @@ func makeLookupList(pagetype, pageFormat, archetype, layoutName, view string) (l
 	addLookup(layoutName, "", "baseof", "", "tmpl")
 	addLookup(layoutName, "", "baseof", "", "html")
 
-	if layoutName != "_default" {
+	if layoutName != globals.DefaultThemeLayoutName {
 		if pageFormat != "" {
 			if archetype != "" {
-				addLookup("_default", archetype, view, pageFormat, "tmpl")
-				addLookup("_default", archetype, view, pageFormat, "html")
-				addLookup("_default", archetype, "", pageFormat, "tmpl")
-				addLookup("_default", archetype, "", pageFormat, "html")
+				addLookup(globals.DefaultThemeLayoutName, archetype, view, pageFormat, "tmpl")
+				addLookup(globals.DefaultThemeLayoutName, archetype, view, pageFormat, "html")
+				addLookup(globals.DefaultThemeLayoutName, archetype, "", pageFormat, "tmpl")
+				addLookup(globals.DefaultThemeLayoutName, archetype, "", pageFormat, "html")
 			}
-			addLookup("_default", pagetype, view, pageFormat, "tmpl")
-			addLookup("_default", pagetype, view, pageFormat, "html")
-			addLookup("_default", pagetype, "", pageFormat, "tmpl")
-			addLookup("_default", pagetype, "", pageFormat, "html")
-			addLookup("_default", "", view, pageFormat, "tmpl")
-			addLookup("_default", "", view, pageFormat, "html")
-			addLookup("_default", "", "baseof", pageFormat, "tmpl")
-			addLookup("_default", "", "baseof", pageFormat, "html")
+			addLookup(globals.DefaultThemeLayoutName, pagetype, view, pageFormat, "tmpl")
+			addLookup(globals.DefaultThemeLayoutName, pagetype, view, pageFormat, "html")
+			addLookup(globals.DefaultThemeLayoutName, pagetype, "", pageFormat, "tmpl")
+			addLookup(globals.DefaultThemeLayoutName, pagetype, "", pageFormat, "html")
+			addLookup(globals.DefaultThemeLayoutName, "", view, pageFormat, "tmpl")
+			addLookup(globals.DefaultThemeLayoutName, "", view, pageFormat, "html")
+			addLookup(globals.DefaultThemeLayoutName, "", "baseof", pageFormat, "tmpl")
+			addLookup(globals.DefaultThemeLayoutName, "", "baseof", pageFormat, "html")
 		}
 		if archetype != "" {
-			addLookup("_default", archetype, view, "", "tmpl")
-			addLookup("_default", archetype, view, "", "html")
-			addLookup("_default", archetype, "", "", "tmpl")
-			addLookup("_default", archetype, "", "", "html")
+			addLookup(globals.DefaultThemeLayoutName, archetype, view, "", "tmpl")
+			addLookup(globals.DefaultThemeLayoutName, archetype, view, "", "html")
+			addLookup(globals.DefaultThemeLayoutName, archetype, "", "", "tmpl")
+			addLookup(globals.DefaultThemeLayoutName, archetype, "", "", "html")
 		}
-		addLookup("_default", pagetype, view, "", "tmpl")
-		addLookup("_default", pagetype, view, "", "html")
-		addLookup("_default", pagetype, "", "", "tmpl")
-		addLookup("_default", pagetype, "", "", "html")
-		addLookup("_default", "", view, "", "tmpl")
-		addLookup("_default", "", view, "", "html")
-		addLookup("_default", "", "baseof", "", "tmpl")
-		addLookup("_default", "", "baseof", "", "html")
+		addLookup(globals.DefaultThemeLayoutName, pagetype, view, "", "tmpl")
+		addLookup(globals.DefaultThemeLayoutName, pagetype, view, "", "html")
+		addLookup(globals.DefaultThemeLayoutName, pagetype, "", "", "tmpl")
+		addLookup(globals.DefaultThemeLayoutName, pagetype, "", "", "html")
+		addLookup(globals.DefaultThemeLayoutName, "", view, "", "tmpl")
+		addLookup(globals.DefaultThemeLayoutName, "", view, "", "html")
+		addLookup(globals.DefaultThemeLayoutName, "", "baseof", "", "tmpl")
+		addLookup(globals.DefaultThemeLayoutName, "", "baseof", "", "html")
 	}
 
 	return

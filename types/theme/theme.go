@@ -24,6 +24,7 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
+	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/types/theme/layouts"
@@ -229,7 +230,7 @@ func (t *CTheme) Locales() (locales fs.FileSystem, ok bool) {
 
 func (t *CTheme) FindLayout(named string) (layout feature.ThemeLayout, name string, ok bool) {
 	if named == "" {
-		named = "_default"
+		named = globals.DefaultThemeLayoutName
 	}
 	name = named
 

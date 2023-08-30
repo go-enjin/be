@@ -19,6 +19,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 )
@@ -34,13 +35,13 @@ func (l *Layouts) NewHtmlTemplate(enjin feature.Internals, name string, ctx cont
 
 func (l *Layouts) ApplyHtmlTemplates(enjin feature.Internals, tmpl *htmlTemplate.Template, ctx context.Context) (err error) {
 
-	if partials := l.GetLayout("partials"); partials != nil {
+	if partials := l.GetLayout(globals.PartialThemeLayoutName); partials != nil {
 		if err = partials.ApplyHtmlTemplate(enjin, tmpl, ctx); err != nil {
 			return
 		}
 	}
 
-	if _default := l.GetLayout("_default"); _default != nil {
+	if _default := l.GetLayout(globals.DefaultThemeLayoutName); _default != nil {
 		if err = _default.ApplyHtmlTemplate(enjin, tmpl, ctx); err != nil {
 			return
 		}
@@ -48,7 +49,7 @@ func (l *Layouts) ApplyHtmlTemplates(enjin feature.Internals, tmpl *htmlTemplate
 
 	for _, layoutName := range maps.SortedKeys(l.cache) {
 		switch layoutName {
-		case "partials", "_default":
+		case globals.PartialThemeLayoutName, globals.DefaultThemeLayoutName:
 			continue
 		}
 
