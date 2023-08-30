@@ -22,6 +22,7 @@ import (
 )
 
 type SearchEnjinFeature interface {
+	Feature
 	PrepareSearch(tag language.Tag, input string) (query string)
 	PerformSearch(tag language.Tag, input string, size, pg int) (results *bleve.SearchResult, err error)
 	AddToSearchIndex(stub *PageStub, p Page) (err error)
@@ -29,21 +30,25 @@ type SearchEnjinFeature interface {
 }
 
 type PageIndexFeature interface {
+	Feature
 	AddToIndex(stub *PageStub, p Page) (err error)
 	RemoveFromIndex(tag language.Tag, file, shasum string)
 }
 
 type QueryIndexFeature interface {
+	Feature
 	PerformQuery(input string) (stubs []*PageStub, err error)
 	PerformSelect(input string) (selected map[string]interface{}, err error)
 }
 
 type SearchDocumentMapperFeature interface {
+	Feature
 	SearchDocumentMapping(tag language.Tag) (doctype string, dm *mapping.DocumentMapping)
 	AddSearchDocumentMapping(tag language.Tag, indexMapping *mapping.IndexMappingImpl)
 }
 
 type KeywordProvider interface {
+	Feature
 	Size() (count int)
 	KnownKeywords() (keywords []string)
 	KeywordStubs(keyword string) (stubs PageStubs)
@@ -51,6 +56,7 @@ type KeywordProvider interface {
 }
 
 type PageContextProvider interface {
+	Feature
 	FindPageStub(shasum string) (stub *PageStub)
 	PageContextValuesCount(key string) (count uint64)
 	PageContextValueCounts(key string) (counts map[interface{}]uint64)
