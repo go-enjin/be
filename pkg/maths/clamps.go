@@ -45,3 +45,11 @@ func Ceil[V Number](value, max V) V {
 func Round[V Decimal](x V) (rounded int) {
 	return int(math.Floor(float64(x) + 0.5))
 }
+
+func RoundUp[V Decimal](value V) (rounded int) {
+	return int(math.Ceil(float64(value)))
+}
+
+func RoundDown[V Decimal](value V) (rounded int) {
+	return int(math.Floor(float64(value)))
+}
