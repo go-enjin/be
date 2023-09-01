@@ -122,6 +122,7 @@ func (eb *EnjinBuilder) includeFeature(f feature.Feature) {
 	eb.fTemplatePartialsProvider = checkRegisterFeature(f, eb.fTemplatePartialsProvider)
 	eb.fThemeRenderers = checkRegisterFeature(f, eb.fThemeRenderers)
 	eb.fServiceLoggers = checkRegisterFeature(f, eb.fServiceLoggers)
+	eb.fLocalesProviders = checkRegisterFeature(f, eb.fLocalesProviders)
 
 	eb.fServiceListener = checkRegisterSingleFeature(f, eb.fServiceListener)
 	eb.fRoutePagesHandler = checkRegisterSingleFeature(f, eb.fRoutePagesHandler)

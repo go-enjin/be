@@ -70,11 +70,10 @@ type EnjinBuilder struct {
 	copyrightNotice string
 	tagLine         string
 
-	langMode          lang.Mode
-	localeTags        []language.Tag
-	localeNames       map[language.Tag]string
-	localeFileSystems []fs.FileSystem
-	defaultLang       language.Tag
+	langMode    lang.Mode
+	localeTags  []language.Tag
+	localeNames map[language.Tag]string
+	defaultLang language.Tag
 
 	publicUser  feature.Actions
 	userActions feature.Actions
@@ -113,6 +112,7 @@ type EnjinBuilder struct {
 	fTemplatePartialsProvider       []feature.TemplatePartialsProvider
 	fThemeRenderers                 []feature.ThemeRenderer
 	fServiceLoggers                 []feature.ServiceLogger
+	fLocalesProviders               []feature.LocalesProvider
 
 	fServiceListener   feature.ServiceListener
 	fRoutePagesHandler feature.RoutePagesHandler

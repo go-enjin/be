@@ -60,7 +60,7 @@ type Enjin struct {
 
 	debug bool
 
-	catalog *catalog.Catalog
+	catalog catalog.Catalog
 
 	contentSecurityPolicy *csp.PolicyHandler
 	permissionsPolicy     *permissions.PolicyHandler
@@ -122,6 +122,7 @@ func newEnjin(eb *EnjinBuilder) *Enjin {
 	e.initLocales()
 	e.initConsoles()
 	e.setupFeatures()
+	e.reloadLocales()
 	e.cli.Action = e.action
 	return e
 }
@@ -138,6 +139,7 @@ func newIncludedEnjin(eb *EnjinBuilder, parent *Enjin) *Enjin {
 	e.initLocales()
 	e.initConsoles()
 	e.setupFeatures()
+	e.reloadLocales()
 	return e
 }
 

@@ -18,7 +18,6 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
 
-	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/lang"
 	pkgLangCatalog "github.com/go-enjin/be/pkg/lang/catalog"
 	"github.com/go-enjin/be/pkg/log"
@@ -27,26 +26,28 @@ import (
 func (e *Enjin) initLocales() {
 	e.mutex.Lock()
 	defer e.mutex.Unlock()
-	e.catalog = pkgLangCatalog.NewCatalog()
-	for _, f := range e.eb.localeFileSystems {
-		e.catalog.AddLocalesFromFS(e.eb.defaultLang, f)
-	}
+	e.catalog = pkgLangCatalog.New()
 }
 
 func (e *Enjin) reloadLocales() {
+	e.initLocales()
+	// include locale features
+	for _, lp := range e.eb.fLocalesProviders {
+		// lock mutex after features have done stuff because they need to use things like SiteDefaultLanguage which
+		// also rlocks the same mutex already in a rwlock state
+		log.DebugF("adding %v locales", lp.Tag())
+		lp.AddLocales(e.catalog)
+	}
 	e.mutex.Lock()
 	defer e.mutex.Unlock()
-	e.eb.localeFileSystems = make([]fs.FileSystem, 0)
+	e.catalog = pkgLangCatalog.New()
+	// include theme locales
 	for _, name := range e.eb.themeOrder {
 		t := e.eb.theming[name]
-		if lfs, ok := t.Locales(); ok {
-			e.eb.localeFileSystems = append(e.eb.localeFileSystems, lfs)
-			log.DebugF("reloading %v theme locales", t.Name())
+		if tfs, ok := t.Locales(); ok {
+			log.DebugF("adding %v theme locales", t.Name())
+			e.catalog.AddLocalesFromFS(e.eb.defaultLang, tfs)
 		}
-	}
-	e.catalog = pkgLangCatalog.NewCatalog()
-	for _, f := range e.eb.localeFileSystems {
-		e.catalog.AddLocalesFromFS(e.eb.defaultLang, f)
 	}
 }
 
@@ -68,7 +69,7 @@ func (e *Enjin) SiteLanguageMode() (mode lang.Mode) {
 	return
 }
 
-func (e *Enjin) SiteLangCatalog() (c *pkgLangCatalog.Catalog) {
+func (e *Enjin) SiteLangCatalog() (c pkgLangCatalog.Catalog) {
 	e.mutex.RLock()
 	defer e.mutex.RUnlock()
 	c = e.catalog
