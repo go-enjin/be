@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
+	"github.com/go-enjin/be/pkg/lang/catalog"
 	"github.com/go-enjin/be/pkg/maps"
 )
 
@@ -33,6 +34,7 @@ var (
 
 type Feature interface {
 	filesystem.Feature[MakeFeature]
+	feature.LocalesProvider
 }
 
 type MakeFeature interface {
@@ -71,13 +73,6 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 
 func (f *CFeature) Setup(enjin feature.Internals) {
 	f.CFeature.Setup(enjin)
-	tag := enjin.SiteDefaultLanguage()
-	c := enjin.SiteLangCatalog()
-	for _, point := range maps.SortedKeys(f.MountPoints) {
-		for _, mp := range f.MountPoints[point] {
-			c.AddLocalesFromFS(tag, mp.ROFS)
-		}
-	}
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
@@ -87,4 +82,13 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 
 func (f *CFeature) Shutdown() {
 	return
+}
+
+func (f *CFeature) AddLocales(c catalog.Catalog) {
+	tag := f.Enjin.SiteDefaultLanguage()
+	for _, point := range maps.SortedKeys(f.MountPoints) {
+		for _, mp := range f.MountPoints[point] {
+			c.AddLocalesFromFS(tag, mp.ROFS)
+		}
+	}
 }
