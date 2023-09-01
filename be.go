@@ -39,8 +39,6 @@ import (
 	"github.com/go-enjin/be/pkg/slices"
 )
 
-//go:generate _scripts/be-pkg-list.sh
-
 var (
 	_ feature.Runner    = (*Enjin)(nil)
 	_ feature.System    = (*Enjin)(nil)
