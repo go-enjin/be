@@ -21,7 +21,7 @@ PKG_PREFIX="github.com/go-enjin/be"
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package be
+package _templates
 
 func GoEnjinPackageList() (list []string) {
 	list = append(list,
@@ -42,6 +42,6 @@ func GoEnjinPackageList() (list []string) {
     echo -e "\t)"
     echo -e "\treturn"
     echo "}"
-) > be_pkg_list.go
+) > _templates/pkg_list.go
 
-sha256sum be_pkg_list.go
+sha256sum _templates/pkg_list.go

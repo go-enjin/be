@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package be
+package _templates
 
 func GoEnjinPackageList() (list []string) {
 	list = append(list,
@@ -141,6 +141,7 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/features/pages/funcmaps/slices",
 		"github.com/go-enjin/be/features/pages/funcmaps/strcase",
 		"github.com/go-enjin/be/features/pages/funcmaps/strings",
+		"github.com/go-enjin/be/features/pages/metrics",
 		"github.com/go-enjin/be/features/pages/partials",
 		"github.com/go-enjin/be/features/pages/partials/google-gtm",
 		"github.com/go-enjin/be/features/pages/permalink",
@@ -152,6 +153,7 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/features/pages/search",
 		"github.com/go-enjin/be/features/pages/shortcodes",
 		"github.com/go-enjin/be/features/pages/sitemap",
+		"github.com/go-enjin/be/features/pages/status",
 		"github.com/go-enjin/be/features/requests/cloudflare",
 		"github.com/go-enjin/be/features/requests/deny",
 		"github.com/go-enjin/be/features/requests/headers/proxy",
