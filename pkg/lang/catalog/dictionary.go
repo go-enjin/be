@@ -24,7 +24,9 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 )
 
-var _ catalog.Dictionary = (*dictionary)(nil)
+var (
+	_ catalog.Dictionary = (*dictionary)(nil)
+)
 
 type dictionary struct {
 	tag language.Tag

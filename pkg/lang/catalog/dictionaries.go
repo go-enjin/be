@@ -19,7 +19,9 @@ import (
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
 )
 
-var _ Dictionaries = (*dictionaries)(nil)
+var (
+	_ Dictionaries = (*dictionaries)(nil)
+)
 
 type Dictionaries interface {
 	catalog.Dictionary

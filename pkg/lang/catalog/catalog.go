@@ -27,23 +27,37 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 )
 
-// TODO: figure out how to replace message.DefaultCatalog correctly
+var (
+	_ Catalog = (*CCatalog)(nil)
+)
 
-var OutputGoTextName = "out.gotext.json"
-var MessagesGoTextName = "messages.gotext.json"
+var (
+	OutputGoTextName   = "out.gotext.json"
+	MessagesGoTextName = "messages.gotext.json"
+)
 
-type Catalog struct {
+type Catalog interface {
+	AddLocalesFromFS(defaultTag language.Tag, efs fs.FileSystem)
+	AddLocalesFromJsonBytes(tag language.Tag, src string, contents []byte)
+
+	LocaleTags() (tags []language.Tag)
+	LocaleTagsWithDefault(d language.Tag) (tags []language.Tag)
+
+	MakeGoTextCatalog() (gtc catalog.Catalog, err error)
+}
+
+type CCatalog struct {
 	table map[language.Tag]*dictionaries
 }
 
-func NewCatalog() (c *Catalog) {
-	c = &Catalog{
+func New() (c Catalog) {
+	c = &CCatalog{
 		table: make(map[language.Tag]*dictionaries),
 	}
 	return
 }
 
-func (c *Catalog) AddLocalesFromJsonBytes(tag language.Tag, src string, contents []byte) {
+func (c *CCatalog) AddLocalesFromJsonBytes(tag language.Tag, src string, contents []byte) {
 	var data map[string]interface{}
 	if err := json.Unmarshal(contents, &data); err != nil {
 		log.ErrorF("error parsing json locale: [%v] %v - %v", tag, src, err)
@@ -56,7 +70,7 @@ func (c *Catalog) AddLocalesFromJsonBytes(tag language.Tag, src string, contents
 	}
 }
 
-func (c *Catalog) AddLocalesFromFS(defaultTag language.Tag, efs fs.FileSystem) {
+func (c *CCatalog) AddLocalesFromFS(defaultTag language.Tag, efs fs.FileSystem) {
 	if entries, err := efs.ReadDir("."); err != nil {
 		log.ErrorF("error read dir: %v", err)
 	} else {
@@ -99,7 +113,7 @@ func (c *Catalog) AddLocalesFromFS(defaultTag language.Tag, efs fs.FileSystem) {
 	}
 }
 
-func (c *Catalog) LocaleTags() (tags []language.Tag) {
+func (c *CCatalog) LocaleTags() (tags []language.Tag) {
 	for tag, _ := range c.table {
 		tags = append(tags, tag)
 	}
@@ -107,7 +121,7 @@ func (c *Catalog) LocaleTags() (tags []language.Tag) {
 	return
 }
 
-func (c *Catalog) LocaleTagsWithDefault(d language.Tag) (tags []language.Tag) {
+func (c *CCatalog) LocaleTagsWithDefault(d language.Tag) (tags []language.Tag) {
 	for tag, _ := range c.table {
 		tags = append(tags, tag)
 	}
@@ -127,7 +141,7 @@ func (c *Catalog) LocaleTagsWithDefault(d language.Tag) (tags []language.Tag) {
 	return
 }
 
-func (c *Catalog) MakeGoTextCatalog() (gtc catalog.Catalog, err error) {
+func (c *CCatalog) MakeGoTextCatalog() (gtc catalog.Catalog, err error) {
 	b := catalog.NewBuilder()
 	for tag, dict := range c.table {
 		for _, d := range dict.list {
