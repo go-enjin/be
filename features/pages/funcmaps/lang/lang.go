@@ -19,10 +19,11 @@ package lang
 import (
 	"fmt"
 
+	"github.com/urfave/cli/v2"
+
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/language/display"
 	"github.com/go-enjin/golang-org-x-text/message"
-	"github.com/urfave/cli/v2"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
@@ -111,6 +112,7 @@ func (f *CFeature) makeUnderscore(ctx beContext.Context) interface{} {
 				log.DebugF("template underscore translated: \"%v\" -> \"%v\"", format, translated)
 			}
 		} else {
+			log.DebugF("funcmap context missing language printer")
 			translated = fmt.Sprintf(format, argv...)
 		}
 		return
