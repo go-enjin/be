@@ -1,0 +1,239 @@
+{
+    "language": "ja",
+    "messages": [
+        {
+            "id": "Bad Request",
+            "key": "Bad Request",
+            "message": "Bad Request",
+            "translation": "Bad Request",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Unauthorized",
+            "key": "Unauthorized",
+            "message": "Unauthorized",
+            "translation": "未認証",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Forbidden",
+            "key": "Forbidden",
+            "message": "Forbidden",
+            "translation": "アクセス権がない",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Not Found",
+            "key": "Not Found",
+            "message": "Not Found",
+            "translation": "存在しない",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Method Not Allowed",
+            "key": "Method Not Allowed",
+            "message": "Method Not Allowed",
+            "translation": "そのメソッドは不可",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Internal Server Error",
+            "key": "Internal Server Error",
+            "message": "Internal Server Error",
+            "translation": "サーバ内部のエラー",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Bad Gateway",
+            "key": "Bad Gateway",
+            "message": "Bad Gateway",
+            "translation": "Bad Gateway",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Service Unavailable",
+            "key": "Service Unavailable",
+            "message": "Service Unavailable",
+            "translation": "Service Unavailable",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "search form expired",
+            "key": "search form expired",
+            "message": "search form expired",
+            "translation": "検索フォームの時間切れ",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "{FastMinutes}-{SlowMinutes} minutes",
+            "key": "%[1]d-%[2]d minutes",
+            "message": "{FastMinutes}-{SlowMinutes} minutes",
+            "translation": {
+                "select": {
+                    "feature": "plural",
+                    "arg": "SlowMinutes",
+                    "cases": {
+                        "=0": {
+                            "msg": "less than a minute"
+                        },
+                        "=1": {
+                            "msg": "about a minute"
+                        },
+                        "other": {
+                            "msg": "%[1]d-%[2]d minutes"
+                        }
+                    }
+                }
+            },
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "FastMinutes",
+                    "string": "%[1]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 1,
+                    "expr": "fastMinutes"
+                },
+                {
+                    "id": "SlowMinutes",
+                    "string": "%[2]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 2,
+                    "expr": "slowMinutes"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "No results found",
+            "key": "No results found",
+            "message": "No results found",
+            "translation": "一致する結果はありません",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "1 result found",
+            "key": "1 result found",
+            "message": "1 result found",
+            "translation": "1 件の検索結果が見つかりました",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "{Total} results found",
+            "key": "%d results found",
+            "message": "{Total} results found",
+            "translation": "検索該当件数{Total}件",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Total",
+                    "string": "%[1]d",
+                    "type": "uint64",
+                    "underlyingType": "uint64",
+                    "argNum": 1,
+                    "expr": "results.Total"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Page {PageNumber} of {NumPages}",
+            "key": "Page %d of %d",
+            "message": "Page {PageNumber} of {NumPages}",
+            "translation": "{NumPages}ページ中の{PageNumber}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "PageNumber",
+                    "string": "%[1]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 1,
+                    "expr": "pageNumber"
+                },
+                {
+                    "id": "NumPages",
+                    "string": "%[2]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 2,
+                    "expr": "numPages"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Showing #{IdStart} of {Total}",
+            "key": "Showing #%d of %d",
+            "message": "Showing #{IdStart} of {Total}",
+            "translation": "{Total}件中の{IdStart} を表示",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "IdStart",
+                    "string": "%[1]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 1,
+                    "expr": "idStart"
+                },
+                {
+                    "id": "Total",
+                    "string": "%[2]d",
+                    "type": "uint64",
+                    "underlyingType": "uint64",
+                    "argNum": 2,
+                    "expr": "results.Total"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Showing {IdStart}-{IdEnd} of {Total}",
+            "key": "Showing %d-%d of %d",
+            "message": "Showing {IdStart}-{IdEnd} of {Total}",
+            "translation": "{Total}件中の{IdStart}-{IdEnd} を表示",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "IdStart",
+                    "string": "%[1]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 1,
+                    "expr": "idStart"
+                },
+                {
+                    "id": "IdEnd",
+                    "string": "%[2]d",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 2,
+                    "expr": "idEnd"
+                },
+                {
+                    "id": "Total",
+                    "string": "%[3]d",
+                    "type": "uint64",
+                    "underlyingType": "uint64",
+                    "argNum": 3,
+                    "expr": "results.Total"
+                }
+            ],
+            "fuzzy": true
+        }
+    ]
+}
