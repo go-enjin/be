@@ -55,27 +55,31 @@ func newDictionaryFromJsonData(tag language.Tag, src string, data map[string]int
 					if key, ok := msg["key"].(string); ok {
 						keyOrId = key
 					}
-					if tx, ok := msg["translation"].(string); ok {
-						translated := tx
-						if phList, ok := msg["placeholders"].([]interface{}); ok {
-							rpl := map[string]string{}
-							for _, phItem := range phList {
-								if placeholder, ok := phItem.(map[string]interface{}); ok {
-									if phId, ok := placeholder["id"].(string); ok {
-										if phString, ok := placeholder["string"].(string); ok {
-											rpl[phId] = phString
+					if msgTranslation, ok := msg["translation"]; ok {
+						if tx, ok := msgTranslation.(string); !ok {
+							log.WarnF("translation is not a string: (%T) %#+v", msgTranslation, msgTranslation)
+						} else {
+							translated := tx
+							if phList, ok := msg["placeholders"].([]interface{}); ok {
+								rpl := map[string]string{}
+								for _, phItem := range phList {
+									if placeholder, ok := phItem.(map[string]interface{}); ok {
+										if phId, ok := placeholder["id"].(string); ok {
+											if phString, ok := placeholder["string"].(string); ok {
+												rpl[phId] = phString
+											}
 										}
 									}
 								}
-							}
-							if len(rpl) > 0 {
-								for k, v := range rpl {
-									translated = strings.ReplaceAll(translated, fmt.Sprintf("{%v}", k), v)
+								if len(rpl) > 0 {
+									for k, v := range rpl {
+										translated = strings.ReplaceAll(translated, fmt.Sprintf("{%v}", k), v)
+									}
 								}
 							}
+							d.msg[id] = tx
+							d.key[keyOrId] = translated
 						}
-						d.msg[id] = tx
-						d.key[keyOrId] = translated
 					}
 				}
 			}
