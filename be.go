@@ -113,11 +113,11 @@ func newEnjin(eb *EnjinBuilder) *Enjin {
 		contentSecurityPolicy: csp.NewPolicyHandler(),
 		permissionsPolicy:     permissions.NewPolicyHandler(),
 		// make variables
+		catalog:       catalog.New(),
 		signaling:     make(map[signaling.Signal][]*signalListener),
 		signalingLock: &sync.RWMutex{},
 		mutex:         &sync.RWMutex{},
 	}
-	e.initLocales()
 	e.initConsoles()
 	e.setupFeatures()
 	e.reloadLocales()
@@ -130,11 +130,11 @@ func newIncludedEnjin(eb *EnjinBuilder, parent *Enjin) *Enjin {
 		eb:                    eb,
 		contentSecurityPolicy: csp.NewPolicyHandler(),
 		permissionsPolicy:     permissions.NewPolicyHandler(),
+		catalog:               catalog.New(),
 		signaling:             make(map[signaling.Signal][]*signalListener),
 		signalingLock:         &sync.RWMutex{},
 		mutex:                 &sync.RWMutex{},
 	}
-	e.initLocales()
 	e.initConsoles()
 	e.setupFeatures()
 	e.reloadLocales()

@@ -23,14 +23,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 )
 
-func (e *Enjin) initLocales() {
-	e.mutex.Lock()
-	defer e.mutex.Unlock()
-	e.catalog = pkgLangCatalog.New()
-}
-
 func (e *Enjin) reloadLocales() {
-	e.initLocales()
 	// include locale features
 	for _, lp := range e.eb.fLocalesProviders {
 		// lock mutex after features have done stuff because they need to use things like SiteDefaultLanguage which
