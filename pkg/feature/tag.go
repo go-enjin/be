@@ -19,8 +19,9 @@ import (
 )
 
 const (
-	NilTag   Tag = ""
-	EnjinTag Tag = "enjin"
+	NilTag          Tag = ""
+	EnjinTag        Tag = "enjin"
+	EnjinLocalesTag Tag = "enjin-locales"
 )
 
 // Tag is the primary identifier type for enjin Feature implementations
