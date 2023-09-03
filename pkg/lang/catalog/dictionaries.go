@@ -47,8 +47,7 @@ func (d *dictionaries) Append(given *dictionary) {
 }
 
 func (d *dictionaries) Lookup(key string) (data string, ok bool) {
-	count := len(d.list)
-	for i := count - 1; i >= 0; i-- {
+	for i := len(d.list) - 1; i >= 0; i-- {
 		if data, ok = d.list[i].Lookup(key); ok {
 			return
 		}
