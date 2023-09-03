@@ -37,6 +37,7 @@ var (
 )
 
 type Catalog interface {
+	AddCatalog(others ...catalog.Catalog)
 	AddLocalesFromFS(defaultTag language.Tag, efs fs.FileSystem)
 	AddLocalesFromJsonBytes(tag language.Tag, src string, contents []byte)
 
@@ -47,14 +48,20 @@ type Catalog interface {
 }
 
 type CCatalog struct {
-	table map[language.Tag]*dictionaries
+	table    map[language.Tag]*dictionaries
+	catalogs []catalog.Catalog
 }
 
 func New() (c Catalog) {
 	c = &CCatalog{
-		table: make(map[language.Tag]*dictionaries),
+		table:    make(map[language.Tag]*dictionaries),
+		catalogs: make([]catalog.Catalog, 0),
 	}
 	return
+}
+
+func (c *CCatalog) AddCatalog(others ...catalog.Catalog) {
+	c.catalogs = append(c.catalogs, others...)
 }
 
 func (c *CCatalog) AddLocalesFromJsonBytes(tag language.Tag, src string, contents []byte) {
@@ -146,7 +153,13 @@ func (c *CCatalog) LocaleTagsWithDefault(d language.Tag) (tags []language.Tag) {
 }
 
 func (c *CCatalog) MakeGoTextCatalog() (gtc catalog.Catalog, err error) {
+	//var opts []catalog.Option
+	//if len(c.catalogs) > 0 {
+	//	opts = append(opts, catalog.Include(c.catalogs...))
+	//}
+	//b := catalog.NewBuilder(opts...)
 	b := catalog.NewBuilder()
+	b.Include(c.catalogs...)
 	for tag, dict := range c.table {
 		for _, d := range dict.list {
 			for k, v := range d.key {
