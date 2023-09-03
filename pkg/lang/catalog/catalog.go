@@ -62,6 +62,10 @@ func (c *CCatalog) AddLocalesFromJsonBytes(tag language.Tag, src string, content
 	if err := json.Unmarshal(contents, &data); err != nil {
 		log.ErrorF("error parsing json locale: [%v] %v - %v", tag, src, err)
 	} else {
+		if v, ok := data["messages"]; ok && v == nil {
+			log.TraceDF(1, "skipping nil messages: [%v] %v", tag, src)
+			return
+		}
 		if _, ok := c.table[tag]; !ok {
 			c.table[tag] = newDictionaries(tag)
 		}
