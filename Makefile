@@ -17,9 +17,9 @@
 #: uncomment to echo instead of execute
 #CMD=echo
 
-.PHONY: help generate be-update local unlocal tidy
+.PHONY: help compile generate build be-update local unlocal tidy
 
-MAKEFILE_VERSION = v0.0.2
+MAKEFILE_VERSION = v0.0.3
 
 SHELL = /bin/bash
 
@@ -28,6 +28,7 @@ GOPKG_KEYS := GOXT DJHT GPA GOTS
 # Go-Enjin gotext package
 GOXT_GO_PACKAGE := github.com/go-enjin/golang-org-x-text
 GOXT_LOCAL_PATH := ../../../github.com/go-enjin/golang-org-x-text
+GOXT_LATEST_VER := v0.12.1-enjin.2
 
 # Go-Enjin times package
 DJHT_GO_PACKAGE := github.com/go-enjin/github-com-djherbis-times
@@ -41,8 +42,8 @@ GPA_LOCAL_PATH := ../../../github.com/go-enjin/github-com-go-pkgz-auth
 GOTS_GO_PACKAGE := github.com/go-enjin/go-stdlib-text-scanner
 GOTS_LOCAL_PATH := ../../../github.com/go-enjin/go-stdlib-text-scanner
 
-GOLANG ?= 1.20.1
-GO_MOD ?= 1020
+GOLANG ?= 1.21.0
+GO_MOD ?= 1021
 
 _INTERNAL_BUILD_LOG_ := /dev/null
 #_INTERNAL_BUILD_LOG_ := ./build.log
@@ -124,7 +125,7 @@ ${CMD} ${ENJENV_EXE} go-unlocal "$(1)"
 endef
 
 define _make_extra_pkgs
-$(if ${GOPKG_KEYS},$(foreach key,${GOPKG_KEYS},$($(key)_GO_PACKAGE)@latest))
+$(if ${GOPKG_KEYS},$(foreach key,${GOPKG_KEYS},$($(key)_GO_PACKAGE)@$(if $($(key)_LATEST_VER),$($(key)_LATEST_VER),latest)))
 endef
 
 define _has_feature
@@ -172,9 +173,15 @@ _golang: _enjenv
 		echo "# golang present"; \
 	fi
 
+compile:
+	@echo "# compiling all package sources"
+	@$(call _source_activate_run,go,build,-v,-tags,all,./...)
+
 generate: _golang
-	@echo "# go generate -v"
-	@$(call _source_activate_run,go,generate,-v)
+	@echo "# running go generate ./..."
+	@$(call _source_activate_run,go,generate,./...)
+
+build: generate compile
 
 be-update: export GOPROXY=direct
 be-update: PKG_LIST = $(call _make_extra_pkgs)
@@ -203,7 +210,3 @@ tidy: _golang
 		echo "# go mod tidy"; \
 		$(call _source_activate_run,go,mod,tidy); \
 	fi
-
-build: generate
-	@echo "# build checking all packages"
-	@$(call _source_activate_run,go,build,-v,-tags,all,./...)
