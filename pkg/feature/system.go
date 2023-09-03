@@ -22,6 +22,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-enjin/golang-org-x-text/message"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature/signaling"
@@ -136,6 +137,8 @@ type Internals interface {
 
 	ListTemplatePartials(block, position string) (names []string)
 	GetTemplatePartial(block, position, name string) (tmpl string, ok bool)
+
+	MakeLanguagePrinter(requested string) (tag language.Tag, printer *message.Printer)
 }
 
 type CanSetupInternals interface {
