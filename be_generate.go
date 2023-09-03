@@ -16,4 +16,6 @@ package be
 
 //go:generate _scripts/be-pkg-list.sh
 
+//go:generate _scripts/be-locales.sh
+
 var _ interface{}
