@@ -24,24 +24,23 @@ import (
 )
 
 func (e *Enjin) reloadLocales() {
-	// include locale features
-	for _, lp := range e.eb.fLocalesProviders {
-		// lock mutex after features have done stuff because they need to use things like SiteDefaultLanguage which
-		// also rlocks the same mutex already in a rwlock state
-		log.DebugF("adding %v locales", lp.Tag())
-		lp.AddLocales(e.catalog)
-	}
-	e.mutex.Lock()
-	defer e.mutex.Unlock()
-	e.catalog = pkgLangCatalog.New()
+	ctlg := pkgLangCatalog.New()
 	// include theme locales
 	for _, name := range e.eb.themeOrder {
 		t := e.eb.theming[name]
 		if tfs, ok := t.Locales(); ok {
 			log.DebugF("adding %v theme locales", t.Name())
-			e.catalog.AddLocalesFromFS(e.eb.defaultLang, tfs)
+			ctlg.AddLocalesFromFS(e.eb.defaultLang, tfs)
 		}
 	}
+	// include locale features
+	for _, lp := range e.eb.fLocalesProviders {
+		log.DebugF("adding %v locales", lp.Tag())
+		lp.AddLocales(ctlg)
+	}
+	e.mutex.Lock()
+	e.catalog = ctlg
+	e.mutex.Unlock()
 }
 
 func (e *Enjin) SiteLocales() (locales []language.Tag) {
