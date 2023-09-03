@@ -1,4 +1,4 @@
-//go:build fs_locale || all
+//go:build !exclude_fs_locale
 
 // Copyright (c) 2022  The Go-Enjin Authors
 //
@@ -21,8 +21,9 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
-	"github.com/go-enjin/be/pkg/lang/catalog"
+	pkgLangCatalog "github.com/go-enjin/be/pkg/lang/catalog"
 	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/golang-org-x-text/message/catalog"
 )
 
 const Tag feature.Tag = "fs-locale"
@@ -40,11 +41,15 @@ type Feature interface {
 type MakeFeature interface {
 	filesystem.MakeFeature[MakeFeature]
 
+	AddLanguageCatalog(ctlgs ...catalog.Catalog) MakeFeature
+
 	Make() Feature
 }
 
 type CFeature struct {
 	filesystem.CFeature[MakeFeature]
+
+	catalogs []catalog.Catalog
 }
 
 func New() MakeFeature {
@@ -61,6 +66,11 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+}
+
+func (f *CFeature) AddLanguageCatalog(ctlgs ...catalog.Catalog) MakeFeature {
+	f.catalogs = append(f.catalogs, ctlgs...)
+	return f
 }
 
 func (f *CFeature) Make() Feature {
@@ -84,8 +94,9 @@ func (f *CFeature) Shutdown() {
 	return
 }
 
-func (f *CFeature) AddLocales(c catalog.Catalog) {
+func (f *CFeature) AddLocales(c pkgLangCatalog.Catalog) {
 	tag := f.Enjin.SiteDefaultLanguage()
+	c.AddCatalog(f.catalogs...)
 	for _, point := range maps.SortedKeys(f.MountPoints) {
 		for _, mp := range f.MountPoints[point] {
 			c.AddLocalesFromFS(tag, mp.ROFS)
