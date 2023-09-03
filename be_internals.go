@@ -15,9 +15,13 @@
 package be
 
 import (
+	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-enjin/golang-org-x-text/message"
+
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
+	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
@@ -130,5 +134,10 @@ func (e *Enjin) GetThemeRenderer(ctx context.Context) (renderer feature.ThemeRen
 		renderer = e.eb.fThemeRenderers[0]
 	}
 
+	return
+}
+
+func (e *Enjin) MakeLanguagePrinter(requested string) (tag language.Tag, printer *message.Printer) {
+	tag, printer = lang.NewCatalogPrinter(requested, e.SiteLanguageCatalog())
 	return
 }
