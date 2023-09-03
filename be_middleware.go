@@ -125,7 +125,7 @@ func (e *Enjin) langMiddleware(next http.Handler) http.Handler {
 		// 	}
 		// }
 
-		tag, printer := lang.NewCatalogPrinter(requested.String(), e.SiteLanguageCatalog())
+		tag, printer := e.MakeLanguagePrinter(requested.String())
 		ctx := context.WithValue(r.Context(), lang.LanguageTag, tag)
 		ctx = context.WithValue(ctx, lang.LanguagePrinter, printer)
 		ctx = context.WithValue(ctx, lang.LanguageDefault, e.SiteDefaultLanguage())
