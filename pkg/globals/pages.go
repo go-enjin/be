@@ -16,6 +16,6 @@ package globals
 
 var (
 	DirectoryIndexPageName = "~index"
-	DefaultThemeLayoutName = "~default"
+	DefaultThemeLayoutName = "defaults"
 	PartialThemeLayoutName = "partials"
 )
