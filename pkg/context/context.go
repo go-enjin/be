@@ -78,72 +78,53 @@ func (c Context) Keys() (keys []string) {
 
 // Copy makes a duplicate of this Context
 func (c Context) Copy() (ctx Context) {
-	ctx = New()
+	ctx = maps.DeepCopy(c)
+	return
+}
+
+// DeepKeys returns a list of .deep.keys for the entire context structure
+func (c Context) DeepKeys() (keys []string) {
 	for k, v := range c {
+		dk := "." + k
+		keys = append(keys, dk)
 		switch t := v.(type) {
-		case map[string]bool:
-			m := make(map[string]bool)
-			for tk, tv := range t {
-				m[tk] = tv
+		case Context:
+			for _, deeper := range t.DeepKeys() {
+				keys = append(keys, dk+deeper)
 			}
-			ctx.SetSpecific(k, m)
-		case map[string]int:
-			m := make(map[string]int)
-			for tk, tv := range t {
-				m[tk] = tv
-			}
-			ctx.SetSpecific(k, m)
-		case map[string]string:
-			m := make(map[string]string)
-			for tk, tv := range t {
-				m[tk] = tv
-			}
-			ctx.SetSpecific(k, m)
 		case map[string]interface{}:
-			dst := make(map[string]interface{})
-			if encoded, err := json.Marshal(t); err != nil {
-				log.ErrorF("error marshalling map[string]interface{}: %v", err)
-			} else if err = json.Unmarshal(encoded, &dst); err != nil {
-				log.ErrorF("error unmarshalling map[string]interface{}: %v", err)
-			} else {
-				ctx.SetSpecific(k, Context(dst))
+			for _, deeper := range Context(t).DeepKeys() {
+				keys = append(keys, dk+deeper)
 			}
-		case []bool:
-			ctx.SetSpecific(k, t[:])
-		case []string:
-			ctx.SetSpecific(k, t[:])
-		case []int:
-			ctx.SetSpecific(k, t[:])
-		case []int8:
-			ctx.SetSpecific(k, t[:])
-		case []int16:
-			ctx.SetSpecific(k, t[:])
-		case []int32:
-			ctx.SetSpecific(k, t[:])
-		case []int64:
-			ctx.SetSpecific(k, t[:])
-		case []uint:
-			ctx.SetSpecific(k, t[:])
-		case []uint8:
-			ctx.SetSpecific(k, t[:])
-		case []uint16:
-			ctx.SetSpecific(k, t[:])
-		case []uint32:
-			ctx.SetSpecific(k, t[:])
-		case []uint64:
-			ctx.SetSpecific(k, t[:])
-		case []float32:
-			ctx.SetSpecific(k, t[:])
-		case []float64:
-			ctx.SetSpecific(k, t[:])
-		case bool, string,
-			int, int8, int16, int32, int64,
-			uint, uint8, uint16, uint32, uint64:
-			ctx.SetSpecific(k, t)
-		case float32, float64:
-			ctx.SetSpecific(k, t)
+		}
+	}
+	sort.Sort(sortorder.Natural(keys))
+	return
+}
+
+// AsDeepKeyed returns a deep-key flattened version of this context
+// For example:
+//
+//	map[string]interface{}{"one": map[string]interface{}{"two": "deep"}}
+//
+// becomes:
+//
+//	map[string]interface{}{".one.two": "deep"}
+func (c Context) AsDeepKeyed() (ctx Context) {
+	ctx = Context{}
+	for _, k := range c.Keys() {
+		dk := "." + k
+		switch t := c[k].(type) {
+		case Context:
+			for deeperKey, deeperValue := range t.AsDeepKeyed() {
+				ctx[dk+deeperKey] = deeperValue
+			}
+		case map[string]interface{}:
+			for deeperKey, deeperValue := range Context(t).AsDeepKeyed() {
+				ctx[dk+deeperKey] = deeperValue
+			}
 		default:
-			ctx.SetSpecific(k, t)
+			ctx[dk] = t
 		}
 	}
 	return
