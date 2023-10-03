@@ -18,6 +18,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+
+	"golang.org/x/net/html"
 )
 
 type EnjinError struct {
@@ -61,8 +63,8 @@ func (e *EnjinError) NjnData() (data map[string]interface{}) {
 	return
 }
 
-func (e *EnjinError) Html() (html template.HTML) {
-	html = `
+func (e *EnjinError) Html() (markup template.HTML) {
+	markup = `
 <article
     class="block"
     data-block-tag="theme-enjin-error"
@@ -74,7 +76,7 @@ func (e *EnjinError) Html() (html template.HTML) {
     data-block-jump-link="true">
     <div class="content">`
 	if e.Title != "" {
-		html += `
+		markup += `
         <header>
             <h1>` + template.HTML(e.Title) + `</h1>
             <a class="jump-link" href="#theme-enjin-error">
@@ -82,11 +84,11 @@ func (e *EnjinError) Html() (html template.HTML) {
             </a>
         </header>`
 	}
-	html += `
+	markup += `
         <section>
             <details>
                 <summary>` + template.HTML(e.Summary) + `</summary>
-                <pre>` + template.HTML(e.Content) + `</pre>
+                <pre>` + template.HTML(html.EscapeString(e.Content)) + `</pre>
             </details>
         </section>
         <a class="jump-top" href="#top">top</a>
