@@ -176,3 +176,9 @@ func TrimTrailingSlash(path string) (out string) {
 	}
 	return
 }
+
+func TopDirectory(path string) (dirName string) {
+	trimmed := TrimSlashes(path)
+	dirName, _, _ = strings.Cut(trimmed, "/")
+	return
+}
