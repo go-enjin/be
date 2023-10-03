@@ -269,3 +269,38 @@ func AppendToFlatList[T comparable](store KeyValueStore, key string, value T) (e
 	}
 	return
 }
+
+// TODO: figure out how to shrink kvs flat lists
+
+func RemoveFromFlatList[T comparable](store KeyValueStore, key string, value T) (err error) {
+	endKey := MakeFlatListKey(key, "end")
+	endIndex := GetValue[uint64](store, endKey)
+	freeKey := MakeFlatListKey(key, "free")
+	freeIndexes, _ := GetSlice[uint64](store, freeKey)
+
+	var found bool
+	var rmIdx uint64
+	for idx := uint64(0); idx <= endIndex; idx++ {
+		idxKey := MakeFlatListKey(key, "idx", fmt.Sprintf("%d", idx))
+		if v, e := store.Get(idxKey); e == nil {
+			if t, ok := v.(T); ok {
+				if found = t == value; found {
+					rmIdx = idx
+				}
+			}
+		}
+	}
+
+	if found {
+		rmKey := MakeFlatListKey(key, "idx", fmt.Sprintf("%d", rmIdx))
+		freeIndexes = append(freeIndexes, rmIdx)
+		if err = SetSlice[uint64](store, freeKey, freeIndexes); err != nil {
+			return
+		}
+		if err = store.Set(rmKey, nil); err != nil {
+			return
+		}
+	}
+
+	return
+}
