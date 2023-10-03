@@ -34,6 +34,7 @@ type KeyValueCache interface {
 type KeyValueStore interface {
 	Get(key interface{}) (value interface{}, err error)
 	Set(key interface{}, value interface{}) (err error)
+	Delete(key interface{}) (err error)
 }
 
 type KeyValueStoreAny interface {
