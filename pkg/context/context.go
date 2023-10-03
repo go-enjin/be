@@ -400,9 +400,14 @@ func (c Context) AsOsEnviron() (out []string) {
 func (c Context) CamelizeKeys() {
 	var remove []string
 	for k, v := range c {
-		if camelized := strcase.ToCamel(k); k != camelized {
+		if vc, ok := v.(Context); ok {
+			vc.CamelizeKeys()
+		} else if vm, ok := v.(map[string]interface{}); ok {
+			Context(vm).CamelizeKeys()
+		}
+		if modified := strcase.ToCamel(k); k != modified {
 			remove = append(remove, k)
-			c.SetSpecific(camelized, v)
+			c.SetSpecific(modified, v)
 		}
 	}
 	c.DeleteKeys(remove...)
@@ -412,9 +417,14 @@ func (c Context) CamelizeKeys() {
 func (c Context) LowerCamelizeKeys() {
 	var remove []string
 	for k, v := range c {
-		if camelized := strcase.ToLowerCamel(k); k != camelized {
+		if vc, ok := v.(Context); ok {
+			vc.LowerCamelizeKeys()
+		} else if vm, ok := v.(map[string]interface{}); ok {
+			Context(vm).LowerCamelizeKeys()
+		}
+		if modified := strcase.ToLowerCamel(k); k != modified {
 			remove = append(remove, k)
-			c.SetSpecific(camelized, v)
+			c.SetSpecific(modified, v)
 		}
 	}
 	c.DeleteKeys(remove...)
@@ -424,9 +434,14 @@ func (c Context) LowerCamelizeKeys() {
 func (c Context) KebabKeys() {
 	var remove []string
 	for k, v := range c {
-		if camelized := strcase.ToKebab(k); k != camelized {
+		if vc, ok := v.(Context); ok {
+			vc.KebabKeys()
+		} else if vm, ok := v.(map[string]interface{}); ok {
+			Context(vm).KebabKeys()
+		}
+		if modified := strcase.ToKebab(k); k != modified {
 			remove = append(remove, k)
-			c.SetSpecific(camelized, v)
+			c.SetSpecific(modified, v)
 		}
 	}
 	c.DeleteKeys(remove...)
