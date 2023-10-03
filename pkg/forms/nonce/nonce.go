@@ -37,7 +37,7 @@ var _known = &registry{
 func randomValue() (value string) {
 	b := make([]byte, 32)
 	if _, e := cryptoRand.Read(b); e != nil {
-		log.ErrorF("crypto/rand error: %v", e)
+		log.ErrorF("crypto/rand error: %v; falling back to math/rand", e)
 		if _, ee := mathRand.Read(b); ee != nil {
 			log.ErrorF("math/rand error: %v", ee)
 		}
