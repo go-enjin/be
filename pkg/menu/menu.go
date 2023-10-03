@@ -20,19 +20,35 @@ import (
 
 type Item struct {
 	Text string `json:"text"`
-	Href string `json:"href"`
-	Lang string `json:"lang"`
+	Href string `json:"href,omitempty"`
+	Lang string `json:"lang,omitempty"`
 
-	Attributes map[string]string `json:"attributes"`
+	Attributes map[string]string `json:"attributes,omitempty"`
 
-	SubMenu Menu `json:"sub-menu"`
+	SubMenu Menu `json:"sub-menu,omitempty"`
 }
 
-type Menu []Item
+func (i Item) String() (value string) {
+	if data, err := json.MarshalIndent(i, "", "\t"); err == nil {
+		value = string(data)
+	}
+	return
+}
+
+type Items []*Item
+
+type Menu Items
 
 func NewMenuFromJson(data []byte) (menu Menu, err error) {
 	if err = json.Unmarshal(data, &menu); err != nil {
 		return
+	}
+	return
+}
+
+func (m Menu) String() (value string) {
+	if data, err := json.MarshalIndent(m, "", "\t"); err == nil {
+		value = string(data)
 	}
 	return
 }
