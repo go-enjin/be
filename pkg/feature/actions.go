@@ -65,6 +65,24 @@ func (a Actions) Has(action Action) (present bool) {
 	return
 }
 
+func (a Actions) HasOneOf(actions Actions) (present bool) {
+	for _, action := range actions {
+		if present = a.Has(action); present {
+			return
+		}
+	}
+	return
+}
+
+func (a Actions) HasAllOf(actions Actions) (present bool) {
+	for _, action := range actions {
+		if present = a.Has(action); !present {
+			return
+		}
+	}
+	return
+}
+
 func (a Actions) HasVerb(verb string) (present bool) {
 	for _, aa := range a {
 		if present = aa.Verb() == verb; present {
