@@ -17,28 +17,84 @@ package forms
 import (
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	"github.com/microcosm-cc/bluemonday"
+	"golang.org/x/net/html"
+
+	bePath "github.com/go-enjin/be/pkg/path"
 )
 
+// TrimQueryParams truncates the given string at the first question mark character
+func TrimQueryParams(path string) (trimmed string) {
+	trimmed, _, _ = strings.Cut(path, "?")
+	return
+}
+
+// Sanitize uses bluemonday.UGCPolicy to sanitize the given input
 func Sanitize(input string) (sanitized string) {
 	p := bluemonday.UGCPolicy()
 	sanitized = p.Sanitize(input)
 	return
 }
 
-func StrictPolicy(input string) (sanitized string) {
+// StrictSanitize uses bluemonday.StrictPolicy to sanitize the given input
+func StrictSanitize(input string) (sanitized string) {
 	p := bluemonday.StrictPolicy()
 	sanitized = p.Sanitize(input)
 	return
 }
 
-func SanitizeRequestPath(path string) (cleaned string) {
-	cleaned = TrimQueryParams(path)
-	if cleaned = strings.TrimSuffix(cleaned, "/"); cleaned == "" {
-		cleaned = "/"
-	} else if cleaned[0] != '/' {
-		cleaned = "/" + cleaned
+// Clean unescapes any HTML entities after using Sanitize on the given input
+func Clean(input string) (cleaned string) {
+	cleaned = html.UnescapeString(Sanitize(input))
+	return
+}
+
+// StrictClean is the same as Clean except it uses StrictSanitize on the given input
+func StrictClean(input string) (cleaned string) {
+	cleaned = html.UnescapeString(StrictSanitize(input))
+	return
+}
+
+// CleanRequestPath splits the given path into segments, using StrictClean on each segment while reassembling the
+// cleaned output as an absolute file path (has a leading slash character)
+func CleanRequestPath(path string) (cleaned string) {
+	if path = bePath.TrimSlashes(TrimQueryParams(path)); path == "" {
+		return "/"
 	}
-	cleaned = Sanitize(cleaned)
+	for _, segment := range strings.Split(path, "/") {
+		cleaned += "/" + StrictClean(segment)
+	}
+	return
+}
+
+// CleanRelativePath is the same as CleanRequestPath except the cleaned result is a relative file path (has no leading
+// slash character)
+func CleanRelativePath(path string) (cleaned string) {
+	cleaned = CleanRequestPath(path)
+	cleaned = strings.TrimPrefix(cleaned, "/")
+	return
+}
+
+// KebabValue uses StrictClean on the given string, replaces all slashes with dashes and renders the string in
+// kebab-cased format
+func KebabValue(name string) (cleaned string) {
+	cleaned = strings.ReplaceAll(StrictClean(name), "/", "-")
+	cleaned = strcase.ToKebab(name)
+	return
+}
+
+// KebabRelativePath uses CleanRelativePath on the given string, splits it into path segments and renders each segment
+// in kebab-cased format
+//
+// ie: KebabRelativePath("lowerCamel/CamelCased/snake_cased") == "lower-camel/camel-cased/snake-cased"
+func KebabRelativePath(path string) (kebab string) {
+	path = CleanRelativePath(path)
+	for idx, segment := range strings.Split(path, "/") {
+		if idx > 0 {
+			kebab += "/"
+		}
+		kebab += strcase.ToKebab(segment)
+	}
 	return
 }
