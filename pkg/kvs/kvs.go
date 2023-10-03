@@ -66,6 +66,11 @@ func RemoveFromSlice[T Variables](store KeyValueStore, key interface{}, values .
 	return
 }
 
+func SetSlice[T Variables](store KeyValueStore, key interface{}, values []T) (err error) {
+	err = store.Set(key, values)
+	return
+}
+
 func AppendToSlice[T Variables](store KeyValueStore, key interface{}, values ...T) (err error) {
 	var list []T
 	if v, e := store.Get(key); e == nil {
