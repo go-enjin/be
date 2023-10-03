@@ -16,6 +16,7 @@ package fs
 
 import (
 	"os"
+	"time"
 
 	"github.com/go-enjin/be/types/page/matter"
 )
@@ -36,6 +37,8 @@ type RWFileSystem interface {
 	RemoveAll(path string) (err error)
 
 	WriteFile(path string, data []byte, perm os.FileMode) (err error)
+	ChangeTimes(path string, created, updated time.Time) (err error)
+
 	WritePageMatter(pm *matter.PageMatter) (err error)
 	RemovePageMatter(path string) (err error)
 }

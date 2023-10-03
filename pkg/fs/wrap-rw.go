@@ -17,6 +17,7 @@ package fs
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/go-enjin/be/types/page/matter"
 )
@@ -75,6 +76,11 @@ func (w WrapRWFileSystem) MakeDirAll(path string, perm os.FileMode) (err error) 
 
 func (w WrapRWFileSystem) WriteFile(path string, data []byte, perm os.FileMode) (err error) {
 	err = w.rw.WriteFile(w.realpath(path), data, perm)
+	return
+}
+
+func (w WrapRWFileSystem) ChangeTimes(path string, created, updated time.Time) (err error) {
+	err = w.rw.ChangeTimes(path, created, updated)
 	return
 }
 
