@@ -24,4 +24,5 @@ type MenuProvider interface {
 	Feature
 
 	GetMenus(tag language.Tag) (found map[string]menu.Menu)
+	GetAllMenus() (menus map[language.Tag]map[string]menu.Menu)
 }
