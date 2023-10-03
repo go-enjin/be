@@ -24,7 +24,6 @@ import (
 	"strings"
 
 	"github.com/fvbommel/sortorder"
-	"github.com/gabriel-vasile/mimetype"
 	"github.com/yookoala/realpath"
 )
 
@@ -32,7 +31,7 @@ var (
 	ErrorDirNotFound = fmt.Errorf(`not found or not an existing directory`)
 )
 
-// Base returns the name of the file without any extensions
+// Base returns the name of the file without any primary or secondary extensions
 func Base(path string) (name string) {
 	name = filepath.Base(path)
 	for extn := filepath.Ext(name); extn != ""; extn = filepath.Ext(name) {
@@ -66,35 +65,27 @@ func TrimExt(path string) (out string) {
 	return
 }
 
-// Mime returns the MIME type string of a local file
-func Mime(path string) (mime string, err error) {
-	if !IsFile(path) {
-		err = fmt.Errorf("%v is not a file", path)
+func HasExt(path, extension string) (present bool) {
+	if extension == "" {
 		return
+	} else if extension[0] == '.' {
+		extension = extension[1:]
 	}
-
-	if mime = MimeFromPathOnly(path); mime == "" {
-		if mt, err := mimetype.DetectFile(path); err == nil {
-			mime = mt.String()
-		}
-	}
-
-	if mime == "" {
-		mime = "application/octet-stream"
+	if present = strings.HasSuffix(path, "."+extension); present {
+	} else if extn, extra := ExtExt(path); extra != "" && extra == extension {
+		present = true
+	} else if extn != "" && extn == extension {
+		present = true
 	}
 	return
 }
 
-func MimeFromPathOnly(path string) (mime string) {
-	switch Ext(path) {
-	case "scss", "sass":
-		mime = "text/x-scss; charset=utf-8"
-	case "css":
-		mime = "text/css; charset=utf-8"
-	case "html":
-		mime = "text/html; charset=utf-8"
-	case "js":
-		mime = "text/javascript; charset=utf-8"
+func HasAnyExt(path string, extensions ...string) (present bool) {
+	// TODO: optimize HasAnyExt
+	for _, extension := range extensions {
+		if present = HasExt(path, extension); present {
+			return
+		}
 	}
 	return
 }
@@ -118,7 +109,7 @@ func IsFile(path string) bool {
 	} else if errors.Is(err, os.ErrNotExist) {
 		// path does *not* exist
 	} else {
-		// Schrodinger: file may or may not exist. See err for details.
+		// Schrödinger: file may or may not exist. See err for details.
 		// Therefore, do *NOT* use !os.IsNotExist(err) to test for file existence
 	}
 	return false
