@@ -475,3 +475,15 @@ func (c Context) AsYAML() (data []byte, err error) {
 	data, err = yaml.Marshal(c)
 	return
 }
+
+func (c Context) FirstString(key string) (value string, ok bool) {
+	var v interface{}
+	var list []string
+	if v, ok = c[key]; v != nil {
+		if value, ok = v.(string); ok {
+		} else if list, ok = v.([]string); ok && len(list) > 0 {
+			value = list[0]
+		}
+	}
+	return
+}
