@@ -25,7 +25,7 @@ import (
 	"github.com/spkg/zipfs"
 
 	"github.com/go-enjin/be/pkg/hash/sha"
-	bePath "github.com/go-enjin/be/pkg/path"
+	beMime "github.com/go-enjin/be/pkg/mime"
 )
 
 func ReadDir(path string, zfs *zipfs.FileSystem) (entries []fs.DirEntry, err error) {
@@ -55,7 +55,7 @@ func ReadFile(path string, zfs *zipfs.FileSystem) (data []byte, err error) {
 	}
 	defer hf.Close()
 	if s, e := hf.Stat(); e == nil && s.IsDir() {
-		err = fmt.Errorf("not a file: %v", path)
+		err = fmt.Errorf("is a directory")
 		return
 	}
 	if data, err = io.ReadAll(hf); err != nil {
@@ -76,15 +76,19 @@ func Shasum(path string, zfs *zipfs.FileSystem) (shasum string, err error) {
 func Mime(path string, zfs *zipfs.FileSystem) (mime string, err error) {
 	var data []byte
 	if data, err = ReadFile(path, zfs); err != nil {
+		if err.Error() == "is a directory" {
+			err = nil
+			mime = beMime.DirectoryMimeType
+		}
 		return
 	}
 
-	if mime = bePath.MimeFromPathOnly(path); mime == "" {
+	if mime = beMime.FromPathOnly(path); mime == "" {
 		mime = mimetype.Detect(data).String()
 	}
 
 	if mime == "" {
-		mime = "application/octet-stream"
+		mime = beMime.BinaryMimeType
 	}
 	return
 }
