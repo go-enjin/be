@@ -145,3 +145,36 @@ func AnyWithin[V comparable, S ~[]V](src S, others ...S) (present bool) {
 	}
 	return
 }
+
+// Equal returns true if all the slices given have the same values
+func Equal[V comparable, S ~[]V](src S, others ...S) (same bool) {
+	srcLen := len(src)
+	for _, other := range others {
+		if srcLen != len(other) {
+			return
+		}
+	}
+	// they're all the same length so StartsWith is a valid comparison for equality
+	same = StartsWith(src, others...)
+	return
+}
+
+// StartsWith returns true if the other slices given start with the same values as the src
+func StartsWith[V comparable, S ~[]V](src S, others ...S) (same bool) {
+	srcLen := len(src)
+	for _, other := range others {
+		if srcLen > len(other) {
+			// not enough in other
+			return
+		}
+	}
+	for idx, v := range src {
+		for _, other := range others {
+			if v != other[idx] {
+				return
+			}
+		}
+	}
+	same = true
+	return
+}
