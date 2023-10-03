@@ -17,6 +17,7 @@ package fs
 import (
 	"os"
 
+	beMime "github.com/go-enjin/be/pkg/mime"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -33,15 +34,11 @@ func New(path string) (file *File, err error) {
 	if data, err = os.ReadFile(path); err != nil {
 		return
 	}
-	var mime string
-	if mime, err = bePath.Mime(path); err != nil {
-		return
-	}
 	file = &File{
 		Path: path,
 		Name: bePath.Base(path),
 		Extn: bePath.Ext(path),
-		Mime: mime,
+		Mime: beMime.Mime(path),
 		Data: data,
 	}
 	return
