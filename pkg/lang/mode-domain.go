@@ -47,9 +47,9 @@ func NewDomainMode() (p DomainModeBuilder) {
 func (p *DomainMode) Set(tag language.Tag, domain string) DomainModeBuilder {
 	if u, e := url.ParseRequestURI(domain); e == nil {
 		p.domains[tag] = u
-		log.DebugF("set domain name: [%v] %v", tag, p.domains[tag])
+		log.DebugDF(1, "set domain name: [%v] %v", tag, p.domains[tag])
 	} else {
-		log.FatalF("invalid domain name given: [%v] %v - %v", tag, domain, e)
+		log.FatalDF(1, "invalid domain name given: [%v] %v - %v", tag, domain, e)
 	}
 	return p
 }
@@ -81,7 +81,7 @@ func (p *DomainMode) ToUrl(defaultTag, tag language.Tag, path string) (translate
 
 func (p *DomainMode) FromRequest(defaultTag language.Tag, r *http.Request) (tag language.Tag, path string, ok bool) {
 	tag = language.Und
-	path = forms.SanitizeRequestPath(r.URL.Path)
+	path = forms.CleanRequestPath(r.URL.Path)
 	for domainTag, domain := range p.domains {
 		if ok = r.Host == domain.Host; ok {
 			tag = domainTag

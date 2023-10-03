@@ -50,7 +50,7 @@ func ParseLangPath(p string) (tag language.Tag, modified string, ok bool) {
 		path = path[1:]
 	}
 	if parts := strings.Split(path, "/"); len(parts) >= 2 {
-		if t, err := language.Parse(parts[0]); err == nil {
+		if t, err := language.Parse(parts[0]); err == nil && parts[0] == t.String() {
 			tag = t
 			modified = lead + strings.Join(parts[1:], "/")
 			ok = true

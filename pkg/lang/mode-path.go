@@ -90,7 +90,7 @@ func (p *PathMode) ToUrl(defaultTag, tag language.Tag, path string) (translated 
 }
 
 func (p *PathMode) FromRequest(defaultTag language.Tag, r *http.Request) (tag language.Tag, path string, ok bool) {
-	path = forms.SanitizeRequestPath(r.URL.Path)
+	path = forms.CleanRequestPath(r.URL.Path)
 	if tag, path, ok = p.ParsePathLang(path); !ok {
 		ok = true
 		tag = defaultTag
