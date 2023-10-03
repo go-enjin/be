@@ -385,8 +385,28 @@ func IsMap(v interface{}) (ok bool) {
 	return
 }
 
+func ParseKeySlice(input string) (key string, idx int, ok bool) {
+	var err error
+	if ok = regexps.RxKeySlice.MatchString(input); ok {
+		km := regexps.RxKeySlice.FindStringSubmatch(input)
+		if km[2] == "" {
+			idx = -1
+		} else {
+			if idx, err = strconv.Atoi(km[2]); err != nil {
+				ok = false
+				idx = -1
+				return
+			}
+		}
+		key = km[1]
+	}
+	return
+}
+
 func Set(key string, value interface{}, m map[string]interface{}) (err error) {
-	if key != "" && key[0] != '.' {
+	if key == "" {
+		return
+	} else if key != "" && key[0] != '.' {
 		m[key] = value
 		return
 	}
@@ -395,9 +415,86 @@ func Set(key string, value interface{}, m map[string]interface{}) (err error) {
 	switch keysLen {
 	case 0: // nop
 	case 1:
-		err = Set(keys[0], value, m)
+		if name, idx, ok := ParseKeySlice(keys[0]); ok {
+			if vs := Get(name, m); vs != nil {
+				if slice, ok := vs.([]interface{}); ok {
+					count := len(slice)
+					if idx == -1 || idx == count {
+						// append
+						slice = append(slice, value)
+					} else if idx > count {
+						for i := count; i < idx; i++ {
+							slice = append(slice, nil)
+						}
+						slice = append(slice, value)
+					} else {
+						// overwrite
+						slice[idx] = value
+					}
+					err = Set(name, slice, m)
+				} else {
+					// hmm
+				}
+			} else {
+				var slice []interface{}
+				if idx <= 0 {
+					slice = append(slice, value)
+				} else {
+					for i := 0; i < idx; i++ {
+						slice = append(slice, nil)
+					}
+					slice = append(slice, value)
+				}
+				err = Set(name, slice, m)
+			}
+		} else {
+			err = Set(keys[0], value, m)
+		}
 		return
 	default:
+		if name, idx, ok := ParseKeySlice(keys[0]); ok {
+			var list []interface{}
+			if v, ok := m[name]; ok {
+				if vl, ok := v.([]interface{}); ok {
+					list = vl
+				} else {
+					err = fmt.Errorf("unexpected sub-context list type: %T", v)
+					return
+				}
+			} else {
+				list = []interface{}{}
+				if err = Set(name, list, m); err != nil {
+					return
+				}
+			}
+
+			var mm map[string]interface{}
+			count := len(list)
+			if idx == -1 || idx >= count {
+				// append
+				if idx >= count {
+					// append more
+					for i := count - 1; i < idx; i++ {
+						list = append(list, map[string]interface{}{})
+					}
+				}
+				mm = list[idx].(map[string]interface{})
+				if err = Set(name, list, m); err != nil {
+					return
+				}
+			} else {
+				// existing
+				if vm, ok := list[idx].(map[string]interface{}); ok {
+					mm = vm
+				} else {
+					err = fmt.Errorf("unexpected sub-context value type: %T", list[idx])
+					return
+				}
+			}
+
+			err = Set("."+strings.Join(keys[1:], "."), value, mm)
+			return
+		}
 
 		var mm map[string]interface{}
 		if v, ok := m[keys[0]]; ok {
@@ -413,14 +510,15 @@ func Set(key string, value interface{}, m map[string]interface{}) (err error) {
 				return
 			}
 		}
-
 		err = Set("."+strings.Join(keys[1:], "."), value, mm)
 	}
 	return
 }
 
 func Get(key string, m map[string]interface{}) (value interface{}) {
-	if key != "" && key[0] != '.' {
+	if key == "" {
+		return
+	} else if key != "" && key[0] != '.' {
 		if v, ok := m[key]; ok {
 			value = v
 		}
@@ -430,7 +528,18 @@ func Get(key string, m map[string]interface{}) (value interface{}) {
 	switch len(keys) {
 	case 0: // nop
 	case 1:
-		value = Get(keys[0], m)
+		if name, idx, ok := ParseKeySlice(keys[0]); ok {
+			if vs := Get(name, m); vs != nil {
+				if slice, ok := vs.([]interface{}); ok {
+					if len(slice) < idx {
+						return
+					}
+					value = slice[idx]
+				}
+			}
+		} else {
+			value = Get(keys[0], m)
+		}
 	default:
 		if v, ok := m[keys[0]]; ok {
 			if ms, ok := v.(map[string]string); ok {
@@ -444,7 +553,9 @@ func Get(key string, m map[string]interface{}) (value interface{}) {
 }
 
 func Delete(key string, m map[string]interface{}) {
-	if key != "" && key[0] != '.' {
+	if key == "" {
+		return
+	} else if key != "" && key[0] != '.' {
 		if _, ok := m[key]; ok {
 			delete(m, key)
 		}
@@ -454,7 +565,23 @@ func Delete(key string, m map[string]interface{}) {
 	switch len(keys) {
 	case 0: // nop
 	case 1:
-		Delete(keys[0], m)
+		if name, idx, ok := ParseKeySlice(keys[0]); ok {
+			if vs := Get(name, m); vs != nil {
+				if slice, ok := vs.([]interface{}); ok {
+					count := len(slice)
+					if idx > -1 && idx < count {
+						newSlice := make([]interface{}, 0)
+						newSlice = append(newSlice, slice[:idx]...)
+						if idx < count-1 {
+							newSlice = append(newSlice, slice[idx+1:]...)
+						}
+						_ = Set(name, newSlice, m)
+					}
+				}
+			}
+		} else {
+			Delete(keys[0], m)
+		}
 	default:
 		if v, ok := m[keys[0]]; ok {
 			if ms, ok := v.(map[string]string); ok {
