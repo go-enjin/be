@@ -77,7 +77,7 @@ func (f *CFeature) BaseTag() (pkg Tag) {
 	if f.PackageTag == NotImplemented {
 		panic("not implemented")
 	}
-	return
+	return f.PackageTag
 }
 
 func (f *CFeature) This() (this interface{}) {
