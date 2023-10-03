@@ -17,7 +17,9 @@ package sha
 import (
 	"crypto/sha1"
 	"crypto/sha256"
+	"crypto/sha512"
 	"fmt"
+	"hash"
 	"io"
 	"os"
 	"regexp"
@@ -42,12 +44,8 @@ func FileHash64(path string) (shasum string, err error) {
 	return
 }
 
-func DataHash64(data []byte) (shasum string, err error) {
-	h := sha256.New()
-	if _, err = h.Write(data); err != nil {
-		return
-	}
-	shasum = fmt.Sprintf("%x", h.Sum(nil))
+func DataHash64[V []byte | string](data V) (shasum string, err error) {
+	shasum, err = Shasum256(data)
 	return
 }
 
@@ -58,8 +56,8 @@ func FileHash10(path string) (shasum string, err error) {
 	return
 }
 
-func DataHash10(data []byte) (shasum string, err error) {
-	if shasum, err = DataHash64(data); err == nil {
+func DataHash10[V []byte | string](data V) (shasum string, err error) {
+	if shasum, err = Shasum256(data); err == nil {
 		shasum = shasum[0:10]
 	}
 	return
@@ -85,5 +83,33 @@ func VerifyFile64(sum, file string) (err error) {
 
 func DataHashSha1(data []byte) (shasum string) {
 	shasum = fmt.Sprintf("%x", sha1.Sum(data))
+	return
+}
+
+func makeShasum(h hash.Hash, data []byte) (shasum string, err error) {
+	if _, err = h.Write(data); err != nil {
+		return
+	}
+	shasum = fmt.Sprintf("%x", h.Sum(nil))
+	return
+}
+
+func Shasum224[V []byte | string](v V) (shasum string, err error) {
+	shasum, err = makeShasum(sha256.New224(), []byte(v))
+	return
+}
+
+func Shasum256[V []byte | string](v V) (shasum string, err error) {
+	shasum, err = makeShasum(sha256.New(), []byte(v))
+	return
+}
+
+func Shasum384[V []byte | string](v V) (shasum string, err error) {
+	shasum, err = makeShasum(sha512.New384(), []byte(v))
+	return
+}
+
+func Shasum512[V []byte | string](v V) (shasum string, err error) {
+	shasum, err = makeShasum(sha512.New(), []byte(v))
 	return
 }
