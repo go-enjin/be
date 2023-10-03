@@ -498,3 +498,86 @@ func TransformAnyToStringSlice(input interface{}) (output []string, ok bool) {
 	}
 	return
 }
+
+type SliceValues interface {
+	~bool |
+		~string | ~[]byte |
+		~float32 | ~float64 |
+		~complex64 | ~complex128 |
+		~int | ~int8 | ~int16 | ~int32 | ~int64 |
+		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
+}
+
+func DeepCopySlice[V SliceValues](src []V) (dst []V) {
+	dst = append(dst, src...)
+	return
+}
+
+func DeepCopy(src map[string]interface{}) (dst map[string]interface{}) {
+	dst = map[string]interface{}{}
+	for k, v := range src {
+		switch t := v.(type) {
+
+		case map[string]interface{}:
+			dst[k] = DeepCopy(t)
+		case map[string]bool:
+			m := make(map[string]bool)
+			for tk, tv := range t {
+				m[tk] = tv
+			}
+			dst[k] = m
+		case map[string]int:
+			m := make(map[string]int)
+			for tk, tv := range t {
+				m[tk] = tv
+			}
+			dst[k] = m
+		case map[string]string:
+			m := make(map[string]string)
+			for tk, tv := range t {
+				m[tk] = tv
+			}
+			dst[k] = m
+
+		case []bool:
+			dst[k] = DeepCopySlice(t)
+		case []string:
+			dst[k] = DeepCopySlice(t)
+		case []int:
+			dst[k] = DeepCopySlice(t)
+		case []int8:
+			dst[k] = DeepCopySlice(t)
+		case []int16:
+			dst[k] = DeepCopySlice(t)
+		case []int32:
+			dst[k] = DeepCopySlice(t)
+		case []int64:
+			dst[k] = DeepCopySlice(t)
+		case []uint:
+			dst[k] = DeepCopySlice(t)
+		case []uint8:
+			dst[k] = DeepCopySlice(t)
+		case []uint16:
+			dst[k] = DeepCopySlice(t)
+		case []uint32:
+			dst[k] = DeepCopySlice(t)
+		case []uint64:
+			dst[k] = DeepCopySlice(t)
+		case []float32:
+			dst[k] = DeepCopySlice(t)
+		case []float64:
+			dst[k] = DeepCopySlice(t)
+
+		case bool, string,
+			float32, float64,
+			complex64, complex128,
+			int, int8, int16, int32, int64,
+			uint, uint8, uint16, uint32, uint64:
+			dst[k] = t
+
+		default:
+			dst[k] = t
+		}
+	}
+	return
+}
