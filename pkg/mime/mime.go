@@ -31,6 +31,7 @@ const (
 	JavaScriptMimeType = "text/javascript"
 
 	DirectoryMimeType = "inode/directory"
+	BinaryMimeType    = "application/octet-stream"
 
 	EnjinMimeType     = "text/enjin"
 	EnjinExtension    = "njn"
