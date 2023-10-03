@@ -27,7 +27,7 @@ import (
 	"github.com/pelletier/go-toml/v2"
 	"gopkg.in/yaml.v3"
 
-	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 )
 
 type RequestKey string
@@ -462,7 +462,7 @@ func (c Context) Select(keys ...string) (selected map[string]interface{}) {
 }
 
 func (c Context) AsJSON() (data []byte, err error) {
-	data, err = json.Marshal(c)
+	data, err = json.MarshalIndent(c, "", "  ")
 	return
 }
 
