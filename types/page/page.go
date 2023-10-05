@@ -22,14 +22,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/gofrs/uuid"
+
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	matter2 "github.com/go-enjin/be/types/page/matter"
+	"github.com/go-enjin/be/types/page/matter"
 )
 
 var (
@@ -58,11 +59,11 @@ type cPageData struct {
 	Translates  string       `json:"translates"`
 	LanguageTag language.Tag `json:"language-tag"`
 
-	Shasum          string                  `json:"shasum"`
-	Content         string                  `json:"content"`
-	FrontMatter     string                  `json:"frontMatter"`
-	FrontMatterType matter2.FrontMatterType `json:"front-matter-type"`
-	PageMatter      *matter2.PageMatter     `json:"page-matter"`
+	Shasum          string                 `json:"shasum"`
+	Content         string                 `json:"content"`
+	FrontMatter     string                 `json:"frontMatter"`
+	FrontMatterType matter.FrontMatterType `json:"front-matter-type"`
+	PageMatter      *matter.PageMatter     `json:"page-matter"`
 
 	CreatedAt time.Time    `json:"created"`
 	UpdatedAt time.Time    `json:"updated"`
@@ -83,15 +84,15 @@ type CPage struct {
 }
 
 func New(origin string, path, raw string, created, updated int64, formats feature.PageFormatProvider, enjin context.Context) (p feature.Page, err error) {
-	var pm *matter2.PageMatter
-	if pm, err = matter2.ParsePageMatter(origin, path, time.Unix(created, 0), time.Unix(updated, 0), []byte(raw)); err != nil {
+	var pm *matter.PageMatter
+	if pm, err = matter.ParsePageMatter(origin, path, time.Unix(created, 0), time.Unix(updated, 0), []byte(raw)); err != nil {
 		return
 	}
 	p, err = NewFromPageMatter(pm, formats, enjin)
 	return
 }
 
-func NewFromPageMatter(pm *matter2.PageMatter, formats feature.PageFormatProvider, enjin context.Context) (p *CPage, err error) {
+func NewFromPageMatter(pm *matter.PageMatter, formats feature.PageFormatProvider, enjin context.Context) (p *CPage, err error) {
 	pg := &CPage{
 		fields: cPageData{
 			PageMatter: pm,
@@ -137,7 +138,7 @@ func NewFromPageMatter(pm *matter2.PageMatter, formats feature.PageFormatProvide
 	return
 }
 
-func NewMatterFromPage(p feature.Page) (pm *matter2.PageMatter, err error) {
+func NewMatterFromPage(p feature.Page) (pm *matter.PageMatter, err error) {
 	pmCtx := context.Context{}
 	for key, value := range p.PageMatter().Matter {
 		if v, ok := p.Context()[key]; ok {
@@ -178,10 +179,10 @@ func NewMatterFromPage(p feature.Page) (pm *matter2.PageMatter, err error) {
 	}
 	pmCtx.Delete("Shasum")
 
-	stanza := matter2.MakeStanza(p.FrontMatterType(), pmCtx)
+	stanza := matter.MakeStanza(p.FrontMatterType(), pmCtx)
 	data := []byte(stanza + "\n" + p.Content())
 
-	pm, err = matter2.ParsePageMatter(p.PageMatter().Origin, p.Path(), p.CreatedAt(), p.UpdatedAt(), data)
+	pm, err = matter.ParsePageMatter(p.PageMatter().Origin, p.Path(), p.CreatedAt(), p.UpdatedAt(), data)
 	return
 }
 
