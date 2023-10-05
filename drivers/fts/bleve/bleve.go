@@ -24,9 +24,10 @@ import (
 	"github.com/blevesearch/bleve/v2"
 	"github.com/blevesearch/bleve/v2/mapping"
 	bleveFormatHtml "github.com/blevesearch/bleve/v2/search/highlight/format/html"
-	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/net/html"
+
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
@@ -220,12 +221,19 @@ func (f *CFeature) AddToSearchIndex(stub *feature.PageStub, p feature.Page) (err
 	return
 }
 
-func (f *CFeature) RemoveFromSearchIndex(tag language.Tag, file, shasum string) {
+func (f *CFeature) RemoveFromSearchIndex(stub *feature.PageStub, p feature.Page) {
 	f.Lock()
 	defer f.Unlock()
-	// TODO: remove page from full-text-search index
-	for _, indexer := range feature.FilterTyped[feature.PageIndexFeature](f.Enjin.Features().List()) {
-		indexer.RemoveFromIndex(tag, file, shasum)
+	if index, ok := f.indexes[p.LanguageTag()]; ok {
+		pgUrl := p.Url()
+		langMode := f.Enjin.SiteLanguageMode()
+		fallback := f.Enjin.SiteDefaultLanguage()
+		if !language.Compare(p.LanguageTag(), fallback, language.Und) {
+			pgUrl = langMode.ToUrl(fallback, p.LanguageTag(), p.Url())
+		}
+		if err := index.Delete(pgUrl); err != nil {
+			log.ErrorF("error removing bleve index: %v - %v", p.Url(), err)
+		}
 	}
 	return
 }
