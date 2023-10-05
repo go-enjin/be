@@ -17,10 +17,13 @@
 package publicfs
 
 import (
+	"strings"
+
 	"github.com/urfave/cli/v2"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	bePath "github.com/go-enjin/be/pkg/path"
 )
 
 var (
@@ -97,7 +100,34 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 			"fsListAllFiles": pfs.ListAllFiles,
 			"fsListDirs":     pfs.ListDirs,
 			"fsListAllDirs":  pfs.ListAllDirs,
+			"trimPageFmt":    f.TrimPageFormat,
+			"parsePageFmt":   f.PageFormat,
+			"pageFormats":    f.ListPageFormats,
+			"basename":       bePath.Base,
+			"basepath":       bePath.BasePath,
+			"ext":            bePath.Ext,
 		}
+	}
+	return
+}
+
+func (f *CFeature) PageFormat(filename string) (match string) {
+	t := f.Enjin.MustGetTheme()
+	_, match = t.MatchFormat(filename)
+	return
+}
+
+func (f *CFeature) ListPageFormats() (names []string) {
+	t := f.Enjin.MustGetTheme()
+	names = t.ListFormats()
+	return
+}
+
+func (f *CFeature) TrimPageFormat(filename string) (basename string) {
+	if match := f.PageFormat(filename); match != "" {
+		basename = strings.TrimSuffix(filename, "."+match)
+	} else {
+		basename = filename
 	}
 	return
 }
