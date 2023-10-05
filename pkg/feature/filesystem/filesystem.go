@@ -100,6 +100,9 @@ type Feature[MakeTypedFeature interface{}] interface {
 	// pm.Matter (using pm.FrontMatterType) and writes it to the first
 	// fs.RWFileSystem that matches the PageMatter's path
 	WritePageMatter(pm *matter.PageMatter) (err error)
+
+	// GetMountedPoints returns the map of all points currently mounted
+	GetMountedPoints() (mountPoints feature.MountedPoints)
 }
 
 type MakeFeature[MakeTypedFeature interface{}] interface {
@@ -194,6 +197,11 @@ func (f *CFeature[MakeTypedFeature]) Startup(ctx *cli.Context) (err error) {
 	if err = f.CGormDBPathSupport.startupGormDBPathSupport(f, ctx); err != nil {
 		return
 	}
+	return
+}
+
+func (f *CFeature[MakeTypedFeature]) GetMountedPoints() (mountPoints feature.MountedPoints) {
+	mountPoints = f.MountPoints
 	return
 }
 
