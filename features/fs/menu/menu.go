@@ -22,8 +22,9 @@ import (
 	"strings"
 
 	"github.com/fvbommel/sortorder"
-	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/urfave/cli/v2"
+
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
@@ -101,6 +102,31 @@ func (f *CFeature) GetMenus(tag language.Tag) (found map[string]menu.Menu) {
 				}
 			} else {
 				log.ErrorF("error finding all menus: [%v] %v - %v", tag, point, err)
+			}
+		}
+	}
+
+	return
+}
+
+func (f *CFeature) GetAllMenus() (menus map[language.Tag]map[string]menu.Menu) {
+	menus = make(map[language.Tag]map[string]menu.Menu)
+	tags := f.Enjin.SiteLangCatalog().LocaleTags()
+
+	for _, tag := range tags {
+		menus[tag] = make(map[string]menu.Menu)
+	}
+
+	for _, point := range maps.SortedKeys(f.MountPoints) {
+		for _, mp := range f.MountPoints[point] {
+			for _, tag := range tags {
+				if foundMenus, err := f.findAllMenus(tag, mp.ROFS); err == nil {
+					for name, found := range foundMenus {
+						menus[tag][name] = found
+					}
+				} else {
+					log.ErrorF("error finding all menus: [%v] %v - %v", tag, point, err)
+				}
 			}
 		}
 	}
