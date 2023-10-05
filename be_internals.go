@@ -15,6 +15,9 @@
 package be
 
 import (
+	"net/http"
+
+	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/message"
 
@@ -139,5 +142,94 @@ func (e *Enjin) GetThemeRenderer(ctx context.Context) (renderer feature.ThemeRen
 
 func (e *Enjin) MakeLanguagePrinter(requested string) (tag language.Tag, printer *message.Printer) {
 	tag, printer = lang.NewCatalogPrinter(requested, e.SiteLanguageCatalog())
+	return
+}
+
+func (e *Enjin) PublicUserActions() (actions feature.Actions) {
+	actions = e.eb.publicUser
+	return
+}
+
+func (e *Enjin) MakePageContextField(key string, r *http.Request) (field *context.Field, ok bool) {
+	fields := context.Fields{}
+
+	for _, fp := range e.GetPageContextFieldsProviders() {
+		for k, v := range fp.MakePageContextFields(r) {
+			if _, present := fields[k]; !present {
+				// no clobbering!
+				fields[k] = v
+			}
+		}
+	}
+
+	if field, ok = fields[key]; ok {
+		printer := lang.GetPrinterFromRequest(r)
+		parsers := e.PageContextParsers()
+		var fn context.Parser
+		if fn, ok = parsers[field.Format]; ok && fn != nil {
+			field.Parse = fn
+			field.Printer = printer
+			if field.Tab == "" {
+				field.Tab = "page"
+			}
+			if field.Category == "" {
+				field.Category = "general"
+			}
+		} else {
+			log.ErrorRF(r, "%q field format not found: %q", key, field.Format)
+			field = nil
+			ok = false
+		}
+	}
+
+	return
+}
+
+func (e *Enjin) MakePageContextFields(r *http.Request) (fields context.Fields) {
+	fields = context.Fields{}
+
+	for _, fp := range e.GetPageContextFieldsProviders() {
+		for k, v := range fp.MakePageContextFields(r) {
+			if _, present := fields[k]; !present {
+				// no clobbering!
+				fields[k] = v
+			}
+		}
+	}
+
+	printer := lang.GetPrinterFromRequest(r)
+	parsers := e.PageContextParsers()
+	for k, v := range fields {
+		if fn := parsers[v.Format]; fn != nil {
+			v.Parse = fn
+			v.Printer = printer
+			if v.Tab == "" {
+				v.Tab = "page"
+			}
+			if v.Category == "" {
+				v.Category = "general"
+			}
+		} else {
+			log.ErrorRF(r, "%q field format not found: %q", k, v.Format)
+			delete(fields, k)
+		}
+	}
+
+	return
+}
+
+func (e *Enjin) PageContextParsers() (parsers context.Parsers) {
+	parsers = context.Parsers{} // return a copy, not the source
+	for k, fn := range context.DefaultParsers {
+		parsers[k] = fn
+	}
+	for _, fp := range e.GetPageContextParsersProviders() {
+		for k, v := range fp.PageContextParsers() {
+			if _, present := parsers[k]; !present {
+				// no clobbering!
+				parsers[k] = v
+			}
+		}
+	}
 	return
 }
