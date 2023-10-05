@@ -57,7 +57,6 @@ type ThemeConfig struct {
 
 type Theme interface {
 	Name() (name string)
-	Reload() (err error)
 
 	GetParent() (parent Theme)
 	GetBlockThemeNames() (names []string)
