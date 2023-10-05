@@ -30,6 +30,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -99,6 +100,9 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		"iterate":                    Iterate,
 		"makeSlice":                  MakeSlice,
 		"makeStringSlice":            MakeStringSlice,
+		"stringInStrings":            slices.Present[string],
+		"withinStrings":              slices.Within[string, []string],
+		"anyWithinStrings":           slices.AnyWithin[string, []string],
 	}
 	return
 }
