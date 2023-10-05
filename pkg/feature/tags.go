@@ -32,10 +32,12 @@ func (t Tags) Has(tag Tag) bool {
 	return false
 }
 
-// Append returns a list with the given tag appended
-func (t Tags) Append(tag Tag) Tags {
-	if !t.Has(tag) {
-		return append(t, tag)
+// Append returns a (unique) list with the given tags appended
+func (t Tags) Append(tags ...Tag) Tags {
+	for _, tag := range tags {
+		if !t.Has(tag) {
+			return append(t, tag)
+		}
 	}
 	return t
 }
