@@ -26,13 +26,13 @@ type SearchEnjinFeature interface {
 	PrepareSearch(tag language.Tag, input string) (query string)
 	PerformSearch(tag language.Tag, input string, size, pg int) (results *bleve.SearchResult, err error)
 	AddToSearchIndex(stub *PageStub, p Page) (err error)
-	RemoveFromSearchIndex(tag language.Tag, file, shasum string)
+	RemoveFromSearchIndex(stub *PageStub, p Page)
 }
 
 type PageIndexFeature interface {
 	Feature
 	AddToIndex(stub *PageStub, p Page) (err error)
-	RemoveFromIndex(tag language.Tag, file, shasum string)
+	RemoveFromIndex(stub *PageStub, p Page) (err error)
 }
 
 type QueryIndexFeature interface {
