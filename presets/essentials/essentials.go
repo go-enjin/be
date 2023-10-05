@@ -24,9 +24,16 @@ import (
 	"github.com/go-enjin/be/features/pages/status"
 	"github.com/go-enjin/be/features/requests/deny"
 	"github.com/go-enjin/be/features/requests/headers/proxy"
+	modifiers "github.com/go-enjin/be/features/requests/pages/context-modifiers"
+	"github.com/go-enjin/be/features/requests/pages/i18n"
+	"github.com/go-enjin/be/features/requests/pages/policies"
+	"github.com/go-enjin/be/features/requests/pages/request"
+	"github.com/go-enjin/be/features/requests/pages/restrictions"
+	"github.com/go-enjin/be/features/requests/pages/sitemenus"
 	"github.com/go-enjin/be/features/srv/listeners/httpd"
 	beLogHandler "github.com/go-enjin/be/features/srv/logging/handler"
 	beLogger "github.com/go-enjin/be/features/srv/logging/logger"
+	"github.com/go-enjin/be/features/srv/middleware/panics"
 	"github.com/go-enjin/be/features/srv/pages"
 	"github.com/go-enjin/be/features/srv/theme/renderer"
 	"github.com/go-enjin/be/pkg/feature"
@@ -68,10 +75,17 @@ func New() MakePreset {
 	p := new(CPreset[MakePreset])
 	p.Name = Name
 	p.Features = feature.Features{
+		panics.New().Make(),
 		deny.New().Defaults().Make(),
 		proxy.New().Enable().Make(),
 		status.New().Make(),
 		partials.New().Make(),
+		request.New().Make(),
+		i18n.New().Make(),
+		policies.New().Make(),
+		restrictions.New().Make(),
+		sitemenus.New().Make(),
+		modifiers.New().Make(),
 		pages.New().Make(),
 		htmlify.New().Make(),
 		beLogHandler.New().Make(),
