@@ -22,12 +22,14 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/features/pages/funcmaps/casting"
+	"github.com/go-enjin/be/features/pages/funcmaps/crypto"
 	"github.com/go-enjin/be/features/pages/funcmaps/dates"
 	"github.com/go-enjin/be/features/pages/funcmaps/dict"
 	"github.com/go-enjin/be/features/pages/funcmaps/elements"
 	"github.com/go-enjin/be/features/pages/funcmaps/forms"
 	"github.com/go-enjin/be/features/pages/funcmaps/gtf"
 	"github.com/go-enjin/be/features/pages/funcmaps/lang"
+	"github.com/go-enjin/be/features/pages/funcmaps/lo"
 	"github.com/go-enjin/be/features/pages/funcmaps/logging"
 	"github.com/go-enjin/be/features/pages/funcmaps/math"
 	"github.com/go-enjin/be/features/pages/funcmaps/publicfs"
@@ -103,6 +105,7 @@ func (f *CFeature) Include(others ...feature.FuncMapProvider) MakeFeature {
 
 func (f *CFeature) Defaults() MakeFeature {
 	f.Include(
+		crypto.New().Make(),
 		casting.New().Make(),
 		dates.New().Make(),
 		dict.New().Make(),
@@ -116,6 +119,7 @@ func (f *CFeature) Defaults() MakeFeature {
 		slices.New().Make(),
 		strcase.New().Make(),
 		strings.New().Make(),
+		lo.New().Make(),
 	)
 	return f
 }
