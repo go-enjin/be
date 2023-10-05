@@ -27,9 +27,9 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/page"
 	"github.com/go-enjin/be/types/page/matter"
+	"github.com/go-enjin/be/types/users"
 )
 
 func (f *CFeature) makeAuthFilePath(eid string) (path string) {
@@ -55,7 +55,7 @@ func (f *CFeature) getUserExistsUnsafe(eid string) (path string, ok bool) {
 	return
 }
 
-func (f *CFeature) getAuthUserUnsafe(eid string) (user *userbase.AuthUser, err error) {
+func (f *CFeature) getAuthUserUnsafe(eid string) (user *users.AuthUser, err error) {
 	if path, ok := f.getAuthUserExistsUnsafe(eid); ok {
 
 		var data []byte
@@ -68,7 +68,7 @@ func (f *CFeature) getAuthUserUnsafe(eid string) (user *userbase.AuthUser, err e
 			}
 		}
 
-		var u userbase.AuthUser
+		var u users.AuthUser
 		if err = json.Unmarshal(data, &u); err != nil {
 			err = fmt.Errorf("error parsing auth user data: %v - %v", path, err)
 			return
@@ -83,8 +83,8 @@ func (f *CFeature) getAuthUserUnsafe(eid string) (user *userbase.AuthUser, err e
 	return
 }
 
-func (f *CFeature) getUserUnsafe(eid string) (user *userbase.User, err error) {
-	var au *userbase.AuthUser
+func (f *CFeature) getUserUnsafe(eid string) (user *users.User, err error) {
+	var au *users.AuthUser
 	if au, err = f.getAuthUserUnsafe(eid); err != nil {
 		if err != os.ErrNotExist {
 			err = fmt.Errorf("error looking up auth user: %v - %v", eid, err)
@@ -101,7 +101,7 @@ func (f *CFeature) getUserUnsafe(eid string) (user *userbase.User, err error) {
 			return
 		}
 
-		user, err = userbase.NewUserFromPageMatter(au, pm, f.Enjin.MustGetTheme(), f.Enjin.Context())
+		user, err = users.NewUserFromPageMatter(au, pm, f.Enjin.MustGetTheme(), f.Enjin.Context())
 		return
 	}
 
@@ -109,7 +109,7 @@ func (f *CFeature) getUserUnsafe(eid string) (user *userbase.User, err error) {
 	return
 }
 
-func (f *CFeature) makeAuthUserUnsafe(id, name, email, picture, audience string, attributes map[string]interface{}) (user *userbase.AuthUser, err error) {
+func (f *CFeature) makeAuthUserUnsafe(id, name, email, picture, audience string, attributes map[string]interface{}) (user *users.AuthUser, err error) {
 	tag := f.Tag().Camel()
 	makeCtxKey := func(camel string) (key string) {
 		key = tag + camel
@@ -128,7 +128,7 @@ func (f *CFeature) makeAuthUserUnsafe(id, name, email, picture, audience string,
 		user.Context.SetSpecific(makeCtxKey("Attributes"), beContext.NewFromMap(attributes))
 		return
 	}
-	user = userbase.NewAuthUser(id, name, email, picture, beContext.Context{
+	user = users.NewAuthUser(id, name, email, picture, beContext.Context{
 		makeCtxKey("Audience"):   audience,
 		makeCtxKey("Attributes"): beContext.NewFromMap(attributes),
 	})
@@ -136,11 +136,11 @@ func (f *CFeature) makeAuthUserUnsafe(id, name, email, picture, audience string,
 	return
 }
 
-func (f *CFeature) setAuthUserUnsafe(user *userbase.AuthUser) (err error) {
+func (f *CFeature) setAuthUserUnsafe(user *users.AuthUser) (err error) {
 
 	authUserFilename := f.makeAuthFilePath(user.EID)
 
-	write := func(u *userbase.AuthUser) (err error) {
+	write := func(u *users.AuthUser) (err error) {
 		if v, e := json.Marshal(u); e == nil {
 			for _, mp := range f.FindPathMountPoint(authUserFilename) {
 				if mp.RWFS != nil {
@@ -179,7 +179,7 @@ func (f *CFeature) setAuthUserUnsafe(user *userbase.AuthUser) (err error) {
 	return
 }
 
-func (f *CFeature) makeUserUnsafe(au *userbase.AuthUser) (user *userbase.User, created bool, err error) {
+func (f *CFeature) makeUserUnsafe(au *users.AuthUser) (user *users.User, created bool, err error) {
 
 	if u, e := f.getUserUnsafe(au.EID); e == nil && u != nil {
 		user = u
@@ -197,8 +197,8 @@ func (f *CFeature) makeUserUnsafe(au *userbase.AuthUser) (user *userbase.User, c
 		"Name": au.Name,
 	})
 
-	var uu *userbase.User
-	if uu, err = userbase.NewUserFromPageMatter(au, pm, f.Enjin.MustGetTheme(), f.Enjin.Context()); err != nil {
+	var uu *users.User
+	if uu, err = users.NewUserFromPageMatter(au, pm, f.Enjin.MustGetTheme(), f.Enjin.Context()); err != nil {
 		err = fmt.Errorf("error constructing user from PageMatter: %v - %v", au.EID, err)
 		return
 	}
@@ -207,7 +207,7 @@ func (f *CFeature) makeUserUnsafe(au *userbase.AuthUser) (user *userbase.User, c
 	return
 }
 
-func (f *CFeature) setUserUnsafe(user *userbase.User) (err error) {
+func (f *CFeature) setUserUnsafe(user *users.User) (err error) {
 	userUrlPath := f.userPath + "/" + user.EID
 	userFilename := f.userPath + "/" + user.EID + "." + user.CPage.Format()
 	if user.CPage.PageMatter().Path != userFilename {
@@ -229,12 +229,12 @@ func (f *CFeature) setUserUnsafe(user *userbase.User) (err error) {
 	return
 }
 
-func (f *CFeature) makeGroupActionsFilePath(group userbase.Group) (path string) {
+func (f *CFeature) makeGroupActionsFilePath(group feature.Group) (path string) {
 	path = f.groupPath + "/" + group.String() + ".group"
 	return
 }
 
-func (f *CFeature) parseGroupActionsFile(group userbase.Group) (pm *matter.PageMatter, bodyList feature.Actions, exists bool) {
+func (f *CFeature) parseGroupActionsFile(group feature.Group) (pm *matter.PageMatter, bodyList feature.Actions, exists bool) {
 	groupFilename := f.makeGroupActionsFilePath(group)
 
 	if path, ee := f.FindPageMatterPath(groupFilename); ee == nil {
@@ -256,7 +256,7 @@ func (f *CFeature) parseGroupActionsFile(group userbase.Group) (pm *matter.PageM
 	return
 }
 
-func (f *CFeature) parseUserGroupsFile(eid string) (pm *matter.PageMatter, bodyList userbase.Groups) {
+func (f *CFeature) parseUserGroupsFile(eid string) (pm *matter.PageMatter, bodyList feature.Groups) {
 	groupsFilename := f.groupsPath + "/" + eid + ".groups"
 
 	if path, ee := f.FindPageMatterPath(groupsFilename); ee == nil {
@@ -273,11 +273,11 @@ func (f *CFeature) parseUserGroupsFile(eid string) (pm *matter.PageMatter, bodyL
 		pm = matter.NewPageMatter(f.Tag().String(), groupsFilename+".text", "", matter.JsonMatter, beContext.Context{})
 	}
 
-	bodyList = userbase.NewGroupsFromStringNL(pm.Body)
+	bodyList = feature.NewGroupsFromStringNL(pm.Body)
 	return
 }
 
-func (f *CFeature) addUserToGroupsUnsafe(eid string, groups ...userbase.Group) (err error) {
+func (f *CFeature) addUserToGroupsUnsafe(eid string, groups ...feature.Group) (err error) {
 
 	pm, bodyList := f.parseUserGroupsFile(eid)
 
@@ -287,7 +287,7 @@ func (f *CFeature) addUserToGroupsUnsafe(eid string, groups ...userbase.Group) (
 		}
 	}
 
-	newGroupLookup := make(map[userbase.Group]int)
+	newGroupLookup := make(map[feature.Group]int)
 	for idx, group := range bodyList {
 		newGroupLookup[group] = idx + 1
 	}
@@ -302,13 +302,13 @@ func (f *CFeature) addUserToGroupsUnsafe(eid string, groups ...userbase.Group) (
 	return
 }
 
-func (f *CFeature) removeUserFromGroupsUnsafe(eid string, groups ...userbase.Group) (err error) {
+func (f *CFeature) removeUserFromGroupsUnsafe(eid string, groups ...feature.Group) (err error) {
 
 	pm, bodyList := f.parseUserGroupsFile(eid)
 
 	bodyList = bodyList.Remove(groups...)
 
-	newGroupLookup := make(map[userbase.Group]int)
+	newGroupLookup := make(map[feature.Group]int)
 	for idx, item := range bodyList {
 		newGroupLookup[item] = idx + 1
 	}
@@ -323,13 +323,13 @@ func (f *CFeature) removeUserFromGroupsUnsafe(eid string, groups ...userbase.Gro
 	return
 }
 
-func (f *CFeature) isUserInGroupUnsafe(eid string, group userbase.Group) (present bool) {
+func (f *CFeature) isUserInGroupUnsafe(eid string, group feature.Group) (present bool) {
 	_, bodyList := f.parseUserGroupsFile(eid)
 	present = bodyList.Has(group)
 	return
 }
 
-func (f *CFeature) getUserGroupsUnsafe(eid string) (groups userbase.Groups) {
+func (f *CFeature) getUserGroupsUnsafe(eid string) (groups feature.Groups) {
 	_, groups = f.parseUserGroupsFile(eid)
 	return
 }

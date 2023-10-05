@@ -20,8 +20,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/urfave/cli/v2"
+
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
@@ -29,6 +30,7 @@ import (
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/page/matter"
+	beUser "github.com/go-enjin/be/types/users"
 )
 
 const Tag feature.Tag = "fs-userbases"
@@ -43,27 +45,27 @@ type Feature interface {
 
 	signaling.SignalsSupport
 
-	userbase.AuthUserProvider
-	userbase.AuthUserManager
-	userbase.UserProvider
-	userbase.UserManager
-	userbase.GroupsProvider
-	userbase.GroupsManager
+	feature.AuthUserProvider
+	feature.AuthUserManager
+	feature.UserProvider
+	feature.UserManager
+	feature.GroupsProvider
+	feature.GroupsManager
 }
 
 type MakeFeature interface {
 	filesystem.MakeFeature[MakeFeature]
 
 	// IncludeGroup adds an in-memory group to the userbase
-	IncludeGroup(group userbase.Group, actions ...feature.Action) MakeFeature
+	IncludeGroup(group feature.Group, actions ...feature.Action) MakeFeature
 
 	// AddDefaultGroups adds the given groups to the list of default groups for
 	// all new users
-	AddDefaultGroups(groups ...userbase.Group) MakeFeature
+	AddDefaultGroups(groups ...feature.Group) MakeFeature
 
 	// SetDefaultGroups sets the given groups as the list of default groups for
 	// all new users
-	SetDefaultGroups(groups ...userbase.Group) MakeFeature
+	SetDefaultGroups(groups ...feature.Group) MakeFeature
 
 	// SetAuthPath overrides the default /auth path prefix for AuthUser storage
 	SetAuthPath(path string) MakeFeature
@@ -96,9 +98,9 @@ type CFeature struct {
 
 	groupsPath string
 
-	fallbackGroups map[userbase.Group]feature.Actions
+	fallbackGroups map[feature.Group]feature.Actions
 
-	defaultGroups   userbase.Groups
+	defaultGroups   feature.Groups
 	defaultLanguage language.Tag
 }
 
@@ -116,31 +118,32 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+	f.CFeature.Localized = false
 	f.CSignaling.InitSignaling()
 	f.authPath = "/auth"
 	f.userPath = "/user"
 	f.groupPath = "/group"
 	f.groupsPath = "/groups"
-	f.fallbackGroups = make(map[userbase.Group]feature.Actions)
+	f.fallbackGroups = make(map[feature.Group]feature.Actions)
 	f.defaultGroups = DefaultNewUserGroups
 	f.defaultLanguage = language.Und
 }
 
-func (f *CFeature) IncludeGroup(group userbase.Group, actions ...feature.Action) MakeFeature {
+func (f *CFeature) IncludeGroup(group feature.Group, actions ...feature.Action) MakeFeature {
 	f.Lock()
 	defer f.Unlock()
 	f.fallbackGroups[group] = append(f.fallbackGroups[group], actions...)
 	return f
 }
 
-func (f *CFeature) AddDefaultGroups(groups ...userbase.Group) MakeFeature {
+func (f *CFeature) AddDefaultGroups(groups ...feature.Group) MakeFeature {
 	f.Lock()
 	defer f.Unlock()
 	f.defaultGroups = append(f.defaultGroups, groups...)
 	return f
 }
 
-func (f *CFeature) SetDefaultGroups(groups ...userbase.Group) MakeFeature {
+func (f *CFeature) SetDefaultGroups(groups ...feature.Group) MakeFeature {
 	f.Lock()
 	defer f.Unlock()
 	f.defaultGroups = groups
@@ -272,22 +275,24 @@ func (f *CFeature) UserActions() (list feature.Actions) {
 	return
 }
 
-func (f *CFeature) NewAuthUser(id, name, email, picture, audience string, attributes map[string]interface{}) (user *userbase.AuthUser, err error) {
+func (f *CFeature) NewAuthUser(id, name, email, picture, audience string, attributes map[string]interface{}) (user feature.AuthUser, err error) {
 	f.Lock()
 	defer f.Unlock()
 	if user, err = f.makeAuthUserUnsafe(id, name, email, picture, audience, attributes); err == nil {
-		err = f.setAuthUserUnsafe(user)
+		err = f.setAuthUserUnsafe(user.(*beUser.AuthUser))
 	}
 	return
 }
 
-func (f *CFeature) SetAuthUser(user *userbase.AuthUser) (err error) {
+func (f *CFeature) SetAuthUser(u feature.AuthUser) (err error) {
 	f.Lock()
 	defer f.Unlock()
 
+	user, _ := u.(*beUser.AuthUser)
+
 	authUserFilename := f.makeAuthFilePath(user.EID)
 
-	write := func(u *userbase.AuthUser) (err error) {
+	write := func(u *beUser.AuthUser) (err error) {
 		if v, e := json.Marshal(u); e == nil {
 			for _, mp := range f.FindPathMountPoint(authUserFilename) {
 				if mp.RWFS != nil {
@@ -333,7 +338,7 @@ func (f *CFeature) AuthUserPresent(eid string) (present bool) {
 	return
 }
 
-func (f *CFeature) GetAuthUser(eid string) (user *userbase.AuthUser, err error) {
+func (f *CFeature) GetAuthUser(eid string) (user feature.AuthUser, err error) {
 	f.RLock()
 	defer f.RUnlock()
 	user, err = f.getAuthUserUnsafe(eid)
@@ -354,9 +359,11 @@ func (f *CFeature) RemoveAuthUser(eid string) (err error) {
 	return
 }
 
-func (f *CFeature) NewUser(au *userbase.AuthUser) (user *userbase.User, err error) {
+func (f *CFeature) NewUser(authUser feature.AuthUser) (user feature.User, err error) {
 	f.Lock()
 	defer f.Unlock()
+
+	au, _ := authUser.(*beUser.AuthUser)
 
 	if u, e := f.getUserUnsafe(au.EID); e == nil {
 		// user exists already, set and load
@@ -370,13 +377,13 @@ func (f *CFeature) NewUser(au *userbase.AuthUser) (user *userbase.User, err erro
 		return
 	}
 
-	if err = f.setUserUnsafe(user); err != nil {
-		err = fmt.Errorf("error saving new user: %v - %v", user.EID, err)
+	if err = f.setUserUnsafe(user.(*beUser.User)); err != nil {
+		err = fmt.Errorf("error saving new user: %v - %v", au.EID, err)
 		return
 	}
 
-	if err = f.addUserToGroupsUnsafe(user.EID, f.defaultGroups...); err != nil {
-		err = fmt.Errorf("error adding user to default groups: %v - %V", user.EID, err)
+	if err = f.addUserToGroupsUnsafe(au.EID, f.defaultGroups...); err != nil {
+		err = fmt.Errorf("error adding user to default groups: %v - %V", au.EID, err)
 		return
 	}
 
@@ -389,16 +396,17 @@ func (f *CFeature) NewUser(au *userbase.AuthUser) (user *userbase.User, err erro
 	return
 }
 
-func (f *CFeature) SetUser(user *userbase.User) (err error) {
+func (f *CFeature) SetUser(user feature.User) (err error) {
 	f.Lock()
 	defer f.Unlock()
-	err = f.setUserUnsafe(user)
+	err = f.setUserUnsafe(user.(*beUser.User))
 	return
 }
 
-func (f *CFeature) GetUser(eid string) (user *userbase.User, err error) {
+func (f *CFeature) GetUser(eid string) (u feature.User, err error) {
 	f.RLock()
 	defer f.RUnlock()
+	var user *beUser.User
 	if user, err = f.getUserUnsafe(eid); err != nil {
 		return
 	}
@@ -407,6 +415,7 @@ func (f *CFeature) GetUser(eid string) (user *userbase.User, err error) {
 		actions := f.GetGroupActions(group)
 		user.Actions = user.Actions.Append(actions...)
 	}
+	u = user
 	return
 }
 
@@ -433,7 +442,7 @@ func (f *CFeature) RemoveUser(id string) (err error) {
 	return
 }
 
-func (f *CFeature) GetGroupActions(group userbase.Group) (actions feature.Actions) {
+func (f *CFeature) GetGroupActions(group feature.Group) (actions feature.Actions) {
 	// get all registered user actions
 	allActions := f.Enjin.FindAllUserActions()
 	// read the group actions file
@@ -456,7 +465,7 @@ func (f *CFeature) GetGroupActions(group userbase.Group) (actions feature.Action
 	return
 }
 
-func (f *CFeature) UpdateGroup(group userbase.Group, actions ...feature.Action) (err error) {
+func (f *CFeature) UpdateGroup(group feature.Group, actions ...feature.Action) (err error) {
 	f.Lock()
 	defer f.Unlock()
 
@@ -490,7 +499,7 @@ func (f *CFeature) UpdateGroup(group userbase.Group, actions ...feature.Action) 
 	return
 }
 
-func (f *CFeature) RemoveGroup(group userbase.Group) (err error) {
+func (f *CFeature) RemoveGroup(group feature.Group) (err error) {
 	f.Lock()
 	defer f.Unlock()
 	target := f.makeGroupActionsFilePath(group)
@@ -506,28 +515,28 @@ func (f *CFeature) RemoveGroup(group userbase.Group) (err error) {
 	return
 }
 
-func (f *CFeature) AddUserToGroup(eid string, groups ...userbase.Group) (err error) {
+func (f *CFeature) AddUserToGroup(eid string, groups ...feature.Group) (err error) {
 	f.Lock()
 	defer f.Unlock()
 	err = f.addUserToGroupsUnsafe(eid, groups...)
 	return
 }
 
-func (f *CFeature) RemoveUserFromGroup(eid string, groups ...userbase.Group) (err error) {
+func (f *CFeature) RemoveUserFromGroup(eid string, groups ...feature.Group) (err error) {
 	f.Lock()
 	defer f.Unlock()
 	err = f.removeUserFromGroupsUnsafe(eid, groups...)
 	return
 }
 
-func (f *CFeature) IsUserInGroup(eid string, group userbase.Group) (present bool) {
+func (f *CFeature) IsUserInGroup(eid string, group feature.Group) (present bool) {
 	f.RLock()
 	defer f.RUnlock()
 	present = f.isUserInGroupUnsafe(eid, group)
 	return
 }
 
-func (f *CFeature) GetUserGroups(eid string) (groups userbase.Groups) {
+func (f *CFeature) GetUserGroups(eid string) (groups feature.Groups) {
 	f.RLock()
 	defer f.RUnlock()
 	groups = f.getUserGroupsUnsafe(eid)

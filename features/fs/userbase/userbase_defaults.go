@@ -17,11 +17,11 @@
 package userbase
 
 import (
-	"github.com/go-enjin/be/pkg/userbase"
+	"github.com/go-enjin/be/pkg/feature"
 )
 
 var (
-	DefaultNewUserGroups = userbase.Groups{
+	DefaultNewUserGroups = feature.Groups{
 		// userbase.NewGroup("public"),
 	}
 
