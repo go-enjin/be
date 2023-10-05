@@ -59,7 +59,7 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	})
 
 	router.Use(middleware.RequestID)
-	router.Use(e.panicMiddleware)
+	router.Use(e.eb.fPanicHandler.PanicHandler)
 
 	if e.eb.hotReload {
 		log.DebugF("including hot-reload middleware")
