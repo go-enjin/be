@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/samber/lo"
+
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/maps"
 )
@@ -29,7 +31,27 @@ type Dictionary map[string]interface{}
 // NewDictionary constructs a new Dictionary which is a simple wrapper around a context with method signatures that work
 // with the constraints of providing go template functions; uses .SET to handle argv
 func NewDictionary(argv ...interface{}) (d Dictionary, err error) {
+	if argc := len(argv); argc > 0 && argc%2 != 0 {
+		if ctx, ok := argv[0].(Dictionary); ok {
+			d, err = WrapDictionary(ctx, argv[1:]...)
+			return
+		} else if ctx, ok := argv[0].(beContext.Context); ok {
+			d, err = WrapDictionary(ctx, argv[1:]...)
+			return
+		} else if ctx, ok := argv[0].(map[string]interface{}); ok {
+			d, err = WrapDictionary(ctx, argv[1:]...)
+			return
+		}
+		err = fmt.Errorf("expected Dictionary, beContext.Context{} or map[string]interface{}, received: %T", argv[0])
+		return
+	}
 	d = Dictionary{}
+	_, err = d.SET(argv...)
+	return
+}
+
+func WrapDictionary(ctx map[string]interface{}, argv ...interface{}) (d Dictionary, err error) {
+	d = lo.Assign(Dictionary{}, ctx)
 	_, err = d.SET(argv...)
 	return
 }
