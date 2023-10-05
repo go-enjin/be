@@ -177,3 +177,16 @@ func (f *cRistrettoStore) Set(k interface{}, value interface{}) (err error) {
 	//f.cache[key] = data
 	return
 }
+
+func (f *cRistrettoStore) Delete(key interface{}) (err error) {
+	//f.Lock()
+	//defer f.Unlock()
+	// var data []byte
+	// if data, err = gob.Encode(value); err != nil {
+	// 	return
+	// }
+	f.Lock()
+	defer f.Unlock()
+	f.cache.Del(key)
+	return
+}

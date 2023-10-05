@@ -164,3 +164,8 @@ func (f *cBigCacheStore) Set(key interface{}, value interface{}) (err error) {
 	err = f.cache.Set(context.Background(), key, data)
 	return
 }
+
+func (f *cBigCacheStore) Delete(key interface{}) (err error) {
+	err = f.cache.Delete(context.Background(), key)
+	return
+}

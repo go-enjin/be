@@ -143,3 +143,14 @@ func (f *cLocalStore) Set(key interface{}, value interface{}) (err error) {
 	err = f.cache.Set(context.Background(), key, value)
 	return
 }
+
+func (f *cLocalStore) Delete(key interface{}) (err error) {
+	//f.Lock()
+	//defer f.Unlock()
+	// var data []byte
+	// if data, err = gob.Encode(value); err != nil {
+	// 	return
+	// }
+	err = f.cache.Delete(context.Background(), key)
+	return
+}

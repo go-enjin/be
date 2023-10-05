@@ -161,6 +161,19 @@ func (f *cMemShardStore) Set(k interface{}, value interface{}) (err error) {
 	return
 }
 
+func (f *cMemShardStore) Delete(k interface{}) (err error) {
+	f.Lock()
+	defer f.Unlock()
+	var ok bool
+	var key string
+	if key, ok = k.(string); !ok {
+		err = fmt.Errorf("not a string key: %#+v", k)
+		return
+	}
+	err = f.shards.Delete(key)
+	return
+}
+
 type cMemShardStoreCache[V interface{}] struct {
 	m map[string]V
 	sync.RWMutex
@@ -224,11 +237,12 @@ func (m cMemShardStoreCaches) Set(key string, val interface{}) {
 	shard.m[key] = &cMemShardStoreValue{v: val}
 }
 
-func (m cMemShardStoreCaches) Delete(key string) {
+func (m cMemShardStoreCaches) Delete(key string) (err error) {
 	shard := m.GetShard(key)
 	shard.Lock()
 	defer shard.Unlock()
 	if _, ok := shard.m[key]; ok {
 		delete(shard.m, key)
 	}
+	return
 }

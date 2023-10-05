@@ -163,3 +163,16 @@ func (f *cIMCacheStore) Set(k interface{}, value interface{}) (err error) {
 	f.cache.Set(key, data, imcache.WithNoExpiration())
 	return
 }
+
+func (f *cIMCacheStore) Delete(k interface{}) (err error) {
+	f.Lock()
+	defer f.Unlock()
+	var ok bool
+	var key string
+	if key, ok = k.(string); !ok {
+		err = fmt.Errorf("not a string key: %#+v", k)
+		return
+	}
+	f.cache.Remove(key)
+	return
+}
