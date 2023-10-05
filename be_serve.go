@@ -20,15 +20,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/iancoleman/strcase"
-
-	"github.com/go-enjin/golang-org-x-text/language"
-
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net"
-	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/serve"
 	"github.com/go-enjin/be/pkg/request/argv"
 	beStrings "github.com/go-enjin/be/pkg/strings"
@@ -161,14 +156,18 @@ func (e *Enjin) ServeStatusJSON(status int, v interface{}, w http.ResponseWriter
 }
 
 func (e *Enjin) ServePage(p feature.Page, w http.ResponseWriter, r *http.Request) (err error) {
-	pUrl := p.Url()
-	if pUrl != "" && pUrl[0] == '!' {
+	if pUrl := p.Url(); pUrl != "" && pUrl[0] == '!' {
 		err = fmt.Errorf("cannot serve not-path page: %v", pUrl)
 		return
 	} else if len(e.eb.fThemeRenderers) == 0 {
 		err = fmt.Errorf("enjin has no theme renderers, cannot ServePage")
 		return
+	} else if e.eb.fServePagesHandler == nil {
+		err = fmt.Errorf("enjin has no page serve handlers, cannot ServePage")
+		return
 	}
+
+	pUrl := p.Url()
 
 	if v, ok := r.Context().Value("userbase-denied-allow-error-page").(bool); ok && v {
 		log.DebugRF(r, "bypassing all user access controls to show an error page of some sort: %v", pUrl)
@@ -184,14 +183,14 @@ func (e *Enjin) ServePage(p feature.Page, w http.ResponseWriter, r *http.Request
 
 			if user := userbase.GetCurrentUser(r); user != nil {
 				if !user.Can(check) {
-					log.WarnF("denying user %v access (%v) to: %v", user.EID, check, pUrl)
+					log.WarnF("denying user %v access (%v) to: %v", user.GetEID(), check, pUrl)
 					r = r.Clone(context.WithValue(r.Context(), "userbase-denied-allow-error-page", true))
 					e.ServeNotFound(w, r)
 					return
 				} else {
 					log.DebugRF(r, "authenticated user allowed to: (%v) %v", check, pUrl)
 				}
-			} else if e.eb.publicUser.Has(check) {
+			} else if e.PublicUserActions().Has(check) {
 				log.DebugRF(r, "public user allowed to: (%v) %v", check, pUrl)
 			} else {
 				log.ErrorRF(r, "denying access, authenticated user not found and public has no access: (%v) %v", check, pUrl)
@@ -209,122 +208,7 @@ func (e *Enjin) ServePage(p feature.Page, w http.ResponseWriter, r *http.Request
 
 	}
 
-	for _, ptp := range e.eb.fPageTypeProcessors {
-		var pg feature.Page
-		var redirect string
-		var processed bool
-		if pg, redirect, processed, err = ptp.ProcessRequestPageType(r, p); err != nil {
-			return
-		} else if redirect != "" {
-			e.ServeRedirect(redirect, w, r)
-			return
-		} else if processed {
-			p = pg
-			//break
-		}
-	}
-
-	t := e.MustGetTheme()
-
-	ctx := e.Context()
-
-	reqLangTag := lang.GetTag(r)
-	ctx.SetSpecific("ReqLangTag", reqLangTag)
-	ctx.SetSpecific("Request", map[string]string{
-		"URL":        r.URL.String(),
-		"Path":       r.URL.Path,
-		"Host":       r.Host,
-		"Method":     r.Method,
-		"RequestURI": r.RequestURI,
-		"RemoteAddr": r.RemoteAddr,
-		"Referer":    r.Referer(),
-		"UserAgent":  r.UserAgent(),
-		"Language":   reqLangTag.String(),
-	})
-	ctx.SetSpecific("RequestContext", r.Context())
-
-	tConfig := t.GetConfig()
-	var pccs *csp.PageContextContentSecurity
-	pccs, r = e.contentSecurityPolicy.PreparePageContext(tConfig.ContentSecurityPolicy, ctx, r)
-	ctx.SetSpecific("RequestPolicy", map[string]interface{}{
-		"Permissions":     e.permissionsPolicy.GetRequestPolicy(r),
-		"ContentSecurity": pccs,
-	})
-
-	ctx.SetSpecific("BaseUrl", net.BaseURL(r))
-	ctx.SetSpecific(lang.PrinterKey, lang.GetPrinterFromRequest(r))
-	ctx.SetSpecific(string(argv.RequestArgvKey), argv.GetRequestArgv(r))
-
-	parsedTag := e.eb.defaultLang
-	if v := ctx.Get("Language"); v != nil {
-		if pageLang, ok := v.(string); ok {
-			if pageLang != "" {
-				if tag, ee := language.Parse(pageLang); ee == nil {
-					parsedTag = tag
-				} else {
-					log.ErrorRF(r, "invalid language tag: %v - %v", pageLang, ee)
-				}
-			}
-		} else {
-			log.ErrorRF(r, "page language tag not a string: %T %+v", v, v)
-		}
-	}
-	ctx.SetSpecific("Language", parsedTag.String())
-	ctx.SetSpecific("LanguageTag", parsedTag)
-
-	fpcPgCtx := p.Context().Copy()
-	fpcPgCtx.SetSpecific("Content", p.Content())
-	for _, pcm := range e.eb.fPageContextModifiers {
-		log.TraceRF(r, "filtering page context with: %v", pcm.Tag())
-		ctx = pcm.FilterPageContext(ctx, fpcPgCtx, r)
-	}
-
-	for _, prh := range e.eb.fPageRestrictionHandlers {
-		log.TraceRF(r, "checking restricted pages with: %v", prh.Tag())
-		var ok bool
-		if ctx, r, ok = prh.RestrictServePage(ctx, w, r); !ok {
-			addr, _ := net.GetIpFromRequest(r)
-			log.WarnRF(r, "%v feature denied %v access to: %v", prh.Tag(), addr, r.URL.Path)
-			e.ServeNotFound(w, r)
-			return
-		}
-	}
-
-	allMenus := make(map[string]interface{})
-	for _, mp := range e.eb.fMenuProviders {
-		for name, m := range mp.GetMenus(reqLangTag) {
-			camel := strcase.ToCamel(name)
-			allMenus[camel] = m
-			log.TraceRF(r, "providing [%v] menu: %v (.SiteMenu.%v)", reqLangTag.String(), name, camel)
-		}
-	}
-
-	if len(allMenus) > 0 {
-		ctx.SetSpecific("SiteMenu", allMenus)
-	}
-
-	var data []byte
-	var redirect string
-
-	renderer := e.GetThemeRenderer(ctx)
-
-	if data, redirect, err = renderer.RenderPage(ctx, p); err != nil {
-		log.ErrorRF(r, "error rendering page: %v - %v", pUrl, err)
-		return
-	} else if redirect != "" {
-		log.DebugRF(r, "redirecting from RenderPage: %v - %v", pUrl, redirect)
-		e.ServeRedirect(redirect, w, r)
-		return
-	}
-	if cacheControl := p.Context().String("CacheControl", ""); cacheControl != "" {
-		r = serve.SetCacheControl(cacheControl, w, r)
-	}
-	mime := ctx.String("ContentType", "text/html; charset=utf-8")
-	contentDisposition := ctx.String("ContentDisposition", "inline")
-	r = r.Clone(context.WithValue(r.Context(), "Content-Disposition", contentDisposition))
-	e.permissionsPolicy.FinalizeRequest(w, r)
-	e.contentSecurityPolicy.FinalizeRequest(w, r)
-	e.ServeData(data, mime, w, r)
+	err = e.eb.fServePagesHandler.ServePage(p, e.MustGetTheme(), e.Context(), w, r)
 	return
 }
 
