@@ -34,7 +34,6 @@ import (
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/serve"
 	bePath "github.com/go-enjin/be/pkg/path"
-	"github.com/go-enjin/be/pkg/userbase"
 )
 
 var (
@@ -81,7 +80,7 @@ type CFeature struct {
 	virtualPathCacheControl string
 
 	uaf feature.Feature
-	ubp userbase.AuthProvider
+	ubp feature.AuthProvider
 	prh feature.PageRestrictionHandler
 	drh feature.DataRestrictionHandler
 }
@@ -100,6 +99,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+	f.CFeature.Localized = false
 	f.mountCacheControl = make(map[string]string)
 	f.regexCacheControl = make(map[string]string)
 	f.cachedRegexp = make(map[string]*regexp.Regexp)
@@ -196,7 +196,7 @@ func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWrite
 
 	var data []byte
 	var mime string
-	var cmp *filesystem.CMountPoint
+	var cmp *feature.CMountPoint
 	var isVirtualBasePath bool
 
 	for _, basePath := range maps.SortedKeyLengths(f.basePaths) {
@@ -264,7 +264,7 @@ func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWrite
 	return
 }
 
-func (f *CFeature) findFileUnsafe(path string) (cmp *filesystem.CMountPoint, realpath string, data []byte, mime string, err error) {
+func (f *CFeature) findFileUnsafe(path string) (cmp *feature.CMountPoint, realpath string, data []byte, mime string, err error) {
 	if v, ee := url.PathUnescape(path); ee == nil {
 		path = v
 	}
