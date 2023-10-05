@@ -21,6 +21,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -71,6 +72,26 @@ func (l *Layouts) load() (err error) {
 		}
 	}
 
+	return
+}
+
+func (l *Layouts) ListLayouts() (names []string) {
+	l.RLock()
+	defer l.RUnlock()
+	unique := make(map[string]struct{})
+	if parent := l.theme.GetParent(); parent != nil {
+		if parentLayouts := parent.Layouts(); parentLayouts != nil {
+			for _, name := range parentLayouts.ListLayouts() {
+				unique[name] = struct{}{}
+			}
+		}
+	}
+	for name, _ := range l.cache {
+		unique[name] = struct{}{}
+	}
+	delete(unique, "defaults")
+	delete(unique, "partials")
+	names = append([]string{"defaults"}, maps.SortedKeys(unique)...)
 	return
 }
 
