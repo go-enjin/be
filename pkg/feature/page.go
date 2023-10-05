@@ -18,8 +18,9 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/gofrs/uuid"
+
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/types/page/matter"
@@ -33,7 +34,6 @@ type Page interface {
 	Path() (path string)
 
 	Title() (title string)
-	Summary() (summary string)
 	Description() (description string)
 
 	Layout() (layoutName string)
@@ -74,7 +74,6 @@ type Page interface {
 	SetSlugUrl(url string)
 
 	SetTitle(title string)
-	SetSummary(summary string)
 	SetDescription(description string)
 
 	SetLayout(layoutName string)
