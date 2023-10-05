@@ -95,14 +95,16 @@ func New(origin string, path, raw string, created, updated int64, formats featur
 func NewFromPageMatter(pm *matter.PageMatter, formats feature.PageFormatProvider, enjin context.Context) (p *CPage, err error) {
 	pg := &CPage{
 		fields: cPageData{
-			PageMatter: pm,
-			Content:    pm.Body,
-			Formats:    formats,
-			Context:    enjin.Copy(),
-			Shasum:     pm.Shasum,
-			Permalink:  uuid.Nil,
-			CreatedAt:  pm.Created,
-			UpdatedAt:  pm.Updated,
+			PageMatter:  pm,
+			Content:     pm.Body,
+			Formats:     formats,
+			Context:     enjin.Copy(),
+			Shasum:      pm.Shasum,
+			Language:    pm.Locale.String(),
+			LanguageTag: pm.Locale,
+			Permalink:   uuid.Nil,
+			CreatedAt:   pm.Created,
+			UpdatedAt:   pm.Updated,
 		},
 	}
 
