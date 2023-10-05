@@ -31,11 +31,26 @@ var (
 	ErrorDirNotFound = fmt.Errorf(`not found or not an existing directory`)
 )
 
-// Base returns the name of the file without any primary or secondary extensions
+// Base returns the name of the file without any extensions
 func Base(path string) (name string) {
 	name = filepath.Base(path)
 	for extn := filepath.Ext(name); extn != ""; extn = filepath.Ext(name) {
 		name = name[:len(name)-len(extn)]
+	}
+	return
+}
+
+// BasePath returns the path with the name of the file without any primary or secondary extensions
+func BasePath(path string) (basePath string) {
+	basePath = path
+	if extn, extra := ExtExt(basePath); extn != "" {
+		var extc int
+		for _, v := range []string{extn, extra} {
+			if c := len(v); c > 0 {
+				extc += c + 1
+			}
+		}
+		basePath = basePath[:len(basePath)-extc]
 	}
 	return
 }
