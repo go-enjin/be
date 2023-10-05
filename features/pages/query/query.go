@@ -24,6 +24,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/maps"
 )
@@ -74,6 +75,11 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CFeature.Startup(ctx); err != nil {
 		return
 	}
+	return
+}
+
+func (f *CFeature) PageTypeNames() (names []string) {
+	names = []string{"query"}
 	return
 }
 
