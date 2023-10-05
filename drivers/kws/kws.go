@@ -24,10 +24,11 @@ import (
 	"github.com/blevesearch/bleve/v2"
 	bleveSearch "github.com/blevesearch/bleve/v2/search"
 	"github.com/fvbommel/sortorder"
-	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/maruel/natural"
 	"github.com/puzpuzpuz/xsync/v2"
 	"github.com/urfave/cli/v2"
+
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
 	indexingSearch "github.com/go-enjin/be/pkg/indexing/search"
@@ -317,9 +318,10 @@ func (f *CFeature) AddToSearchIndex(stub *feature.PageStub, p feature.Page) (err
 	return
 }
 
-func (f *CFeature) RemoveFromSearchIndex(tag language.Tag, file, shasum string) {
+func (f *CFeature) RemoveFromSearchIndex(stub *feature.PageStub, p feature.Page) {
 	//f.Lock()
 	//defer f.Unlock()
+	log.WarnF("%v feature does not support removing pages from the keywords index", f.Tag())
 	return
 }
 
