@@ -31,6 +31,7 @@ import (
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/mime"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -95,11 +96,14 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		"unescapeHTML":     UnescapeHtml,
 		"escapeJsonString": EscapeJsonString,
 		"escapeHTML":       EscapeHtml,
+		"escapeQuotes":     EscapeQuotes,
+		"asMatterValue":    AsMatterValue,
 		"escapeUrlPath":    EscapeUrlPath,
 		"isUrl":            IsUrl,
 		"isPath":           IsPath,
 		"parseUrl":         ParseUrl,
 		"baseName":         BaseName,
+		"pruneCharset":     mime.PruneCharset,
 	}
 	return
 }
@@ -199,6 +203,30 @@ func EscapeHtml(input interface{}) (out template.HTML) {
 		out = template.HTML(html.EscapeString(string(t)))
 	default:
 		out = template.HTML(html.EscapeString(fmt.Sprintf("%v", t)))
+	}
+	return
+}
+
+func EscapeQuotes(input interface{}) (out string) {
+	switch t := input.(type) {
+	case string:
+		out = strings.ReplaceAll(t, `"`, `\"`)
+	case template.HTML:
+		out = strings.ReplaceAll(string(t), `"`, `\"`)
+	default:
+		out = strings.ReplaceAll(fmt.Sprintf("%v", t), `"`, `\"`)
+	}
+	return
+}
+
+func AsMatterValue(input interface{}) (out string) {
+	switch t := input.(type) {
+	case string:
+		out = strings.ReplaceAll(html.UnescapeString(t), `"`, `\"`)
+	case template.HTML:
+		out = strings.ReplaceAll(html.UnescapeString(string(t)), `"`, `\"`)
+	default:
+		out = strings.ReplaceAll(html.UnescapeString(fmt.Sprintf("%v", t)), `"`, `\"`)
 	}
 	return
 }
