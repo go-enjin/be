@@ -149,3 +149,8 @@ type Internals interface {
 type CanSetupInternals interface {
 	Setup(enjin Internals)
 }
+
+type HotReloadableFeature interface {
+	Feature
+	HotReload() (err error)
+}
