@@ -28,9 +28,7 @@ import (
 	"github.com/go-enjin/be/pkg/templates"
 )
 
-func (f *CFeature) NewHtmlTemplateWith(name string, ctx context.Context) (tmpl *htmlTemplate.Template, err error) {
-	t := f.Enjin.MustGetTheme()
-
+func (f *CFeature) NewHtmlTemplateWith(t feature.Theme, name string, ctx context.Context) (tmpl *htmlTemplate.Template, err error) {
 	var makeTemplate func(t feature.Theme, name string, ctx context.Context) (tmpl *htmlTemplate.Template, err error)
 	makeTemplate = func(t feature.Theme, name string, ctx context.Context) (tmpl *htmlTemplate.Template, err error) {
 		if parent := t.GetParent(); parent != nil {
@@ -57,9 +55,9 @@ func (f *CFeature) NewHtmlTemplateWith(name string, ctx context.Context) (tmpl *
 	return
 }
 
-func (f *CFeature) RenderHtmlTemplateContent(ctx context.Context, tmplContent string) (rendered string, err error) {
+func (f *CFeature) RenderHtmlTemplateContent(t feature.Theme, ctx context.Context, tmplContent string) (rendered string, err error) {
 	var tt *htmlTemplate.Template
-	if tt, err = f.NewHtmlTemplateWith("content.html.tmpl", ctx); err == nil {
+	if tt, err = f.NewHtmlTemplateWith(t, "content.html.tmpl", ctx); err == nil {
 		if tt, err = tt.Parse(tmplContent); err == nil {
 			var w bytes.Buffer
 			if err = tt.Execute(&w, ctx); err == nil {
@@ -77,8 +75,7 @@ func (f *CFeature) RenderHtmlTemplateContent(ctx context.Context, tmplContent st
 	return
 }
 
-func (f *CFeature) NewHtmlTemplateFromContext(view string, ctx context.Context) (tt *htmlTemplate.Template, err error) {
-	t := f.Enjin.MustGetTheme()
+func (f *CFeature) NewHtmlTemplateFromContext(t feature.Theme, view string, ctx context.Context) (tt *htmlTemplate.Template, err error) {
 
 	var ctxLayout, parentLayout feature.ThemeLayout
 	var layoutName, pagetype, archetype, pageFormat string

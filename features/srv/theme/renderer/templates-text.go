@@ -28,8 +28,7 @@ import (
 	"github.com/go-enjin/be/pkg/templates"
 )
 
-func (f *CFeature) NewTextTemplateWith(name string, ctx context.Context) (tmpl *textTemplate.Template, err error) {
-	t := f.Enjin.MustGetTheme()
+func (f *CFeature) NewTextTemplateWith(t feature.Theme, name string, ctx context.Context) (tmpl *textTemplate.Template, err error) {
 
 	var makeTemplate func(t feature.Theme, name string, ctx context.Context) (tmpl *textTemplate.Template, err error)
 	makeTemplate = func(t feature.Theme, name string, ctx context.Context) (tmpl *textTemplate.Template, err error) {
@@ -57,9 +56,9 @@ func (f *CFeature) NewTextTemplateWith(name string, ctx context.Context) (tmpl *
 	return
 }
 
-func (f *CFeature) RenderTextTemplateContent(ctx context.Context, tmplContent string) (rendered string, err error) {
+func (f *CFeature) RenderTextTemplateContent(t feature.Theme, ctx context.Context, tmplContent string) (rendered string, err error) {
 	var tt *textTemplate.Template
-	if tt, err = f.NewTextTemplateWith("content.tmpl", ctx); err == nil {
+	if tt, err = f.NewTextTemplateWith(t, "content.tmpl", ctx); err == nil {
 		if tt, err = tt.Parse(tmplContent); err == nil {
 			var w bytes.Buffer
 			if err = tt.Execute(&w, ctx); err == nil {
@@ -77,8 +76,7 @@ func (f *CFeature) RenderTextTemplateContent(ctx context.Context, tmplContent st
 	return
 }
 
-func (f *CFeature) NewTextTemplateFromContext(view string, ctx context.Context) (tt *textTemplate.Template, err error) {
-	t := f.Enjin.MustGetTheme()
+func (f *CFeature) NewTextTemplateFromContext(t feature.Theme, view string, ctx context.Context) (tt *textTemplate.Template, err error) {
 
 	var ctxLayout, parentLayout feature.ThemeLayout
 	var layoutName, pagetype, archetype, pageFormat string

@@ -84,10 +84,10 @@ func (f *CFeature) Shutdown() {
 
 }
 
-func (f *CFeature) Render(view string, ctx beContext.Context) (data []byte, err error) {
+func (f *CFeature) Render(t feature.Theme, view string, ctx beContext.Context) (data []byte, err error) {
 
 	var tt *htmlTemplate.Template
-	if tt, err = f.NewHtmlTemplateFromContext(view, ctx); err == nil {
+	if tt, err = f.NewHtmlTemplateFromContext(t, view, ctx); err == nil {
 		log.TraceF("template used: (%v) %v - \"%v\"", view, tt.Name(), ctx.String("Url", "nil"))
 		var wr bytes.Buffer
 		if err = tt.Execute(&wr, ctx); err != nil {
@@ -99,9 +99,7 @@ func (f *CFeature) Render(view string, ctx beContext.Context) (data []byte, err 
 	return
 }
 
-func (f *CFeature) RenderPage(ctx beContext.Context, p feature.Page) (data []byte, redirect string, err error) {
-
-	t := f.Enjin.MustGetTheme()
+func (f *CFeature) RenderPage(t feature.Theme, ctx beContext.Context, p feature.Page) (data []byte, redirect string, err error) {
 
 	ctx.Apply(p.Context().Copy())
 	ctx.Set("Theme", t.GetConfig())
@@ -109,12 +107,12 @@ func (f *CFeature) RenderPage(ctx beContext.Context, p feature.Page) (data []byt
 	var output string
 
 	if p.Format() == "html.tmpl" {
-		if output, err = f.RenderHtmlTemplateContent(ctx, p.Content()); err != nil {
+		if output, err = f.RenderHtmlTemplateContent(t, ctx, p.Content()); err != nil {
 			ctx["Content"] = f.renderErrorPage("Template Render Error", err.Error(), p.String())
 		}
 	} else if strings.HasSuffix(p.Format(), ".tmpl") {
 		// TODO: find a more safe way to pre-render .njn.tmpl files
-		if output, err = f.RenderTextTemplateContent(ctx, p.Content()); err != nil {
+		if output, err = f.RenderTextTemplateContent(t, ctx, p.Content()); err != nil {
 			ctx["Content"] = f.renderErrorPage("Template Render Error", err.Error(), p.String())
 		}
 	} else {
@@ -154,7 +152,7 @@ func (f *CFeature) RenderPage(ctx beContext.Context, p feature.Page) (data []byt
 		}
 	}
 
-	data, err = f.Render("single", ctx)
+	data, err = f.Render(t, "single", ctx)
 
 	return
 }
