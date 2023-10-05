@@ -147,6 +147,10 @@ type Internals interface {
 
 	PublicUserActions() (actions Actions)
 	ValidateUserRequest(action Action, w http.ResponseWriter, r *http.Request) (valid bool)
+
+	PageContextParsers() (parsers context.Parsers)
+	MakePageContextField(key string, r *http.Request) (field *context.Field, ok bool)
+	MakePageContextFields(r *http.Request) (fields context.Fields)
 }
 
 type CanSetupInternals interface {
