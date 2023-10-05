@@ -25,4 +25,5 @@ type loadTheme struct {
 	path     string
 	themeFs  fs.FileSystem
 	staticFs fs.FileSystem
+	rwfs     fs.RWFileSystem
 }

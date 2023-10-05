@@ -20,7 +20,6 @@ import (
 	"fmt"
 
 	"github.com/go-enjin/be/drivers/fs/local"
-	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
@@ -40,7 +39,7 @@ func (f *CFeature) loadLocalTheme(path string) (err error) {
 		err = fmt.Errorf("directory not found: %v", path)
 		return
 	}
-	var themeFs, staticFs fs.FileSystem
+	var themeFs, staticFs *local.FileSystem
 	if themeFs, err = local.New(f.Tag().String(), path); err != nil {
 		err = fmt.Errorf("error mounting local filesystem: %v - %v", path, err)
 		return
@@ -55,6 +54,7 @@ func (f *CFeature) loadLocalTheme(path string) (err error) {
 		path:     path,
 		themeFs:  themeFs,
 		staticFs: staticFs,
+		rwfs:     themeFs,
 	})
 
 	return

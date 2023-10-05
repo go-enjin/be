@@ -22,6 +22,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/feature/filesystem"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/types/theme"
 )
@@ -34,7 +35,7 @@ var (
 )
 
 type Feature interface {
-	feature.Feature
+	filesystem.Feature[MakeFeature]
 }
 
 type MakeFeature interface {
@@ -52,7 +53,7 @@ type MakeFeature interface {
 }
 
 type CFeature struct {
-	feature.CFeature
+	filesystem.CFeature[MakeFeature]
 
 	theme   string
 	loading []*loadTheme
@@ -72,6 +73,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+	f.CFeature.Localized = false // themes are not localized filesystems!
 }
 
 func (f *CFeature) SetTheme(name string) MakeFeature {
@@ -100,11 +102,24 @@ func (f *CFeature) Make() Feature {
 func (f *CFeature) Build(b feature.Buildable) (err error) {
 	for _, ts := range f.loading {
 		var t feature.Theme
-		if t, err = theme.New(f.Tag().String(), ts.path, ts.themeFs, ts.staticFs); err != nil {
+		if t, err = theme.New(f.Tag().String(), ts.path, ts.themeFs, ts.staticFs, ts.rwfs != nil); err != nil {
 			err = fmt.Errorf("error loading %v theme: %v - %v", ts.support, ts.path, err)
 			return
-		} else if t.StaticFS() != nil {
+		}
+		mount := "/" + t.Name()
+		f.CFeature.MountPoints[mount] = append(f.CFeature.MountPoints[mount], &feature.CMountPoint{
+			Path:  ts.path,
+			Mount: mount,
+			ROFS:  ts.themeFs,
+			RWFS:  ts.rwfs,
+		})
+		if t.StaticFS() != nil {
 			b.RegisterPublicFileSystem("/", t.StaticFS())
+			//f.MountPoints[mount+"/static"] = append(f.MountPoints[mount+"/static"], &feature.CMountPoint{
+			//	Path:  ts.path,
+			//	Mount: mount + "/static",
+			//	ROFS:  ts.staticFs,
+			//})
 		}
 		b.AddTheme(t)
 		log.DebugF("loaded %v theme: %v", ts.support, t.Name())
