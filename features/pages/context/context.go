@@ -115,14 +115,3 @@ func (f *CFeature) EnjinContext() (ctx context.Context) {
 	ctx = f.ctx.Copy()
 	return
 }
-
-//func (f *CFeature) FilterPageContext(tCtx context.Context, pCtx context.Context, r *http.Request) (out context.Context) {
-//	out = tCtx.Copy()
-//	for _, custom := range f.custom {
-//		for _, name := range custom.Names() {
-//			out.Set(strcase.ToCamel(name), f.cli.Generic(name))
-//			log.DebugRF(r, "setting page context: %v => %v", strcase.ToCamel(name), f.cli.Generic(name))
-//		}
-//	}
-//	return
-//}
