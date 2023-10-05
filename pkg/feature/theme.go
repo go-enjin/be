@@ -23,11 +23,19 @@ import (
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
+	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 type Author struct {
 	Name     string
 	Homepage string
+}
+
+type ThemeSupports struct {
+	Menus      MenuSupports              `json:"menus,omitempty"`
+	Layouts    []string                  `json:"layouts,omitempty"`
+	Locales    []language.Tag            `json:"locales,omitempty"`
+	Archetypes map[string]context.Fields `json:"archetypes,omitempty"`
 }
 
 type ThemeConfig struct {
@@ -51,6 +59,8 @@ type ThemeConfig struct {
 
 	PermissionsPolicy     []permissions.Directive
 	ContentSecurityPolicy csp.ContentSecurityPolicyConfig
+
+	Supports ThemeSupports
 
 	Context context.Context
 }
