@@ -89,6 +89,11 @@ func (f *CFeature) Shutdown() {
 	f.CFeature.Shutdown()
 }
 
+func (f *CFeature) PageTypeNames() (names []string) {
+	names = []string{"status"}
+	return
+}
+
 func (f *CFeature) ProcessRequestPageType(r *http.Request, p feature.Page) (pg feature.Page, redirect string, processed bool, err error) {
 	if p.Type() != "status" {
 		return
