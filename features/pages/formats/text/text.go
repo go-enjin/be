@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/blevesearch/bleve/v2/mapping"
+
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
@@ -124,7 +125,7 @@ func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 	var rendered string
 	if strings.HasSuffix(pg.Format(), ".tmpl") {
 		renderer := f.Enjin.GetThemeRenderer(pg.Context())
-		if rendered, err = renderer.RenderTextTemplateContent(pg.Context(), pg.Content()); err != nil {
+		if rendered, err = renderer.RenderTextTemplateContent(f.Enjin.MustGetTheme(), pg.Context(), pg.Content()); err != nil {
 			err = fmt.Errorf("error rendering .text.tmpl content: %v", err)
 			return
 		}

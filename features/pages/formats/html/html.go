@@ -123,7 +123,7 @@ func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 	var rendered string
 	if strings.HasSuffix(pg.Format(), ".tmpl") {
 		renderer := f.Enjin.GetThemeRenderer(pg.Context())
-		if rendered, err = renderer.RenderHtmlTemplateContent(pg.Context(), pg.Content()); err != nil {
+		if rendered, err = renderer.RenderHtmlTemplateContent(f.Enjin.MustGetTheme(), pg.Context(), pg.Content()); err != nil {
 			err = fmt.Errorf("error rendering .html.tmpl content: %v", err)
 			return
 		}

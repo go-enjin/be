@@ -22,6 +22,7 @@ import (
 	"net/http"
 
 	"github.com/blevesearch/bleve/v2/mapping"
+
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
@@ -96,7 +97,7 @@ func (f *CFeature) Prepare(ctx context.Context, content string) (out context.Con
 
 func (f *CFeature) Process(ctx context.Context, content string) (html htmlTemplate.HTML, redirect string, err error) {
 	renderer := f.Enjin.GetThemeRenderer(ctx)
-	if rendered, e := renderer.RenderTextTemplateContent(ctx, content); e != nil {
+	if rendered, e := renderer.RenderTextTemplateContent(f.Enjin.MustGetTheme(), ctx, content); e != nil {
 		err = errors.NewEnjinError(
 			"tmpl render error",
 			e.Error(),
@@ -133,7 +134,7 @@ func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 
 	var rendered string
 	renderer := f.Enjin.GetThemeRenderer(pg.Context())
-	if rendered, err = renderer.RenderTextTemplateContent(pg.Context(), pg.Content()); err != nil {
+	if rendered, err = renderer.RenderTextTemplateContent(f.Enjin.MustGetTheme(), pg.Context(), pg.Content()); err != nil {
 		err = fmt.Errorf("error rendering .tmpl content: %v", err)
 		return
 	}
