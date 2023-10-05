@@ -103,13 +103,20 @@ func makeLookupList(pagetype, pageFormat, archetype, layoutName, view string) (l
 		layouts/~default/baseof.{html,tmpl}
 	*/
 
-	if pageFormat != "" {
-		if archetype != "" {
+	if archetype != "" {
+		if pageFormat != "" {
 			addLookup(layoutName, archetype, view, pageFormat, "tmpl")
 			addLookup(layoutName, archetype, view, pageFormat, "html")
 			addLookup(layoutName, archetype, "", pageFormat, "tmpl")
 			addLookup(layoutName, archetype, "", pageFormat, "html")
 		}
+		addLookup(layoutName, archetype, view, "", "tmpl")
+		addLookup(layoutName, archetype, view, "", "html")
+		addLookup(layoutName, archetype, "", "", "tmpl")
+		addLookup(layoutName, archetype, "", "", "html")
+	}
+
+	if pageFormat != "" {
 		addLookup(layoutName, pagetype, view, pageFormat, "tmpl")
 		addLookup(layoutName, pagetype, view, pageFormat, "html")
 		addLookup(layoutName, pagetype, "", pageFormat, "tmpl")
@@ -119,12 +126,7 @@ func makeLookupList(pagetype, pageFormat, archetype, layoutName, view string) (l
 		addLookup(layoutName, "", "baseof", pageFormat, "tmpl")
 		addLookup(layoutName, "", "baseof", pageFormat, "html")
 	}
-	if archetype != "" {
-		addLookup(layoutName, archetype, view, "", "tmpl")
-		addLookup(layoutName, archetype, view, "", "html")
-		addLookup(layoutName, archetype, "", "", "tmpl")
-		addLookup(layoutName, archetype, "", "", "html")
-	}
+
 	addLookup(layoutName, pagetype, view, "", "tmpl")
 	addLookup(layoutName, pagetype, view, "", "html")
 	addLookup(layoutName, pagetype, "", "", "tmpl")
