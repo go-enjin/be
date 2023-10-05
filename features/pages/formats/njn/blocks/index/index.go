@@ -21,11 +21,13 @@ import (
 	"html"
 	"html/template"
 	"math"
+	"net/http"
 	"net/url"
 	"strings"
 
-	"github.com/go-enjin/golang-org-x-text/cases"
 	"github.com/iancoleman/strcase"
+
+	"github.com/go-enjin/golang-org-x-text/cases"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms/nonce"
@@ -337,6 +339,17 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			found = found[start:end]
 		} else {
 			found = found[start:]
+		}
+	}
+
+	if r, hasReqInstance := re.RequestContext().Get("R").(*http.Request); hasReqInstance {
+		for _, p := range found {
+			fpcPgCtx := p.Context().Copy()
+			fpcPgCtx.SetSpecific("Content", p.Content())
+			for _, pcm := range f.Enjin.GetPageContextUpdaters() {
+				additions := pcm.UpdatePageContext(fpcPgCtx, r)
+				p.Context().Apply(additions)
+			}
 		}
 	}
 
