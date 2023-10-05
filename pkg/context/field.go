@@ -42,3 +42,24 @@ type Field struct {
 	Printer *message.Printer `json:"-"`
 	Parse   Parser           `json:"-"`
 }
+
+func ParseField(data map[string]interface{}) (field *Field) {
+	field = &Field{}
+	field.Key, _ = data["key"].(string)
+	field.Tab, _ = data["tab"].(string)
+	field.Label, _ = data["label"].(string)
+	field.Format, _ = data["format"].(string)
+	field.Category, _ = data["category"].(string)
+	field.Input, _ = data["input"].(string)
+	field.Weight, _ = data["weight"].(int)
+	field.Required, _ = data["required,omitempty"].(bool)
+	field.Step, _ = data["step"].(float64)
+	field.Minimum, _ = data["minimum"].(float64)
+	field.Maximum, _ = data["maximum"].(float64)
+	field.Placeholder, _ = data["placeholder"].(string)
+	field.DefaultValue, _ = data["default-value"].(interface{})
+	field.ValueOptions, _ = data["value-options"].([]string)
+	field.LockNonEmpty, _ = data["lock-non-empty"].(bool)
+	field.NoResetValue, _ = data["no-reset-value"].(bool)
+	return
+}
