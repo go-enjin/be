@@ -195,7 +195,7 @@ func NewPageFromStub(ps *feature.PageStub, formats feature.PageFormatProvider) (
 		return
 	}
 
-	path := beStrings.TrimPrefixes(ps.Source, ps.Fallback.String())
+	//path := beStrings.TrimPrefixes(ps.Source, ps.Fallback.String())
 	var epoch, created, updated int64
 
 	if epoch, err = ps.FS.FileCreated(ps.Source); err == nil {
@@ -210,7 +210,7 @@ func NewPageFromStub(ps *feature.PageStub, formats feature.PageFormatProvider) (
 		log.ErrorF("error getting page last modified epoch: %v", err)
 	}
 
-	if p, err = New(ps.Origin, path, string(data), created, updated, formats, ps.EnjinCtx); err == nil {
+	if p, err = New(ps.Origin, ps.Source, string(data), created, updated, formats, ps.EnjinCtx); err == nil {
 		if language.Compare(p.LanguageTag(), language.Und) {
 			p.SetLanguage(ps.Fallback)
 		}
@@ -219,7 +219,7 @@ func NewPageFromStub(ps *feature.PageStub, formats feature.PageFormatProvider) (
 		}
 		// log.DebugF("made page from %v stub: [%v] %v (%v)", s.FS.Name(), p.Language, s.Source, p.Url)
 	} else {
-		err = fmt.Errorf("error: new %v mount page %v - %v", ps.FS.Name(), path, err)
+		err = fmt.Errorf("error: new %v mount page %v - %v", ps.FS.Name(), ps.Source, err)
 	}
 	return
 }
