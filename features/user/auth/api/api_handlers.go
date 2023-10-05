@@ -24,6 +24,7 @@ import (
 
 	"github.com/Shopify/gomail"
 
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/github-com-go-pkgz-auth/provider"
 	"github.com/go-enjin/github-com-go-pkgz-auth/token"
 
@@ -115,7 +116,7 @@ func (f *CFeature) authClaimsUpdFunc(claims token.Claims) token.Claims {
 
 		eid, _ := sha.DataHash10([]byte(claims.User.ID))
 
-		var au *userbase.AuthUser
+		var au feature.AuthUser
 		if !f.publicSignups && !bypassSignupCheck {
 			// user must be present in the userbase for all logins
 			if f.ubm.AuthUserPresent(eid) {
@@ -137,8 +138,8 @@ func (f *CFeature) authClaimsUpdFunc(claims token.Claims) token.Claims {
 		}
 
 		if au != nil {
-			claims.User.SetStrAttr("EID", au.EID)
-			claims.User.SetStrAttr("Origin", au.Origin)
+			claims.User.SetStrAttr("EID", au.GetEID())
+			claims.User.SetStrAttr("Origin", au.GetOrigin())
 		}
 
 	}
@@ -184,15 +185,15 @@ func (f *CFeature) AuthApiServeHTTP(next http.Handler, w http.ResponseWriter, r 
 			if ubAu, ee := f.ubm.GetAuthUser(eid); ee == nil {
 
 				r = userbase.SetCurrentAuthUser(ubAu, r)
-				r.URL.User = url.User(ubAu.EID)
-				log.TraceF("%v feature setting current auth user: %v", f.Tag(), ubAu.EID)
+				r.URL.User = url.User(ubAu.GetEID())
+				log.TraceF("%v feature setting current auth user: %v", f.Tag(), ubAu.GetEID())
 
 				if u, eee := f.ubm.GetUser(eid); eee == nil {
 
 					r = userbase.SetCurrentUser(u, r)
 					f.Emit(userbase.UserLoadedSignal, f.Tag().String(), u)
 
-					log.TraceF("%v feature setting current user: %v - groups=%#+v, actions=%#+v", f.Tag(), u.EID, u.Groups, u.Actions)
+					log.TraceF("%v feature setting current user: %v - groups=%#+v, actions=%#+v", f.Tag(), u.GetEID(), u.GetGroups(), u.GetActions())
 
 				} else {
 					log.ErrorRF(r, "%v feature error getting User - %v - %v", f.Tag(), eid, eee)
@@ -228,7 +229,7 @@ func (f *CFeature) AuthApiServeHTTP(next http.Handler, w http.ResponseWriter, r 
 		}
 
 	} else {
-		log.DebugRF(r, "%v feature found other user present: %v (%v)", f.Tag(), cau.EID, cau.Origin)
+		log.DebugRF(r, "%v feature found other user present: %v (%v)", f.Tag(), cau.GetEID(), cau.GetOrigin())
 	}
 	next.ServeHTTP(w, r)
 }

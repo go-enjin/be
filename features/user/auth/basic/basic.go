@@ -35,7 +35,7 @@ import (
 	beNet "github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/net/serve"
 	"github.com/go-enjin/be/pkg/slices"
-	"github.com/go-enjin/be/pkg/userbase"
+	"github.com/go-enjin/be/types/users"
 )
 
 const (
@@ -50,7 +50,7 @@ var (
 
 type Feature interface {
 	feature.Feature
-	userbase.AuthProvider
+	feature.AuthProvider
 	feature.PageRestrictionHandler
 	feature.DataRestrictionHandler
 }
@@ -90,9 +90,9 @@ type CFeature struct {
 	upNames          []string
 	gpNames          []string
 	spNames          []string
-	usersProviders   []userbase.AuthUserProvider
-	groupsProviders  []userbase.GroupsProvider
-	secretsProviders []userbase.SecretsProvider
+	usersProviders   []feature.AuthUserProvider
+	groupsProviders  []feature.GroupsProvider
+	secretsProviders []feature.SecretsProvider
 }
 
 type protectedPath struct {
@@ -255,10 +255,10 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 			Category: category,
 		},
 		&cli.StringFlag{
-			Name:     globals.MakeFlagName(category, "auth-cache-control"),
+			Name:     globals.MakeFlagName(category, "cache-control"),
 			Usage:    "specify logged in session cache-control header",
 			Value:    "no-store",
-			EnvVars:  globals.MakeFlagEnvKeys(category, "AUTH_CACHE_CONTROL"),
+			EnvVars:  globals.MakeFlagEnvKeys(category, "CACHE_CONTROL"),
 			Category: category,
 		},
 	)
@@ -388,7 +388,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		efTag := ef.Tag().String()
 		for _, upName := range f.upNames {
 			if efTag == upName {
-				if upf, ok := feature.AsTyped[userbase.AuthUserProvider](ef); ok {
+				if upf, ok := feature.AsTyped[feature.AuthUserProvider](ef); ok {
 					f.usersProviders = append(f.usersProviders, upf)
 				} else {
 					err = fmt.Errorf("%v feature is not a userbase.AuthUserProvider", efTag)
@@ -398,7 +398,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		}
 		for _, gpName := range f.gpNames {
 			if efTag == gpName {
-				if gpf, ok := feature.AsTyped[userbase.GroupsProvider](ef); ok {
+				if gpf, ok := feature.AsTyped[feature.GroupsProvider](ef); ok {
 					f.groupsProviders = append(f.groupsProviders, gpf)
 				} else {
 					err = fmt.Errorf("%v feature is not a userbase.GroupsProvider", efTag)
@@ -408,7 +408,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		}
 		for _, spName := range f.spNames {
 			if efTag == spName {
-				if spf, ok := feature.AsTyped[userbase.SecretsProvider](ef); ok {
+				if spf, ok := feature.AsTyped[feature.SecretsProvider](ef); ok {
 					f.secretsProviders = append(f.secretsProviders, spf)
 				} else {
 					err = fmt.Errorf("%v feature is not a userbase.SecretsProvider", efTag)
@@ -505,7 +505,7 @@ func (f *CFeature) RestrictServePage(pgCtx beContext.Context, w http.ResponseWri
 			if allow = f.isUserInGroup(id, group); allow {
 				tag := f.Tag().Camel()
 				modCtx[tag+"UserID"] = id
-				modCtx[tag+"User"] = userbase.NewAuthUser(id, id, "", "", beContext.Context{"ID": id, "GetName": id})
+				modCtx[tag+"User"] = users.NewAuthUser(id, id, "", "", beContext.Context{"ID": id, "GetName": id})
 				if f.cacheControl != "" {
 					if _, exists := modCtx["CacheControl"]; !exists {
 						modCtx["CacheControl"] = f.cacheControl
@@ -567,7 +567,7 @@ func (f *CFeature) isRequestBypassed(r *http.Request) (bypass bool) {
 	return
 }
 
-func (f *CFeature) isRequestProtected(r *http.Request) (group userbase.Group, protected bool) {
+func (f *CFeature) isRequestProtected(r *http.Request) (group feature.Group, protected bool) {
 
 	if f.isRequestIgnored(r.URL.Path) {
 		return
@@ -579,13 +579,13 @@ func (f *CFeature) isRequestProtected(r *http.Request) (group userbase.Group, pr
 
 	for _, pp := range f.protectedPaths {
 		if protected = pp.pattern.MatchString(r.URL.Path); protected {
-			group = userbase.NewGroup(pp.group)
+			group = feature.NewGroup(pp.group)
 			return
 		}
 	}
 
 	if f.protectAll != "" {
-		group = userbase.NewGroup(f.protectAll)
+		group = feature.NewGroup(f.protectAll)
 		protected = true
 		return
 	}
@@ -610,7 +610,7 @@ func (f *CFeature) isRequestIgnored(path string) (ignored bool) {
 	return
 }
 
-func (f *CFeature) getUser(id, _ string) (user *userbase.AuthUser) {
+func (f *CFeature) getUser(id, _ string) (user feature.AuthUser) {
 	for _, upf := range f.usersProviders {
 		if found, err := upf.GetAuthUser(id); err == nil && found != nil {
 			user = found
@@ -629,7 +629,7 @@ func (f *CFeature) getUserSecret(user, _ string) (secret string) {
 	return
 }
 
-func (f *CFeature) isUserInGroup(user string, group userbase.Group) (present bool) {
+func (f *CFeature) isUserInGroup(user string, group feature.Group) (present bool) {
 	for _, gpf := range f.groupsProviders {
 		if present = gpf.IsUserInGroup(user, group); present {
 			return

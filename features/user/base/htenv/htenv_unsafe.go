@@ -23,10 +23,11 @@ import (
 	"github.com/iancoleman/strcase"
 
 	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/slices"
-	"github.com/go-enjin/be/pkg/userbase"
+	"github.com/go-enjin/be/types/users"
 )
 
 func (f *CFeature) loadEnvironment() (err error) {
@@ -37,14 +38,14 @@ func (f *CFeature) loadEnvironment() (err error) {
 		if parts := strings.SplitN(env, "=", 2); len(parts) == 2 {
 			if name, hash, ok := f.parseEnvUser(parts[0], parts[1]); ok {
 				f.hashes[name] = hash
-				f.users[name] = userbase.NewAuthUser(name, name, "", "", beContext.Context{})
+				f.users[name] = users.NewAuthUser(name, name, "", "", beContext.Context{})
 				log.DebugF("including user: %v=%v", name, f.hashes[name])
 				loadedUsers = append(loadedUsers, name)
 			}
 		}
 	}
 
-	var loadedGroups userbase.Groups
+	var loadedGroups feature.Groups
 	for _, env := range environ {
 		if parts := strings.SplitN(env, "=", 2); len(parts) == 2 {
 			if name, users, ok := f.parseEnvGroup(parts[0], parts[1]); ok {
@@ -75,13 +76,13 @@ func (f *CFeature) parseEnvUser(key, value string) (name, password string, ok bo
 	return
 }
 
-func (f *CFeature) parseEnvGroup(key, value string) (group userbase.Group, users []string, ok bool) {
+func (f *CFeature) parseEnvGroup(key, value string) (group feature.Group, users []string, ok bool) {
 	prefix := globals.MakeFlagEnvKey(f.Tag().String(), "GROUP") + "_"
 	prefix = strcase.ToKebab(prefix)
 	name := strcase.ToKebab(key)
 	if strings.HasPrefix(name, prefix) {
 		name = strings.TrimPrefix(name, prefix)
-		group = userbase.NewGroup(name)
+		group = feature.NewGroup(name)
 		for _, user := range strings.Split(value, " ") {
 			user = strcase.ToKebab(user)
 			if !slices.Present(user, users...) {

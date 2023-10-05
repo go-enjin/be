@@ -27,7 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/userbase"
+	"github.com/go-enjin/be/types/users"
 )
 
 const Tag feature.Tag = "user-base-htpasswd"
@@ -39,9 +39,9 @@ var (
 
 type Feature interface {
 	feature.Feature
-	userbase.AuthUserProvider
-	userbase.GroupsProvider
-	userbase.SecretsProvider
+	feature.AuthUserProvider
+	feature.GroupsProvider
+	feature.SecretsProvider
 }
 
 type MakeFeature interface {
@@ -175,18 +175,18 @@ func (f *CFeature) AuthUserPresent(id string) (present bool) {
 	return
 }
 
-func (f *CFeature) GetAuthUser(id string) (user *userbase.AuthUser, err error) {
+func (f *CFeature) GetAuthUser(id string) (user feature.AuthUser, err error) {
 	f.RLock()
 	defer f.RUnlock()
 	if _, found := f.parsedPwd[id]; found {
-		user = userbase.NewAuthUser(id, id, "", "", beContext.Context{})
+		user = users.NewAuthUser(id, id, "", "", beContext.Context{})
 	} else {
 		err = fmt.Errorf("user not found")
 	}
 	return
 }
 
-func (f *CFeature) GetUserGroups(id string) (groups userbase.Groups) {
+func (f *CFeature) GetUserGroups(id string) (groups feature.Groups) {
 	f.RLock()
 	defer f.RUnlock()
 	for _, htg := range f.htgroups {
@@ -198,7 +198,7 @@ func (f *CFeature) GetUserGroups(id string) (groups userbase.Groups) {
 	return
 }
 
-func (f *CFeature) IsUserInGroup(id string, group userbase.Group) (present bool) {
+func (f *CFeature) IsUserInGroup(id string, group feature.Group) (present bool) {
 	f.RLock()
 	defer f.RUnlock()
 	for _, htg := range f.htgroups {

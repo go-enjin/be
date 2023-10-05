@@ -62,7 +62,7 @@ var (
 
 type Feature interface {
 	feature.Feature
-	userbase.AuthUserApi
+	feature.AuthUserApi
 	feature.UseMiddleware
 	feature.ApplyMiddleware
 	signaling.SignalsSupport
@@ -150,7 +150,7 @@ type CFeature struct {
 	protectGroups map[string][]string
 
 	ubmTag feature.Tag
-	ubm    userbase.Manager
+	ubm    feature.Manager
 
 	DevAuthSupport
 }
@@ -445,7 +445,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if ef, ok := f.Enjin.Features().Get(f.ubmTag); !ok {
 		err = fmt.Errorf("%v error: userbase.Manager (tagged: %v) not found", f.Tag(), f.ubmTag)
 		return
-	} else if ubm, ok := ef.(userbase.Manager); !ok {
+	} else if ubm, ok := ef.(feature.Manager); !ok {
 		err = fmt.Errorf("%v error: userbase.Manager (tagged: %v) is not a userbase.Manager", f.Tag(), f.ubmTag)
 		return
 	} else {

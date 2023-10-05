@@ -24,7 +24,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/slices"
-	"github.com/go-enjin/be/pkg/userbase"
+	"github.com/go-enjin/be/types/users"
 )
 
 const Tag feature.Tag = "user-base-htenv"
@@ -36,9 +36,9 @@ var (
 
 type Feature interface {
 	feature.Feature
-	userbase.SecretsProvider
-	userbase.AuthUserProvider
-	userbase.GroupsProvider
+	feature.SecretsProvider
+	feature.AuthUserProvider
+	feature.GroupsProvider
 }
 
 type MakeFeature interface {
@@ -48,9 +48,9 @@ type MakeFeature interface {
 type CFeature struct {
 	feature.CFeature
 
-	users  map[string]*userbase.AuthUser
+	users  map[string]*users.AuthUser
 	hashes map[string]string
-	groups map[userbase.Group][]string
+	groups map[feature.Group][]string
 }
 
 func New() MakeFeature {
@@ -80,9 +80,9 @@ func (f *CFeature) UsageNotes() (notes []string) {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
-	f.users = make(map[string]*userbase.AuthUser)
+	f.users = make(map[string]*users.AuthUser)
 	f.hashes = make(map[string]string)
-	f.groups = make(map[userbase.Group][]string)
+	f.groups = make(map[feature.Group][]string)
 }
 
 func (f *CFeature) Make() Feature {
@@ -116,7 +116,7 @@ func (f *CFeature) GetUserSecret(id string) (secret string) {
 	return
 }
 
-func (f *CFeature) SetUser(user userbase.AuthUser) (err error) {
+func (f *CFeature) SetUser(user users.AuthUser) (err error) {
 	// f.Lock()
 	// defer f.Unlock()
 	err = fmt.Errorf("cannot add user: %v is read-only", f.Tag())
@@ -137,7 +137,7 @@ func (f *CFeature) AuthUserPresent(id string) (present bool) {
 	return
 }
 
-func (f *CFeature) GetAuthUser(id string) (user *userbase.AuthUser, err error) {
+func (f *CFeature) GetAuthUser(id string) (user feature.AuthUser, err error) {
 	f.RLock()
 	defer f.RUnlock()
 	if u, ok := f.users[id]; ok {
@@ -148,7 +148,7 @@ func (f *CFeature) GetAuthUser(id string) (user *userbase.AuthUser, err error) {
 	return
 }
 
-func (f *CFeature) IsUserInGroup(id string, group userbase.Group) (present bool) {
+func (f *CFeature) IsUserInGroup(id string, group feature.Group) (present bool) {
 	f.RLock()
 	defer f.RUnlock()
 	if users, ok := f.groups[group]; ok {
@@ -159,7 +159,7 @@ func (f *CFeature) IsUserInGroup(id string, group userbase.Group) (present bool)
 	return
 }
 
-func (f *CFeature) GetUserGroups(id string) (groups userbase.Groups) {
+func (f *CFeature) GetUserGroups(id string) (groups feature.Groups) {
 	f.RLock()
 	defer f.RUnlock()
 	for group, users := range f.groups {
