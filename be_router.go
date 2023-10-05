@@ -45,7 +45,7 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 				w.Header().Set("Server", globals.BinName)
 			}
 
-			path := forms.SanitizeRequestPath(r.URL.Path)
+			path := forms.CleanRequestPath(r.URL.Path)
 			if reqArgv := argv.DecodeHttpRequest(r); reqArgv != nil {
 				r = reqArgv.Set(r)
 				path = reqArgv.Path
