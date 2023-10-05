@@ -122,3 +122,18 @@ type RoutePagesHandler interface {
 	Feature
 	RoutePage(w http.ResponseWriter, r *http.Request)
 }
+
+type ServePagesHandler interface {
+	Feature
+	ServePage(p Page, t Theme, ctx context.Context, w http.ResponseWriter, r *http.Request) (err error)
+}
+
+type PrepareServePagesFeature interface {
+	Feature
+	PrepareServePage(ctx context.Context, t Theme, p Page, w http.ResponseWriter, r *http.Request) (out context.Context, modified *http.Request, stop bool)
+}
+
+type FinalizeServePagesFeature interface {
+	Feature
+	FinalizeServePage(w http.ResponseWriter, r *http.Request)
+}
