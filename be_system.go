@@ -16,6 +16,7 @@ package be
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"sort"
 	"strings"
@@ -23,12 +24,14 @@ import (
 
 	"github.com/fvbommel/sortorder"
 	"github.com/go-chi/chi/v5"
+
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/page"
 )
 
@@ -47,17 +50,18 @@ func (e *Enjin) ServerName() (name string) {
 	return
 }
 
+func (e *Enjin) GetThemeName() (name string) {
+	name = e.eb.context.String("Theme", e.eb.theme)
+	return
+}
+
 func (e *Enjin) GetTheme() (t feature.Theme, err error) {
-	var ok bool
 	var name string
-	if name = e.eb.context.String("Theme", e.eb.theme); name == "" {
+	if name = e.GetThemeName(); name == "" {
 		err = fmt.Errorf(`theme not found: "%v" %v`, name, e.ThemeNames())
 		return
 	}
-	if t, ok = e.eb.theming[name]; !ok {
-		err = fmt.Errorf(`theme not found: "%v" %v`, name, e.ThemeNames())
-		return
-	}
+	t, err = e.GetThemeNamed(name)
 	return
 }
 
@@ -74,6 +78,23 @@ func (e *Enjin) ThemeNames() (names []string) {
 		names = append(names, name)
 	}
 	sort.Sort(sortorder.Natural(names))
+	return
+}
+
+func (e *Enjin) GetThemeNamed(name string) (t feature.Theme, err error) {
+	var ok bool
+	if t, ok = e.eb.theming[name]; !ok {
+		err = fmt.Errorf(`theme not found: "%v" %v`, name, e.ThemeNames())
+		return
+	}
+	return
+}
+
+func (e *Enjin) MustGetThemeNamed(name string) (t feature.Theme) {
+	var err error
+	if t, err = e.GetThemeNamed(name); err != nil {
+		log.FatalDF(1, "error getting enjin theme: %v", err)
+	}
 	return
 }
 
@@ -142,7 +163,7 @@ func (e *Enjin) FindRedirection(url string) (p feature.Page) {
 	return
 }
 
-func (e *Enjin) FindTranslations(url string) (pages []feature.Page) {
+func (e *Enjin) FindTranslations(url string) (pages feature.Pages) {
 	for _, provider := range e.eb.fPageProviders {
 		if found := provider.FindTranslations(url); len(found) > 0 {
 			pages = append(pages, found...)
@@ -151,6 +172,21 @@ func (e *Enjin) FindTranslations(url string) (pages []feature.Page) {
 	for _, pg := range e.eb.pages {
 		if _, ok := pg.Match(url); ok {
 			pages = append(pages, pg)
+		}
+	}
+	return
+}
+
+func (e *Enjin) FindTranslationUrls(url string) (pages map[language.Tag]string) {
+	pages = make(map[language.Tag]string)
+	for _, provider := range e.eb.fPageProviders {
+		for tag, path := range provider.FindTranslationUrls(url) {
+			pages[tag] = path
+		}
+	}
+	for _, pg := range e.eb.pages {
+		if _, ok := pg.Match(url); ok {
+			pages[pg.LanguageTag()] = pg.Url()
 		}
 	}
 	return
@@ -319,5 +355,24 @@ func (e *Enjin) TranslateShortcodes(content string, ctx context.Context) (modifi
 		// passthrough nop
 		modified = content
 	}
+	return
+}
+
+func (e *Enjin) ValidateUserRequest(action feature.Action, w http.ResponseWriter, r *http.Request) (valid bool) {
+	if user := userbase.GetCurrentUser(r); user == nil {
+		if !e.PublicUserActions().Has(action) {
+			log.WarnRF(r, "visitor does not have permission: %v", action)
+			e.ServeNotFound(w, r)
+			return
+		}
+		log.WarnRF(r, "visitor has permission: %v", action)
+	} else if !user.Can(action) {
+		log.WarnRF(r, "user does not have permission: %v - %v", user.GetEID(), action)
+		e.ServeNotFound(w, r)
+		return
+	} else {
+		log.WarnRF(r, "user has permission: %v - %v", user.GetEID(), action)
+	}
+	valid = true
 	return
 }
