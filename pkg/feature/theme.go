@@ -75,6 +75,8 @@ type Theme interface {
 	StaticFS() fs.FileSystem
 	Locales() (locales fs.FileSystem, ok bool)
 
+	ReadStaticFile(path string) (data []byte, mime string, err error)
+
 	GetConfig() (config *ThemeConfig)
 
 	Layouts() ThemeLayouts
