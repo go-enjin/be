@@ -151,6 +151,50 @@ type Internals interface {
 	PageContextParsers() (parsers context.Parsers)
 	MakePageContextField(key string, r *http.Request) (field *context.Field, ok bool)
 	MakePageContextFields(r *http.Request) (fields context.Fields)
+
+	GetFormatProviders() []PageFormatProvider
+	GetRequestFilters() []RequestFilter
+	GetPageContextModifiers() []PageContextModifier
+	GetPageContextUpdaters() []PageContextUpdater
+	GetPageRestrictionHandlers() []PageRestrictionHandler
+	GetMenuProviders() []MenuProvider
+	GetDataRestrictionHandlers() []DataRestrictionHandler
+	GetOutputTranslators() []OutputTranslator
+	GetOutputTransformers() []OutputTransformer
+	GetPageTypeProcessors() []PageTypeProcessor
+	GetServePathFeatures() []ServePathFeature
+	GetDatabases() []Database
+	GetEmailSenders() []EmailSender
+	GetRequestModifiers() []RequestModifier
+	GetRequestRewriters() []RequestRewriter
+	GetPermissionsPolicyModifiers() []PermissionsPolicyModifier
+	GetContentSecurityPolicyModifiers() []ContentSecurityPolicyModifier
+	GetUseMiddlewares() []UseMiddleware
+	GetHeadersModifiers() []HeadersModifier
+	GetProcessors() []Processor
+	GetApplyMiddlewares() []ApplyMiddleware
+	GetPageProviders() []PageProvider
+	GetFileProviders() []FileProvider
+	GetQueryIndexFeatures() []QueryIndexFeature
+	GetPageContextProviders() []PageContextProvider
+	GetAuthProviders() []AuthProvider
+	GetUserActionsProviders() []UserActionsProvider
+	GetEnjinContextProvider() []EnjinContextProvider
+	GetPageShortcodeProcessors() []PageShortcodeProcessor
+	GetFuncMapProviders() []FuncMapProvider
+	GetTemplatePartialsProvider() []TemplatePartialsProvider
+	GetThemeRenderers() []ThemeRenderer
+	GetServiceLoggers() []ServiceLogger
+	GetLocalesProviders() []LocalesProvider
+	GetPrepareServePagesFeatures() []PrepareServePagesFeature
+	GetFinalizeServePagesFeatures() []FinalizeServePagesFeature
+	GetPageContextFieldsProviders() []PageContextFieldsProvider
+	GetPageContextParsersProviders() []PageContextParsersProvider
+	GetPanicHandler() PanicHandler
+	GetServiceListener() ServiceListener
+	GetRoutePagesHandler() RoutePagesHandler
+	GetServePagesHandler() ServePagesHandler
+	GetServiceLogHandler() ServiceLogHandler
 }
 
 type CanSetupInternals interface {
