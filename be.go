@@ -200,6 +200,11 @@ func (e *Enjin) SetupRootEnjin(ctx *cli.Context) (err error) {
 		return
 	}
 
+	if e.eb.fPanicHandler == nil {
+		err = fmt.Errorf("builder error: a feature.PanicHandler is required")
+		return
+	}
+
 	if e.eb.fServiceLogHandler == nil {
 		err = fmt.Errorf("builder error: a feature.ServiceLogHandler is required")
 		return
