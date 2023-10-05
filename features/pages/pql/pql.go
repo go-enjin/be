@@ -412,6 +412,19 @@ func (f *CFeature) FindTranslations(url string) (pages []feature.Page) {
 	return
 }
 
+func (f *CFeature) FindTranslationUrls(url string) (pages map[language.Tag]string) {
+	//f.RLock()
+	//defer f.RUnlock()
+
+	pages = make(map[language.Tag]string)
+
+	for _, p := range f.FindTranslations(url) {
+		pages[p.LanguageTag()] = p.Url()
+	}
+
+	return
+}
+
 func (f *CFeature) FindPage(tag language.Tag, url string) (pg feature.Page) {
 	//f.RLock()
 	//defer f.RUnlock()
