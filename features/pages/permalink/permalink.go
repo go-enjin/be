@@ -20,9 +20,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/gofrs/uuid"
 	"github.com/urfave/cli/v2"
+
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
@@ -58,6 +59,12 @@ type CFeature struct {
 func (f *CFeature) MakeFuncMap(ctx context.Context) (fm feature.FuncMap) {
 	fm = feature.FuncMap{
 		"_permalink": f._permalink,
+		"newPermalink": func() (permalink string) {
+			if id, err := uuid.NewV4(); err == nil {
+				permalink = id.String()
+			}
+			return
+		},
 	}
 	return
 }
