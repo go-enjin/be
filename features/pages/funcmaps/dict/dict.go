@@ -75,7 +75,13 @@ func (f *CFeature) Shutdown() {
 
 func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 	fm = feature.FuncMap{
-		"dict": NewDictionary,
+		"dict":   NewDictionary,
+		"hasKey": HasKey,
 	}
+	return
+}
+
+func HasKey(key string, ctx map[string]interface{}) (present bool) {
+	_, present = ctx[key]
 	return
 }
