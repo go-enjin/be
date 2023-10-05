@@ -19,6 +19,7 @@ package casting
 import (
 	"fmt"
 	"html/template"
+	"strings"
 
 	"github.com/urfave/cli/v2"
 
@@ -81,12 +82,14 @@ func (f *CFeature) Shutdown() {
 
 func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 	fm = feature.FuncMap{
-		"asURL":      AsURL,
-		"asHTML":     AsHTML,
-		"asHTMLAttr": AsHTMLAttr,
-		"asCSS":      AsCSS,
-		"asJS":       AsJS,
-		"safeHTML":   AsHTML,
+		"asURL":       AsURL,
+		"asHTML":      AsHTML,
+		"asHTMLAttr":  AsHTMLAttr,
+		"asCSS":       AsCSS,
+		"asJS":        AsJS,
+		"safeHTML":    AsHTML,
+		"typeOf":      TypeOf,
+		"typeOfSlice": TypeOfSlice,
 	}
 	return
 }
@@ -144,4 +147,14 @@ func AsHTMLAttr(input interface{}) template.HTMLAttr {
 	default:
 		return template.HTMLAttr(fmt.Sprintf("%v", v))
 	}
+}
+
+func TypeOf(input interface{}) (name string) {
+	name = fmt.Sprintf("%T", input)
+	return
+}
+
+func TypeOfSlice(input interface{}) (yes bool) {
+	yes = strings.Contains(TypeOf(input), "[]")
+	return
 }
