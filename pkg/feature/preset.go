@@ -112,9 +112,7 @@ func (p *CPreset[MakeTypedPreset]) Label() (name string) {
 
 func (p *CPreset[MakeTypedPreset]) Preset(b Builder) (err error) {
 
-	// including features in reverse order because they're individually prepended as the first index of the actual
-	// features list, so to maintain the dev's specified order, the process requires a backwards approach
-	for idx := p.Features.Len() - 1; idx >= 0; idx-- {
+	for idx := 0; idx < p.Features.Len(); idx++ {
 		p.IncludeFeature(b, p.Features[idx])
 	}
 
