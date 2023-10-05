@@ -93,6 +93,7 @@ type ThemeLayout interface {
 }
 
 type ThemeLayouts interface {
+	ListLayouts() (names []string)
 	GetLayout(name string) (layout ThemeLayout)
 	SetLayout(name string, layout ThemeLayout)
 
