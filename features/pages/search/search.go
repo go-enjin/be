@@ -172,6 +172,11 @@ func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.
 	return
 }
 
+func (f *CFeature) PageTypeNames() (names []string) {
+	names = []string{"search"}
+	return
+}
+
 func (f *CFeature) ProcessRequestPageType(r *http.Request, p feature.Page) (pg feature.Page, redirect string, processed bool, err error) {
 	if p.Type() == "search" {
 		if slices.Present(r.Method, "GET", "") {
