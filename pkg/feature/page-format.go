@@ -18,6 +18,7 @@ import (
 	"html/template"
 
 	"github.com/blevesearch/bleve/v2/mapping"
+
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
