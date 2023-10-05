@@ -19,6 +19,7 @@ package gorm
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/gabriel-vasile/mimetype"
 
@@ -169,6 +170,17 @@ func (f *DBFileSystem) WriteFile(path string, data []byte, _ os.FileMode) (err e
 	//	}
 	//}()
 	err = f.tableScopedOrTx().Save(entry).Error
+	return
+}
+
+func (f *DBFileSystem) ChangeTimes(path string, created, updated time.Time) (err error) {
+	//f.Lock()
+	//defer f.Unlock()
+	realpath := f.realpath(path)
+	err = f.tableScopedOrTx().Where(`path = ?`, realpath).Updates(map[string]interface{}{
+		"created": created,
+		"updated": updated,
+	}).Error
 	return
 }
 
