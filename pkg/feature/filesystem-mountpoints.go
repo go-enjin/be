@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package filesystem
+package feature
 
-import "github.com/go-enjin/be/pkg/fs"
+import (
+	"github.com/go-enjin/be/pkg/fs"
+)
 
 type CMountPoint struct {
 	// Path is the actual filesystem path
@@ -26,3 +28,7 @@ type CMountPoint struct {
 	// RWFS is the write-only filesystem, nil when fs is read-only
 	RWFS fs.RWFileSystem
 }
+
+type MountPoints []*CMountPoint
+
+type MountedPoints map[string]MountPoints
