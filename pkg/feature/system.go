@@ -144,6 +144,9 @@ type Internals interface {
 	GetTemplatePartial(block, position, name string) (tmpl string, ok bool)
 
 	MakeLanguagePrinter(requested string) (tag language.Tag, printer *message.Printer)
+
+	PublicUserActions() (actions Actions)
+	ValidateUserRequest(action Action, w http.ResponseWriter, r *http.Request) (valid bool)
 }
 
 type CanSetupInternals interface {
