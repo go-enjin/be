@@ -93,6 +93,13 @@ func ParseContent(raw string) (matter, content string, matterType FrontMatterTyp
 }
 
 func MakeStanza(fmt FrontMatterType, ctx context.Context) (stanza string) {
+	appendStanza := func(content string) {
+		stanza += content
+		if last := len(content) - 1; last >= 0 && content[last] != '\n' {
+			stanza += "\n"
+		}
+	}
+
 	switch fmt {
 	case JsonMatter:
 		stanza += "{{{\n"
@@ -106,7 +113,7 @@ func MakeStanza(fmt FrontMatterType, ctx context.Context) (stanza string) {
 					content = content[1:]
 				}
 			}
-			stanza += content + "\n"
+			appendStanza(content)
 		}
 		stanza += "}}}"
 	case YamlMatter:
@@ -118,7 +125,7 @@ func MakeStanza(fmt FrontMatterType, ctx context.Context) (stanza string) {
 					content = content[4:]
 				}
 			}
-			stanza += content + "\n"
+			appendStanza(content)
 		}
 		stanza += "---"
 	case TomlMatter:
@@ -134,7 +141,7 @@ func MakeStanza(fmt FrontMatterType, ctx context.Context) (stanza string) {
 					content = content[4:]
 				}
 			}
-			stanza += content + "\n"
+			appendStanza(content)
 		}
 		stanza += "+++"
 	}
