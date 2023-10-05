@@ -15,6 +15,8 @@
 package feature
 
 import (
+	"strings"
+
 	"github.com/iancoleman/strcase"
 )
 
@@ -52,6 +54,11 @@ func (t Tag) Camel() string {
 // Kebab returns the Tag as a kebab-cased string
 func (t Tag) Kebab() string {
 	return strcase.ToKebab(string(t))
+}
+
+// Spaced returns the tag as a space cased string (all lowercase, separated by spaces)
+func (t Tag) Spaced() string {
+	return strings.ReplaceAll(t.Kebab(), "-", " ")
 }
 
 // ScreamingKebab returns the Tag as a SCREAMING-KEBAB-CASED string
