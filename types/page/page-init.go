@@ -100,9 +100,6 @@ func (p *CPage) parseContext(ctx context.Context) {
 	p.fields.Title = ctx.String("Title", p.fields.Title)
 	ctx.Set("Title", p.fields.Title)
 
-	p.fields.Summary = ctx.String("Summary", p.fields.Summary)
-	ctx.Set("Summary", p.fields.Summary)
-
 	p.fields.Description = ctx.String("Description", p.fields.Description)
 	ctx.Set("Description", p.fields.Description)
 

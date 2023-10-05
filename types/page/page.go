@@ -45,7 +45,6 @@ type cPageData struct {
 	Path string `json:"path"`
 
 	Title       string `json:"title"`
-	Summary     string `json:"summary"`
 	Description string `json:"description"`
 
 	Layout    string `json:"layout"`
@@ -235,7 +234,6 @@ func (p *CPage) Copy() (copy feature.Page) {
 			Path:         p.fields.Path,
 			Title:        p.fields.Title,
 			Format:       p.fields.Format,
-			Summary:      p.fields.Summary,
 			Description:  p.fields.Description,
 			Layout:       p.fields.Layout,
 			Section:      p.fields.Section,

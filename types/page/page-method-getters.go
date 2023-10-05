@@ -19,8 +19,9 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/gofrs/uuid"
+
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/types/page/matter"
@@ -53,11 +54,6 @@ func (p *CPage) Path() (path string) {
 
 func (p *CPage) Title() (title string) {
 	title = p.fields.Title
-	return
-}
-
-func (p *CPage) Summary() (summary string) {
-	summary = p.fields.Summary
 	return
 }
 

@@ -20,8 +20,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/gofrs/uuid"
+
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/hash/sha"
@@ -65,11 +66,6 @@ func (p *CPage) SetSlugUrl(filepath string) {
 func (p *CPage) SetTitle(title string) {
 	p.fields.Title = title
 	p.fields.Context.SetSpecific("Title", title)
-}
-
-func (p *CPage) SetSummary(summary string) {
-	p.fields.Summary = summary
-	p.fields.Context.SetSpecific("Summary", summary)
 }
 
 func (p *CPage) SetDescription(description string) {
