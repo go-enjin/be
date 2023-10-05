@@ -95,8 +95,10 @@ func (d Dictionary) SET(argv ...interface{}) (nop string, err error) {
 	return
 }
 
-func (d Dictionary) GET(key string) (value interface{}) {
-	_, value = beContext.GetKV(d, key)
+func (d Dictionary) GET(key string, def ...interface{}) (value interface{}) {
+	if _, value = beContext.GetKV(d, key); value == nil && len(def) > 0 {
+		value = def[0]
+	}
 	return
 }
 
