@@ -18,6 +18,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -25,6 +26,21 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 )
+
+func UnmarshalFrontMatter(data []byte, matterType FrontMatterType) (matter context.Context, err error) {
+	matter = context.Context{}
+	switch matterType {
+	case TomlMatter:
+		err = toml.Unmarshal(data, &matter)
+	case YamlMatter:
+		err = yaml.Unmarshal(data, &matter)
+	case JsonMatter:
+		err = json.Unmarshal(data, &matter)
+	default:
+		err = fmt.Errorf("unsupported front-matter type: %v", matterType)
+	}
+	return
+}
 
 func ParseContent(raw string) (matter, content string, matterType FrontMatterType) {
 	scanner := bufio.NewScanner(strings.NewReader(raw))
