@@ -16,9 +16,6 @@ package page
 
 import (
 	"fmt"
-	"time"
-
-	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/log"
@@ -68,27 +65,30 @@ func (p *CPage) initFrontMatter() (err error) {
 
 func (p *CPage) parseContext(ctx context.Context) {
 	ctx.CamelizeKeys()
-	ctx.DeleteKeys("Path", "Section", "Slug", "Content")
+	ctx.DeleteKeys("Url", "Path", "Section", "Slug", "Language", "Content")
+
+	p.SetSlugUrl(p.fields.Url)
+	p.SetLanguage(p.fields.LanguageTag)
 
 	p.fields.Type = ctx.String("Type", "page")
 
-	if ctxLang := ctx.String("Language", ""); ctxLang != "" {
-		if tag, err := language.Parse(ctxLang); err == nil {
-			p.SetLanguage(tag)
-		} else {
-			p.SetLanguage(language.Und)
-		}
-	} else {
-		p.SetLanguage(language.Und)
+	//if ctxLang := ctx.String("Language", p.fields.Language); ctxLang != "" {
+	//	if tag, err := language.Parse(ctxLang); err == nil {
+	//		p.SetLanguage(tag)
+	//	} else {
+	//		p.SetLanguage(language.Und)
+	//	}
+	//} else {
+	//	p.SetLanguage(language.Und)
+	//}
+
+	if ctxTranslates := ctx.String("Translates", p.fields.Translates); ctxTranslates != "" {
+		p.SetTranslates(ctxTranslates)
 	}
 
-	if ctxTranslates := ctx.String("Translates", ""); ctxTranslates != "" {
-		p.fields.Translates = ctxTranslates
-	}
+	//p.SetSlugUrl(ctx.String("Url", p.fields.Url))
 
-	p.SetSlugUrl(ctx.String("Url", p.fields.Url))
-
-	if ctxPermalinkId := ctx.String("Permalink", ""); ctxPermalinkId != "" {
+	if ctxPermalinkId := ctx.String("Permalink", p.fields.Permalink.String()); ctxPermalinkId != "" {
 		if err := p.SetPermalink(ctxPermalinkId); err != nil {
 			log.ErrorF("error setting permalink: %v - %v", err)
 			_ = p.SetPermalink("")
@@ -113,44 +113,30 @@ func (p *CPage) parseContext(ctx context.Context) {
 	}
 
 	if created := ctx.String("Created", ""); created != "" {
-		// 2020-05-01T12:55:05-04:00
-		if parsed, err := time.Parse(time.RFC3339, created); err == nil {
+		if parsed, err := context.ParseTimeStructure(created); err == nil {
 			p.fields.CreatedAt = parsed
-		} else if parsed, err = time.Parse(time.RFC1123Z, created); err == nil {
-			p.fields.CreatedAt = parsed
-		} else if parsed, err = time.Parse(time.RFC1123, created); err == nil {
-			p.fields.CreatedAt = parsed
+			ctx.SetSpecific("Created", parsed)
 		} else {
-			log.ErrorF("error parsing unsupported time/date format: %v", created)
+			log.ErrorF("unsupported time/date format: %v", created)
 		}
 	}
 
 	if updated := ctx.String("Updated", ""); updated != "" {
-		// 2020-05-01T12:55:05-04:00
-		if parsed, err := time.Parse(time.RFC3339, updated); err == nil {
-			p.fields.UpdatedAt = parsed
-		} else if parsed, err = time.Parse(time.RFC1123Z, updated); err == nil {
-			p.fields.UpdatedAt = parsed
-		} else if parsed, err = time.Parse(time.RFC1123, updated); err == nil {
-			p.fields.UpdatedAt = parsed
+		if parsed, err := context.ParseTimeStructure(updated); err == nil {
+			p.fields.CreatedAt = parsed
+			ctx.SetSpecific("Updated", parsed)
 		} else {
-			log.ErrorF("error parsing unsupported time/date format: %v", updated)
+			log.ErrorF("unsupported time/date format: %v", updated)
 		}
 	}
 
 	if deleted := ctx.String("Deleted", ""); deleted != "" {
-		// 2020-05-01T12:55:05-04:00
-		if parsed, err := time.Parse(time.RFC3339, deleted); err == nil {
-			p.fields.DeletedAt.Time = parsed
+		if parsed, err := context.ParseTimeStructure(deleted); err == nil {
+			p.fields.CreatedAt = parsed
 			p.fields.DeletedAt.Valid = true
-		} else if parsed, err = time.Parse(time.RFC1123Z, deleted); err == nil {
-			p.fields.DeletedAt.Time = parsed
-			p.fields.DeletedAt.Valid = true
-		} else if parsed, err = time.Parse(time.RFC1123, deleted); err == nil {
-			p.fields.DeletedAt.Time = parsed
-			p.fields.DeletedAt.Valid = true
+			ctx.SetSpecific("Deleted", parsed)
 		} else {
-			log.ErrorF("error parsing unsupported time/date format: %v", deleted)
+			log.ErrorF("unsupported time/date format: %v", deleted)
 		}
 	}
 
