@@ -190,6 +190,11 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 }
 
 func (f *CFeature) AddToSearchIndex(stub *feature.PageStub, p feature.Page) (err error) {
+
+	if p.Context().Bool("NoPageIndexing", false) || p.Context().Bool("NoSearchIndexing", false) {
+		return
+	}
+
 	f.Lock()
 	defer f.Unlock()
 	if f.indexes == nil {
