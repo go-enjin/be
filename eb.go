@@ -34,7 +34,6 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/headers"
-	"github.com/go-enjin/be/pkg/userbase"
 )
 
 var _ feature.Builder = (*EnjinBuilder)(nil)
@@ -104,8 +103,8 @@ type EnjinBuilder struct {
 	fFileProviders                  []feature.FileProvider
 	fQueryIndexFeatures             []feature.QueryIndexFeature
 	fPageContextProviders           []feature.PageContextProvider
-	fAuthProviders                  []userbase.AuthProvider
-	fUserActionsProviders           []userbase.UserActionsProvider
+	fAuthProviders                  []feature.AuthProvider
+	fUserActionsProviders           []feature.UserActionsProvider
 	fEnjinContextProvider           []feature.EnjinContextProvider
 	fPageShortcodeProcessors        []feature.PageShortcodeProcessor
 	fFuncMapProviders               []feature.FuncMapProvider
