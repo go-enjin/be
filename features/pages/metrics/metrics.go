@@ -26,7 +26,6 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
-	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maths"
 	"github.com/go-enjin/be/pkg/slices"
 
@@ -128,6 +127,14 @@ func (f *CFeature) Shutdown() {
 
 func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.Request) (themeOut context.Context) {
 	themeOut = themeCtx
+	additions := f.UpdatePageContext(pageCtx, r)
+	themeOut.Apply(additions)
+	return
+}
+
+func (f *CFeature) UpdatePageContext(pageCtx context.Context, r *http.Request) (additions context.Context) {
+	additions = context.New()
+
 	pageType := pageCtx.String("Type", "page")
 	archetype := pageCtx.String("Archetype", "")
 
@@ -138,22 +145,20 @@ func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.
 	}
 
 	content := pageCtx.String("Content", "nil")
-	log.DebugF("content: %v bytes", len(content))
 
 	fields := strings.Fields(content)
 	wordCount := len(fields)
-	themeCtx.SetSpecific("WordCount", wordCount)
+	additions.SetSpecific("WordCount", wordCount)
 
 	fastTime := float64(wordCount) / AverageWordsPerMinute
 	fastMinutes := maths.RoundDown(fastTime)
 	slowMinutes := maths.RoundUp(float64(wordCount) / SlowerWordsPerMinute)
 
-	themeCtx.SetSpecific("ReadingTime", time.Duration(fastTime*float64(time.Minute)))
+	additions.SetSpecific("ReadingTime", time.Duration(fastTime*float64(time.Minute)))
 
 	var printer *message.Printer
 	printer = lang.GetPrinterFromRequest(r)
 	minutes := printer.Sprintf("%[1]d-%[2]d minutes", fastMinutes, slowMinutes)
-	themeCtx.SetSpecific("ReadingMinutes", minutes)
-
+	additions.SetSpecific("ReadingMinutes", minutes)
 	return
 }
