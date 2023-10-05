@@ -12,13 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package userbase
+package feature
 
-type Manager interface {
-	AuthUserProvider
-	AuthUserManager
-	UserProvider
-	UserManager
-	GroupsProvider
-	GroupsManager
+import "github.com/iancoleman/strcase"
+
+// Group is the kebab-cased name of a user Group
+type Group string
+
+func NewGroup(group string) Group {
+	group = strcase.ToKebab(group)
+	return Group(group)
+}
+
+func (g Group) String() string {
+	return string(g)
 }

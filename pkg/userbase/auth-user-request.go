@@ -19,18 +19,19 @@ import (
 	"net/http"
 
 	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/feature"
 )
 
 const CurrentAuthUserKey beContext.RequestKey = "current-auth-user"
 
-func GetCurrentAuthUser(r *http.Request) (u *AuthUser) {
+func GetCurrentAuthUser(r *http.Request) (u feature.AuthUser) {
 	if v := r.Context().Value(CurrentAuthUserKey); v != nil {
-		u, _ = v.(*AuthUser)
+		u, _ = v.(feature.AuthUser)
 	}
 	return
 }
 
-func SetCurrentAuthUser(u *AuthUser, r *http.Request) (modified *http.Request) {
+func SetCurrentAuthUser(u feature.AuthUser, r *http.Request) (modified *http.Request) {
 	modified = r.Clone(context.WithValue(r.Context(), CurrentAuthUserKey, u))
 	return
 }

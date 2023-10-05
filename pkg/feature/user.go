@@ -12,18 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package userbase
+package feature
 
-import "github.com/iancoleman/strcase"
+import (
+	"github.com/go-enjin/be/pkg/context"
+)
 
-// Group is the kebab-cased name of a user Group
-type Group string
-
-func NewGroup(group string) Group {
-	group = strcase.ToKebab(group)
-	return Group(group)
+type AuthUser interface {
+	GetRID() (rid string)
+	GetEID() (eid string)
+	GetName() (name string)
+	GetEmail() (email string)
+	GetImage() (image string)
+	GetOrigin() (origin string)
+	GetContext() (context context.Context)
 }
 
-func (g Group) String() string {
-	return string(g)
+type User interface {
+	AuthUser
+	GetOrigin() (origin string)
+	GetGroups() (groups Groups)
+	GetActions() (actions Actions)
+	AsPage() (pg Page)
+	Can(action Action) (allowed bool)
+	FilteredContext(includeKeys ...string) (ctx context.Context)
 }
