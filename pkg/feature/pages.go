@@ -1,4 +1,4 @@
-// Copyright (c) 2022  The Go-Enjin Authors
+// Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,62 +14,4 @@
 
 package feature
 
-import (
-	"net/http"
-
-	"github.com/go-enjin/golang-org-x-text/language"
-
-	"github.com/go-enjin/be/pkg/context"
-)
-
-type PageContextFilterFn = func(ctx context.Context, r *http.Request) (modCtx context.Context)
-
-type PageContextModifier interface {
-	Feature
-	FilterPageContext(themeCtx, pageCtx context.Context, r *http.Request) (themeOut context.Context)
-}
-
-type EnjinContextProvider interface {
-	Feature
-	EnjinContext() (ctx context.Context)
-}
-
-type PageRestrictionHandler interface {
-	Feature
-	RestrictServePage(ctx context.Context, w http.ResponseWriter, r *http.Request) (modCtx context.Context, modReq *http.Request, allow bool)
-}
-
-type DataRestrictionHandler interface {
-	Feature
-	RestrictServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request) (modReq *http.Request, allow bool)
-}
-
-type FileProvider interface {
-	Feature
-	FindFile(url string) (data []byte, mime string, err error)
-}
-
-type PageProvider interface {
-	Feature
-	FindRedirection(url string) (p Page)
-	FindTranslations(url string) (pages []Page)
-	FindPage(tag language.Tag, url string) (p Page)
-	LookupPrefixed(prefix string) (pages []Page)
-}
-
-type PageTypeProcessor interface {
-	Feature
-	ProcessRequestPageType(r *http.Request, p Page) (pg Page, redirect string, processed bool, err error)
-}
-
-type PageShortcodeProcessor interface {
-	Feature
-	TranslateShortcodes(content string, ctx context.Context) (modified string)
-}
-
-type TemplatePartialsProvider interface {
-	Feature
-	RegisterTemplatePartial(block, position, name, tmpl string) (err error)
-	ListTemplatePartials(block, position string) (names []string)
-	GetTemplatePartial(block, position, name string) (tmpl string, ok bool)
-}
+type Pages []Page
