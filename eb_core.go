@@ -93,6 +93,7 @@ func (eb *EnjinBuilder) includeFeature(f feature.Feature) {
 	eb.fFormatProviders = checkRegisterFeature(f, eb.fFormatProviders)
 	eb.fRequestFilters = checkRegisterFeature(f, eb.fRequestFilters)
 	eb.fPageContextModifiers = checkRegisterFeature(f, eb.fPageContextModifiers)
+	eb.fPageContextUpdaters = checkRegisterFeature(f, eb.fPageContextUpdaters)
 	eb.fPageRestrictionHandlers = checkRegisterFeature(f, eb.fPageRestrictionHandlers)
 	eb.fMenuProviders = checkRegisterFeature(f, eb.fMenuProviders)
 	eb.fDataRestrictionHandlers = checkRegisterFeature(f, eb.fDataRestrictionHandlers)
@@ -123,9 +124,15 @@ func (eb *EnjinBuilder) includeFeature(f feature.Feature) {
 	eb.fThemeRenderers = checkRegisterFeature(f, eb.fThemeRenderers)
 	eb.fServiceLoggers = checkRegisterFeature(f, eb.fServiceLoggers)
 	eb.fLocalesProviders = checkRegisterFeature(f, eb.fLocalesProviders)
+	eb.fPrepareServePagesFeatures = checkRegisterFeature(f, eb.fPrepareServePagesFeatures)
+	eb.fFinalizeServePagesFeatures = checkRegisterFeature(f, eb.fFinalizeServePagesFeatures)
+	eb.fPageContextFieldsProviders = checkRegisterFeature(f, eb.fPageContextFieldsProviders)
+	eb.fPageContextParsersProviders = checkRegisterFeature(f, eb.fPageContextParsersProviders)
 
+	eb.fPanicHandler = checkRegisterSingleFeature(f, eb.fPanicHandler)
 	eb.fServiceListener = checkRegisterSingleFeature(f, eb.fServiceListener)
 	eb.fRoutePagesHandler = checkRegisterSingleFeature(f, eb.fRoutePagesHandler)
+	eb.fServePagesHandler = checkRegisterSingleFeature(f, eb.fServePagesHandler)
 	eb.fServiceLogHandler = checkRegisterSingleFeature(f, eb.fServiceLogHandler)
 }
 

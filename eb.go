@@ -81,6 +81,7 @@ type EnjinBuilder struct {
 
 	fFormatProviders                []feature.PageFormatProvider
 	fRequestFilters                 []feature.RequestFilter
+	fPageContextUpdaters            []feature.PageContextUpdater
 	fPageContextModifiers           []feature.PageContextModifier
 	fPageRestrictionHandlers        []feature.PageRestrictionHandler
 	fMenuProviders                  []feature.MenuProvider
@@ -112,9 +113,15 @@ type EnjinBuilder struct {
 	fThemeRenderers                 []feature.ThemeRenderer
 	fServiceLoggers                 []feature.ServiceLogger
 	fLocalesProviders               []feature.LocalesProvider
+	fPrepareServePagesFeatures      []feature.PrepareServePagesFeature
+	fFinalizeServePagesFeatures     []feature.FinalizeServePagesFeature
+	fPageContextFieldsProviders     []feature.PageContextFieldsProvider
+	fPageContextParsersProviders    []feature.PageContextParsersProvider
 
+	fPanicHandler      feature.PanicHandler
 	fServiceListener   feature.ServiceListener
 	fRoutePagesHandler feature.RoutePagesHandler
+	fServePagesHandler feature.ServePagesHandler
 	fServiceLogHandler feature.ServiceLogHandler
 
 	enjins []*EnjinBuilder
