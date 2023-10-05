@@ -18,11 +18,12 @@ package filesystem
 
 import (
 	"fmt"
-	"github.com/go-enjin/be/pkg/fs"
+
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 
 	beFsGormDB "github.com/go-enjin/be/drivers/fs/db/gorm"
+	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )

@@ -19,11 +19,12 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
-func (f *CFeature[MakeTypedFeature]) findPageMatterPathMount(path string) (realpath string, mountPoint *CMountPoint, locale language.Tag, err error) {
+func (f *CFeature[MakeTypedFeature]) findPageMatterPathMount(path string) (realpath string, mountPoint *feature.CMountPoint, locale language.Tag, err error) {
 
 	var ok bool
 	var uri, modified string

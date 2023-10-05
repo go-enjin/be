@@ -68,7 +68,7 @@ type Feature[MakeTypedFeature interface{}] interface {
 	//   f.FindPathMountPoint("/stuff/thing")
 	//
 	// would return the "/stuff" mounts
-	FindPathMountPoint(path string) (mps []*CMountPoint)
+	FindPathMountPoint(path string) (mps feature.MountPoints)
 
 	// Exists returns true if the given URI path is present on any of this
 	// feature instance's mounted filesystems (can be a file or directory)
@@ -110,7 +110,7 @@ type CFeature[MakeTypedFeature interface{}] struct {
 	feature.CFeature
 	CGormDBPathSupport[MakeTypedFeature]
 
-	MountPoints map[string][]*CMountPoint
+	MountPoints feature.MountedPoints
 
 	txLock *sync.RWMutex
 }
@@ -119,7 +119,7 @@ func (f *CFeature[MakeTypedFeature]) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.CGormDBPathSupport.initGormDBPathSupport(f)
 	f.FeatureTag = feature.NotImplemented
-	f.MountPoints = make(map[string][]*CMountPoint)
+	f.MountPoints = make(feature.MountedPoints)
 	f.txLock = &sync.RWMutex{}
 }
 
@@ -128,7 +128,7 @@ func (f *CFeature[MakeTypedFeature]) CloneFileSystemFeature() (cloned CFeature[M
 	//defer f.RUnlock()
 	cloned = CFeature[MakeTypedFeature]{
 		CFeature:    f.CFeature.CloneBaseFeature(),
-		MountPoints: make(map[string][]*CMountPoint),
+		MountPoints: make(feature.MountedPoints),
 		txLock:      &sync.RWMutex{},
 	}
 	for k, mps := range f.MountPoints {
@@ -137,7 +137,7 @@ func (f *CFeature[MakeTypedFeature]) CloneFileSystemFeature() (cloned CFeature[M
 			if mp.RWFS != nil {
 				rwfs = mp.RWFS.CloneRWFS()
 			}
-			cloned.MountPoints[k] = append(cloned.MountPoints[k], &CMountPoint{
+			cloned.MountPoints[k] = append(cloned.MountPoints[k], &feature.CMountPoint{
 				Mount: mp.Mount,
 				Path:  mp.Path,
 				ROFS:  mp.ROFS.CloneROFS(),
@@ -149,7 +149,7 @@ func (f *CFeature[MakeTypedFeature]) CloneFileSystemFeature() (cloned CFeature[M
 }
 
 func (f *CFeature[MakeTypedFeature]) MountPathROFS(path, point string, rofs fs.FileSystem) {
-	f.MountPoints[point] = append(f.MountPoints[point], &CMountPoint{
+	f.MountPoints[point] = append(f.MountPoints[point], &feature.CMountPoint{
 		Path:  path,
 		Mount: point,
 		ROFS:  rofs,
@@ -159,7 +159,7 @@ func (f *CFeature[MakeTypedFeature]) MountPathROFS(path, point string, rofs fs.F
 }
 
 func (f *CFeature[MakeTypedFeature]) MountPathRWFS(path, point string, rwfs fs.RWFileSystem) {
-	f.MountPoints[point] = append(f.MountPoints[point], &CMountPoint{
+	f.MountPoints[point] = append(f.MountPoints[point], &feature.CMountPoint{
 		Path:  path,
 		Mount: point,
 		ROFS:  rwfs,
@@ -187,7 +187,7 @@ func (f *CFeature[MakeTypedFeature]) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature[MakeTypedFeature]) FindPathMountPoint(path string) (mps []*CMountPoint) {
+func (f *CFeature[MakeTypedFeature]) FindPathMountPoint(path string) (mps feature.MountPoints) {
 	path = bePath.CleanWithSlash(path)
 	// log.WarnDF(1, "finding path mount for: %v", path)
 	for _, point := range maps.SortedKeyLengths(f.MountPoints) {
@@ -308,7 +308,7 @@ func (f *CFeature[MakeTypedFeature]) FindPageMatterPath(path string) (realpath s
 
 func (f *CFeature[MakeTypedFeature]) FindReadPageMatter(path string) (pm *matter.PageMatter, err error) {
 	var realpath string
-	var mp *CMountPoint
+	var mp *feature.CMountPoint
 	var locale language.Tag
 	if realpath, mp, locale, err = f.findPageMatterPathMount(path); err != nil {
 		if err != os.ErrNotExist {
@@ -338,7 +338,7 @@ func (f *CFeature[MakeTypedFeature]) ReadPageMatter(path string) (pm *matter.Pag
 	return
 }
 
-func (f *CFeature[MakeTypedFeature]) ReadMountPageMatter(mp *CMountPoint, path string) (pm *matter.PageMatter, err error) {
+func (f *CFeature[MakeTypedFeature]) ReadMountPageMatter(mp *feature.CMountPoint, path string) (pm *matter.PageMatter, err error) {
 	if pm, err = mp.ROFS.ReadPageMatter(path); err == nil {
 		pm.Stub = feature.NewPageStub(f.Tag().String(), f.Enjin.Context(), mp.ROFS, mp.Mount, path, pm.Shasum, pm.Locale)
 		return
@@ -357,7 +357,7 @@ func (f *CFeature[MakeTypedFeature]) WritePageMatter(pm *matter.PageMatter) (err
 	return
 }
 
-func (f *CFeature[MakeTypedFeature]) WriteMountPageMatter(mp *CMountPoint, pm *matter.PageMatter) (err error) {
+func (f *CFeature[MakeTypedFeature]) WriteMountPageMatter(mp *feature.CMountPoint, pm *matter.PageMatter) (err error) {
 	if mp.RWFS != nil {
 		err = mp.RWFS.WritePageMatter(pm)
 		return
@@ -376,7 +376,7 @@ func (f *CFeature[MakeTypedFeature]) RemovePageMatter(path string) (err error) {
 	return
 }
 
-func (f *CFeature[MakeTypedFeature]) RemoveMountPageMatter(mp *CMountPoint, path string) (err error) {
+func (f *CFeature[MakeTypedFeature]) RemoveMountPageMatter(mp *feature.CMountPoint, path string) (err error) {
 	if mp.RWFS != nil {
 		err = mp.RWFS.RemovePageMatter(path)
 		return
