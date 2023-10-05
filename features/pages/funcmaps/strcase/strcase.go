@@ -17,11 +17,15 @@
 package strcase
 
 import (
+	"strings"
+
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/golang-org-x-text/cases"
+	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 var (
@@ -79,6 +83,15 @@ func (f *CFeature) Shutdown() {
 
 func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 	fm = feature.FuncMap{
+		"toTitle": func(langCode, input string) (title string, err error) {
+			var tag language.Tag
+			if tag, err = language.Parse(langCode); err != nil {
+				return
+			}
+			title = cases.Title(tag).
+				String(strcase.ToDelimited(input, ' '))
+			return
+		},
 		"toCamel":              strcase.ToCamel,
 		"toLowerCamel":         strcase.ToLowerCamel,
 		"toDelimited":          strcase.ToDelimited,
@@ -87,6 +100,24 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		"toScreamingKebab":     strcase.ToScreamingKebab,
 		"toSnake":              strcase.ToSnake,
 		"toScreamingSnake":     strcase.ToScreamingSnake,
+		"toDeepKey":            ToDeepKey,
+		"toDeepVar":            ToDeepVar,
+	}
+	return
+}
+
+func ToDeepKey(s string) (deepKey string) {
+	parts := strings.Split(strings.TrimPrefix(s, "."), ".")
+	for _, part := range parts {
+		deepKey += "." + strcase.ToKebab(part)
+	}
+	return
+}
+
+func ToDeepVar(s string) (deepKey string) {
+	parts := strings.Split(strings.TrimPrefix(s, "."), ".")
+	for _, part := range parts {
+		deepKey += "." + strcase.ToKebab(part)
 	}
 	return
 }
