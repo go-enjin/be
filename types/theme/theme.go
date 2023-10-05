@@ -18,6 +18,7 @@ import (
 	"html/template"
 	"net/http"
 	"sort"
+	"sync"
 
 	"github.com/fvbommel/sortorder"
 
@@ -27,6 +28,7 @@ import (
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
+	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/types/theme/layouts"
 )
 
@@ -42,7 +44,9 @@ type CTheme struct {
 	origin string
 	name   string
 	path   string
-	config feature.ThemeConfig
+	parent string
+	config *feature.ThemeConfig
+
 	minify bool
 
 	layouts *layouts.Layouts
@@ -50,21 +54,26 @@ type CTheme struct {
 	fs       fs.FileSystem
 	staticFS fs.FileSystem
 
+	autoload bool
+
 	formatProviders []feature.PageFormatProvider
+
+	sync.RWMutex
 }
 
-func New(origin, path string, themeFs, staticFs fs.FileSystem) (ft feature.Theme, err error) {
-	ft, err = newTheme(origin, path, themeFs, staticFs)
+func New(origin, path string, themeFs, staticFs fs.FileSystem, autoload bool) (ft feature.Theme, err error) {
+	ft, err = newTheme(origin, path, themeFs, staticFs, autoload)
 	return
 }
 
-func newTheme(origin, path string, themeFs, staticFs fs.FileSystem) (t *CTheme, err error) {
+func newTheme(origin, path string, themeFs, staticFs fs.FileSystem, autoload bool) (t *CTheme, err error) {
 	t = new(CTheme)
 	t.origin = origin
 	t.name = bePath.Base(path)
 	t.path = path
 	t.fs = themeFs
 	t.staticFS = staticFs
+	t.autoload = autoload
 	if err = t.init(); err != nil {
 		return
 	}
@@ -72,53 +81,66 @@ func newTheme(origin, path string, themeFs, staticFs fs.FileSystem) (t *CTheme, 
 	return
 }
 
-func (t *CTheme) Reload() (err error) {
-
-	if parent := t.GetParent(); parent != nil {
-		if err = parent.Reload(); err != nil {
-			return
-		}
-	}
-
-	var nt *CTheme
-	if nt, err = newTheme(t.origin, t.path, t.fs, t.staticFS); err == nil {
-		nt.formatProviders = append(nt.formatProviders, t.formatProviders...)
-		*t = *nt
-	}
-
-	return
-}
-
 func (t *CTheme) Name() string {
+	//t.RLock()
+	//defer t.RUnlock()
 	return t.name
 }
 
 func (t *CTheme) ThemeFS() fs.FileSystem {
+	//t.RLock()
+	//defer t.RUnlock()
 	return t.fs
 }
 
 func (t *CTheme) StaticFS() fs.FileSystem {
+	//t.RLock()
+	//defer t.RUnlock()
 	return t.staticFS
 }
 
 func (t *CTheme) Layouts() feature.ThemeLayouts {
+	//t.RLock()
+	//defer t.RUnlock()
+	if t.autoload {
+		if l, err := layouts.NewLayouts(t); err == nil {
+			return l
+		} else {
+			log.ErrorF("error autoloading new layouts: %v", err)
+		}
+	}
 	return t.layouts
 }
 
-func (t *CTheme) GetConfig() (config feature.ThemeConfig) {
-	config = feature.ThemeConfig{
-		Name:                  t.config.Name,
-		Parent:                t.config.Parent,
-		License:               t.config.License,
-		LicenseLink:           t.config.LicenseLink,
-		Description:           t.config.Description,
-		Homepage:              t.config.Homepage,
-		Authors:               t.config.Authors,
-		Extends:               t.config.Extends,
-		FontawesomeLinks:      make(map[string]string),
-		PermissionsPolicy:     t.config.PermissionsPolicy,
-		ContentSecurityPolicy: t.config.ContentSecurityPolicy,
+func (t *CTheme) GetConfig() (config *feature.ThemeConfig) {
+	if t.autoload {
+		if ctx, err := t.readToml(); err != nil {
+			log.ErrorF("error autoloading theme.toml: %v", err)
+			return
+		} else {
+			config = t.makeConfig(ctx)
+			t.Lock()
+			t.parent = config.Parent
+			t.Unlock()
+		}
+	} else {
+		config = &feature.ThemeConfig{
+			Name:                  t.config.Name,
+			Parent:                t.config.Parent,
+			License:               t.config.License,
+			LicenseLink:           t.config.LicenseLink,
+			Description:           t.config.Description,
+			Homepage:              t.config.Homepage,
+			Authors:               t.config.Authors,
+			Extends:               t.config.Extends,
+			FontawesomeLinks:      make(map[string]string),
+			PermissionsPolicy:     t.config.PermissionsPolicy,
+			ContentSecurityPolicy: t.config.ContentSecurityPolicy,
+		}
 	}
+
+	//t.RLock()
+	//defer t.RUnlock()
 
 	config.BlockStyles = make(map[string][]template.CSS)
 	config.BlockThemes = make(map[string]map[string]interface{})
@@ -129,7 +151,7 @@ func (t *CTheme) GetConfig() (config feature.ThemeConfig) {
 
 		config.RootStyles = append(
 			parentConfig.RootStyles,
-			t.config.RootStyles...,
+			config.RootStyles...,
 		)
 
 		for k, v := range parentConfig.BlockStyles {
@@ -150,30 +172,68 @@ func (t *CTheme) GetConfig() (config feature.ThemeConfig) {
 			config.FontawesomeLinks[k] = v
 		}
 
-		config.Context = parentConfig.Context.Copy()
+		//config.Context = parentConfig.Context.Copy()
+
+		mergeContext := parentConfig.Context.Copy()
+		for _, key := range []string{"SiteMenuMobileStyle", "SiteMenuDesktopStyle"} {
+			if v := config.Context.String(key, ""); v != "" {
+				mergeContext.SetSpecific(key, v)
+			}
+		}
+		for _, key := range []string{"PageEarlyStyleSheets", "PageStyleSheets", "PageFontStyleSheets"} {
+			if v := config.Context.Strings(key); len(v) > 0 {
+				if pv := mergeContext.Strings(key); len(v) > 0 {
+					for _, pvv := range pv {
+						if !slices.Within(pvv, v) {
+							v = append(v, pvv)
+						}
+					}
+				}
+				mergeContext.SetSpecific(key, v)
+			}
+		}
+		config.Context = mergeContext
+
+		config.Supports.Menus = parentConfig.Supports.Menus.Append(config.Supports.Menus)
+		config.Supports.Locales = parentConfig.Supports.Locales
+		config.Supports.Layouts = parentConfig.Supports.Layouts
+
+		for pk, pv := range parentConfig.Supports.Archetypes {
+			if kv, ok := config.Supports.Archetypes[pk]; ok {
+				for pfk, pfv := range pv {
+					if _, present := kv[pfk]; !present {
+						config.Supports.Archetypes[pk][pfk] = pfv
+					}
+				}
+			} else {
+				config.Supports.Archetypes[pk] = pv
+			}
+		}
 	} else {
-		config.RootStyles = t.config.RootStyles
 		config.Context = context.New()
 	}
 
-	for k, v := range t.config.BlockStyles {
+	if l := t.Layouts(); l != nil {
+		config.Supports.Layouts = l.ListLayouts()
+	}
+
+	for _, locale := range config.Supports.Locales {
+		if !slices.Within(locale, config.Supports.Locales) {
+			config.Supports.Locales = append(config.Supports.Locales, locale)
+		}
+	}
+
+	for k, v := range config.BlockStyles {
 		config.BlockStyles[k] = append([]template.CSS{}, v...)
 	}
-	for k, v := range t.config.BlockThemes {
+	for k, v := range config.BlockThemes {
 		config.BlockThemes[k] = make(map[string]interface{})
 		for j, vv := range v {
 			config.BlockThemes[k][j] = vv
 		}
 	}
 
-	for _, v := range t.config.FontawesomeClasses {
-		config.FontawesomeClasses = append(config.FontawesomeClasses, v)
-	}
-	for k, v := range t.config.FontawesomeLinks {
-		config.FontawesomeLinks[k] = v
-	}
-
-	config.Context.Apply(t.config.Context)
+	config.Context.CamelizeKeys()
 	return
 }
 
@@ -217,11 +277,11 @@ func (t *CTheme) MatchFormat(filename string) (format feature.PageFormat, match 
 
 func (t *CTheme) Locales() (locales fs.FileSystem, ok bool) {
 	if _, err := t.fs.ReadDir("locales"); err == nil {
-		log.TraceDF(1, "found %v theme locales", t.name)
+		log.TraceDF(1, "found %v theme locales", t.Name())
 		if locales, err = fs.Wrap("locales", t.fs); err == nil {
 			ok = true
 		} else {
-			log.ErrorF("error wrapping %v theme locales: %v", t.name, err)
+			log.ErrorF("error wrapping %v theme locales: %v", t.Name(), err)
 			locales = nil
 		}
 	}
@@ -234,29 +294,47 @@ func (t *CTheme) FindLayout(named string) (layout feature.ThemeLayout, name stri
 	}
 	name = named
 
-	layout = t.layouts.GetLayout(name)
+	layout = t.Layouts().GetLayout(name)
 	if ok = layout != nil; ok {
-		if t.config.Parent == "" {
-			log.TraceF("found layout in %v (theme) context: %v", t.name, name)
+		if t.parent == "" {
+			log.TraceF("found layout in %v (theme) context: %v", t.Name(), name)
 		} else {
-			log.TraceF("found layout in %v (%v) context: %v", t.name, t.config.Parent, name)
+			log.TraceF("found layout in %v (%v) context: %v", t.Name(), t.parent, name)
+		}
+	}
+	return
+}
+
+func (t *CTheme) ReadStaticFile(path string) (data []byte, mime string, err error) {
+	if t.staticFS != nil {
+		if data, err = t.staticFS.ReadFile(path); err == nil {
+			mime, _ = t.staticFS.MimeType(path)
+			return
+		}
+	}
+	if t.parent != "" {
+		if parent := t.GetParent(); parent != nil {
+			data, mime, err = parent.ReadStaticFile(path)
 		}
 	}
 	return
 }
 
 func (t *CTheme) Middleware(next http.Handler) http.Handler {
-	log.DebugF("including %v theme static middleware", t.name)
+	log.DebugF("including %v theme static middleware", t.Name())
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if t.staticFS == nil {
+			next.ServeHTTP(w, r)
+			return
+		}
 		path := bePath.TrimSlashes(r.URL.Path)
 		var err error
 		var data []byte
 		var mime string
-		if data, err = t.staticFS.ReadFile(path); err != nil {
+		if data, mime, err = t.ReadStaticFile(path); err != nil {
 			next.ServeHTTP(w, r)
 			return
 		}
-		mime, _ = t.staticFS.MimeType(path)
 		w.Header().Set("Content-Type", mime)
 		if t.config.CacheControl == "" {
 			w.Header().Set("Cache-Control", DefaultCacheControl)
@@ -265,6 +343,6 @@ func (t *CTheme) Middleware(next http.Handler) http.Handler {
 		}
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write(data)
-		log.DebugRF(r, "%v theme served: %v (%v)", t.name, path, mime)
+		log.DebugRF(r, "%v theme served: %v (%v)", t.Name(), path, mime)
 	})
 }

@@ -27,31 +27,41 @@ import (
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/types/theme/layouts"
+	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 func (t *CTheme) init() (err error) {
+
+	var ctx context.Context
+	if ctx, err = t.readToml(); err != nil {
+		return
+	}
+
+	t.layouts, err = layouts.NewLayouts(t)
+	t.config = t.makeConfig(ctx)
+
+	return
+}
+
+func (t *CTheme) readToml() (ctx context.Context, err error) {
 	if t.fs == nil {
 		err = fmt.Errorf(`missing filesystem`)
 		return
 	}
 
 	var cfg []byte
-	ctx := context.New()
+	ctx = context.New()
 	if cfg, err = t.fs.ReadFile("theme.toml"); err != nil {
 		return
 	} else if _, err = toml.Decode(string(cfg), &ctx); err != nil {
 		return
 	}
-
-	t.initConfig(ctx)
-	t.layouts, err = layouts.NewLayouts(t)
-
 	return
 }
 
-func (t *CTheme) initConfig(ctx context.Context) {
-	t.config = feature.ThemeConfig{
-		Name:             ctx.String("name", t.name),
+func (t *CTheme) makeConfig(ctx context.Context) (config *feature.ThemeConfig) {
+	config = &feature.ThemeConfig{
+		Name:             ctx.String("name", t.Name()),
 		Parent:           ctx.String("parent", ""),
 		Extends:          ctx.String("extends", ""),
 		License:          ctx.String("license", ""),
@@ -60,17 +70,58 @@ func (t *CTheme) initConfig(ctx context.Context) {
 		Homepage:         ctx.String("homepage", ""),
 		FontawesomeLinks: make(map[string]string),
 		Context:          context.New(),
+		Supports: feature.ThemeSupports{
+			Archetypes: map[string]context.Fields{},
+		},
+	}
+
+	if ctx.Has("supports") {
+		if v, ok := ctx.Get("supports").(map[string]interface{}); ok {
+			supCtx := context.Context(v)
+
+			config.Supports.Menus = feature.ParseMenuSupports(supCtx.Get("menus"))
+
+			if codes, ok := supCtx.Get("locales").([]string); ok {
+				for _, code := range codes {
+					if tag, err := language.Parse(code); err != nil {
+						log.ErrorF("%v theme.toml error - invalid language code: \"%v\"", config.Name, code)
+					} else {
+						config.Supports.Locales = append(config.Supports.Locales, tag)
+					}
+				}
+			}
+
+			if len(config.Supports.Locales) == 0 {
+				config.Supports.Locales = []language.Tag{language.English}
+			}
+
+			if archetypes, ok := supCtx.Get("archetypes").(map[string]interface{}); ok {
+				for archetype, vv := range archetypes {
+					if list, ok := vv.(map[string]interface{}); ok {
+						for _, vvv := range list {
+							if item, ok := vvv.(map[string]interface{}); ok {
+								field := context.ParseField(item)
+								if _, present := config.Supports.Archetypes[archetype]; !present {
+									config.Supports.Archetypes[archetype] = context.Fields{}
+								}
+								config.Supports.Archetypes[archetype][field.Key] = field
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 	if ctx.Has("static") {
 		if static, ok := ctx.Get("static").(map[string]interface{}); ok {
 			if cacheControl, ok := static["cache-control"].(string); ok {
-				t.config.CacheControl = cacheControl
+				config.CacheControl = cacheControl
 			}
 		}
 	}
 
-	t.config.Authors = make([]feature.Author, 0)
+	config.Authors = make([]feature.Author, 0)
 	if ctx.Has("author") {
 		v := ctx.Get("author")
 		switch value := v.(type) {
@@ -79,14 +130,14 @@ func (t *CTheme) initConfig(ctx context.Context) {
 			author := feature.Author{}
 			author.Name = actx.String("name", "")
 			author.Homepage = actx.String("homepage", "")
-			t.config.Authors = append(t.config.Authors, author)
+			config.Authors = append(config.Authors, author)
 		}
 	}
 
 	if ctx.Has("google-analytics") {
 		if ga, ok := ctx.Get("google-analytics").(map[string]interface{}); ok {
 			if gtm, ok := ga["gtm"].(string); ok {
-				_ = t.config.Context.SetKV(".GoogleAnalytics.GTM", gtm)
+				_ = config.Context.SetKV(".GoogleAnalytics.GTM", gtm)
 			}
 		}
 	}
@@ -99,8 +150,8 @@ func (t *CTheme) initConfig(ctx context.Context) {
 		if ctxCsp, ok := ctx.Get("content-security-policy").(map[string]interface{}); ok {
 			// log.WarnF("theme config has content-security-policy - %#+v", ctxCsp)
 			var ee error
-			if t.config.ContentSecurityPolicy, ee = csp.ParseContentSecurityPolicyConfig(ctxCsp); ee != nil {
-				log.ErrorF("%v theme errors:\n%v", t.name, ee)
+			if config.ContentSecurityPolicy, ee = csp.ParseContentSecurityPolicyConfig(ctxCsp); ee != nil {
+				log.ErrorF("%v theme errors:\n%v", t.Name(), ee)
 			}
 		}
 	}
@@ -114,7 +165,7 @@ func (t *CTheme) initConfig(ctx context.Context) {
 					if vv, ok := v.([]interface{}); ok {
 						for _, vvv := range vv {
 							if class, ok := vvv.(string); ok {
-								t.config.FontawesomeClasses = append(t.config.FontawesomeClasses, strings.ToLower(class))
+								config.FontawesomeClasses = append(config.FontawesomeClasses, strings.ToLower(class))
 							} else {
 								log.ErrorF("error parsing fontawesome config: expected string, found: %T", vvv)
 							}
@@ -124,7 +175,7 @@ func (t *CTheme) initConfig(ctx context.Context) {
 					}
 				default:
 					if vv, ok := v.(string); ok {
-						t.config.FontawesomeLinks[key] = vv
+						config.FontawesomeLinks[key] = vv
 					} else {
 						log.ErrorF("error parsing fontawesome config: expected string, found: %T", v)
 					}
@@ -133,8 +184,8 @@ func (t *CTheme) initConfig(ctx context.Context) {
 		}
 	}
 
-	t.config.Context.SetSpecific("SiteMenuMobileStyle", "side")
-	t.config.Context.SetSpecific("SiteMenuDesktopStyle", "menu")
+	config.Context.SetSpecific("SiteMenuMobileStyle", "side")
+	config.Context.SetSpecific("SiteMenuDesktopStyle", "menu")
 
 	if v := ctx.Get("semantic"); v != nil {
 		if semantic, ok := v.(map[string]interface{}); ok {
@@ -144,19 +195,29 @@ func (t *CTheme) initConfig(ctx context.Context) {
 				if siteMenu, ok := siteInfo["menu"].(map[string]interface{}); ok {
 					if siteMenuMobile, ok := siteMenu["mobile"].(map[string]interface{}); ok {
 						if siteMenuMobileStyle, ok := siteMenuMobile["style"].(string); ok {
-							t.config.Context.SetSpecific("SiteMenuMobileStyle", siteMenuMobileStyle)
-							log.DebugF("site menu mobile style: %v", siteMenuMobileStyle)
+							config.Context.SetSpecific("SiteMenuMobileStyle", siteMenuMobileStyle)
+							//log.DebugF("site menu mobile style: %v", siteMenuMobileStyle)
 						}
 					}
 					if siteMenuDesktop, ok := siteMenu["desktop"].(map[string]interface{}); ok {
 						if siteMenuDesktopStyle, ok := siteMenuDesktop["style"].(string); ok {
-							t.config.Context.SetSpecific("SiteMenuDesktopStyle", siteMenuDesktopStyle)
-							log.DebugF("site menu desktop style: %v", siteMenuDesktopStyle)
+							config.Context.SetSpecific("SiteMenuDesktopStyle", siteMenuDesktopStyle)
+							//log.DebugF("site menu desktop style: %v", siteMenuDesktopStyle)
 						}
 					}
 				}
 
 				if sitePage, ok := siteInfo["page"].(map[string]interface{}); ok {
+
+					if stylesheets, ok := sitePage["early-stylesheets"].([]interface{}); ok {
+						var found []string
+						for _, stylesheet := range stylesheets {
+							if href, ok := stylesheet.(string); ok {
+								found = append(found, href)
+							}
+						}
+						config.Context.SetSpecific("PageEarlyStyleSheets", found)
+					}
 
 					if stylesheets, ok := sitePage["stylesheets"].([]interface{}); ok {
 						var found []string
@@ -165,7 +226,7 @@ func (t *CTheme) initConfig(ctx context.Context) {
 								found = append(found, href)
 							}
 						}
-						t.config.Context.SetSpecific("PageStyleSheets", found)
+						config.Context.SetSpecific("PageStyleSheets", found)
 					}
 
 					if stylesheets, ok := sitePage["font-stylesheets"].([]interface{}); ok {
@@ -175,7 +236,7 @@ func (t *CTheme) initConfig(ctx context.Context) {
 								found = append(found, href)
 							}
 						}
-						t.config.Context.SetSpecific("PageFontStyleSheets", found)
+						config.Context.SetSpecific("PageFontStyleSheets", found)
 					}
 
 				}
@@ -238,15 +299,15 @@ func (t *CTheme) initConfig(ctx context.Context) {
 						}
 					}
 				}
-				t.config.RootStyles = make([]template.CSS, len(rootStyles))
+				config.RootStyles = make([]template.CSS, len(rootStyles))
 				for idx, rootStyle := range rootStyles {
-					t.config.RootStyles[idx] = template.CSS(rootStyle)
+					config.RootStyles[idx] = template.CSS(rootStyle)
 				}
 			}
 
 			if block, ok := semantic["block"].(map[string]interface{}); ok {
-				t.config.BlockStyles = make(map[string][]template.CSS)
-				t.config.BlockThemes = make(map[string]map[string]interface{})
+				config.BlockStyles = make(map[string][]template.CSS)
+				config.BlockThemes = make(map[string]map[string]interface{})
 
 				if blockThemes, ok := block["theme"].(map[string]interface{}); ok {
 					for k, vv := range blockThemes {
@@ -256,8 +317,8 @@ func (t *CTheme) initConfig(ctx context.Context) {
 							for idx, result := range results {
 								resultStyles[idx] = template.CSS(result)
 							}
-							t.config.BlockThemes[k] = blockTheme
-							t.config.BlockStyles[k] = resultStyles
+							config.BlockThemes[k] = blockTheme
+							config.BlockStyles[k] = resultStyles
 						}
 					}
 				}
@@ -275,9 +336,11 @@ func (t *CTheme) initConfig(ctx context.Context) {
 		switch k {
 		case "author", "styles", "semantic":
 		default:
-			t.config.Context[k] = v
+			config.Context[k] = v
 			// log.DebugF("%v theme: adding context: %v => %+v", t.ThemeConfig.Name, k, v)
 		}
 	}
-	t.config.Context.CamelizeKeys()
+
+	config.Context.CamelizeKeys()
+	return
 }
