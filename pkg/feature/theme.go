@@ -75,7 +75,7 @@ type Theme interface {
 	StaticFS() fs.FileSystem
 	Locales() (locales fs.FileSystem, ok bool)
 
-	GetConfig() (config ThemeConfig)
+	GetConfig() (config *ThemeConfig)
 
 	Layouts() ThemeLayouts
 	FindLayout(named string) (layout ThemeLayout, name string, ok bool)
