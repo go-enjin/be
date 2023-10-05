@@ -20,9 +20,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
@@ -36,7 +34,6 @@ import (
 	"github.com/go-enjin/be/pkg/pages"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/slices"
-	"github.com/go-enjin/be/pkg/values"
 	"github.com/go-enjin/be/types/page"
 )
 
@@ -213,124 +210,6 @@ func (f *CFeature) PerformSelect(input string) (selected map[string]interface{},
 	//f.RLock()
 	//defer f.RUnlock()
 	selected, err = selector.NewProcessWith(input, f.Enjin.MustGetTheme(), f)
-	return
-}
-
-func (f *CFeature) AddToIndex(stub *feature.PageStub, p feature.Page) (err error) {
-
-	//start := time.Now()
-	//defer func() {
-	//	if err == nil {
-	//		log.DebugF("%v indexed page %v in %v", f.Tag(), p.Url(), time.Now().Sub(start).String())
-	//	}
-	//}()
-
-	f.Lock()
-	defer f.Unlock()
-
-	if _, ee := f.pageStubsBucket.Get(p.Shasum()); ee == nil {
-		return
-	}
-
-	if err = f.processPageStub(p.Shasum(), stub); err != nil {
-		return
-	}
-
-	if err = f.processPageUrl(p.Url(), p.Shasum()); err != nil {
-		return
-	}
-
-	if redirects := p.Redirections(); len(redirects) > 0 {
-		if err = f.processRedirections(p.Shasum(), redirects); err != nil {
-			return
-		}
-	}
-
-	if err = f.processTranslatedBy(p.Url(), p.Shasum()); err != nil {
-		return
-	}
-
-	if err = f.processTranslations(p.LanguageTag(), p.Shasum(), p.Url()); err != nil {
-		return
-	}
-	if p.Translates() != "" {
-		if err = f.processTranslations(p.LanguageTag(), p.Shasum(), p.Translates()); err != nil {
-			return
-		}
-	}
-
-	if p.Permalink() != uuid.Nil {
-		// long-form root permalink
-		permalinkUrl := "/" + p.Permalink().String()
-		if err = f.processPageUrl(permalinkUrl, p.Shasum()); err != nil {
-			return
-		} else if err = f.processTranslations(p.LanguageTag(), p.Shasum(), permalinkUrl); err != nil {
-			return
-		} else if err = f.processPermalink(p.Permalink().String(), p.Shasum()); err != nil {
-			return
-		}
-		// short-form root permalink
-		permalinkUrl = "/" + p.PermalinkSha()
-		if err = f.processPageUrl(permalinkUrl, p.Shasum()); err != nil {
-			return
-		} else if err = f.processTranslations(p.LanguageTag(), p.Shasum(), permalinkUrl); err != nil {
-			return
-		} else if err = f.processPermalink(p.PermalinkSha(), p.Shasum()); err != nil {
-			return
-		}
-	}
-
-	excluded := make(map[string]struct{})
-	for _, key := range append(MustExcludeContextKeys(), append(AlwaysExcludeContextKeys, f.excludeContextKeys...)...) {
-		excluded[key] = struct{}{}
-	}
-	included := make(map[string]struct{})
-	for _, key := range append(AlwaysIncludeContextKeys, f.includeContextKeys...) {
-		included[key] = struct{}{}
-	}
-
-	for pCtxKey, pCtxValue := range p.Context() {
-
-		kebab := strcase.ToKebab(pCtxKey)
-
-		if _, exclude := excluded[kebab]; exclude {
-			continue
-		} else if _, include := included[kebab]; !include {
-			continue
-		} else if values.IsEmpty(pCtxValue) {
-			continue
-		}
-
-		switch t := pCtxValue.(type) {
-		case string,
-			float32, float64,
-			int, int8, int16, int32, int64,
-			uint, uint8, uint16, uint32, uint64,
-			time.Time, time.Duration:
-			if err = f.processPageContextValue(pCtxKey, p.Shasum(), t); err != nil {
-				return
-			}
-		case []string:
-			for _, tv := range t {
-				if err = f.processPageContextValue(pCtxKey, p.Shasum(), tv); err != nil {
-					return
-				}
-			}
-		case []interface{}:
-			for _, tv := range t {
-				if err = f.processPageContextValue(pCtxKey, p.Shasum(), tv); err != nil {
-					return
-				}
-			}
-		}
-
-	}
-	return
-}
-
-func (f *CFeature) RemoveFromIndex(tag language.Tag, file, shasum string) {
-	// TODO: remove page from pql index
-	log.FatalDF(1, "method not implemented")
 	return
 }
 
