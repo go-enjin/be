@@ -119,7 +119,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 
 	searchAll := false
 	inputWantsTag := language.Und
-	input = forms.StrictPolicy(input)
+	input = forms.StrictSanitize(input)
 	if i, ee := url.PathUnescape(input); ee != nil {
 		log.ErrorF("error unescaping input: %v - %v", input, ee)
 	} else {
