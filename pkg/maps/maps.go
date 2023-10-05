@@ -18,6 +18,7 @@ import (
 	"cmp"
 	"fmt"
 	"html/template"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -705,6 +706,20 @@ func DeepCopy(src map[string]interface{}) (dst map[string]interface{}) {
 		default:
 			dst[k] = t
 		}
+	}
+	return
+}
+
+func MakeTypedKey[K comparable, L comparable, V interface{}, M map[L]V](key K, m map[K]M) (made bool) {
+	if _, present := m[key]; !present {
+		var l L
+		var v V
+		kt, vt := reflect.TypeOf(l), reflect.TypeOf(v)
+		mt := reflect.MapOf(kt, vt)
+		mv := reflect.MakeMapWithSize(mt, 0)
+		mi := mv.Interface()
+		m[key], _ = mi.(M)
+		return true
 	}
 	return
 }
