@@ -82,6 +82,9 @@ type Theme interface {
 	Layouts() ThemeLayouts
 	FindLayout(named string) (layout ThemeLayout, name string, ok bool)
 
+	ListArchetypes() (names []string)
+	MakeArchetype(enjin Internals, name string) (format string, data []byte, err error)
+
 	AddFormatProvider(providers ...PageFormatProvider)
 	PageFormatProvider
 
