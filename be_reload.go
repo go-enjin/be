@@ -18,26 +18,34 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 )
 
-func (e *Enjin) performHotReload() (err error) {
-	t := e.MustGetTheme()
+func (e *Enjin) performHotReload(r *http.Request) (err error) {
 	if e.eb.hotReload {
-		log.DebugF("hot-reloading theme: %v", t.Name())
-		if err = t.Reload(); err != nil {
-			err = fmt.Errorf("error reloading theme: %v", err)
-			return
+		//t := e.MustGetTheme()
+		//log.DebugRF(r, "hot-reloading theme: %v", t.Name())
+		//if err = t.Reload(); err != nil {
+		//	err = fmt.Errorf("error hot-reloading theme: %v - %v", t.Name(), err)
+		//	return
+		//}
+		//log.DebugRF(r, "hot-reloading locales")
+		//e.reloadLocales()
+		for _, f := range feature.FilterTyped[feature.HotReloadableFeature](e.eb.features.List()) {
+			log.DebugRF(r, "hot-reloading %v feature", f.Tag())
+			if err = f.HotReload(); err != nil {
+				err = fmt.Errorf("error hot-reloading feature: %v - %v", f.Tag(), err)
+				return
+			}
 		}
-		log.DebugF("hot-reloading locales")
-		e.reloadLocales()
 	}
 	return
 }
 
 func (e *Enjin) hotReloadMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if err := e.performHotReload(); err != nil {
+		if err := e.performHotReload(r); err != nil {
 			log.ErrorF("error performing hot-reload: %v", err)
 		}
 		next.ServeHTTP(w, r)
