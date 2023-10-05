@@ -140,7 +140,7 @@ func Element(data map[string]interface{}) (html template.HTML, err error) {
 func ElementAttributes(value interface{}) (html template.HTMLAttr) {
 	var parts []string
 	switch data := value.(type) {
-	case menu.Item:
+	case *menu.Item:
 		if data.Attributes != nil {
 			for k, v := range data.Attributes {
 				parts = append(parts, fmt.Sprintf(`%v="%v"`, k, v))
