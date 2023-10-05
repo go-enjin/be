@@ -34,7 +34,8 @@ type SiteEnjin interface {
 	SiteSupportsLanguage(tag language.Tag) (supported bool)
 	SiteLanguageDisplayName(tag language.Tag) (name string, ok bool)
 
-	FindTranslations(url string) (pages []Page)
+	FindTranslations(url string) (pages Pages)
+	FindTranslationUrls(url string) (pages map[language.Tag]string)
 	FindPage(tag language.Tag, url string) (p Page)
 	FindPages(prefix string) (pages []Page)
 }
