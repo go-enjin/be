@@ -17,14 +17,18 @@
 package pages
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/urfave/cli/v2"
 
+	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/net"
+	"github.com/go-enjin/be/pkg/net/serve"
 )
 
 var (
@@ -37,6 +41,7 @@ const Tag feature.Tag = "srv-pages"
 type Feature interface {
 	feature.Feature
 	feature.RoutePagesHandler
+	feature.ServePagesHandler
 }
 
 type MakeFeature interface {
@@ -121,4 +126,70 @@ func (f *CFeature) RoutePage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	f.Enjin.ServeNotFound(w, r)
+}
+
+func (f *CFeature) ServePage(p feature.Page, t feature.Theme, ctx beContext.Context, w http.ResponseWriter, r *http.Request) (err error) {
+
+	for _, ptp := range f.Enjin.GetPageTypeProcessors() {
+		var pg feature.Page
+		var redirect string
+		var processed bool
+		if pg, redirect, processed, err = ptp.ProcessRequestPageType(r, p); err != nil {
+			return
+		} else if redirect != "" {
+			f.Enjin.ServeRedirect(redirect, w, r)
+			return
+		} else if processed {
+			p = pg
+			//break
+		}
+	}
+
+	pUrl := p.Url()
+
+	ctx.SetSpecific("Theme", t)
+	ctx.SetSpecific("BaseUrl", net.BaseURL(r))
+	ctx.SetSpecific("UserNotices", feature.GetUserNotices(r))
+
+	for _, pspf := range f.Enjin.GetPrepareServePagesFeatures() {
+		if out, modified, handled := pspf.PrepareServePage(ctx, t, p, w, r); handled {
+			log.DebugF("%v feature handled serve page early", pspf.Tag())
+			return
+		} else {
+			if len(out) > 0 {
+				ctx = out
+			}
+			if modified != nil {
+				r = modified
+			}
+		}
+	}
+
+	var data []byte
+	var redirect string
+
+	renderer := f.Enjin.GetThemeRenderer(ctx)
+
+	if data, redirect, err = renderer.RenderPage(t, ctx, p); err != nil {
+		log.ErrorRF(r, "error rendering page: %v - %v", pUrl, err)
+		return
+	} else if redirect != "" {
+		log.DebugRF(r, "redirecting from RenderPage: %v - %v", pUrl, redirect)
+		f.Enjin.ServeRedirect(redirect, w, r)
+		return
+	}
+	if cacheControl := p.Context().String("CacheControl", ""); cacheControl != "" {
+		r = serve.SetCacheControl(cacheControl, w, r)
+	}
+	mime := ctx.String("ContentType", "text/html; charset=utf-8")
+	contentDisposition := ctx.String("ContentDisposition", "inline")
+	r = r.Clone(context.WithValue(r.Context(), "Content-Disposition", contentDisposition))
+
+	for _, fspf := range f.Enjin.GetFinalizeServePagesFeatures() {
+		fspf.FinalizeServePage(w, r)
+	}
+
+	f.Enjin.ServeData(data, mime, w, r)
+
+	return
 }
