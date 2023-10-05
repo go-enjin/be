@@ -35,9 +35,14 @@ import (
 type Service interface {
 	Prefix() (prefix string)
 	Context() (ctx context.Context)
+
 	GetTheme() (t Theme, err error)
 	MustGetTheme() (t Theme)
 	ThemeNames() (names []string)
+	GetThemeName() (name string)
+	GetThemeNamed(name string) (t Theme, err error)
+	MustGetThemeNamed(name string) (t Theme)
+
 	ServerName() (name string)
 	ServiceInfo() (scheme, listen string, port int)
 
