@@ -17,12 +17,15 @@
 package dates
 
 import (
+	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/urfave/cli/v2"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/maths"
 )
 
 var _ Feature = (*CFeature)(nil)
@@ -77,12 +80,86 @@ func (f *CFeature) Shutdown() {
 
 func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 	fm = feature.FuncMap{
-		"cmpDateFmt": CompareDateFormats,
+		"cmpDateFmt":  CompareDateFormats,
+		"fmtDate":     DateFormat,
+		"fmtTime":     TimeFormat,
+		"fmtDateTime": DateTimeFormat,
+		"now":         time.Now,
+		"todayAt":     TodayAt,
 	}
 	return
 }
 
 func CompareDateFormats(format string, a, b time.Time) (same bool) {
 	same = a.Format(format) == b.Format(format)
+	return
+}
+
+func DateFormat(input interface{}) (formatted string, err error) {
+	switch v := input.(type) {
+	case string:
+		var t time.Time
+		if t, err = beContext.ParseTimeStructure(v); err == nil {
+			formatted = t.Format(beContext.DateLayout)
+		}
+	case time.Time:
+		formatted = v.Format(beContext.DateLayout)
+	default:
+		err = fmt.Errorf("unsupported input type: %T", input)
+	}
+	return
+}
+
+func TimeFormat(input interface{}) (formatted string, err error) {
+	switch v := input.(type) {
+	case string:
+		var t time.Time
+		if t, err = beContext.ParseTimeStructure(v); err == nil {
+			formatted = t.Format(beContext.TimeLayout)
+		}
+	case time.Time:
+		formatted = v.Format(beContext.TimeLayout)
+	default:
+		err = fmt.Errorf("unsupported input type: %T", input)
+	}
+	return
+}
+
+func DateTimeFormat(input interface{}) (formatted string, err error) {
+	switch v := input.(type) {
+	case string:
+		var t time.Time
+		if t, err = beContext.ParseTimeStructure(v); err == nil {
+			formatted = t.Format(beContext.DateTimeLayout)
+		}
+	case time.Time:
+		formatted = v.Format(beContext.DateTimeLayout)
+	default:
+		err = fmt.Errorf("unsupported input type: %T", input)
+	}
+	return
+}
+
+func TodayAt(hour, minute interface{}) (today time.Time, err error) {
+	parse := func(input interface{}) (value int) {
+		switch t := input.(type) {
+		case string:
+			value, _ = strconv.Atoi(t)
+		case int:
+			value = t
+		case float64:
+			value = int(t)
+		}
+		return
+	}
+	var h, m int
+	if h = maths.Clamp(parse(hour), 0, 24); h == 24 {
+		h = 0
+	}
+	if m = maths.Clamp(parse(minute), 0, 60); m == 60 {
+		m = 0
+	}
+	now := time.Now()
+	today = time.Date(now.Year(), now.Month(), now.Day(), h, m, 0, 0, now.Location())
 	return
 }
