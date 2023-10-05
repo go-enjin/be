@@ -105,17 +105,17 @@ type ThemeLayouts interface {
 
 type ThemeRenderer interface {
 	Feature
-	Render(view string, ctx context.Context) (data []byte, err error)
-	RenderPage(ctx context.Context, p Page) (data []byte, redirect string, err error)
+	Render(t Theme, view string, ctx context.Context) (data []byte, err error)
+	RenderPage(t Theme, ctx context.Context, p Page) (data []byte, redirect string, err error)
 
-	NewHtmlTemplateWith(name string, ctx context.Context) (tt *htmlTemplate.Template, err error)
-	NewTextTemplateWith(name string, ctx context.Context) (tt *textTemplate.Template, err error)
+	NewHtmlTemplateWith(t Theme, name string, ctx context.Context) (tt *htmlTemplate.Template, err error)
+	NewTextTemplateWith(t Theme, name string, ctx context.Context) (tt *textTemplate.Template, err error)
 
-	RenderHtmlTemplateContent(ctx context.Context, tmplContent string) (rendered string, err error)
-	RenderTextTemplateContent(ctx context.Context, tmplContent string) (rendered string, err error)
+	RenderHtmlTemplateContent(t Theme, ctx context.Context, tmplContent string) (rendered string, err error)
+	RenderTextTemplateContent(t Theme, ctx context.Context, tmplContent string) (rendered string, err error)
 
-	NewHtmlTemplateFromContext(view string, ctx context.Context) (tt *htmlTemplate.Template, err error)
-	NewTextTemplateFromContext(view string, ctx context.Context) (tt *textTemplate.Template, err error)
+	NewHtmlTemplateFromContext(t Theme, view string, ctx context.Context) (tt *htmlTemplate.Template, err error)
+	NewTextTemplateFromContext(t Theme, view string, ctx context.Context) (tt *textTemplate.Template, err error)
 }
 
 type RoutePagesHandler interface {
