@@ -19,6 +19,7 @@ package local
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/types/page/matter"
@@ -92,6 +93,15 @@ func (f *FileSystem) WriteFile(path string, data []byte, perm os.FileMode) (err 
 		return
 	}
 	err = os.WriteFile(path, data, perm)
+	return
+}
+
+func (f *FileSystem) ChangeTimes(path string, created, updated time.Time) (err error) {
+	f.Lock()
+	defer f.Unlock()
+	// TODO: maybe ask Linus someday to encourage support for setting btime values
+	path = f.realpath(path)
+	err = os.Chtimes(path, updated, updated)
 	return
 }
 
