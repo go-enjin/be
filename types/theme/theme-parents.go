@@ -44,13 +44,15 @@ func (t *CTheme) registerTheme() {
 }
 
 func (t *CTheme) getParentTheme() (parent *CTheme) {
-	if t.config.Parent != "" {
+	//t.RLock()
+	//defer t.RUnlock()
+	if t.parent != "" {
 		gThemeRegistry.RLock()
 		defer gThemeRegistry.RUnlock()
-		if v, ok := gThemeRegistry.known[t.config.Parent]; ok {
+		if v, ok := gThemeRegistry.known[t.parent]; ok {
 			parent = v
 		} else {
-			log.FatalDF(2, "%v parent theme not found: %v", t.name, t.config.Parent)
+			log.FatalDF(2, "%v parent theme not found: %v", t.Name(), t.parent)
 		}
 	}
 	return
