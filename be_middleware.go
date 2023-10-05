@@ -17,7 +17,6 @@ package be
 import (
 	"context"
 	"net/http"
-	"runtime"
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
@@ -73,7 +72,7 @@ func (e *Enjin) modifyHeadersFn(request *http.Request, headers map[string]string
 func (e *Enjin) redirectionMiddleware(next http.Handler) http.Handler {
 	log.DebugF("including redirection middleware")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		path := forms.SanitizeRequestPath(r.URL.Path)
+		path := forms.CleanRequestPath(r.URL.Path)
 
 		if rp := e.FindRedirection(path); rp != nil {
 			langMode := e.SiteLanguageMode()
@@ -90,7 +89,7 @@ func (e *Enjin) redirectionMiddleware(next http.Handler) http.Handler {
 
 func (e *Enjin) langMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		urlPath := forms.SanitizeRequestPath(r.URL.Path)
+		urlPath := forms.CleanRequestPath(r.URL.Path)
 		langMode := e.SiteLanguageMode()
 		defaultTag := e.SiteDefaultLanguage()
 
@@ -143,28 +142,5 @@ func (e *Enjin) langMiddleware(next http.Handler) http.Handler {
 		r.URL.Path = reqPath
 
 		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
-
-func (e *Enjin) panicMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			if err := recover(); err != nil {
-				buf := make([]byte, 1<<16)
-				n := runtime.Stack(buf, false)
-				buf = buf[:n]
-
-				log.ErrorRF(r, "recovering from panic: %v\n(begin stacktrace)\n%s\n(end stacktrace)", err, buf)
-
-				defer func() {
-					if ee := recover(); ee != nil {
-						log.ErrorRF(r, "recovering from secondary panic")
-						e.Serve500(w, r)
-					}
-				}()
-				e.ServeInternalServerError(w, r)
-			}
-		}()
-		next.ServeHTTP(w, r)
 	})
 }
