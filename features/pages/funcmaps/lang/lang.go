@@ -92,8 +92,20 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		fm["_"] = f.makeUnderscore(ctx)
 		fm["__"] = f.makeUnderscoreUnderscore(ctx)
 		fm["_tag"] = f.makeUnderscoreTag(ctx)
+		fm["_txs"] = f.makeTranslations(ctx)
 	}
 	return
+}
+
+func (f *CFeature) makeTranslations(ctx beContext.Context) interface{} {
+	cache := map[string]feature.Pages{}
+	return func(url string) (translations feature.Pages) {
+		if _, cached := cache[url]; !cached {
+			cache[url] = f.Enjin.FindTranslations(url)
+		}
+		translations = cache[url]
+		return
+	}
 }
 
 func (f *CFeature) makeUnderscore(ctx beContext.Context) interface{} {
