@@ -26,6 +26,7 @@ import (
 	"sync"
 	"time"
 
+	beMime "github.com/go-enjin/be/pkg/mime"
 	"github.com/go-enjin/github-com-djherbis-times"
 
 	beFs "github.com/go-enjin/be/pkg/fs"
@@ -170,8 +171,7 @@ func (f *FileSystem) ReadFile(path string) (content []byte, err error) {
 func (f *FileSystem) MimeType(path string) (mime string, err error) {
 	f.RLock()
 	defer f.RUnlock()
-
-	if mime, err = bePath.Mime(f.realpath(path)); err != nil {
+	if mime = beMime.Mime(f.realpath(path)); mime == "" {
 		mime = "application/octet-stream"
 	}
 	return
