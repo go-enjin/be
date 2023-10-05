@@ -45,6 +45,7 @@ var (
 
 type Feature interface {
 	filesystem.Feature[MakeFeature]
+	feature.PageFileSystemFeature
 }
 
 type MakeFeature interface {
@@ -134,7 +135,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 
 	var indexProviderTags feature.Tags
 	for _, pif := range feature.FilterTyped[feature.PageIndexFeature](allFeatures) {
-		tag := pif.(feature.Feature).Tag()
+		tag := pif.Tag()
 		if f.indexProviderTags.Has(tag) {
 			f.indexProviders = append(f.indexProviders, pif)
 			indexProviderTags = append(indexProviderTags, tag)
@@ -155,7 +156,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 
 	var searchProviderTags feature.Tags
 	for _, sef := range feature.FilterTyped[feature.SearchEnjinFeature](allFeatures) {
-		tag := sef.(feature.Feature).Tag()
+		tag := sef.Tag()
 		if f.searchProviderTags.Has(tag) {
 			f.searchProviders = append(f.searchProviders, sef)
 			searchProviderTags = append(searchProviderTags, tag)
@@ -208,7 +209,7 @@ func (f *CFeature) PopulateIndexes() (err error) {
 	}
 
 	theme := f.Enjin.MustGetTheme()
-	for _, point := range maps.SortedKeys(f.MountPoints) {
+	for _, point := range maps.SortedKeyLengths(f.MountPoints) {
 		for _, mp := range f.MountPoints[point] {
 			if files, ee := mp.ROFS.ListAllFiles("."); ee == nil {
 
@@ -317,6 +318,76 @@ func (f *CFeature) PopulateIndexes() (err error) {
 
 	end := time.Now()
 	log.InfoF("%v feature indexed %d pages in %v (gc: %v)", f.Tag(), total, end.Sub(start), end.Sub(gcStart))
+
+	return
+}
+
+func (f *CFeature) AddIndexing(filePath string) {
+
+	theme := f.Enjin.MustGetTheme()
+	for _, point := range maps.SortedKeyLengths(f.MountPoints) {
+		for _, mp := range f.MountPoints[point] {
+
+			if pm, eee := f.ReadMountPageMatter(mp, filePath); eee == nil {
+
+				if stub, ok := pm.Stub.(*feature.PageStub); ok && stub != nil {
+
+					if p, eeee := page.NewPageFromStub(stub, theme); eeee == nil {
+
+						for _, indexer := range f.searchProviders {
+							if err := indexer.AddToSearchIndex(stub, p); err != nil {
+								log.ErrorF("error adding search indexing: %v - %v", p.Url(), err)
+							}
+						}
+						for _, indexer := range f.indexProviders {
+							if err := indexer.AddToIndex(stub, p); err != nil {
+								log.ErrorF("error adding page indexing: %v - %v", p.Url(), err)
+							}
+						}
+
+					}
+
+					return
+				}
+
+			}
+
+		}
+	}
+
+	return
+}
+
+func (f *CFeature) RemoveIndexing(filePath string) {
+
+	theme := f.Enjin.MustGetTheme()
+	for _, point := range maps.SortedKeyLengths(f.MountPoints) {
+		for _, mp := range f.MountPoints[point] {
+
+			if pm, eee := f.ReadMountPageMatter(mp, filePath); eee == nil {
+
+				if stub, ok := pm.Stub.(*feature.PageStub); ok && stub != nil {
+
+					if p, eeee := page.NewPageFromStub(stub, theme); eeee == nil {
+
+						for _, indexer := range f.searchProviders {
+							indexer.RemoveFromSearchIndex(stub, p)
+						}
+						for _, indexer := range f.indexProviders {
+							if err := indexer.RemoveFromIndex(stub, p); err != nil {
+								log.ErrorF("error removing page indexing: %v - %v", p.Url(), err)
+							}
+						}
+
+					}
+
+					return
+				}
+
+			}
+
+		}
+	}
 
 	return
 }
