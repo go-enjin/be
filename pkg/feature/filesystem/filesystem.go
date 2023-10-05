@@ -43,6 +43,9 @@ var (
 type Feature[MakeTypedFeature interface{}] interface {
 	feature.Feature
 
+	// IsLocalized returns true if the top-level directories are expected to be valid language.Tag codes
+	IsLocalized() (supported bool)
+
 	/*
 		MountPath methods for use during enjin Make phase
 	*/
@@ -110,6 +113,7 @@ type CFeature[MakeTypedFeature interface{}] struct {
 	feature.CFeature
 	CGormDBPathSupport[MakeTypedFeature]
 
+	Localized   bool
 	MountPoints feature.MountedPoints
 
 	txLock *sync.RWMutex
@@ -117,10 +121,16 @@ type CFeature[MakeTypedFeature interface{}] struct {
 
 func (f *CFeature[MakeTypedFeature]) Init(this interface{}) {
 	f.CFeature.Init(this)
+	f.Localized = true // all filesystems support localization by default
 	f.CGormDBPathSupport.initGormDBPathSupport(f)
 	f.FeatureTag = feature.NotImplemented
 	f.MountPoints = make(feature.MountedPoints)
 	f.txLock = &sync.RWMutex{}
+}
+
+func (f *CFeature[MakeTypedFeature]) IsLocalized() (supported bool) {
+	supported = f.Localized
+	return
 }
 
 func (f *CFeature[MakeTypedFeature]) CloneFileSystemFeature() (cloned CFeature[MakeTypedFeature]) {
