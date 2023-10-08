@@ -59,6 +59,11 @@ func (q *QueryMode) Make() Mode {
 	return q
 }
 
+func (p *QueryMode) Name() (name string) {
+	name = "query"
+	return
+}
+
 func (q *QueryMode) ToUrl(defaultTag, tag language.Tag, path string) (translated string) {
 	translated = path
 	if !language.Compare(defaultTag, tag) {

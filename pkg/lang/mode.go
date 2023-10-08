@@ -21,6 +21,7 @@ import (
 )
 
 type Mode interface {
+	Name() (name string)
 	ToUrl(defaultTag, tag language.Tag, path string) (translated string)
 	FromRequest(defaultTag language.Tag, r *http.Request) (tag language.Tag, path string, ok bool)
 }

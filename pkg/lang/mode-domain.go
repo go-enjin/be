@@ -58,6 +58,11 @@ func (p *DomainMode) Make() Mode {
 	return p
 }
 
+func (p *DomainMode) Name() (name string) {
+	name = "domain"
+	return
+}
+
 func (p *DomainMode) ToUrl(defaultTag, tag language.Tag, path string) (translated string) {
 
 	translated = path

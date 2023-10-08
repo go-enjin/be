@@ -55,6 +55,11 @@ func (p *PathMode) Make() Mode {
 	return p
 }
 
+func (p *PathMode) Name() (name string) {
+	name = "path"
+	return
+}
+
 func (p *PathMode) ParsePathLang(path string) (tag language.Tag, trimmed string, ok bool) {
 	trimmed = path
 	tag = language.Und
