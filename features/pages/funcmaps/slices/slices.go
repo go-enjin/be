@@ -89,7 +89,8 @@ func (f *CFeature) Shutdown() {
 
 func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 	fm = feature.FuncMap{
-		"splitString":                SplitString,
+		"joinStrings":                strings.Join,
+		"splitString":                strings.Split,
 		"filterStrings":              FilterStrings,
 		"stringsAsList":              StringsAsList,
 		"reverseStrings":             ReverseStrings,
@@ -136,11 +137,6 @@ func SortedKeys(v interface{}) (keys []string) {
 	default:
 		log.WarnF("unsupported sortedKeys type: %T", v)
 	}
-	return
-}
-
-func SplitString(v, delim string) (parts []string) {
-	parts = strings.Split(v, delim)
 	return
 }
 
