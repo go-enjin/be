@@ -104,6 +104,9 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		"parseUrl":         ParseUrl,
 		"baseName":         BaseName,
 		"pruneCharset":     mime.PruneCharset,
+		"trimSpace":        strings.TrimSpace,
+		"trimPrefix":       strings.TrimPrefix,
+		"trimSuffix":       strings.TrimSuffix,
 	}
 	return
 }
