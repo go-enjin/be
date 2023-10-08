@@ -16,6 +16,7 @@ package sitemenus
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
@@ -24,6 +25,8 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/menu"
+	bePath "github.com/go-enjin/be/pkg/path"
 )
 
 var (
@@ -85,6 +88,35 @@ func (f *CFeature) Shutdown() {
 	f.CFeature.Shutdown()
 }
 
+func ProcessActiveItems(m menu.Menu, r *http.Request) (modified menu.Menu, found bool) {
+	var path string
+	if path = bePath.TrimSlashes(r.URL.Path); path == "" {
+		modified = m
+		return
+	}
+
+	isActive := func(href string) (active bool) {
+		trimmed := bePath.TrimSlashes(href)
+		active = path == trimmed || strings.HasPrefix(path, trimmed+"/")
+		return
+	}
+
+	for _, mm := range m {
+		var active bool
+		if mm.SubMenu, active = ProcessActiveItems(mm.SubMenu, r); active {
+			mm.Active = true
+		} else {
+			mm.Active = isActive(mm.Href)
+		}
+		if !found && mm.Active {
+			found = true
+		}
+		modified = append(modified, mm)
+	}
+
+	return
+}
+
 func (f *CFeature) PrepareServePage(ctx beContext.Context, t feature.Theme, p feature.Page, w http.ResponseWriter, r *http.Request) (out beContext.Context, modified *http.Request, stop bool) {
 	reqLangTag := lang.GetTag(r)
 
@@ -112,6 +144,11 @@ func (f *CFeature) PrepareServePage(ctx beContext.Context, t feature.Theme, p fe
 	}
 
 	if len(allMenus) > 0 {
+		if v, present := allMenus["MainMenu"]; present {
+			if vt, ok := v.(menu.Menu); ok {
+				allMenus["MainMenu"], _ = ProcessActiveItems(vt, r)
+			}
+		}
 		ctx.SetSpecific("SiteMenu", allMenus)
 	}
 
