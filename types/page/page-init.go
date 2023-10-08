@@ -119,6 +119,8 @@ func (p *CPage) parseContext(ctx context.Context) {
 		} else {
 			log.ErrorF("unsupported time/date format: %v", created)
 		}
+	} else {
+		ctx.SetSpecific("Created", p.fields.CreatedAt)
 	}
 
 	if updated := ctx.String("Updated", ""); updated != "" {
@@ -128,16 +130,20 @@ func (p *CPage) parseContext(ctx context.Context) {
 		} else {
 			log.ErrorF("unsupported time/date format: %v", updated)
 		}
+	} else {
+		ctx.SetSpecific("Updated", p.fields.UpdatedAt)
 	}
 
 	if deleted := ctx.String("Deleted", ""); deleted != "" {
 		if parsed, err := context.ParseTimeStructure(deleted); err == nil {
-			p.fields.CreatedAt = parsed
+			p.fields.DeletedAt.Time = parsed
 			p.fields.DeletedAt.Valid = true
 			ctx.SetSpecific("Deleted", parsed)
 		} else {
 			log.ErrorF("unsupported time/date format: %v", deleted)
 		}
+	} else {
+		ctx.SetSpecific("Deleted", p.fields.DeletedAt)
 	}
 
 	p.fields.Context.Apply(ctx)
