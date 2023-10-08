@@ -133,6 +133,9 @@ func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.
 }
 
 func (f *CFeature) UpdatePageContext(pageCtx context.Context, r *http.Request) (additions context.Context) {
+	var printer *message.Printer
+	printer = lang.GetPrinterFromRequest(r)
+
 	additions = context.New()
 
 	pageType := pageCtx.String("Type", "page")
@@ -147,8 +150,12 @@ func (f *CFeature) UpdatePageContext(pageCtx context.Context, r *http.Request) (
 	content := pageCtx.String("Content", "nil")
 
 	fields := strings.Fields(content)
+
 	wordCount := len(fields)
 	additions.SetSpecific("WordCount", wordCount)
+
+	wordCountLabel := printer.Sprintf("%[1]d words", wordCount)
+	additions.SetSpecific("CountedWords", wordCountLabel)
 
 	fastTime := float64(wordCount) / AverageWordsPerMinute
 	fastMinutes := maths.RoundDown(fastTime)
@@ -156,8 +163,6 @@ func (f *CFeature) UpdatePageContext(pageCtx context.Context, r *http.Request) (
 
 	additions.SetSpecific("ReadingTime", time.Duration(fastTime*float64(time.Minute)))
 
-	var printer *message.Printer
-	printer = lang.GetPrinterFromRequest(r)
 	minutes := printer.Sprintf("%[1]d-%[2]d minutes", fastMinutes, slowMinutes)
 	additions.SetSpecific("ReadingMinutes", minutes)
 	return
