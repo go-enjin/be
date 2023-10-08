@@ -23,6 +23,8 @@ type Item struct {
 	Href string `json:"href,omitempty"`
 	Lang string `json:"lang,omitempty"`
 
+	Active bool `json:"active,omitempty"`
+
 	Attributes map[string]string `json:"attributes,omitempty"`
 
 	SubMenu Menu `json:"sub-menu,omitempty"`
