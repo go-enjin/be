@@ -18,8 +18,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-
-	"golang.org/x/net/html"
 )
 
 type EnjinError struct {
@@ -86,9 +84,9 @@ func (e *EnjinError) Html() (markup template.HTML) {
 	}
 	markup += `
         <section>
-            <details>
+            <details open>
                 <summary>` + template.HTML(e.Summary) + `</summary>
-                <pre>` + template.HTML(html.EscapeString(e.Content)) + `</pre>
+                <pre>` + template.HTML(e.Content) + `</pre>
             </details>
         </section>
         <a class="jump-top" href="#top">top</a>
