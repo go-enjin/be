@@ -178,6 +178,14 @@ func DecodeKeyValue(valueKey string) (value interface{}, err error) {
 	return
 }
 
+func DecodeValue[T interface{}](encoded string) (value T, err error) {
+	var v interface{}
+	if v, err = gob.Decode([]byte(encoded)); err == nil {
+		value, _ = v.(T)
+	}
+	return
+}
+
 func FlatListEmpty(store KeyValueStore, key string) (empty bool) {
 	empty = CountFlatList(store, key) == 0
 	return
@@ -232,6 +240,12 @@ func YieldFlatList[T interface{}](store KeyValueStore, key string) (yield chan T
 		for i := uint64(0); i < endIdx; i++ {
 			idxKey := MakeFlatListKey(key, "idx", fmt.Sprintf("%d", i))
 			if v, e := store.Get(idxKey); e == nil {
+				if vs, ok := v.(string); ok {
+					if item, ee := DecodeValue[T](vs); ee == nil {
+						yield <- item
+						continue
+					}
+				}
 				if item, ok := v.(T); ok {
 					yield <- item
 				}
