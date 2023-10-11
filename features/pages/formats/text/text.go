@@ -17,7 +17,6 @@
 package text
 
 import (
-	"fmt"
 	htmlTemplate "html/template"
 	"net/http"
 	"strings"
@@ -126,7 +125,6 @@ func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 	if strings.HasSuffix(pg.Format(), ".tmpl") {
 		renderer := f.Enjin.GetThemeRenderer(pg.Context())
 		if rendered, err = renderer.RenderTextTemplateContent(f.Enjin.MustGetTheme(), pg.Context(), pg.Content()); err != nil {
-			err = fmt.Errorf("error rendering .text.tmpl content: %v", err)
 			return
 		}
 	} else {
