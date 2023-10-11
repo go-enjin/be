@@ -17,6 +17,7 @@
 package pql
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -227,7 +228,6 @@ func (f *CFeature) PageContextValueCounts(key string) (counts map[interface{}]ui
 	for value := range kvs.YieldFlatList[string](f.contextValueKeyedBucket, key) {
 
 		valueKey, _ := kvs.EncodeKeyValue(value)
-		//list, _ := kvs.GetStringSlice(ctxKeyedValueBucket, valueKey)
 		list := kvs.GetFlatList[string](ctxKeyedValueBucket, valueKey)
 		counts[value] += uint64(len(list))
 
@@ -260,7 +260,6 @@ func (f *CFeature) YieldPageContextValueStubs(key string) (pairs chan *feature.V
 				continue
 			}
 
-			//if shasums, ee := kvs.GetStringSlice(ctxKeyedValueBucket, valueKey); ee == nil && len(shasums) > 0 {
 			if shasums := kvs.GetFlatList[string](ctxKeyedValueBucket, valueKey); len(shasums) > 0 {
 				for _, shasum := range shasums {
 					if _, seen := found[shasum]; !seen {
@@ -476,13 +475,13 @@ func (f *CFeature) Lookup(tag language.Tag, path string) (pg feature.Page, err e
 	}
 
 	// check for the given tag
-	if pg, err = process(tag, path); err == nil || err != os.ErrNotExist {
+	if pg, err = process(tag, path); err == nil || !errors.Is(err, os.ErrNotExist) {
 		return
 	}
 
 	if tag != language.Und {
 		// path not found, check for (Und) fallback
-		if pg, err = process(language.Und, path); err == nil || err != os.ErrNotExist {
+		if pg, err = process(language.Und, path); err == nil || !errors.Is(err, os.ErrNotExist) {
 			return
 		}
 	}
@@ -500,7 +499,6 @@ func (f *CFeature) LookupPrefixed(prefix string) (pages []feature.Page) {
 	allUrls := kvs.GetFlatList[string](f.allUrlsBucket, "all")
 	for _, url := range allUrls {
 		if strings.HasPrefix(url, prefix) {
-			//if shasums, ee := kvs.GetSlice[string](f.pageUrlsBucket, url); ee == nil {
 			if shasums := kvs.GetFlatList[string](f.pageUrlsBucket, url); len(shasums) > 0 {
 				for _, shasum := range shasums {
 					if pg := f.findStubPage(shasum); pg != nil {
