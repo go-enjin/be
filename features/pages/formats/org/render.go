@@ -32,8 +32,6 @@ func (f *CFeature) RenderOrgMode(content string) (rendered string, err error) {
 			orgConfig.DefaultSettings[k] = v
 		}
 	}
-	if rendered, err = orgConfig.Parse(input, "./").Write(org.NewHTMLWriter()); err != nil {
-		return
-	}
+	rendered, err = orgConfig.Parse(input, "./").Write(org.NewHTMLWriter())
 	return
 }
