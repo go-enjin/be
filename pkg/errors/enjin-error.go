@@ -67,9 +67,9 @@ func (e *EnjinError) Html() (markup template.HTML) {
     class="block"
     data-block-tag="theme-enjin-error"
     data-block-type="content"
-    data-block-profile="outer--inner"
-    data-block-padding="both"
-    data-block-margins="both"
+    data-block-profile="full--outer"
+    data-block-padding="none"
+    data-block-margins="none"
     data-block-jump-top="true"
     data-block-jump-link="true">
     <div class="content">`
