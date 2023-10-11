@@ -76,7 +76,7 @@ func (t *CTheme) MakeArchetype(enjin feature.Internals, name string) (format str
 						var w bytes.Buffer
 						if ee = tmpl.Execute(&w, ctx); ee == nil {
 							if mCtx, eee := matter.UnmarshalFrontMatter(w.Bytes(), parsedMatterType); eee == nil {
-								mCtx["archetype"] = name
+								mCtx["archetype"] = strings.TrimSuffix(name, "."+format)
 								stanza := matter.MakeStanza(parsedMatterType, mCtx)
 								data = []byte(stanza + "\n" + parsedContent)
 								err = nil
