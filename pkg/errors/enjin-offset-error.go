@@ -15,6 +15,7 @@
 package errors
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
@@ -149,5 +150,20 @@ func ParseTemplateError(message, content string) (err error) {
 	} else {
 		err = errors.New(message)
 	}
+	return
+}
+
+func ParseJsonError(e error, content string) (err error) {
+	var jse *json.SyntaxError
+	var jute *json.UnmarshalTypeError
+
+	if errors.As(e, &jse) {
+		err = NewEnjinOffsetError("json syntax error", jse.Error(), content, jse.Offset)
+	} else if errors.As(e, &jute) {
+		err = NewEnjinOffsetError("json decode error", jute.Error(), content, jute.Offset)
+	} else {
+		err = NewEnjinOffsetError("json error", e.Error(), content, -1)
+	}
+
 	return
 }
