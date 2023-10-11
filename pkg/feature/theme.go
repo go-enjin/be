@@ -123,6 +123,7 @@ type ThemeRenderer interface {
 	Feature
 	Render(t Theme, view string, ctx context.Context) (data []byte, err error)
 	RenderPage(t Theme, ctx context.Context, p Page) (data []byte, redirect string, err error)
+	PrepareRenderPage(t Theme, ctx context.Context, p Page) (data htmlTemplate.HTML, redirect string, err error)
 
 	NewHtmlTemplateWith(t Theme, name string, ctx context.Context) (tt *htmlTemplate.Template, err error)
 	NewTextTemplateWith(t Theme, name string, ctx context.Context) (tt *textTemplate.Template, err error)
