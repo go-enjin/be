@@ -15,6 +15,7 @@
 package context
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"regexp"
@@ -457,18 +458,47 @@ func (c Context) Select(keys ...string) (selected map[string]interface{}) {
 	return
 }
 
+func (c Context) PruneEmpty() (pruned Context) {
+	pruned = c.Copy()
+	for k, v := range c {
+		if v == nil {
+			delete(pruned, k)
+			continue
+		}
+		switch t := v.(type) {
+		case bool:
+			if !t {
+				delete(pruned, k)
+			}
+		case string:
+			if t == "" {
+				delete(pruned, k)
+			}
+		case []byte:
+			if len(t) == 0 {
+				delete(pruned, k)
+			}
+		case sql.NullTime:
+			if !t.Valid {
+				delete(pruned, k)
+			}
+		}
+	}
+	return
+}
+
 func (c Context) AsJSON() (data []byte, err error) {
-	data, err = json.MarshalIndent(c, "", "  ")
+	data, err = json.MarshalIndent(c.PruneEmpty(), "", "  ")
 	return
 }
 
 func (c Context) AsTOML() (data []byte, err error) {
-	data, err = toml.Marshal(c)
+	data, err = toml.Marshal(c.PruneEmpty())
 	return
 }
 
 func (c Context) AsYAML() (data []byte, err error) {
-	data, err = yaml.Marshal(c)
+	data, err = yaml.Marshal(c.PruneEmpty())
 	return
 }
 
