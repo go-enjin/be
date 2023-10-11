@@ -318,32 +318,7 @@ func (f *CFeature) Prepare(ctx context.Context, content string) (out context.Con
 func (f *CFeature) Process(ctx context.Context, content string) (html template.HTML, redirect string, err error) {
 	var data interface{}
 	if e := json.Unmarshal([]byte(content), &data); e != nil {
-		switch errType := e.(type) {
-		case *json.SyntaxError:
-			output := template.HTMLEscapeString(content[:errType.Offset])
-			output += fmt.Sprintf(`<span style="color:red;weight:bold;" id="json-error">&lt;-- %v</span>`, errType.Error())
-			output += template.HTMLEscapeString(content[errType.Offset:])
-			err = errors.NewEnjinError(
-				"json syntax error",
-				fmt.Sprintf(`<a style="color:red;" href="#json-error">[%d] %v</a>`, errType.Offset, errType.Error()),
-				output,
-			)
-		case *json.UnmarshalTypeError:
-			output := template.HTMLEscapeString(content[:errType.Offset])
-			output += fmt.Sprintf(`<span style="color:red;weight:bold;" id="json-error">&lt;-- %v</span>`, errType.Error())
-			output += template.HTMLEscapeString(content[errType.Offset:])
-			err = errors.NewEnjinError(
-				"json unmarshal error",
-				fmt.Sprintf(`<a style="color:red;" href="#json-error">[%d] %v</a>`, errType.Offset, errType.Error()),
-				output,
-			)
-		default:
-			err = errors.NewEnjinError(
-				"json decoding error",
-				errType.Error(),
-				content,
-			)
-		}
+		err = errors.ParseJsonError(e, content)
 		return
 	}
 	html, redirect, err = renderNjnData(f, ctx, data)
