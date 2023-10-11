@@ -28,7 +28,6 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
@@ -120,11 +119,7 @@ func (f *CFeature) Prepare(ctx context.Context, content string) (out context.Con
 
 func (f *CFeature) Process(ctx context.Context, content string) (html template.HTML, redirect string, err error) {
 	if text, e := f.RenderOrgMode(content); e != nil {
-		err = errors.NewEnjinError(
-			"org-mode parse error",
-			e.Error(),
-			content,
-		)
+		err = e
 		return
 	} else {
 		html = template.HTML(f.Enjin.TranslateShortcodes(text, ctx))
