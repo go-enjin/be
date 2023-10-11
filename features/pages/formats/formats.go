@@ -125,7 +125,7 @@ func (f *CFeature) GetFormat(extn string) (format feature.PageFormat) {
 
 func (f *CFeature) MatchFormat(filename string) (format feature.PageFormat, match string) {
 	for _, extn := range f.ListFormats() {
-		if strings.HasSuffix(filename, "."+extn) {
+		if filename == extn || strings.HasSuffix(filename, "."+extn) {
 			match = extn
 			format = f.formats[extn]
 			return
