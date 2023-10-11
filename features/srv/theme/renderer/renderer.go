@@ -18,6 +18,7 @@ package renderer
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	htmlTemplate "html/template"
 	"strings"
@@ -25,7 +26,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	beContext "github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/errors"
+	beErrors "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request/argv"
@@ -99,46 +100,60 @@ func (f *CFeature) Render(t feature.Theme, view string, ctx beContext.Context) (
 	return
 }
 
-func (f *CFeature) RenderPage(t feature.Theme, ctx beContext.Context, p feature.Page) (data []byte, redirect string, err error) {
+func (f *CFeature) PrepareRenderPage(t feature.Theme, ctx beContext.Context, p feature.Page) (data htmlTemplate.HTML, redirect string, err error) {
 
 	ctx.Apply(p.Context().Copy())
 	ctx.Set("Theme", t.GetConfig())
 
 	var output string
+	pageFormat := p.Format()
 
-	if p.Format() == "html.tmpl" {
+	if pageFormat == "html.tmpl" {
 		if output, err = f.RenderHtmlTemplateContent(t, ctx, p.Content()); err != nil {
-			ctx["Content"] = f.renderErrorPage("Template Render Error", err.Error(), p.String())
+			err = beErrors.ParseTemplateError(err.Error(), p.Content())
+			return
 		}
-	} else if strings.HasSuffix(p.Format(), ".tmpl") {
-		// TODO: find a more safe way to pre-render .njn.tmpl files
+	} else if strings.HasSuffix(pageFormat, ".tmpl") {
 		if output, err = f.RenderTextTemplateContent(t, ctx, p.Content()); err != nil {
-			ctx["Content"] = f.renderErrorPage("Template Render Error", err.Error(), p.String())
+			err = beErrors.ParseTemplateError(err.Error(), p.Content())
+			return
 		}
 	} else {
 		output = p.Content()
 	}
 
 	if err == nil {
-		if format := t.GetFormat(p.Format()); format != nil {
-			if html, redir, ee := format.Process(ctx, output); ee != nil {
-				if enjerr, ok := ee.(*errors.EnjinError); ok {
-					log.ErrorF("error processing %v page format: %v - %v", p.Format(), enjerr.Title, enjerr.Summary)
-					ctx["Content"] = enjerr.Html()
-				} else {
-					log.ErrorF("error processing %v page format: %v", p.Format(), ee.Error())
-					ctx["Content"] = "<p>" + ee.Error() + "</p>"
-				}
-			} else if redir != "" {
-				redirect = redir
-				return
-			} else {
-				ctx["Content"] = html
+		if format := t.GetFormat(pageFormat); format != nil {
+			if data, redirect, err = format.Process(ctx, output); err == nil {
 				log.TraceF("page format success: %v", format.Name())
 			}
 		} else {
-			ctx["Content"] = f.renderErrorPage("Unsupported Page Format", fmt.Sprintf(`Unknown page format specified: "%v"`, p.Format()), p.String())
+			err = fmt.Errorf("unsupported page format")
 		}
+	}
+
+	return
+}
+
+func (f *CFeature) RenderPage(t feature.Theme, ctx beContext.Context, p feature.Page) (data []byte, redirect string, err error) {
+
+	if html, redir, ee := f.PrepareRenderPage(t, ctx, p); ee != nil {
+		var enjErr *beErrors.EnjinError
+		if errors.As(ee, &enjErr) {
+			ctx["Content"] = enjErr.Html()
+		} else {
+			ctx["Content"] = "<p>" + ee.Error() + "</p>"
+		}
+		delete(ctx, "Archetype")
+		ctx["Layout"] = "full-view"
+		ctx["Format"] = "html"
+		data, err = f.Render(t, "single", ctx)
+		return
+	} else if redir != "" {
+		redirect = redir
+		return
+	} else {
+		ctx["Content"] = html
 	}
 
 	if !p.Context().Bool(argv.RequestArgvIgnoredKey, false) {
