@@ -206,14 +206,16 @@ func (f *CFeature) removeIndexForPageContextValue(key, shasum string, value inte
 	ctxKeyedValueBucketName := f.makeCtxValBucketName(key)
 	ctxKeyedValueBucket := f.cache.MustBucket(ctxKeyedValueBucketName)
 
-	// value keyed flat list is distinct values only
-	if err = kvs.RemoveFromFlatList[interface{}](f.contextValueKeyedBucket, key, valueKey); err != nil {
-		err = fmt.Errorf("error updating flat list: %v - %v", key, err)
-		return
-	}
+	// TODO: remove valueKey from f.contextValueKeyedBucket, must check if there are no shasums for the valueKey first,
+	//       otherwise this drops valueKey for all other pages with the same key and value
+	//if err = kvs.RemoveFromFlatList[string](f.contextValueKeyedBucket, key, valueKey); err != nil {
+	//	err = fmt.Errorf("error removing from flat list: %v - %v", key, err)
+	//	return
+	//}
 
 	if e := kvs.RemoveFromFlatList[string](ctxKeyedValueBucket, valueKey, shasum); e != nil {
 		err = fmt.Errorf("error removing from bucket flat list: %v/%v[%v]=\"%v\" - %v", f.kvcTag, f.kvcName, ctxKeyedValueBucketName, value, err)
 	}
+
 	return
 }
