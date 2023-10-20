@@ -43,9 +43,6 @@ type Builder interface {
 	// order given and any features added will be inserted before all other enjin features present
 	AddPreset(presets ...Preset) Builder
 
-	// AddEnjinLocales includes the core go-enjin/be locales catalog
-	AddEnjinLocales() Builder
-
 	// AddHtmlHeadTag adds a custom (singleton) HTML tag to the <head> section
 	// of the page output, example meta tag:
 	//   AddHtmlHeadTag("meta",map[string]string{"name":"og:thing","content":"stuff"})
