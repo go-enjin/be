@@ -81,7 +81,7 @@ func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Reque
 	if path, ok := e.eb.statusPages[status]; ok {
 
 		if pg := e.FindPage(reqLangTag, path); pg != nil {
-			pg.Context().SetSpecific(argv.RequestArgvIgnoredKey, true)
+			pg.Context().SetSpecific(argv.RequestIgnoredKey, true)
 			if err := e.ServePage(pg, w, r); err != nil {
 				log.ErrorRDF(r, 1, "enjin error serving %v (found) page: %v - %v", status, path, err)
 			} else {
@@ -226,7 +226,7 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 	}
 
 	w.Header().Set("Content-Type", mime)
-	if reqArgv := argv.GetRequestArgv(r); len(reqArgv.Argv) > 0 {
+	if reqArgv := argv.Get(r); len(reqArgv.Argv) > 0 {
 		w.Header().Set("Cache-Control", "no-store")
 	} else if value := serve.GetCacheControl(r); value != "" {
 		w.Header().Set("Cache-Control", value)
