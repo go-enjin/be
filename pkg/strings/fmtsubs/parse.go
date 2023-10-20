@@ -19,6 +19,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/iancoleman/strcase"
+
 	"github.com/go-enjin/be/pkg/convert"
 )
 
@@ -40,7 +42,7 @@ type subst struct {
 	value  string
 }
 
-func ParseFmtString(format string) (replaced, labelled string, subs FmtSubs, err error) {
+func ParseFmtString(format string, argv ...string) (replaced, labelled string, subs FmtSubs, err error) {
 
 	var list FmtSubs
 	var state *subst
@@ -91,22 +93,39 @@ func ParseFmtString(format string) (replaced, labelled string, subs FmtSubs, err
 			switch state.verb {
 			case "s":
 				valueType = "string"
-				label = "Txt"
 			case "d":
 				valueType = "int"
-				label = "Num"
 			case "f", "F":
 				valueType = "float"
-				label = "Num"
 			default:
 				valueType = "-"
-				label = "Arg"
 			}
 
-			if subPos <= 0 {
-				label += fmt.Sprintf("%d", state.pos)
-			} else {
-				label += fmt.Sprintf("%d%s", state.pos, convert.ToLetters(subPos))
+			if len(argv) > (state.pos - 1) {
+				label = strcase.ToCamel(argv[state.pos-1])
+				if label != "" && subPos > 0 {
+					label += fmt.Sprintf("%d%s", state.pos, convert.ToLetters(subPos))
+				}
+			}
+
+			if label == "" {
+
+				switch state.verb {
+				case "s":
+					label = "Txt"
+				case "d":
+					label = "Num"
+				case "f", "F":
+					label = "Num"
+				default:
+					label = "Arg"
+				}
+
+				if subPos <= 0 {
+					label += fmt.Sprintf("%d", state.pos)
+				} else {
+					label += fmt.Sprintf("%d%s", state.pos, convert.ToLetters(subPos))
+				}
 			}
 
 			list = append(list, &FmtSub{
