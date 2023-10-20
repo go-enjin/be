@@ -25,6 +25,7 @@ import (
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/values"
 )
 
 var (
@@ -88,7 +89,7 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		"asCSS":       AsCSS,
 		"asJS":        AsJS,
 		"safeHTML":    AsHTML,
-		"typeOf":      TypeOf,
+		"typeOf":      values.TypeOf,
 		"typeOfSlice": TypeOfSlice,
 	}
 	return
@@ -149,12 +150,7 @@ func AsHTMLAttr(input interface{}) template.HTMLAttr {
 	}
 }
 
-func TypeOf(input interface{}) (name string) {
-	name = fmt.Sprintf("%T", input)
-	return
-}
-
 func TypeOfSlice(input interface{}) (yes bool) {
-	yes = strings.Contains(TypeOf(input), "[]")
+	yes = strings.Contains(values.TypeOf(input), "[]")
 	return
 }
