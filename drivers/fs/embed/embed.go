@@ -26,7 +26,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fvbommel/sortorder"
+	"github.com/maruel/natural"
 
 	"github.com/go-enjin/github-com-djherbis-times"
 
@@ -179,7 +179,7 @@ func (f FileSystem) FileStats(path string) (mime, shasum string, created, update
 }
 
 func (f FileSystem) FindFilePath(prefix string, extensions ...string) (path string, err error) {
-	sort.Sort(sort.Reverse(sortorder.Natural(extensions)))
+	sort.Sort(sort.Reverse(natural.StringSlice(extensions)))
 
 	realpath := f.realpath(prefix)
 	if filepath.Ext(realpath) != "" {
