@@ -31,4 +31,34 @@ type CMountPoint struct {
 
 type MountPoints []*CMountPoint
 
+func (m MountPoints) Append(mountPoint *CMountPoint) (modified MountPoints) {
+	var found bool
+	for _, mp := range m {
+		found = mp.Mount == mountPoint.Mount && mp.Path == mountPoint.Path
+		modified = append(modified, mp)
+	}
+	if !found {
+		modified = append(modified, mountPoint)
+	}
+	return
+}
+
+func (m MountPoints) HasRWFS() (rw bool) {
+	for _, mp := range m {
+		if rw = mp.RWFS != nil; rw {
+			return
+		}
+	}
+	return
+}
+
 type MountedPoints map[string]MountPoints
+
+func (m MountedPoints) HasRWFS() (rw bool) {
+	for _, mps := range m {
+		if rw = mps.HasRWFS(); !rw {
+			return
+		}
+	}
+	return
+}
