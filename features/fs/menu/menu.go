@@ -21,7 +21,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/fvbommel/sortorder"
+	"github.com/maruel/natural"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/golang-org-x-text/language"
@@ -158,7 +158,7 @@ func (f *CFeature) findAllMenus(tag language.Tag, bfs fs.FileSystem) (menus map[
 	}
 
 	log.TraceF("found [%v] %v menu files: %v", tag.String(), bfs.Name(), filenames)
-	sort.Sort(sortorder.Natural(filenames))
+	sort.Sort(natural.StringSlice(filenames))
 	for _, filename := range filenames {
 		if !strings.HasSuffix(filename, ".json") {
 			log.WarnF("not a <menu-name>.json filename: %v", filename)
