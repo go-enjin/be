@@ -17,7 +17,7 @@ package feature
 import (
 	"sort"
 
-	"github.com/fvbommel/sortorder"
+	"github.com/maruel/natural"
 )
 
 type Tags []Tag
@@ -77,13 +77,13 @@ func StringsAsTags(names []string) (tags Tags) {
 	return
 }
 
-// SortedFeatureTags returns a sortorder.Natural list of Tag keys
+// SortedFeatureTags returns a natural.StringSlice list of Tag keys
 func SortedFeatureTags[V interface{}](data map[Tag]V) (tags Tags) {
 	var keys []string
 	for key, _ := range data {
 		keys = append(keys, key.String())
 	}
-	sort.Sort(sortorder.Natural(keys))
+	sort.Sort(natural.StringSlice(keys))
 	tags = StringsAsTags(keys)
 	return
 }
