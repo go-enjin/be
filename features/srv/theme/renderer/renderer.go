@@ -156,11 +156,11 @@ func (f *CFeature) RenderPage(t feature.Theme, ctx beContext.Context, p feature.
 		ctx["Content"] = html
 	}
 
-	if !p.Context().Bool(argv.RequestArgvIgnoredKey, false) {
+	if !p.Context().Bool(argv.RequestIgnoredKey, false) {
 		if redirect = ctx.String(argv.RequestRedirectKey, ""); redirect != "" {
 			return
-		} else if consumed := ctx.Bool(argv.RequestArgvConsumedKey, false); !consumed {
-			if reqArgv, ok := ctx.Get(string(argv.RequestArgvKey)).(*argv.RequestArgv); ok && reqArgv != nil && reqArgv.MustConsume() {
+		} else if consumed := ctx.Bool(argv.RequestConsumedKey, false); !consumed {
+			if reqArgv, ok := ctx.Get(argv.RequestKey.String()).(*argv.Argv); ok && reqArgv != nil && reqArgv.MustConsume() {
 				redirect = p.Url()
 				return
 			}
