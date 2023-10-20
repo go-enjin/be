@@ -122,9 +122,9 @@ func parseTmplStatements(input string) (list []string) {
 	return
 }
 
-func parseMessagePlaceholders(key string) (replaced, labelled string, placeholders Placeholders) {
+func parseMessagePlaceholders(key string, argv ...string) (replaced, labelled string, placeholders Placeholders) {
 	var subs fmtsubs.FmtSubs
-	replaced, labelled, subs, _ = fmtsubs.ParseFmtString(key)
+	replaced, labelled, subs, _ = fmtsubs.ParseFmtString(key, argv...)
 	for _, sub := range subs {
 		placeholders = append(placeholders, &Placeholder{
 			ID:             sub.Label,
@@ -138,8 +138,8 @@ func parseMessagePlaceholders(key string) (replaced, labelled string, placeholde
 	return
 }
 
-func MakeMessageFromKey(key, comment string) (m *Message) {
-	replaced, labelled, placeholders := parseMessagePlaceholders(key)
+func MakeMessageFromKey(key, comment string, argv ...string) (m *Message) {
+	replaced, labelled, placeholders := parseMessagePlaceholders(key, argv...)
 	m = &Message{
 		BaseMessage: BaseMessage{
 			ID:                labelled,
@@ -254,7 +254,7 @@ func ParseTemplateMessages(input string) (msgs []*Message, err error) {
 				}
 			}
 		}
-		msg := MakeMessageFromKey(item.format, comment)
+		msg := MakeMessageFromKey(item.format, comment, item.argv...)
 		if argc := len(item.argv); argc > 0 {
 			for idx, placeholder := range msg.Placeholders {
 				index := placeholder.ArgNum - 1
