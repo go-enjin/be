@@ -34,3 +34,8 @@ func IsEmpty(value interface{}) (empty bool) {
 	empty = reflect.ValueOf(&value).Elem().IsZero()
 	return
 }
+
+func TypeOf(value interface{}) (name string) {
+	name = fmt.Sprintf("%T", value)
+	return
+}
