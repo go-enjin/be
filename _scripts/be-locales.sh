@@ -7,5 +7,5 @@ exec gotext \
      -go-build='!exclude_enjin_locales' \
      update \
      -lang=en,ja \
-     -out=be_locales_catalog.go \
+     -out=/dev/null \
      ./...
