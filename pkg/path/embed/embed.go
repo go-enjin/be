@@ -21,7 +21,7 @@ import (
 	"os"
 	"sort"
 
-	"github.com/fvbommel/sortorder"
+	"github.com/maruel/natural"
 	"github.com/gabriel-vasile/mimetype"
 
 	"github.com/go-enjin/be/pkg/hash/sha"
@@ -68,7 +68,7 @@ func ListDirs(path string, efs embed.FS) (paths []string, err error) {
 			paths = append(paths, bePath.TrimSlashes(bePath.Join(path, info.Name())))
 		}
 	}
-	sort.Sort(sortorder.Natural(paths))
+	sort.Sort(natural.StringSlice(paths))
 	return
 }
 
@@ -82,7 +82,7 @@ func ListFiles(path string, efs embed.FS) (paths []string, err error) {
 			paths = append(paths, bePath.TrimSlashes(bePath.Join(path, info.Name())))
 		}
 	}
-	sort.Sort(sortorder.Natural(paths))
+	sort.Sort(natural.StringSlice(paths))
 	return
 }
 
@@ -99,7 +99,7 @@ func ListAllDirs(path string, efs embed.FS) (paths []string, err error) {
 			}
 		}
 	}
-	sort.Sort(sortorder.Natural(paths))
+	sort.Sort(natural.StringSlice(paths))
 	return
 }
 
@@ -121,6 +121,6 @@ func ListAllFiles(path string, efs embed.FS) (paths []string, err error) {
 			}
 		}
 	}
-	sort.Sort(sortorder.Natural(paths))
+	sort.Sort(natural.StringSlice(paths))
 	return
 }
