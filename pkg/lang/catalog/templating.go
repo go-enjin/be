@@ -204,9 +204,10 @@ func ParseTemplateMessages(input string) (msgs []*Message, err error) {
 				state.comment += token
 			} else {
 				if argc := len(state.argv); argc > 0 {
-					if state.argv[argc-1] == "$" {
+					switch state.argv[argc-1] {
+					case "$", ".":
 						state.argv[argc-1] += token
-					} else {
+					default:
 						state.argv = append(state.argv, token)
 					}
 				} else {
