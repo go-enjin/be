@@ -39,6 +39,7 @@ const Tag feature.Tag = "pages-query"
 type Feature interface {
 	feature.Feature
 	feature.PageTypeProcessor
+	feature.PageContextFieldsProvider
 }
 
 type MakeFeature interface {
@@ -74,6 +75,23 @@ func (f *CFeature) Make() Feature {
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CFeature.Startup(ctx); err != nil {
 		return
+	}
+	return
+}
+
+func (f *CFeature) MakePageContextFields(r *http.Request) (fields context.Fields) {
+	//printer := lang.GetPrinterFromRequest(r)
+	fields = context.Fields{
+		"query": {
+			Key:    "query",
+			Tab:    "query",
+			Format: "string-map",
+		},
+		"select": {
+			Key:    "select",
+			Tab:    "query",
+			Format: "string-map",
+		},
 	}
 	return
 }
