@@ -22,7 +22,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/fvbommel/sortorder"
 	"github.com/iancoleman/strcase"
 	"github.com/maruel/natural"
 	"github.com/pelletier/go-toml/v2"
@@ -66,7 +65,7 @@ func (c Context) Keys() (keys []string) {
 	for k, _ := range c {
 		keys = append(keys, k)
 	}
-	sort.Sort(sortorder.Natural(keys))
+	sort.Sort(natural.StringSlice(keys))
 	return
 }
 
@@ -94,7 +93,7 @@ func (c Context) DeepKeys() (keys []string) {
 			}
 		}
 	}
-	sort.Sort(sortorder.Natural(keys))
+	sort.Sort(natural.StringSlice(keys))
 	return
 }
 
