@@ -91,7 +91,7 @@ func (f *CFeature) PrepareServePage(ctx context.Context, t feature.Theme, p feat
 	ctx.SetSpecific("ReqLangTag", reqLangTag)
 
 	ctx.SetSpecific(lang.PrinterKey, lang.GetPrinterFromRequest(r))
-	ctx.SetSpecific(string(argv.RequestArgvKey), argv.GetRequestArgv(r))
+	ctx.SetSpecific(string(argv.RequestKey), argv.Get(r))
 
 	parsedTag := f.Enjin.SiteDefaultLanguage()
 	if v := ctx.Get("Language"); v != nil {
