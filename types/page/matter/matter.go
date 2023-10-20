@@ -80,7 +80,7 @@ func ParsePageMatter(origin string, path string, created, updated time.Time, raw
 	}
 
 	path = bePath.CleanWithSlash(path)
-	cleaned := lang.StripTranslatorComments(string(raw))
+	cleaned := lang.PruneTranslatorComments(string(raw))
 
 	var ctx beContext.Context
 	matter, content, matterType := ParseContent(cleaned)
