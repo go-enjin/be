@@ -30,6 +30,7 @@ import (
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/values"
 )
 
 var (
@@ -93,7 +94,7 @@ func BoolParser(spec *Field, input interface{}) (parsed interface{}, err error) 
 	case int:
 		parsed = t > 0
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }
@@ -108,7 +109,7 @@ func HtmlParser(spec *Field, input interface{}) (parsed interface{}, err error) 
 			parsed = forms.Sanitize(t)
 		}
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }
@@ -123,7 +124,7 @@ func StringParser(spec *Field, input interface{}) (parsed interface{}, err error
 			parsed = forms.StrictSanitize(t)
 		}
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }
@@ -151,7 +152,7 @@ func StringOptionParser(spec *Field, input interface{}) (parsed interface{}, err
 			}
 		}
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }
@@ -170,7 +171,7 @@ func NumberParser(spec *Field, input interface{}) (parsed interface{}, err error
 	case float64:
 		parsed = int(t)
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }
@@ -192,7 +193,7 @@ func NumberPercentParser(spec *Field, input interface{}) (parsed interface{}, er
 	case float64:
 		parsed = math.ClampI(int(t), 0, 100)
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }
@@ -211,7 +212,7 @@ func DecimalParser(spec *Field, input interface{}) (parsed interface{}, err erro
 	case float64:
 		parsed = t
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }
@@ -233,7 +234,7 @@ func DecimalPercentParser(spec *Field, input interface{}) (parsed interface{}, e
 	case float64:
 		parsed = math.ClampF(t, 0.0, 1.0)
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 
 	return
@@ -252,7 +253,7 @@ func EmailParser(spec *Field, input interface{}) (parsed interface{}, err error)
 			}
 		}
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }
@@ -267,7 +268,7 @@ func PathParser(spec *Field, input interface{}) (parsed interface{}, err error) 
 			parsed = filepath.Clean(t)
 		}
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }
@@ -285,7 +286,7 @@ func UrlParser(spec *Field, input interface{}) (parsed interface{}, err error) {
 			}
 		}
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }
@@ -307,7 +308,7 @@ func RelativeUrlParser(spec *Field, input interface{}) (parsed interface{}, err 
 			}
 		}
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }
@@ -320,7 +321,7 @@ func KebabParser(spec *Field, input interface{}) (parsed interface{}, err error)
 	case string:
 		parsed = ToKebab(t)
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }
@@ -346,7 +347,7 @@ func KebabOptionParser(spec *Field, input interface{}) (parsed interface{}, err 
 			}
 		}
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }
@@ -361,7 +362,7 @@ func UuidParser(spec *Field, input interface{}) (parsed interface{}, err error) 
 			}
 		}
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }

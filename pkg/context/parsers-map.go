@@ -19,6 +19,8 @@ import (
 	"strings"
 
 	"github.com/microcosm-cc/bluemonday"
+
+	"github.com/go-enjin/be/pkg/values"
 )
 
 func StringMapParser(spec *Field, input interface{}) (parsed interface{}, err error) {
@@ -31,7 +33,7 @@ func StringMapParser(spec *Field, input interface{}) (parsed interface{}, err er
 		}
 		parsed = cleaned
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }

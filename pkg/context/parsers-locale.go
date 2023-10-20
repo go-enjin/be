@@ -18,6 +18,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/go-enjin/be/pkg/values"
 	"github.com/go-enjin/golang-org-x-text/language"
 )
 
@@ -34,7 +35,7 @@ func LanguageParser(spec *Field, input interface{}) (parsed interface{}, err err
 			}
 		}
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }
@@ -52,7 +53,7 @@ func LanguageTagParser(spec *Field, input interface{}) (parsed interface{}, err 
 			}
 		}
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }

@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-enjin/be/pkg/values"
 )
 
 var (
@@ -79,7 +80,7 @@ func TimeStructParser(spec *Field, input interface{}) (parsed interface{}, err e
 			parsed, err = ParseTimeStructure(t)
 		}
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }
@@ -102,7 +103,7 @@ func TimeParser(spec *Field, input interface{}) (parsed interface{}, err error) 
 			err = errors.New(spec.Printer.Sprintf("not a time value"))
 		}
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }
@@ -125,7 +126,7 @@ func DateParser(spec *Field, input interface{}) (parsed interface{}, err error) 
 			err = errors.New(spec.Printer.Sprintf("not a date value"))
 		}
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 
 	return
@@ -149,7 +150,7 @@ func DateTimeParser(spec *Field, input interface{}) (parsed interface{}, err err
 			err = errors.New(spec.Printer.Sprintf("not a datetime value"))
 		}
 	default:
-		err = errors.New(spec.Printer.Sprintf("unsupported type: %T", input))
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
 	return
 }
