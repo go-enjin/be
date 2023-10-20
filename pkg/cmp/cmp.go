@@ -17,6 +17,8 @@ package cmp
 import (
 	"fmt"
 	"time"
+
+	"github.com/go-enjin/be/pkg/values"
 )
 
 func Cmp[T comparable](a, b interface{}) (same bool, err error) {
@@ -31,7 +33,7 @@ func Cmp[T comparable](a, b interface{}) (same bool, err error) {
 }
 
 func Compare(a, b interface{}) (same bool, err error) {
-	if fmt.Sprintf("%T", a) != fmt.Sprintf("%T", b) {
+	if values.TypeOf(a) != values.TypeOf(b) {
 		err = fmt.Errorf("incompatible types for comparison: %T vs %T", a, b)
 		return
 	}
@@ -60,7 +62,7 @@ func Compare(a, b interface{}) (same bool, err error) {
 }
 
 func Less(a, b interface{}) (less bool, err error) {
-	if fmt.Sprintf("%T", a) != fmt.Sprintf("%T", b) {
+	if values.TypeOf(a) != values.TypeOf(b) {
 		err = fmt.Errorf("incompatible types for (less) comparison: %T vs %T", a, b)
 		return
 	}
