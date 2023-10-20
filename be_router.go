@@ -24,7 +24,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
@@ -45,14 +44,6 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 				w.Header().Set("Server", globals.BinName)
 			}
 
-			path := forms.CleanRequestPath(r.URL.Path)
-			if reqArgv := argv.DecodeHttpRequest(r); reqArgv != nil {
-				r = reqArgv.Set(r)
-				path = reqArgv.Path
-				log.TraceF("parsed request argv: %v", reqArgv)
-			}
-			r.URL.Path = path
-
 			next.ServeHTTP(w, r)
 			return
 		})
@@ -60,6 +51,7 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 
 	router.Use(middleware.RequestID)
 	router.Use(e.eb.fPanicHandler.PanicHandler)
+	router.Use(argv.Middleware)
 
 	if e.eb.hotReload {
 		log.DebugF("including hot-reload middleware")
