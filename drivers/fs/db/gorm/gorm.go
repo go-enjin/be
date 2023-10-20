@@ -26,7 +26,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fvbommel/sortorder"
+	"github.com/maruel/natural"
 	"gorm.io/gorm"
 
 	times "github.com/go-enjin/github-com-djherbis-times"
@@ -157,7 +157,7 @@ func (f *DBFileSystem) ListDirs(path string) (paths []string, err error) {
 			}
 		}
 	}
-	sort.Sort(sortorder.Natural(paths))
+	sort.Sort(natural.StringSlice(paths))
 	return
 }
 
@@ -176,7 +176,7 @@ func (f *DBFileSystem) ListFiles(path string) (paths []string, err error) {
 			}
 		}
 	}
-	sort.Sort(sortorder.Natural(paths))
+	sort.Sort(natural.StringSlice(paths))
 	return
 }
 
@@ -193,7 +193,7 @@ func (f *DBFileSystem) ListAllDirs(path string) (paths []string, err error) {
 			paths = append(paths, beFs.PruneRootFrom(f.path, stub.Path))
 		}
 	}
-	sort.Sort(sortorder.Natural(paths))
+	sort.Sort(natural.StringSlice(paths))
 	return
 }
 
@@ -210,7 +210,7 @@ func (f *DBFileSystem) ListAllFiles(path string) (paths []string, err error) {
 			paths = append(paths, beFs.PruneRootFrom(f.path, stub.Path))
 		}
 	}
-	sort.Sort(sortorder.Natural(paths))
+	sort.Sort(natural.StringSlice(paths))
 	return
 }
 
@@ -232,7 +232,7 @@ func (f *DBFileSystem) ReadDir(path string) (paths []fs.DirEntry, err error) {
 	sort.Slice(entries, func(i, j int) (less bool) {
 		a := entries[i]
 		b := entries[j]
-		less = sortorder.NaturalLess(a.Path, b.Path)
+		less = natural.Less(a.Path, b.Path)
 		return
 	})
 	return
