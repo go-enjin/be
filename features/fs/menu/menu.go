@@ -111,7 +111,7 @@ func (f *CFeature) GetMenus(tag language.Tag) (found map[string]menu.Menu) {
 
 func (f *CFeature) GetAllMenus() (menus map[language.Tag]map[string]menu.Menu) {
 	menus = make(map[language.Tag]map[string]menu.Menu)
-	tags := f.Enjin.SiteLangCatalog().LocaleTags()
+	tags := f.Enjin.SiteLocales()
 
 	for _, tag := range tags {
 		menus[tag] = make(map[string]menu.Menu)
