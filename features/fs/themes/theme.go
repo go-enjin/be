@@ -23,6 +23,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
+	"github.com/go-enjin/be/pkg/lang/catalog"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/types/theme"
 )
@@ -36,6 +37,7 @@ var (
 
 type Feature interface {
 	filesystem.Feature[MakeFeature]
+	feature.LocalesProvider
 }
 
 type MakeFeature interface {
@@ -57,6 +59,7 @@ type CFeature struct {
 
 	theme   string
 	loading []*loadTheme
+	loaded  []feature.Theme
 }
 
 func New() MakeFeature {
@@ -107,7 +110,7 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 			return
 		}
 		mount := "/" + t.Name()
-		f.CFeature.MountPoints[mount] = append(f.CFeature.MountPoints[mount], &feature.CMountPoint{
+		f.CFeature.MountPoints[mount] = f.CFeature.MountPoints[mount].Append(&feature.CMountPoint{
 			Path:  ts.path,
 			Mount: mount,
 			ROFS:  ts.themeFs,
@@ -115,13 +118,9 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 		})
 		if t.StaticFS() != nil {
 			b.RegisterPublicFileSystem("/", t.StaticFS())
-			//f.MountPoints[mount+"/static"] = append(f.MountPoints[mount+"/static"], &feature.CMountPoint{
-			//	Path:  ts.path,
-			//	Mount: mount + "/static",
-			//	ROFS:  ts.staticFs,
-			//})
 		}
 		b.AddTheme(t)
+		f.loaded = append(f.loaded, t)
 		log.DebugF("loaded %v theme: %v", ts.support, t.Name())
 	}
 
@@ -141,5 +140,15 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *CFeature) Shutdown() {
+	return
+}
+
+func (f *CFeature) AddLocales(c catalog.Catalog) {
+	defTag := f.Enjin.SiteDefaultLanguage()
+	for _, t := range f.loaded {
+		if locale, ok := t.Locales(); ok {
+			c.AddLocalesFromFS(defTag, locale)
+		}
+	}
 	return
 }
