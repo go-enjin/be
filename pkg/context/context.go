@@ -482,17 +482,17 @@ func (c Context) PruneEmpty() (pruned Context) {
 }
 
 func (c Context) AsJSON() (data []byte, err error) {
-	data, err = json.MarshalIndent(c.PruneEmpty(), "", "  ")
+	data, err = json.MarshalIndent(c, "", "  ")
 	return
 }
 
 func (c Context) AsTOML() (data []byte, err error) {
-	data, err = toml.Marshal(c.PruneEmpty())
+	data, err = toml.Marshal(c)
 	return
 }
 
 func (c Context) AsYAML() (data []byte, err error) {
-	data, err = yaml.Marshal(c.PruneEmpty())
+	data, err = yaml.Marshal(c)
 	return
 }
 
