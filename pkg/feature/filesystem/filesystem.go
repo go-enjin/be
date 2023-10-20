@@ -106,6 +106,7 @@ type Feature[MakeTypedFeature interface{}] interface {
 }
 
 type MakeFeature[MakeTypedFeature interface{}] interface {
+	Support[MakeTypedFeature]
 	LocalPathSupport[MakeTypedFeature]
 	EmbedPathSupport[MakeTypedFeature]
 	ZipPathSupport[MakeTypedFeature]
