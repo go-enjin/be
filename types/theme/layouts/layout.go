@@ -102,7 +102,7 @@ func (l *Layout) load() (err error) {
 			}
 
 			l.lastMods[entryName] = lastMod
-			l.cache[entryName] = lang.StripTranslatorComments(string(data))
+			l.cache[entryName] = lang.PruneTranslatorComments(string(data))
 
 			if !slices.Present(entryName, l.keys...) {
 				l.keys = append(l.keys, entryName)
