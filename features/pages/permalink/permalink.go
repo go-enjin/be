@@ -46,6 +46,7 @@ type Feature interface {
 	feature.UseMiddleware
 	feature.PageContextModifier
 	feature.FuncMapProvider
+	feature.PageContextFieldsProvider
 }
 
 type MakeFeature interface {
@@ -97,6 +98,25 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CFeature.Startup(ctx); err != nil {
 		return
+	}
+	return
+}
+
+func (f *CFeature) MakePageContextFields(r *http.Request) (fields context.Fields) {
+	printer := lang.GetPrinterFromRequest(r)
+	id, _ := uuid.NewV4()
+	fields = context.Fields{
+		"permalink": {
+			Key:          "permalink",
+			Tab:          "page",
+			Label:        printer.Sprintf("Set this page's permalink"),
+			Category:     "file",
+			Weight:       10,
+			Input:        "text",
+			Format:       "uuid",
+			DefaultValue: id.String(),
+			LockNonEmpty: true,
+		},
 	}
 	return
 }
