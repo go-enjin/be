@@ -69,8 +69,6 @@ func (c Context) Keys() (keys []string) {
 	return
 }
 
-// TODO: make context.Copy a deeper Copy() of maybe literal types only
-
 // Copy makes a duplicate of this Context
 func (c Context) Copy() (ctx Context) {
 	ctx = maps.DeepCopy(c)
