@@ -23,7 +23,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/fvbommel/sortorder"
+	"github.com/maruel/natural"
 	"github.com/yookoala/realpath"
 )
 
@@ -157,8 +157,8 @@ func List(path string) (paths []string, err error) {
 			}
 		}
 	}
-	sort.Sort(sortorder.Natural(d))
-	sort.Sort(sortorder.Natural(f))
+	sort.Sort(natural.StringSlice(d))
+	sort.Sort(natural.StringSlice(f))
 	paths = append(d, f...)
 	return
 }
@@ -172,7 +172,7 @@ func ListDirs(path string) (paths []string, err error) {
 			}
 		}
 	}
-	sort.Sort(sortorder.Natural(paths))
+	sort.Sort(natural.StringSlice(paths))
 	return
 }
 
@@ -185,7 +185,7 @@ func ListFiles(path string) (paths []string, err error) {
 			}
 		}
 	}
-	sort.Sort(sortorder.Natural(paths))
+	sort.Sort(natural.StringSlice(paths))
 	return
 }
 
@@ -202,7 +202,7 @@ func ListAllDirs(path string) (paths []string, err error) {
 			}
 		}
 	}
-	sort.Sort(sortorder.Natural(paths))
+	sort.Sort(natural.StringSlice(paths))
 	return
 }
 
@@ -224,7 +224,7 @@ func ListAllFiles(path string) (paths []string, err error) {
 			}
 		}
 	}
-	sort.Sort(sortorder.Natural(paths))
+	sort.Sort(natural.StringSlice(paths))
 	return
 }
 
