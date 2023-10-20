@@ -122,7 +122,7 @@ func newEnjin(eb *EnjinBuilder) *Enjin {
 	}
 	e.initConsoles()
 	e.setupFeatures()
-	e.reloadLocales()
+	e.ReloadLocales()
 	e.cli.Action = e.action
 	return e
 }
@@ -139,7 +139,7 @@ func newIncludedEnjin(eb *EnjinBuilder, parent *Enjin) *Enjin {
 	}
 	e.initConsoles()
 	e.setupFeatures()
-	e.reloadLocales()
+	e.ReloadLocales()
 	return e
 }
 

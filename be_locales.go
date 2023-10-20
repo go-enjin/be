@@ -16,6 +16,7 @@ package be
 
 import (
 	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-enjin/golang-org-x-text/language/display"
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
 
 	"github.com/go-enjin/be/pkg/lang"
@@ -23,31 +24,24 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 )
 
-func (e *Enjin) reloadLocales() {
+func (e *Enjin) ReloadLocales() {
 	ctlg := pkgLangCatalog.New()
-	// include theme locales
-	for _, name := range e.eb.themeOrder {
-		t := e.eb.theming[name]
-		if tfs, ok := t.Locales(); ok {
-			log.DebugF("adding %v theme locales", t.Name())
-			ctlg.AddLocalesFromFS(e.eb.defaultLang, tfs)
-		}
-	}
 	// include locale features
 	for _, lp := range e.eb.fLocalesProviders {
-		log.DebugF("adding %v locales", lp.Tag())
+		//log.DebugF("adding %v locales", lp.Tag())
 		lp.AddLocales(ctlg)
 	}
 	e.mutex.Lock()
 	e.catalog = ctlg
+	e.locales = ctlg.LocaleTagsWithDefault(e.eb.defaultLang)
 	e.mutex.Unlock()
 }
 
 func (e *Enjin) SiteLocales() (locales []language.Tag) {
-	e.mutex.RLock()
-	defer e.mutex.RUnlock()
 	if len(e.eb.localeTags) == 0 {
-		locales = e.catalog.LocaleTagsWithDefault(e.eb.defaultLang)
+		e.mutex.RLock()
+		defer e.mutex.RUnlock()
+		locales = e.locales
 		return
 	}
 	locales = append(locales, e.eb.localeTags...)
@@ -55,16 +49,9 @@ func (e *Enjin) SiteLocales() (locales []language.Tag) {
 }
 
 func (e *Enjin) SiteLanguageMode() (mode lang.Mode) {
-	e.mutex.RLock()
-	defer e.mutex.RUnlock()
+	//e.mutex.RLock()
+	//defer e.mutex.RUnlock()
 	mode = e.eb.langMode
-	return
-}
-
-func (e *Enjin) SiteLangCatalog() (c pkgLangCatalog.Catalog) {
-	e.mutex.RLock()
-	defer e.mutex.RUnlock()
-	c = e.catalog
 	return
 }
 
@@ -81,15 +68,15 @@ func (e *Enjin) SiteLanguageCatalog() (c catalog.Catalog) {
 }
 
 func (e *Enjin) SiteDefaultLanguage() (tag language.Tag) {
-	e.mutex.RLock()
-	defer e.mutex.RUnlock()
+	//e.mutex.RLock()
+	//defer e.mutex.RUnlock()
 	tag = e.eb.defaultLang
 	return
 }
 
 func (e *Enjin) SiteSupportsLanguage(tag language.Tag) (supported bool) {
-	e.mutex.RLock()
-	defer e.mutex.RUnlock()
+	//e.mutex.RLock()
+	//defer e.mutex.RUnlock()
 	for _, known := range e.SiteLocales() {
 		if supported = language.Compare(tag, known); supported {
 			break
@@ -99,10 +86,13 @@ func (e *Enjin) SiteSupportsLanguage(tag language.Tag) (supported bool) {
 }
 
 func (e *Enjin) SiteLanguageDisplayName(tag language.Tag) (name string, ok bool) {
-	e.mutex.RLock()
-	defer e.mutex.RUnlock()
+	//e.mutex.RLock()
+	//defer e.mutex.RUnlock()
 	if len(e.eb.localeNames) > 0 {
 		name, ok = e.eb.localeNames[tag]
+	} else {
+		name = display.Self.Name(tag)
+		ok = name != ""
 	}
 	return
 }

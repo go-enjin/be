@@ -30,8 +30,8 @@ func (e *Enjin) performHotReload(r *http.Request) (err error) {
 		//	err = fmt.Errorf("error hot-reloading theme: %v - %v", t.Name(), err)
 		//	return
 		//}
-		//log.DebugRF(r, "hot-reloading locales")
-		//e.reloadLocales()
+		log.DebugRF(r, "hot-reloading locales")
+		e.ReloadLocales()
 		for _, f := range feature.FilterTyped[feature.HotReloadableFeature](e.eb.features.List()) {
 			log.DebugRF(r, "hot-reloading %v feature", f.Tag())
 			if err = f.HotReload(); err != nil {
