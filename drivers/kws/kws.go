@@ -23,7 +23,6 @@ import (
 
 	"github.com/blevesearch/bleve/v2"
 	bleveSearch "github.com/blevesearch/bleve/v2/search"
-	"github.com/fvbommel/sortorder"
 	"github.com/maruel/natural"
 	"github.com/puzpuzpuz/xsync/v2"
 	"github.com/urfave/cli/v2"
@@ -340,7 +339,7 @@ func (f *CFeature) KnownKeywords() (keywords []string) {
 		keywords = append(keywords, key)
 		return true
 	})
-	sort.Sort(sortorder.Natural(keywords))
+	sort.Sort(natural.StringSlice(keywords))
 	return
 }
 
