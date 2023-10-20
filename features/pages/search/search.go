@@ -247,28 +247,17 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p feature.Page) (pg f
 
 				printer := lang.GetPrinterFromRequest(r)
 				var resultSummary, hitsSummary, pageSummary string
-				switch results.Total {
-				case 0:
-					// Search result summary when no results are found
-					resultSummary = printer.Sprintf("No results found")
-				case 1:
-					// Search result summary when exactly one result is found
-					resultSummary = printer.Sprintf("1 result found")
-				default:
-					// Search result summary, <total-hits>
-					resultSummary = printer.Sprintf("%d results found", results.Total)
-				}
+				// Search result summary, <total-hits>
+				resultSummary = printer.Sprintf("%[1]d results found", results.Total)
+				// Search page summary, <number> of <pages>
+				pageSummary = printer.Sprintf("Page %[1]d of %[2]d", pageNumber, numPages)
 				switch numHits {
 				case 1:
-					// Search page summary, <number> of <pages>
-					pageSummary = printer.Sprintf("Page %d of %d", pageNumber, numPages)
 					// Search hits summary with only one hit, <hit-number> of <total-hits>
-					hitsSummary = printer.Sprintf("Showing #%d of %d", idStart, results.Total)
+					hitsSummary = printer.Sprintf("Showing #%[1]d of %[2]d", idStart, results.Total)
 				default:
-					// Search page summary, <number> of <pages>
-					pageSummary = printer.Sprintf("Page %d of %d", pageNumber, numPages)
 					// Search hits summary with more than one hit, <first-hit-number>-<last-hit-number> of <total-hits>
-					hitsSummary = printer.Sprintf("Showing %d-%d of %d", idStart, idEnd, results.Total)
+					hitsSummary = printer.Sprintf("Showing %[1]d-%[2]d of %[3]d", idStart, idEnd, results.Total)
 				}
 
 				p.Context().SetSpecific("SiteSearchSize", numPerPage)
