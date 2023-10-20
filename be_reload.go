@@ -22,14 +22,13 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 )
 
+func (e *Enjin) HotReloading() (enabled bool) {
+	enabled = e.eb.hotReload
+	return
+}
+
 func (e *Enjin) performHotReload(r *http.Request) (err error) {
 	if e.eb.hotReload {
-		//t := e.MustGetTheme()
-		//log.DebugRF(r, "hot-reloading theme: %v", t.Name())
-		//if err = t.Reload(); err != nil {
-		//	err = fmt.Errorf("error hot-reloading theme: %v - %v", t.Name(), err)
-		//	return
-		//}
 		log.DebugRF(r, "hot-reloading locales")
 		e.ReloadLocales()
 		for _, f := range feature.FilterTyped[feature.HotReloadableFeature](e.eb.features.List()) {
