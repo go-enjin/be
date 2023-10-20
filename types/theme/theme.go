@@ -20,7 +20,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/fvbommel/sortorder"
+	"github.com/maruel/natural"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
@@ -253,7 +253,7 @@ func (t *CTheme) ListFormats() (names []string) {
 	for _, p := range t.formatProviders {
 		names = append(names, p.ListFormats()...)
 	}
-	sort.Sort(sortorder.Natural(names))
+	sort.Sort(natural.StringSlice(names))
 	return
 }
 
