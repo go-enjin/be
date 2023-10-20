@@ -18,9 +18,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/fvbommel/sortorder"
 	"github.com/iancoleman/strcase"
@@ -29,6 +29,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/go-enjin/be/pkg/maps"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 // Context is a wrapper around a map[string]interface{} structure which is used
@@ -46,17 +47,13 @@ func NewFromMap(m map[string]interface{}) Context {
 	return Context(m)
 }
 
-var rxOsEnvironKV = regexp.MustCompile(`^([^=]+?)=(.+?)$`)
-
 // NewFromOsEnviron constructs a new Context from os.Environ() string K=V slices
 func NewFromOsEnviron(slices ...[]string) (c Context) {
 	c = New()
 	for _, slice := range slices {
 		for _, pair := range slice {
-			if rxOsEnvironKV.MatchString(pair) {
-				m := rxOsEnvironKV.FindAllStringSubmatch(pair, 1)
-				key, value := m[0][1], m[0][2]
-				c.SetSpecific(key, value)
+			if key, value, ok := strings.Cut(pair, "="); ok {
+				c.SetSpecific(key, beStrings.TrimQuotes(value))
 			}
 		}
 	}
