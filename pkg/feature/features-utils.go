@@ -15,9 +15,8 @@
 package feature
 
 import (
-	"fmt"
-
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/values"
 )
 
 func AsTyped[T interface{}](f Feature) (t T, ok bool) {
@@ -31,7 +30,7 @@ func MustTyped[T interface{}](f Feature) (t T) {
 		return
 	}
 	var check *T
-	log.FatalDF(1, "%v feature is not %v", f.Tag(), fmt.Sprintf("%T", check)[1:])
+	log.FatalDF(1, "%v feature is not %v", f.Tag(), values.TypeOf(check)[1:])
 	return
 }
 
