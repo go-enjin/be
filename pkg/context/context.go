@@ -33,6 +33,10 @@ import (
 
 type RequestKey string
 
+func (r RequestKey) String() string {
+	return string(r)
+}
+
 // Context is a wrapper around a map[string]interface{} structure which is used
 // throughout Go-Enjin for parsing configurations and contents.
 type Context map[string]interface{}
