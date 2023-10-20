@@ -66,6 +66,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+	f.CFeature.Localized = true
 }
 
 func (f *CFeature) AddLanguageCatalog(ctlgs ...catalog.Catalog) MakeFeature {
