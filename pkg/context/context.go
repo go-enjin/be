@@ -455,7 +455,7 @@ func (c Context) Select(keys ...string) (selected map[string]interface{}) {
 func (c Context) PruneEmpty() (pruned Context) {
 	pruned = c.Copy()
 	for k, v := range c {
-		if v == nil {
+		if v == nil || k == "" {
 			delete(pruned, k)
 			continue
 		}
