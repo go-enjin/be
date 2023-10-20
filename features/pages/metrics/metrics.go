@@ -18,7 +18,6 @@ package metrics
 
 import (
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/urfave/cli/v2"
@@ -28,6 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/maths"
 	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-enjin/be/pkg/strings/words"
 
 	"github.com/go-enjin/golang-org-x-text/message"
 )
@@ -149,9 +149,7 @@ func (f *CFeature) UpdatePageContext(pageCtx context.Context, r *http.Request) (
 
 	content := pageCtx.String("Content", "nil")
 
-	fields := strings.Fields(content)
-
-	wordCount := len(fields)
+	wordCount := words.Count(content, nil)
 	additions.SetSpecific("WordCount", wordCount)
 
 	wordCountLabel := printer.Sprintf("%[1]d words", wordCount)
