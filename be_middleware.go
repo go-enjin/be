@@ -129,9 +129,9 @@ func (e *Enjin) langMiddleware(next http.Handler) http.Handler {
 		ctx = context.WithValue(ctx, lang.LanguagePrinter, printer)
 		ctx = context.WithValue(ctx, lang.LanguageDefault, e.SiteDefaultLanguage())
 
-		if reqArgv, ok := ctx.Value(argv.RequestArgvKey).(*argv.RequestArgv); ok {
+		if reqArgv, ok := ctx.Value(argv.RequestKey).(*argv.Argv); ok {
 			reqArgv.Language = tag
-			ctx = context.WithValue(ctx, argv.RequestArgvKey, reqArgv)
+			ctx = context.WithValue(ctx, argv.RequestKey, reqArgv)
 		}
 
 		if reqPath == "" {
