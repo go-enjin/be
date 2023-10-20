@@ -24,7 +24,7 @@ import (
 )
 
 type EnjinRenderer interface {
-	RequestArgv() (reqArgv *argv.RequestArgv)
+	RequestArgv() (reqArgv *argv.Argv)
 	RequestContext() (ctx context.Context)
 
 	RenderNjnTemplate(tag string, data map[string]interface{}) (html template.HTML, err error)
