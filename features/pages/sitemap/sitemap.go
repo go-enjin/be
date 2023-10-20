@@ -17,17 +17,28 @@
 package sitemap
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/net/html"
+
+	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/lang"
+	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-enjin/be/pkg/values"
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
+)
+
+var (
+	DefaultChangeFreq = "never"
+	ChangeFreqOptions = []string{"always", "hourly", "daily", "weekly", "monthly", "yearly", "never"}
 )
 
 var (
@@ -43,6 +54,8 @@ var (
 type Feature interface {
 	feature.Feature
 	feature.ApplyMiddleware
+	feature.PageContextFieldsProvider
+	feature.PageContextParsersProvider
 }
 
 type MakeFeature interface {
@@ -96,11 +109,64 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-// func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.Request) (out context.Context) {
-// 	out = themeCtx
-// 	out.SetSpecific("SiteSearchable", true)
-// 	return
-// }
+func (f *CFeature) PageContextParsers() (parsers context.Parsers) {
+	parsers = context.Parsers{
+		"sitemap-change-freq": f.ChangeFreqParser,
+	}
+	return
+}
+
+func (f *CFeature) ChangeFreqParser(spec *context.Field, input interface{}) (parsed interface{}, err error) {
+	switch t := input.(type) {
+	case string:
+		t = strings.ToLower(t)
+		if slices.Within(t, ChangeFreqOptions) {
+			parsed = t
+		} else {
+			err = fmt.Errorf("not a change frequency")
+		}
+	default:
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
+	}
+	return
+}
+
+func (f *CFeature) MakePageContextFields(r *http.Request) (fields context.Fields) {
+	printer := lang.GetPrinterFromRequest(r)
+	fields = context.Fields{
+		"sitemap-ignored": {
+			Key:          "sitemap-ignored",
+			Tab:          "page",
+			Label:        printer.Sprintf(`Enable to have this page omitted from the sitemap`),
+			Category:     "sitemap",
+			Input:        "checkbox",
+			Format:       "bool",
+			DefaultValue: "",
+		},
+		"sitemap-priority": {
+			Key:          "sitemap-priority",
+			Tab:          "page",
+			Label:        printer.Sprintf(`Specify the priority for this page in the sitemap`),
+			Category:     "sitemap",
+			Input:        "range",
+			Format:       "decimal-percent",
+			DefaultValue: 0.5,
+			Minimum:      0.0,
+			Maximum:      1.0,
+		},
+		"sitemap-change-freq": {
+			Key:          "sitemap-change-freq",
+			Tab:          "page",
+			Label:        printer.Sprintf("Specify the change frequency for this page in the sitemap"),
+			Category:     "sitemap",
+			Input:        "select",
+			Format:       "sitemap-change-freq",
+			DefaultValue: DefaultChangeFreq,
+			ValueOptions: ChangeFreqOptions,
+		},
+	}
+	return
+}
 
 func (f *CFeature) Apply(s feature.System) (err error) {
 	s.Router().Get("/sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
@@ -112,6 +178,8 @@ func (f *CFeature) Apply(s feature.System) (err error) {
 			domain = DefaultSiteScheme + "://" + r.Host
 		}
 
+		spec, _ := f.Enjin.MakePageContextField("sitemap-change-freq", r)
+
 		pages := make(map[string]feature.Page)
 		for _, found := range f.Enjin.FindPages("/") {
 			if ignored := found.Context().String("SitemapIgnored", "false"); ignored != "true" {
@@ -119,10 +187,9 @@ func (f *CFeature) Apply(s feature.System) (err error) {
 				found.Context().SetSpecific("SitemapPriority", priority)
 
 				if changeFreq := found.Context().String("SitemapChangeFreq", ""); changeFreq != "" {
-					switch changeFreq {
-					case "always", "hourly", "daily", "weekly", "monthly", "yearly", "never":
-						found.Context().SetSpecific("SitemapChangeFreq", changeFreq)
-					default:
+					if safe, ee := f.ChangeFreqParser(spec, changeFreq); ee == nil {
+						found.Context().SetSpecific("SitemapChangeFreq", safe)
+					} else {
 						log.ErrorRF(r, "error: page has invalid sitemap-change-freq: %v", changeFreq)
 						found.Context().Delete("SitemapChangeFreq")
 					}
