@@ -263,7 +263,7 @@ func ParseTemplateMessages(input string) (msgs []*Message, err error) {
 					if msg.Placeholders[idx].Expr == "-" {
 						msg.Placeholders[idx].Expr = item.argv[index]
 					} else {
-						msg.Placeholders[idx].Expr = ", " + item.argv[index]
+						msg.Placeholders[idx].Expr += ", " + item.argv[index]
 					}
 				}
 			}
