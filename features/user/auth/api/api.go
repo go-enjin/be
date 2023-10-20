@@ -30,13 +30,13 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/github-com-go-pkgz-auth"
 	"github.com/go-enjin/github-com-go-pkgz-auth/avatar"
 	"github.com/go-enjin/github-com-go-pkgz-auth/middleware"
 	"github.com/go-enjin/github-com-go-pkgz-auth/provider"
 	"github.com/go-enjin/github-com-go-pkgz-auth/token"
 
-	beCmp "github.com/go-enjin/be/pkg/cmp"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/globals"
@@ -359,7 +359,7 @@ func (f *CFeature) AddToSignupAllowlist(emails ...string) MakeFeature {
 		email = strings.ToLower(email)
 		if address, err := mail.ParseAddress(email); err != nil {
 			log.FatalDF(1, "error parsing email address: %v - %v", email, err)
-		} else if !beCmp.ThingInSlices(address.Address, f.allowlist) {
+		} else if !slices.Within(address.Address, f.allowlist) {
 			f.allowlist = append(f.allowlist, email)
 		}
 	}

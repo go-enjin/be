@@ -25,10 +25,10 @@ import (
 	"github.com/Shopify/gomail"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/github-com-go-pkgz-auth/provider"
 	"github.com/go-enjin/github-com-go-pkgz-auth/token"
 
-	beCmp "github.com/go-enjin/be/pkg/cmp"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
@@ -105,7 +105,7 @@ func (f *CFeature) authClaimsUpdFunc(claims token.Claims) token.Claims {
 		var bypassSignupCheck bool
 		if len(f.allowlist) > 0 {
 			// user's email must be present in the allowlist
-			if beCmp.ThingInSlices(strings.ToLower(claims.User.Email), f.allowlist) {
+			if slices.Within(strings.ToLower(claims.User.Email), f.allowlist) {
 				claims.User.Attributes[AllowlistSignupAllowedKey] = "true"
 				bypassSignupCheck = true
 			} else {
