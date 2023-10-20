@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fvbommel/sortorder"
+	"github.com/maruel/natural"
 	"github.com/go-chi/chi/v5"
 
 	"github.com/go-enjin/golang-org-x-text/language"
@@ -77,7 +77,7 @@ func (e *Enjin) ThemeNames() (names []string) {
 	for name := range e.eb.theming {
 		names = append(names, name)
 	}
-	sort.Sort(sortorder.Natural(names))
+	sort.Sort(natural.StringSlice(names))
 	return
 }
 
