@@ -412,3 +412,13 @@ func Which(name string) (path string) {
 	path = "" // command not found
 	return
 }
+
+func ParseParentPaths(filepath string) (parents []string) {
+	parts := strings.Split(filepath, "/")
+	for i := 0; i < len(parts); i++ {
+		var parent string
+		parent = strings.Join(parts[0:i+1], "/")
+		parents = append(parents, parent)
+	}
+	return
+}
