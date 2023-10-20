@@ -17,8 +17,14 @@
 #: uncomment to echo instead of execute
 #CMD=echo
 
-.PHONY: audit audit-% be-update build build-dev-run check clean
-.PHONY: con-% dev dist-clean help local
+ENJIN_MK_VERSION := v0.2.12
+
+#
+#: phony make targets
+#
+
+.PHONY: audit audit-% be-update build build-dev-run check clean locales
+.PHONY: con-% dev dist-clean help help-gopkgs local
 .PHONY: profile.cpu profile.mem release release-dev-run run stop tidy unlocal
 .PHONY: yarn-% _audit _enjenv _golang _nodejs
 .PHONY: _check_make_target _clean _enjenv_bin
@@ -30,9 +36,15 @@
 .PHONY: _yarn_tag_install
 .PHONY: list-make-targets
 
-ENJIN_MK_VERSION := v0.2.11
+#
+#: global make settings
+#
 
-SHELL = /bin/bash
+SHELL := /bin/bash
+
+#
+#: global enjin settings
+#
 
 ifeq ($(origin APP_NAME),undefined)
 APP_NAME := $(shell basename `pwd`)
@@ -43,14 +55,159 @@ APP_PREFIX  ?= ${USER}
 
 UNTAGGED_VERSION ?= v0.0.0
 
-BE_DEBUG ?= false
-
 LISTEN        ?=
 PORT          ?= 3334
 DEBUG         ?= ${BE_DEBUG}
 STRICT        ?= false
 DOMAIN        ?=
+
+THEMES_PATH  ?= themes
+CONTENT_PATH ?= content
+
+BE_CONSOLE_KEYS     ?=
+DEFAULT_CONSOLE_KEY ?=
+
+#
+#: enjin locale settings
+#
+
+ifndef SRC_LANG
+SRC_LANG  := en
+endif
+
+ifndef LANGUAGES
+LANGUAGES := en
+endif
+ifeq ($(filter en,$(LANGUAGES)),)
+LANGUAGES += en
+endif
+
+ifeq (${MAKE_LOCALES},true)
+MAKE_THEME_LOCALES   := true
+MAKE_SOURCE_LOCALES  := true
+MAKE_CONTENT_LOCALES := true
+else
+MAKE_THEME_LOCALES   ?= false
+MAKE_SOURCE_LOCALES  ?= false
+MAKE_CONTENT_LOCALES ?= false
+endif
+
+CATALOG_GO_FILENAME   ?= /dev/null
+CATALOG_GO_VARIABLE   ?= Catalog
+CATALOG_GO_CONSTRAINT ?=
+
+#
+#: custom go.mod locals and be-update targets
+#
+
+GOPKG_KEYS ?=
+
+# Basic Enjin Theme
+BUILT_IN_GOPKG_KEYS += _BASIC_THEME
+_BASIC_THEME_LABEL := Go-Enjin basic theme
+_BASIC_THEME_GO_PACKAGE ?= github.com/go-enjin/basic-enjin-theme
+_BASIC_THEME_LOCAL_PATH ?= ../basic-enjin-theme
+
+# Default Enjin Theme
+BUILT_IN_GOPKG_KEYS += _DEFAULT_THEME
+_DEFAULT_THEME_LABEL := Go-Enjin default theme
+_DEFAULT_THEME_GO_PACKAGE ?= github.com/go-enjin/default-enjin-theme
+_DEFAULT_THEME_LOCAL_PATH ?= ../default-enjin-theme
+
+# Semantic Enjin Theme
+BUILT_IN_GOPKG_KEYS += _SEMANTIC_THEME
+_SEMANTIC_THEME_LABEL := Go-Enjin semantic theme
+_SEMANTIC_THEME_GO_PACKAGE ?= github.com/go-enjin/semantic-enjin-theme
+_SEMANTIC_THEME_LOCAL_PATH ?= ../semantic-enjin-theme
+
+# Go-Enjin fork of gotext package (beta enjin tags only)
+BUILT_IN_GOPKG_KEYS += _GOTEXT
+_GOTEXT_LABEL := Go-Enjin fork of golang.org/x/text
+_GOTEXT_GO_PACKAGE ?= github.com/go-enjin/golang-org-x-text
+_GOTEXT_LOCAL_PATH ?= ../golang-org-x-text
+_GOTEXT_LATEST_VER ?= v0.12.1-enjin.1
+
+# Go-Enjin fork of text scanner package
+BUILT_IN_GOPKG_KEYS += _TEXT_SCANNER
+_TEXT_SCANNER_LABEL := Go-Enjin fork of text/scanner
+_TEXT_SCANNER_GO_PACKAGE ?= github.com/go-enjin/go-stdlib-text-scanner
+_TEXT_SCANNER_LOCAL_PATH ?= ../go-stdlib-text-scanner
+
+# Go-Enjin fork of times package
+BUILT_IN_GOPKG_KEYS += _TIMES
+_TIMES_LABEL := Go-Enjin fork of github.com/djherbis/times
+_TIMES_GO_PACKAGE ?= github.com/go-enjin/github-com-djherbis-times
+_TIMES_LOCAL_PATH ?= ../github-com-djherbis-times
+
+# Go-Enjin fork of auth api
+BUILT_IN_GOPKG_KEYS += _PKGZ_AUTH
+_PKGZ_AUTH_LABEL := Go-Enjin fork of github.com/pkgz/auth
+_PKGZ_AUTH_GO_PACKAGE ?= github.com/go-enjin/github-com-pkgz-auth
+_PKGZ_AUTH_LOCAL_PATH ?= ../github-com-pkgz-auth
+
+# Go-Enjin fork of atlas-gonnect package
+BUILT_IN_GOPKG_KEYS += _ATLAS_GONNECT
+_ATLAS_GONNECT_LABEL := Go-Enjin fork of github.com/craftamap/atlas-gonnect
+_ATLAS_GONNECT_GO_PACKAGE ?= github.com/go-enjin/github-com-craftamap-atlas-gonnect
+_ATLAS_GONNECT_LOCAL_PATH ?= ../github-com-craftamap-atlas-gonnect
+
+# Go-Enjin sass output feature
+BUILT_IN_GOPKG_KEYS += _SASS_OUTPUTS
+_SASS_OUTPUTS_LABEL := Go-Enjin SASS outputs feature
+_SASS_OUTPUTS_GO_PACKAGE ?= github.com/go-enjin/features-outputs-sass
+_SASS_OUTPUTS_LOCAL_PATH ?= ../features-outputs-sass
+
+# Go-Enjin gonnectian feature
+BUILT_IN_GOPKG_KEYS += _GONNECTIAN
+_GONNECTIAN_LABEL := Go-Enjin Atlassian Connect feature
+_GONNECTIAN_GO_PACKAGE ?= github.com/go-enjin/features-gonnectian
+_GONNECTIAN_LOCAL_PATH ?= ../features-gonnectian
+
+# Go-Enjin gonnectian console feature
+BUILT_IN_GOPKG_KEYS += _GONNECTIAN_CONSOLE
+_GONNECTIAN_CONSOLE_LABEL := Go-Enjin Atlassian Connect console feature
+_GONNECTIAN_CONSOLE_GO_PACKAGE ?= github.com/go-enjin/features-consoles-gonnectian
+_GONNECTIAN_CONSOLE_LOCAL_PATH ?= ../features-consoles-gonnectian
+
+# Go-Enjin starter apt site
+BUILT_IN_GOPKG_KEYS += _STARTER_APT
+_STARTER_APT_LABEL := Go-Enjin starter APT (debian packaging) site
+_STARTER_APT_GO_PACKAGE ?= github.com/go-enjin/starter-apt-enjin
+_STARTER_APT_LOCAL_PATH ?= ../starter-apt-enjin
+
+# Go-Curses CDK
+BUILT_IN_GOPKG_KEYS += _CDK
+_CDK_LABEL := Go-Curses Development Kit
+_CDK_GO_PACKAGE ?= github.com/go-curses/cdk
+_CDK_LOCAL_PATH ?= ../../go-curses/cdk
+
+# Go-Curses CTK
+BUILT_IN_GOPKG_KEYS += _CTK
+_CTK_LABEL := Go-Curses Tool Kit
+_CTK_GO_PACKAGE ?= github.com/go-curses/ctk
+_CTK_LOCAL_PATH ?= ../../go-curses/ctk
+
+#
+#: global go-enjin settings
+#
+
+GO_ENJIN_PKG ?= github.com/go-enjin/be
+
+BE_PATH       ?= ../be
+BE_LOCAL_PATH ?= ${BE_PATH}
+
+BE_DEBUG ?= false
+
 DENY_DURATION ?= 86400
+
+DLV_PORT ?= 2345
+DLV_DEBUG ?=
+
+DLV_BIN := $(shell which dlv)
+
+#
+#: global enjin build settings
+#
 
 BUILD_TAGS        ?=
 BUILD_ARGV        ?=
@@ -59,6 +216,23 @@ DEV_BUILD_TAGS    ?= ${BUILD_TAGS}
 DEV_BUILD_ARGV    ?=
 DEV_BUILD_GCFLAGS ?=
 
+CLEAN      ?= ${APP_NAME} cpu.pprof mem.pprof
+DIST_CLEAN ?=
+EXTRA_CLEAN ?=
+
+EXTRA_BUILD_TARGET_DEPS ?=
+
+GOLANG ?= 1.21.0
+GO_MOD ?= 1021
+NODEJS ?=
+
+RELEASE_BUILD ?= false
+PRE_RELEASE_BUILD ?= false
+
+#
+#: enjin preset helpers
+#
+
 PRESET_TAGS ?=
 
 ifeq (${ADD_TAGS_ESSENTIALS},true)
@@ -66,6 +240,7 @@ PRESET_TAGS += requests_deny
 PRESET_TAGS += htmlify
 PRESET_TAGS += header_proxy
 PRESET_TAGS += page_query
+PRESET_TAGS += page_status
 PRESET_TAGS += page_partials
 PRESET_TAGS += page_funcmaps
 PRESET_TAGS += srv_pages
@@ -79,6 +254,7 @@ PRESET_TAGS += user_auth_basic
 PRESET_TAGS += htmlify
 PRESET_TAGS += header_proxy
 PRESET_TAGS += page_query
+PRESET_TAGS += page_status
 PRESET_TAGS += page_partials
 PRESET_TAGS += page_funcmaps
 PRESET_TAGS += page_permalink
@@ -91,38 +267,14 @@ BUILD_TAGS     += ${PRESET_TAGS}
 DEV_BUILD_TAGS += ${PRESET_TAGS}
 endif
 
-GOPKG_KEYS ?=
-
-CLEAN      ?= ${APP_NAME} cpu.pprof mem.pprof
-DIST_CLEAN ?=
-EXTRA_CLEAN ?=
-
-EXTRA_BUILD_TARGET_DEPS ?=
-
-GOLANG ?= 1.20.1
-GO_MOD ?= 1020
-NODEJS ?=
-
-RELEASE_BUILD ?= false
-PRE_RELEASE_BUILD ?= false
-
-GO_ENJIN_PKG ?= github.com/go-enjin/be
-
-BE_PATH       ?= ../be
-BE_LOCAL_PATH ?= ${BE_PATH}
+#
+#: global internal settings
+#
 
 _INTERNAL_BUILD_LOG_ := /dev/null
 #_INTERNAL_BUILD_LOG_ := ./build.log
 
-DEFAULT_CONSOLE_KEY ?=
-BE_CONSOLE_KEYS ?=
-
 HEROKU_BIN := $(shell which heroku)
-
-DLV_PORT ?= 2345
-DLV_DEBUG ?=
-
-DLV_BIN := $(shell which dlv)
 
 ENJENV_PKG  ?= github.com/go-enjin/enjenv/cmd/enjenv@latest
 ENJENV_DIR_NAME ?= .enjenv
@@ -325,7 +477,7 @@ ${CMD} ${ENJENV_EXE} go-unlocal "$(1)"
 endef
 
 define _make_extra_pkgs
-$(if ${GOPKG_KEYS},$(foreach key,${GOPKG_KEYS},$($(key)_GO_PACKAGE)@latest))
+$(if ${GOPKG_KEYS},$(foreach key,${GOPKG_KEYS},$($(key)_GO_PACKAGE)@$(if $($(key)_LATEST_VER),$($(key)_LATEST_VER),latest)))
 endef
 
 define _make_console_names
@@ -675,6 +827,7 @@ endif
 ifeq (${DLV_BIN},)
 	@echo "  install-dlv   run go install github.com/go-delve/delve@latest"
 endif
+	@echo "  help-gopkgs   prints a table of built-in GOPKG_KEYS values"
 
 	@echo
 	@echo "#############################################################"
@@ -706,6 +859,33 @@ endif
 	@echo "  coreutils     GNU coreutils is installed"
 	@echo
 	@echo "Enjin.mk Version: ${ENJIN_MK_VERSION}"
+
+help-gopkgs:
+	@echo "#############################################################"
+	@echo
+	@echo "GOPKG_KEYS is a Makfile setting to configure the local,"
+	@echo "unlocal and be-update build targets."
+	@echo
+	@echo "Example GOPKG_KEYS Makefile settings:"
+	@echo
+	@echo "GOPKG_KEYS += EXAMPLE"
+	@echo "EXAMPLE_LABEL := A custom label for a package"
+	@echo "EXAMPLE_GO_PACKAGE := example.com/custom/package"
+	@echo "EXAMPLE_LOCAL_PATH := ../path/to/package"
+	@echo
+	@echo "The built-in settings simplify the inclusion of common"
+	@echo "packages used during enjin development. Simply include"
+	@echo "one or more of the built-in keys and if necessary specify"
+	@echo "the path to the local git checkout of the given package."
+	@echo
+	@echo "Note that all of the options start with an underscore. This"
+	@echo "is only used to differentiate between custom settings and the"
+	@echo "built-in ones."
+	@echo
+	@echo "Built-in key options:"
+	@echo
+	@echo -e "$(foreach key,${BUILT_IN_GOPKG_KEYS},\n$(key);$($(key)_LABEL))" \
+		| column --table --table-noheadings --separator=";"
 
 _enjenv:
 	@if [ -z "${ENJENV_EXE}" -o ! -x "${ENJENV_EXE}" ]; then \
@@ -1102,3 +1282,43 @@ profile.cpu: build dev
 	else \
 		echo "# missing cpu.pprof"; \
 	fi
+
+ifeq (${MAKE_SOURCE_LOCALES},true)
+locales: BE_PKG_LIST=`${CMD} ${ENJENV_EXE} be-pkg-list`
+endif
+locales: LANG_ARG=`(for code in ${LANGUAGES}; do echo $${code}; done) | sort -u | perl -pe 's!\s+!,!msg' | perl -pe 's!,$$!!'`
+locales: export GOFLAGS=-tags=all
+locales:
+ifeq (${MAKE_THEME_LOCALES},true)
+	@echo "# generating theme locales"
+	@for theme in `ls -1 ./${THEMES_PATH}`; do \
+		if [ -d ./${THEMES_PATH}/$${theme}/layouts ]; then \
+			${CMD} enjenv be-update-locales \
+				-lang=${LANG_ARG} \
+				-out=./${THEMES_PATH}/$${theme}/locales \
+				./themes/$${theme}/layouts; \
+		else \
+			echo "# $${theme} has no layouts, nothing to generate"; \
+		fi; \
+	done
+endif
+ifeq (${MAKE_CONTENT_LOCALES},true)
+	@if [ -d ./${CONTENT_PATH} ]; then \
+		echo "# generating ${CONTENT_PATH} locales"; \
+		${CMD} enjenv be-update-locales \
+			-lang=${LANG_ARG} \
+			-out=./locales-content \
+			./${CONTENT_PATH}; \
+	fi
+endif
+ifeq (${MAKE_SOURCE_LOCALES},true)
+	@echo "# generating go source locales"
+	@${CMD} gotext \
+		-srclang=${SRC_LANG} \
+		-declare-var="${CATALOG_GO_VARIABLE}" \
+		-go-build="${CATALOG_GO_CONSTRAINT}" \
+		update \
+		-lang=${LANG_ARG} \
+		-out=${CATALOG_GO_FILENAME} \
+		${BE_PKG_LIST}
+endif
