@@ -21,7 +21,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/fvbommel/sortorder"
+	"github.com/maruel/natural"
 
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/hash/sha"
@@ -43,7 +43,7 @@ func (m ShaMap) Keys() (keys []string) {
 	for key := range m {
 		keys = append(keys, key)
 	}
-	sort.Sort(sortorder.Natural(keys))
+	sort.Sort(natural.StringSlice(keys))
 	return
 }
 
@@ -411,7 +411,7 @@ func WriteSlugfile(argv ...string) (slugfile string, err error) {
 		}
 		files = append(files, strings.TrimSpace(relArg))
 	}
-	sort.Sort(sortorder.Natural(files))
+	sort.Sort(natural.StringSlice(files))
 	contents := strings.Join(files, "\n")
 	if err = os.WriteFile(FileName, []byte(contents), 0660); err == nil {
 		slugfile = contents
