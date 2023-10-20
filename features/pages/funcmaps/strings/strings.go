@@ -107,6 +107,7 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		"trimSpace":        strings.TrimSpace,
 		"trimPrefix":       strings.TrimPrefix,
 		"trimSuffix":       strings.TrimSuffix,
+		"rplString":        ReplaceString,
 	}
 	return
 }
@@ -271,5 +272,21 @@ func IsPath(value string) (ok bool) {
 
 func BaseName(path string) (name string) {
 	name = filepath.Base(path)
+	return
+}
+
+func ReplaceString(input string, argv ...string) (output string, err error) {
+	if len(argv)%2 != 0 {
+		err = fmt.Errorf("unbalanced argument list: %#+v", argv)
+		return
+	}
+	rpl := map[string]string{}
+	for i := 0; i < len(argv); i += 2 {
+		rpl[argv[i]] = argv[i+1]
+	}
+	output = input
+	for k, v := range rpl {
+		output = strings.ReplaceAll(output, k, v)
+	}
 	return
 }
