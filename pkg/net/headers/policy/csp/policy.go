@@ -7,7 +7,7 @@ package csp
 import (
 	"sort"
 
-	"github.com/fvbommel/sortorder"
+	"github.com/maruel/natural"
 
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/slices"
@@ -80,11 +80,11 @@ func (p *cPolicy) Value() (value string) {
 		case aIsReport && !bIsReport:
 			less = false
 		case aIsReport && bIsReport:
-			less = sortorder.NaturalLess(aType, bType)
+			less = natural.Less(aType, bType)
 		case !aIsReport && bIsReport:
 			less = true
 		default:
-			less = sortorder.NaturalLess(aType, bType)
+			less = natural.Less(aType, bType)
 		}
 		return
 	})

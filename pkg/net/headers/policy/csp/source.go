@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/fvbommel/sortorder"
+	"github.com/maruel/natural"
 )
 
 type Sources []Source
@@ -121,7 +121,7 @@ func (s Sources) Sort() (sorted Sources) {
 			}
 			return true
 		}
-		return sortorder.NaturalLess(a.Value(), b.Value())
+		return natural.Less(a.Value(), b.Value())
 	})
 	return
 }
