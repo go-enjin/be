@@ -159,7 +159,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		} else {
 			var known bool
 			if dialect, known = gKnownDialects[dbType]; !known {
-				err = fmt.Errorf("gorm db startup error: unknown type --%v=%v", dbTypeFlag, dbType)
+				err = fmt.Errorf("gorm db startup error: unknown type --%v=%q", dbTypeFlag, dbType)
 				return
 			}
 		}
