@@ -29,7 +29,7 @@ import (
 	"github.com/go-enjin/be/pkg/slices"
 )
 
-func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []string, reqArgv *argv.RequestArgv) (redirect string, err error) {
+func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []string, reqArgv *argv.Argv) (redirect string, err error) {
 
 	// tag := lang.GetTag(r)
 	printer := lang.GetPrinterFromRequest(reqArgv.Request)

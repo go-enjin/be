@@ -71,8 +71,8 @@ func renderNjnData(f *CFeature, ctx context.Context, data interface{}) (html tem
 	return
 }
 
-func (re *RenderEnjin) RequestArgv() (reqArgv *argv.RequestArgv) {
-	reqArgv, _ = re.ctx.Get("RequestArgv").(*argv.RequestArgv)
+func (re *RenderEnjin) RequestArgv() (reqArgv *argv.Argv) {
+	reqArgv, _ = re.ctx.Get(argv.RequestKey.String()).(*argv.Argv)
 	return
 }
 

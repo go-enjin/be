@@ -170,7 +170,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	for idx, pieces := range reqArgv.Argv {
 		if pieces[0] != "" && pieces[0] == tag {
 			argvBlockPresent = true
-			re.RequestContext().SetSpecific(argv.RequestArgvConsumedKey, true)
+			re.RequestContext().SetSpecific(argv.RequestConsumedKey, true)
 
 			var fixArgs []string
 			var viewArgs []string
