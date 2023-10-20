@@ -17,6 +17,7 @@
 package gorm
 
 import (
+	"fmt"
 	"strings"
 
 	"gorm.io/gorm"
@@ -42,9 +43,17 @@ func (f *DBFileSystem) getEntryUnsafe(path string) (entry *File, err error) {
 	//		sq.Commit()
 	//	}
 	//}()
-	if err = f.tableScopedOrTx().Where(`path = ?`, realpath).First(entry).Error; err != nil {
-		entry = nil
+
+	if tx := f.tableScopedOrTx(); tx == nil {
+		err = fmt.Errorf("transaction scope not found")
+		return
+	} else if stmt := tx.Where(`path = ?`, realpath); stmt.Error != nil {
+		err = stmt.Error
+		return
+	} else if err = stmt.First(&entry).Error; err != nil {
+		return
 	}
+
 	return
 }
 
@@ -59,8 +68,15 @@ func (f *DBFileSystem) getStubUnsafe(path string) (stub *entryStub, err error) {
 	//		sq.Commit()
 	//	}
 	//}()
-	if err = f.tableScopedOrTx().Where(`path = ?`, realpath).First(stub).Error; err != nil {
-		stub = nil
+
+	if tx := f.tableScopedOrTx(); tx == nil {
+		err = fmt.Errorf("transaction scope not found")
+		return
+	} else if stmt := tx.Where(`path = ?`, realpath); stmt.Error != nil {
+		err = stmt.Error
+		return
+	} else if err = stmt.First(&stub).Error; err != nil {
+		return
 	}
 	return
 }
@@ -76,8 +92,15 @@ func (f *DBFileSystem) getStampUnsafe(path string) (stamp *entryStamp, err error
 	//		sq.Commit()
 	//	}
 	//}()
-	if err = f.tableScopedOrTx().Where(`path = ?`, realpath).First(stamp).Error; err != nil {
-		stamp = nil
+
+	if tx := f.tableScopedOrTx(); tx == nil {
+		err = fmt.Errorf("transaction scope not found")
+		return
+	} else if stmt := tx.Where(`path = ?`, realpath); stmt.Error != nil {
+		err = stmt.Error
+		return
+	} else if err = stmt.First(&stamp).Error; err != nil {
+		return
 	}
 	return
 }

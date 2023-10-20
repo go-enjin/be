@@ -25,6 +25,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
+	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -73,7 +74,6 @@ func (f *DBFileSystem) MakeDir(path string, _ os.FileMode) (err error) {
 func (f *DBFileSystem) MakeDirAll(path string, _ os.FileMode) (err error) {
 	//f.Lock()
 	//defer f.Unlock()
-	// TODO: are directory inodes needed?
 	var entry *File
 	if entry, err = f.getEntryUnsafe(path); err == nil {
 		if entry.Mime == InodeDirectoryMimeType {
@@ -82,22 +82,21 @@ func (f *DBFileSystem) MakeDirAll(path string, _ os.FileMode) (err error) {
 		}
 		err = fmt.Errorf("path is a File")
 	} else {
-		entry = &File{
-			Path:    path,
-			Mime:    InodeDirectoryMimeType,
-			Shasum:  "",
-			Content: []byte{},
-			Context: []byte{},
+		tx := f.tableScopedOrTx()
+		realpath := f.realpath(path)
+		parents := bePath.ParseParentPaths(realpath)
+		for _, parent := range parents {
+			entry = &File{
+				Path:    parent,
+				Mime:    InodeDirectoryMimeType,
+				Shasum:  "",
+				Content: []byte{},
+				Context: []byte{},
+			}
+			if _, ee := f.getEntryUnsafe(parent); ee != nil {
+				tx.Save(entry)
+			}
 		}
-		//sq := f.tableScopedOrTx().Begin()
-		//defer func() {
-		//	if sqErr := recover(); sqErr != nil {
-		//		sq.Rollback()
-		//	} else {
-		//		sq.Commit()
-		//	}
-		//}()
-		err = f.tableScopedOrTx().Save(entry).Error
 	}
 	return
 }
@@ -106,15 +105,13 @@ func (f *DBFileSystem) Remove(path string) (err error) {
 	//f.Lock()
 	//defer f.Unlock()
 	realpath := f.realpath(path)
-	//sq := f.tableScopedOrTx().Begin()
-	//defer func() {
-	//	if sqErr := recover(); sqErr != nil {
-	//		sq.Rollback()
-	//	} else {
-	//		sq.Commit()
-	//	}
-	//}()
-	err = f.tableScopedOrTx().Where(`path = ?`, realpath).Delete(&File{}).Error
+	if tx := f.tableScopedOrTx().Where(`path = ?`, realpath); tx.Error != nil {
+		err = tx.Error
+		return
+	} else if tx = tx.Unscoped().Delete(&File{}); tx.Error != nil {
+		err = tx.Error
+		return
+	}
 	return
 }
 
@@ -122,21 +119,24 @@ func (f *DBFileSystem) RemoveAll(path string) (err error) {
 	//f.Lock()
 	//defer f.Unlock()
 	realpath := f.realpath(path)
-	//sq := f.tableScopedOrTx().Begin()
-	//defer func() {
-	//	if sqErr := recover(); sqErr != nil {
-	//		sq.Rollback()
-	//	} else {
-	//		sq.Commit()
-	//	}
-	//}()
-	err = f.tableScopedOrTx().Where(`path LIKE ?`, realpath+"%").Delete(&File{}).Error
+	if err = f.Remove(path); err != nil {
+		return
+	} else if tx := f.tableScopedOrTx().Where(`path LIKE ?`, realpath+"/%"); tx.Error != nil {
+		err = tx.Error
+		return
+	} else if tx = tx.Unscoped().Delete(&File{}); tx.Error != nil {
+		err = tx.Error
+		return
+	}
 	return
 }
 
 func (f *DBFileSystem) WriteFile(path string, data []byte, _ os.FileMode) (err error) {
 	//f.Lock()
 	//defer f.Unlock()
+	if dirPath := bePath.Dir(path); dirPath != "" {
+		_ = f.MakeDirAll(dirPath, 0)
+	}
 	realpath := f.realpath(path)
 	var shasum string
 	if shasum, err = sha.DataHash64(data); err != nil {
@@ -145,7 +145,6 @@ func (f *DBFileSystem) WriteFile(path string, data []byte, _ os.FileMode) (err e
 	mime := mimetype.Detect(data).String()
 	var entry *File
 	if entry, err = f.getEntryUnsafe(path); err != nil {
-		err = nil
 		entry = &File{
 			Path:    realpath,
 			Mime:    mime,
@@ -153,23 +152,16 @@ func (f *DBFileSystem) WriteFile(path string, data []byte, _ os.FileMode) (err e
 			Content: data,
 			// Context: ctx,
 		}
+		err = f.tableScopedOrTx().Save(entry).Error
 	} else {
 		entry.Path = realpath
 		entry.Mime = mime
 		entry.Shasum = shasum
 		entry.Content = data
 		// entry.Context = ctx
+		err = f.tableScopedOrTx().Where(`path = ?`, realpath).Updates(entry).Error
 	}
 
-	//sq := f.tableScopedOrTx().Begin()
-	//defer func() {
-	//	if sqErr := recover(); sqErr != nil {
-	//		sq.Rollback()
-	//	} else {
-	//		sq.Commit()
-	//	}
-	//}()
-	err = f.tableScopedOrTx().Save(entry).Error
 	return
 }
 
@@ -187,6 +179,9 @@ func (f *DBFileSystem) ChangeTimes(path string, created, updated time.Time) (err
 func (f *DBFileSystem) WritePageMatter(pm *matter.PageMatter) (err error) {
 	//f.Lock()
 	//defer f.Unlock()
+	if dirPath := bePath.Dir(pm.Path); dirPath != "" {
+		_ = f.MakeDirAll(dirPath, 0)
+	}
 	realpath := f.realpath(pm.Path)
 
 	var data []byte
@@ -224,14 +219,6 @@ func (f *DBFileSystem) WritePageMatter(pm *matter.PageMatter) (err error) {
 		entry.Context = jsonMatter
 	}
 
-	//sq := f.tableScopedOrTx().Begin()
-	//defer func() {
-	//	if sqErr := recover(); sqErr != nil {
-	//		sq.Rollback()
-	//	} else {
-	//		sq.Commit()
-	//	}
-	//}()
 	err = f.tableScopedOrTx().Save(entry).Error
 	return
 }

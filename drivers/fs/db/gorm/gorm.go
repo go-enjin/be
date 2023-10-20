@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
-	"os"
 	"sort"
 	"strings"
 	"sync"
@@ -141,14 +140,29 @@ func (f *DBFileSystem) Open(path string) (file fs.File, err error) {
 	return
 }
 
+func find[T interface{}](f *DBFileSystem, path string, dst T) (realpath string, err error) {
+	realpath = f.realpath(path)
+	if tx := f.tableScopedOrTx(); tx == nil {
+		err = fmt.Errorf("transaction scope not found")
+		return
+	} else if stmt := tx.Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%"); stmt.Error != nil {
+		err = stmt.Error
+		return
+	} else if err = stmt.Find(dst).Error; err != nil {
+		return
+	}
+	return
+}
+
 func (f *DBFileSystem) ListDirs(path string) (paths []string, err error) {
 	f.RLock()
 	defer f.RUnlock()
-	realpath := f.realpath(path)
 	var stubs []entryStub
-	if err = f.tableScopedOrTx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(stubs).Error; err != nil {
+	var realpath string
+	if realpath, err = find(f, path, &stubs); err != nil {
 		return
 	}
+
 	for _, stub := range stubs {
 		if stub.Mime == InodeDirectoryMimeType {
 			// not sub-directories
@@ -164,11 +178,12 @@ func (f *DBFileSystem) ListDirs(path string) (paths []string, err error) {
 func (f *DBFileSystem) ListFiles(path string) (paths []string, err error) {
 	f.RLock()
 	defer f.RUnlock()
-	realpath := f.realpath(path)
 	var stubs []entryStub
-	if err = f.tableScopedOrTx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(stubs).Error; err != nil {
+	var realpath string
+	if realpath, err = find(f, path, &stubs); err != nil {
 		return
 	}
+
 	for _, stub := range stubs {
 		if stub.Mime != InodeDirectoryMimeType {
 			if isDirectChild(realpath, stub.Path) {
@@ -183,11 +198,11 @@ func (f *DBFileSystem) ListFiles(path string) (paths []string, err error) {
 func (f *DBFileSystem) ListAllDirs(path string) (paths []string, err error) {
 	f.RLock()
 	defer f.RUnlock()
-	realpath := f.realpath(path)
 	var stubs []entryStub
-	if err = f.tableScopedOrTx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(stubs).Error; err != nil {
+	if _, err = find(f, path, &stubs); err != nil {
 		return
 	}
+
 	for _, stub := range stubs {
 		if stub.Mime == InodeDirectoryMimeType {
 			paths = append(paths, beFs.PruneRootFrom(f.path, stub.Path))
@@ -200,11 +215,11 @@ func (f *DBFileSystem) ListAllDirs(path string) (paths []string, err error) {
 func (f *DBFileSystem) ListAllFiles(path string) (paths []string, err error) {
 	f.RLock()
 	defer f.RUnlock()
-	realpath := f.realpath(path)
 	var stubs []entryStub
-	if err = f.tableScopedOrTx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(stubs).Error; err != nil {
+	if _, err = find(f, path, &stubs); err != nil {
 		return
 	}
+
 	for _, stub := range stubs {
 		if stub.Mime != "" && stub.Mime != InodeDirectoryMimeType {
 			paths = append(paths, beFs.PruneRootFrom(f.path, stub.Path))
@@ -217,17 +232,19 @@ func (f *DBFileSystem) ListAllFiles(path string) (paths []string, err error) {
 func (f *DBFileSystem) ReadDir(path string) (paths []fs.DirEntry, err error) {
 	f.RLock()
 	defer f.RUnlock()
-	realpath := f.realpath(path)
+
 	var entries []*File
-	if err = f.tableScopedOrTx().Where(`path LIKE ?`, sqlEscapeLIKE(realpath)+"/%").Find(entries).Error; err != nil {
+	var realpath string
+	if realpath, err = find(f, path, &entries); err != nil {
 		return
 	}
+
 	for _, entry := range entries {
-		if entry.Mime != InodeDirectoryMimeType {
-			if isDirectChild(realpath, entry.Path) {
-				paths = append(paths, entry)
-			}
+		//if entry.Mime != InodeDirectoryMimeType {
+		if isDirectChild(realpath, entry.Path) {
+			paths = append(paths, entry)
 		}
+		//}
 	}
 	sort.Slice(entries, func(i, j int) (less bool) {
 		a := entries[i]
@@ -343,8 +360,17 @@ func (f *DBFileSystem) FindFilePath(prefix string, extensions ...string) (path s
 	}
 
 	var entry File
-	if err = f.tableScopedOrTx().Where("path IN (?)", paths).Order("path DESC").First(&entry).Error; err != nil {
-		err = os.ErrNotExist
+
+	if tx := f.tableScopedOrTx(); tx == nil {
+		err = fmt.Errorf("transaction scope not found")
+		return
+	} else if stmt := tx.Where(`path IN (?)`, paths); stmt.Error != nil {
+		err = stmt.Error
+		return
+	} else if stmt = stmt.Order("path DESC"); stmt.Error != nil {
+		err = stmt.Error
+		return
+	} else if err = stmt.First(&entry).Error; err != nil {
 		return
 	}
 
