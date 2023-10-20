@@ -131,6 +131,9 @@ type Internals interface {
 	Transformers() (transformers map[string]TransformOutputFn)
 	Slugsums() (enabled bool)
 
+	ReloadLocales()
+	HotReloading() (enabled bool)
+
 	DB(tag string) (db interface{}, err error)
 	MustDB(tag string) (db interface{})
 	SpecificDB(fTag Tag, tag string) (db interface{}, err error)
