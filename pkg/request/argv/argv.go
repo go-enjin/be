@@ -23,8 +23,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-enjin/golang-org-x-text/language"
 	"golang.org/x/net/html"
+
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/forms"
@@ -32,25 +33,26 @@ import (
 )
 
 const (
-	RequestArgvKey         beContext.RequestKey = "RequestArgv"
-	RequestRedirectKey     string               = "RequestRedirect"
-	RequestArgvIgnoredKey  string               = "RequestArgvIgnored"
-	RequestArgvConsumedKey string               = "RequestArgvConsumed"
+	RequestKey         beContext.RequestKey = "RequestArgv"
+	RequestRedirectKey string               = "RequestRedirect"
+	RequestIgnoredKey  string               = "RequestArgvIgnored"
+	RequestConsumedKey string               = "RequestArgvConsumed"
+)
+
+const (
+	PatternArgs  = `((?:/:[^/]+)+?)`
+	PatternPgntn = `(/\d+/\d+/??)`
 )
 
 var (
-	RxPageRequestSplit = regexp.MustCompile(`/:`)
-	RxPageRequestSafe  = regexp.MustCompile(`/:.*$`)
+	RxRequestSplit = regexp.MustCompile(`/:`)
+	RxRequestCase0 = regexp.MustCompile(`^(/[^:]+?)` + PatternArgs + PatternPgntn + `$`)
+	RxRequestCase1 = regexp.MustCompile(`^(/[^:]+?)` + PatternPgntn + `$`)
+	RxRequestCase2 = regexp.MustCompile(`^(/[^:]+?)` + PatternArgs + `$`)
+	RxRequestCase3 = regexp.MustCompile(`^(/[^:]+?)$`)
 )
 
-var (
-	RxPageRequestArgvCase0 = regexp.MustCompile(`^(/[^:]+?)((?:/:[^/]+)+?)(/\d+/\d+/??)$`)
-	RxPageRequestArgvCase1 = regexp.MustCompile(`^(/[^:]+?)(/\d+/\d+/??)$`)
-	RxPageRequestArgvCase2 = regexp.MustCompile(`^(/[^:]+?)((?:/:[^/]+)+?)$`)
-	RxPageRequestArgvCase3 = regexp.MustCompile(`^(/[^:]+?)$`)
-)
-
-type RequestArgv struct {
+type Argv struct {
 	Path       string
 	Argv       [][]string
 	NumPerPage int
@@ -59,22 +61,22 @@ type RequestArgv struct {
 	Request    *http.Request
 }
 
-func (ra *RequestArgv) MustConsume() (must bool) {
+func (ra *Argv) MustConsume() (must bool) {
 	must = len(ra.Argv) > 0
 	return
 }
 
-func (ra *RequestArgv) Set(r *http.Request) (req *http.Request) {
-	req = r.Clone(context.WithValue(r.Context(), RequestArgvKey, ra))
+func (ra *Argv) Set(r *http.Request) (req *http.Request) {
+	req = r.Clone(context.WithValue(r.Context(), RequestKey, ra))
 	return
 }
 
-func (ra *RequestArgv) Copy() (reqArg *RequestArgv) {
+func (ra *Argv) Copy() (reqArg *Argv) {
 	var argv [][]string
 	for _, group := range ra.Argv {
 		argv = append(argv, append([]string{}, group...))
 	}
-	reqArg = &RequestArgv{
+	reqArg = &Argv{
 		Path:       ra.Path,
 		Argv:       argv,
 		NumPerPage: ra.NumPerPage,
@@ -84,7 +86,7 @@ func (ra *RequestArgv) Copy() (reqArg *RequestArgv) {
 	return
 }
 
-func (ra *RequestArgv) String() (argvUrl string) {
+func (ra *Argv) String() (argvUrl string) {
 	argvUrl = strings.TrimSuffix(ra.Path, "/")
 	for _, pieces := range ra.Argv {
 		argvUrl += "/:"
@@ -107,12 +109,12 @@ func (ra *RequestArgv) String() (argvUrl string) {
 	return
 }
 
-func GetRequestArgv(r *http.Request) (reqArgv *RequestArgv) {
-	reqArgv, _ = r.Context().Value(RequestArgvKey).(*RequestArgv)
+func Get(r *http.Request) (reqArgv *Argv) {
+	reqArgv, _ = r.Context().Value(RequestKey).(*Argv)
 	return
 }
 
-func DecomposeHttpRequest(r *http.Request) (reqArgv *RequestArgv) {
+func DecomposeHttpRequest(r *http.Request) (reqArgv *Argv) {
 	path := forms.TrimQueryParams(r.RequestURI)
 	var argv [][]string
 	numPerPage, pageNumber := -1, -1
@@ -123,20 +125,20 @@ func DecomposeHttpRequest(r *http.Request) (reqArgv *RequestArgv) {
 
 	switch {
 
-	case RxPageRequestArgvCase0.MatchString(path): // all three segments
-		m := RxPageRequestArgvCase0.FindAllStringSubmatch(path, 1)
+	case RxRequestCase0.MatchString(path): // all three segments
+		m := RxRequestCase0.FindAllStringSubmatch(path, 1)
 		vPath, vArgs, vPgntn = m[0][1], m[0][2], m[0][3]
 
-	case RxPageRequestArgvCase1.MatchString(path): // first and third
-		m := RxPageRequestArgvCase1.FindAllStringSubmatch(path, 1)
+	case RxRequestCase1.MatchString(path): // first and third
+		m := RxRequestCase1.FindAllStringSubmatch(path, 1)
 		vPath, vPgntn = m[0][1], m[0][2]
 
-	case RxPageRequestArgvCase2.MatchString(path): // first and second
-		m := RxPageRequestArgvCase2.FindAllStringSubmatch(path, 1)
+	case RxRequestCase2.MatchString(path): // first and second
+		m := RxRequestCase2.FindAllStringSubmatch(path, 1)
 		vPath, vArgs = m[0][1], m[0][2]
 
-	case RxPageRequestArgvCase3.MatchString(path): // first only
-		m := RxPageRequestArgvCase3.FindAllStringSubmatch(path, 1)
+	case RxRequestCase3.MatchString(path): // first only
+		m := RxRequestCase3.FindAllStringSubmatch(path, 1)
 		vPath = m[0][1]
 	}
 
@@ -144,7 +146,7 @@ func DecomposeHttpRequest(r *http.Request) (reqArgv *RequestArgv) {
 
 	if args := vArgs; args != "" {
 		args = args[2:] // remove leading "/:"
-		parts := RxPageRequestSplit.Split(args, -1)
+		parts := RxRequestSplit.Split(args, -1)
 		for _, part := range parts {
 			argv = append(argv, strings.Split(part, ","))
 		}
@@ -170,7 +172,7 @@ func DecomposeHttpRequest(r *http.Request) (reqArgv *RequestArgv) {
 		}
 	}
 
-	reqArgv = &RequestArgv{
+	reqArgv = &Argv{
 		Path:       path,
 		Argv:       argv,
 		NumPerPage: numPerPage,
@@ -180,7 +182,7 @@ func DecomposeHttpRequest(r *http.Request) (reqArgv *RequestArgv) {
 	return
 }
 
-func DecodeHttpRequest(r *http.Request) (reqArgv *RequestArgv) {
+func DecodeHttpRequest(r *http.Request) (reqArgv *Argv) {
 	reqArgv = DecomposeHttpRequest(r)
 	for idx, argv := range reqArgv.Argv {
 		var args []string
