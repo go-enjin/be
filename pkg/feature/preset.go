@@ -116,10 +116,6 @@ func (p *CPreset[MakeTypedPreset]) Preset(b Builder) (err error) {
 		p.IncludeFeature(b, p.Features[idx])
 	}
 
-	if !slices.Within(EnjinLocalesTag, p.omitTags) {
-		b.AddEnjinLocales()
-	}
-
 	return
 }
 
