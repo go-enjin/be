@@ -16,7 +16,11 @@
 
 package gorm
 
-import "strings"
+import (
+	"strings"
+
+	bePath "github.com/go-enjin/be/pkg/path"
+)
 
 func sqlEscapeLIKE(input string) (escaped string) {
 	escaped = strings.ReplaceAll(input, `%`, `\%`)
@@ -29,11 +33,8 @@ func isDirectChild(parent, path string) (is bool) {
 	if pLen > len(path) {
 		return
 	}
-	var trimmed string
-	if trimmed = path[0 : pLen-1]; len(trimmed) > 0 && trimmed[0] == '/' {
-		// drop parent prefix and remove root slash if present
-		trimmed = trimmed[1:]
-	}
-	is = !strings.Contains(trimmed, "/")
+	dir := bePath.Dir(path)
+	pDir := bePath.TrimSlash(parent)
+	is = dir == pDir
 	return
 }
