@@ -196,8 +196,8 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p feature.Page) (pg f
 		}
 
 		// prepare arguments
-		reqArgv := argv.GetRequestArgv(r)
-		p.Context().SetSpecific(argv.RequestArgvConsumedKey, true)
+		reqArgv := argv.Get(r)
+		p.Context().SetSpecific(argv.RequestConsumedKey, true)
 		reqLangTag := lang.GetTag(r)
 		numPerPage, pageIndex, pageNumber := p.Context().ValueAsInt("DefaultNumPerPage", 10), 0, 1
 		if reqArgv.NumPerPage > -1 {
