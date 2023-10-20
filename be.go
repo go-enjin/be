@@ -37,6 +37,7 @@ import (
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
 	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 var (
@@ -59,6 +60,7 @@ type Enjin struct {
 	debug bool
 
 	catalog catalog.Catalog
+	locales []language.Tag
 
 	contentSecurityPolicy *csp.PolicyHandler
 	permissionsPolicy     *permissions.PolicyHandler
