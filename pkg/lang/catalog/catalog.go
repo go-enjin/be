@@ -15,14 +15,16 @@
 package catalog
 
 import (
-	"fmt"
+	"io/fs"
+	"sort"
 
-	"github.com/goccy/go-json"
+	"github.com/maruel/natural"
 
+	"github.com/go-enjin/golang-org-x-text/feature/plural"
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
 
-	"github.com/go-enjin/be/pkg/fs"
+	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 )
@@ -32,13 +34,12 @@ var (
 )
 
 var (
-	OutputGoTextName   = "out.gotext.json"
-	MessagesGoTextName = "messages.gotext.json"
+	DefaultFileName = "out.gotext.json"
 )
 
 type Catalog interface {
 	AddCatalog(others ...catalog.Catalog)
-	AddLocalesFromFS(defaultTag language.Tag, efs fs.FileSystem)
+	AddLocalesFromFS(defaultTag language.Tag, efs beFs.FileSystem)
 	AddLocalesFromJsonBytes(tag language.Tag, src string, contents []byte)
 
 	LocaleTags() (tags []language.Tag)
@@ -48,13 +49,13 @@ type Catalog interface {
 }
 
 type CCatalog struct {
-	table    map[language.Tag]*dictionaries
+	catalog  *catalog.Builder
 	catalogs []catalog.Catalog
 }
 
 func New() (c Catalog) {
 	c = &CCatalog{
-		table:    make(map[language.Tag]*dictionaries),
+		catalog:  catalog.NewBuilder(),
 		catalogs: make([]catalog.Catalog, 0),
 	}
 	return
@@ -65,77 +66,114 @@ func (c *CCatalog) AddCatalog(others ...catalog.Catalog) {
 }
 
 func (c *CCatalog) AddLocalesFromJsonBytes(tag language.Tag, src string, contents []byte) {
-	var data map[string]interface{}
-	if err := json.Unmarshal(contents, &data); err != nil {
-		log.ErrorF("error parsing json locale: [%v] %v - %v", tag, src, err)
-	} else {
-		if v, ok := data["messages"]; ok && v == nil {
-			log.TraceDF(1, "skipping nil messages: [%v] %v", tag, src)
-			return
-		}
-		if _, ok := c.table[tag]; !ok {
-			c.table[tag] = newDictionaries(tag)
-		}
-		d := newDictionaryFromJsonData(tag, src, data)
-		c.table[tag].Append(d)
+	if len(contents) == 0 {
+		return
 	}
-}
 
-func (c *CCatalog) AddLocalesFromFS(defaultTag language.Tag, efs fs.FileSystem) {
-	if entries, err := efs.ReadDir("."); err != nil {
-		log.ErrorF("error read dir: %v", err)
-	} else {
-		for _, entry := range entries {
-			name := entry.Name()
-			if entryTag, ee := language.Parse(name); ee != nil {
-				log.ErrorF("invalid language: %v", entry.Name())
-			} else {
-				if tagEntries, eee := efs.ReadDir(name); eee != nil {
-					log.ErrorF("error read dir %v: %v", name, eee)
-				} else {
-					var filename string
-					for _, te := range tagEntries {
-						switch te.Name() {
-						case OutputGoTextName:
-							filename = OutputGoTextName
-							break
-						}
-					}
+	var err error
+	var gt *GoText
+	var parsed language.Tag
 
-					if filename == "" {
-						if language.Compare(entryTag, defaultTag) {
-							log.DebugF("locale (%v) not found, expected: %v", name, OutputGoTextName)
-						} else {
-							log.DebugF("locale (%v) not found, expected: %v", name, MessagesGoTextName)
-						}
-						continue
-					}
+	if gt, parsed, err = ParseGoText(contents); err != nil {
+		log.ErrorF("error parsing gotext.json: [%v] %v - %v", tag, src, err)
+		return
+	}
 
-					src := name + "/" + filename
-					log.DebugF("locale source found: %v", src)
-					if contents, eeee := efs.ReadFile(src); eeee != nil {
-						log.ErrorF("error reading: %v - %v", src, eeee)
-					} else {
-						c.AddLocalesFromJsonBytes(entryTag, src, contents)
-					}
+	for _, msg := range gt.Messages {
+		//var messages []catalog.Message
+
+		if msg.Translation.Select != nil {
+			var argNum int = -1
+			for _, p := range msg.Placeholders {
+				if p.ID == msg.Translation.Select.Arg {
+					argNum = p.ArgNum
+					break
 				}
 			}
+			if argNum <= -1 {
+				log.ErrorF("error correlating placeholder argNum: [%v] %v - %#+v", tag, src, msg)
+				continue
+			}
+			var cases []interface{}
+			for k, v := range msg.Translation.Select.Cases {
+				cases = append(cases, k, v.Msg)
+			}
+			//messages = append(messages, plural.Selectf(argNum, "", cases...))
+			if err = c.catalog.Set(parsed, msg.Key, plural.Selectf(argNum, "", cases...)); err != nil {
+				log.ErrorF("error setting gotext.json select: [%v] %v - %q - %v", tag, src, msg.Translation.Select, err)
+			}
+		} else {
+			//messages = append(messages, catalog.String(msg.Translation.String))
+			if err = c.catalog.Set(parsed, msg.ID, catalog.String(msg.Translation.String)); err != nil {
+				log.ErrorF("error setting gotext.json string: [%v] %v - %q - %v", tag, src, msg.Translation.String, err)
+			}
 		}
+		//if err = c.catalog.Set(parsed, msg.ID, messages...); err != nil {
+		//	log.ErrorF("error setting gotext.json messages: [%v] %v - %#+v - %v", tag, src, messages, err)
+		//}
+	}
+
+}
+
+func (c *CCatalog) AddLocalesFromFS(defaultTag language.Tag, efs beFs.FileSystem) {
+	var err error
+	var entries []fs.DirEntry
+	if entries, err = efs.ReadDir("."); err != nil {
+		log.ErrorF("error read dir: %v", err)
+		return
+	}
+
+	sort.Slice(entries, func(i, j int) (less bool) {
+		less = natural.Less(entries[i].Name(), entries[j].Name())
+		return
+	})
+
+	for _, entry := range entries {
+		name := entry.Name()
+		var entryTag language.Tag
+		if entryTag, err = language.Parse(name); err != nil {
+			log.ErrorF("invalid language: %v", entry.Name())
+			continue
+		}
+
+		var tagEntries []fs.DirEntry
+		if tagEntries, err = efs.ReadDir(entry.Name()); err != nil {
+			log.ErrorF("error read dir %v: %v", name, err)
+			continue
+		}
+
+		var filename string
+		for _, te := range tagEntries {
+			switch te.Name() {
+			case DefaultFileName:
+				filename = DefaultFileName
+				break
+			}
+		}
+		if filename == "" {
+			log.DebugF("locale (%v) not found, expected: %v", name, DefaultFileName)
+			continue
+		}
+
+		src := name + "/" + filename
+		//log.DebugF("locale source found: %v", src)
+		if contents, eeee := efs.ReadFile(src); eeee != nil {
+			log.ErrorF("error reading: %v - %v", src, eeee)
+		} else {
+			c.AddLocalesFromJsonBytes(entryTag, src, contents)
+		}
+
 	}
 }
 
 func (c *CCatalog) LocaleTags() (tags []language.Tag) {
-	for tag, _ := range c.table {
-		tags = append(tags, tag)
-	}
+	tags = c.catalog.Languages()
 	tags = lang.SortLanguageTags(tags)
 	return
 }
 
 func (c *CCatalog) LocaleTagsWithDefault(d language.Tag) (tags []language.Tag) {
-	for tag, _ := range c.table {
-		tags = append(tags, tag)
-	}
+	tags = c.catalog.Languages()
 	tags = lang.SortLanguageTags(tags)
 	found := -1
 	for idx, tag := range tags {
@@ -153,23 +191,9 @@ func (c *CCatalog) LocaleTagsWithDefault(d language.Tag) (tags []language.Tag) {
 }
 
 func (c *CCatalog) MakeGoTextCatalog() (gtc catalog.Catalog, err error) {
-	//var opts []catalog.Option
-	//if len(c.catalogs) > 0 {
-	//	opts = append(opts, catalog.Include(c.catalogs...))
-	//}
-	//b := catalog.NewBuilder(opts...)
 	b := catalog.NewBuilder()
 	b.Include(c.catalogs...)
-	for tag, dict := range c.table {
-		for _, d := range dict.list {
-			for k, v := range d.key {
-				if err = b.SetString(tag, k, v); err != nil {
-					err = fmt.Errorf("error setting message string: [%v] %v: %v", tag, k, v)
-					return
-				}
-			}
-		}
-	}
+	b.Include(c.catalog)
 	gtc = b
 	return
 }
