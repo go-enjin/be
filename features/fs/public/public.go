@@ -27,6 +27,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
 	beFs "github.com/go-enjin/be/pkg/fs"
@@ -267,6 +268,11 @@ func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWrite
 func (f *CFeature) findFileUnsafe(path string) (cmp *feature.CMountPoint, realpath string, data []byte, mime string, err error) {
 	if v, ee := url.PathUnescape(path); ee == nil {
 		path = v
+	}
+
+	if _, _, ok := editor.ParseEditorWorkFile(path); ok {
+		err = os.ErrNotExist
+		return
 	}
 
 	if len(path) <= 1 {

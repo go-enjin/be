@@ -24,6 +24,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
 	"github.com/go-enjin/be/pkg/kvs"
@@ -236,6 +237,11 @@ func (f *CFeature) PopulateIndexes() (err error) {
 
 				for _, file := range files {
 
+					if _, wf, ok := editor.ParseEditorWorkFile(file); ok {
+						log.TraceF("%v feature ignoring editor work-file:  (%s) %v", f.Tag().String(), wf, file)
+						continue
+					}
+
 					if pm, eee := f.ReadMountPageMatter(mp, file); eee != nil {
 
 						log.ErrorF("error reading page matter: %v - %v", file, eee)
@@ -324,6 +330,10 @@ func (f *CFeature) PopulateIndexes() (err error) {
 
 func (f *CFeature) AddIndexing(filePath string) {
 
+	if _, _, ok := editor.ParseEditorWorkFile(filePath); ok {
+		return
+	}
+
 	theme := f.Enjin.MustGetTheme()
 	for _, point := range maps.SortedKeyLengths(f.MountPoints) {
 		for _, mp := range f.MountPoints[point] {
@@ -359,6 +369,10 @@ func (f *CFeature) AddIndexing(filePath string) {
 }
 
 func (f *CFeature) RemoveIndexing(filePath string) {
+
+	if _, _, ok := editor.ParseEditorWorkFile(filePath); ok {
+		return
+	}
 
 	theme := f.Enjin.MustGetTheme()
 	for _, point := range maps.SortedKeyLengths(f.MountPoints) {

@@ -24,6 +24,7 @@ import (
 	"github.com/maruel/natural"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
@@ -152,9 +153,17 @@ func (f *CFeature) findAllMenus(tag language.Tag, bfs fs.FileSystem) (menus map[
 
 	log.TraceF("checking [%v] %v menu files", tag.String(), bfs.Name())
 	var filenames []string
-	if filenames, err = bfs.ListAllFiles("/"); err != nil {
-		err = fmt.Errorf("error listing files: [%v] %v", bfs.Name(), err)
+	if found, ee := bfs.ListAllFiles("/"); ee != nil {
+		err = fmt.Errorf("error listing files: [%v] %v", bfs.Name(), ee)
 		return
+	} else {
+		for _, file := range found {
+			if _, wf, ok := editor.ParseEditorWorkFile(file); ok {
+				log.TraceF("%v feature ignoring editor work-file:  (%s) %v", f.Tag().String(), wf, file)
+				continue
+			}
+			filenames = append(filenames, file)
+		}
 	}
 
 	log.TraceF("found [%v] %v menu files: %v", tag.String(), bfs.Name(), filenames)
