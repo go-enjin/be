@@ -194,6 +194,7 @@ type Internals interface {
 	GetPageContextFieldsProviders() []PageContextFieldsProvider
 	GetPageContextParsersProviders() []PageContextParsersProvider
 	GetPanicHandler() PanicHandler
+	GetLocaleHandler() LocaleHandler
 	GetServiceListener() ServiceListener
 	GetRoutePagesHandler() RoutePagesHandler
 	GetServePagesHandler() ServePagesHandler
