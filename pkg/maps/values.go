@@ -29,16 +29,17 @@ import (
 
 func ExtractBoolValue(v interface{}) (b bool) {
 	switch t := v.(type) {
-	case int:
+	case float32, float64,
+		complex64, complex128,
+		int, int8, int16, int32, int64,
+		uint, uint8, uint16, uint32, uint64:
 		b = t != 0
-	case uint:
-		b = t != 0
-	case float64:
-		b = t != 0.0
 	case bool:
 		b = t
 	case string:
 		b = strings.IsTrue(t)
+	case []byte:
+		b = strings.IsTrue(string(t))
 	}
 	return
 }
