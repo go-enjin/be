@@ -119,8 +119,8 @@ func TagInTagSlices(needle language.Tag, haystacks ...[]language.Tag) (found boo
 	return
 }
 
-func NonPageRequested(r *http.Request) (is bool) {
+func NonPageRequested(r *http.Request) (isNonPage bool) {
 	path := forms.TrimQueryParams(r.URL.Path)
-	is = bePath.Ext(path) != ""
+	isNonPage = bePath.Ext(path) != ""
 	return
 }
