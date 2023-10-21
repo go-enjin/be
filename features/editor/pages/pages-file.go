@@ -15,53 +15,16 @@
 package pages
 
 import (
-	"errors"
 	"net/http"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	bePkgEditor "github.com/go-enjin/be/pkg/editor"
-	beErrors "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
-	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/types/page"
 	"github.com/go-enjin/be/types/page/matter"
 )
-
-func (f *CFeature) ServePreparedEditPage(pg feature.Page, ctx beContext.Context, w http.ResponseWriter, r *http.Request) {
-	handler := f.Enjin.GetServePagesHandler()
-	t := f.Enjin.MustGetTheme()
-	ctx.SetSpecific("PageArchetypes", t.ListArchetypes())
-	if err := handler.ServePage(pg, f.Editor.EditorTheme(), ctx, w, r); err != nil {
-		log.ErrorRF(r, "error serving %v editor generic page: %v", f.Tag(), err)
-		f.Enjin.ServeInternalServerError(w, r)
-	}
-}
-
-func (f *CFeature) ServePreviewEditPage(pg feature.Page, ctx beContext.Context, w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
-
-	if ee := f.PageRenderCheck(pg); ee != nil {
-		var contents string
-		var enjErr *beErrors.EnjinError
-		if errors.As(ee, &enjErr) {
-			contents = string(enjErr.Html())
-		} else {
-			contents = "<p>" + printer.Sprintf(`(this page failed to render)`) + "</p>"
-		}
-		pg.SetContent(contents)
-		pg.SetArchetype("")
-		pg.SetFormat("html")
-	}
-
-	handler := f.Enjin.GetServePagesHandler()
-	if err := handler.ServePage(pg, f.Enjin.MustGetTheme(), ctx, w, r); err != nil {
-		log.ErrorRF(r, "error serving %v editor preview page: %v", f.Tag(), err)
-		f.Enjin.ServeInternalServerError(w, r)
-	}
-}
 
 func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
 	var ctx beContext.Context
@@ -167,107 +130,4 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	f.SelfEditor().ServePreparedEditPage(pg, ctx, w, r)
-}
-
-func (f *CFeature) MakePageArchetypeContextFields(name string) (fields beContext.Fields) {
-
-	tc := f.Enjin.MustGetTheme().GetConfig()
-	fields = beContext.Fields{}
-	basename := bePath.Base(name)
-
-	if found, ok := tc.Supports.Archetypes[basename]; ok {
-		// general fields for any format of archetype
-		for k, v := range found {
-			fields[k] = v
-		}
-	}
-
-	if basename != name {
-		if found, ok := tc.Supports.Archetypes[name]; ok {
-			// fields for a specific archetype, clobbering generals
-			for k, v := range found {
-				fields[k] = v
-			}
-		}
-	}
-
-	return
-}
-
-func (f *CFeature) MakePageContextFields(r *http.Request, archetype string) (fields beContext.Fields) {
-	fields = f.Enjin.MakePageContextFields(r)
-	for k, v := range f.MakePageArchetypeContextFields(archetype) {
-		if _, present := fields[k]; !present {
-			// no clobbering allowed here
-			fields[k] = v
-		}
-	}
-	return
-}
-
-func (f *CFeature) PageRenderCheck(p feature.Page) (err error) {
-	renderer := f.Enjin.GetThemeRenderer(p.Context())
-	_, _, err = renderer.PrepareRenderPage(f.Enjin.MustGetTheme(), f.Enjin.Context(), p)
-	return
-}
-
-func (f *CFeature) InfoRenderCheck(info *bePkgEditor.File) (p feature.Page, pm *matter.PageMatter, err error) {
-	if info.HasDraft {
-		if pm, err = f.ReadDraftMatter(info); err != nil {
-			return
-		}
-	} else {
-		if pm, err = f.ReadPageMatter(info); err != nil {
-			return
-		}
-	}
-	if p, err = page.NewFromPageMatter(pm.Copy(), f.Enjin.MustGetTheme(), f.Enjin.Context()); err != nil {
-		return
-	}
-	err = f.PageRenderCheck(p)
-	return
-}
-
-func (f *CFeature) FinalizeRenderFileEditor(r *http.Request, eid string, pg feature.Page, pm *matter.PageMatter, ctx beContext.Context, info *bePkgEditor.File) (modified *http.Request, err error) {
-	printer := lang.GetPrinterFromRequest(r)
-
-	var p feature.Page
-	if p, err = page.NewFromPageMatter(pm.Copy(), f.Enjin.MustGetTheme(), f.Enjin.Context()); err != nil {
-		return
-	}
-
-	if ee := f.PageRenderCheck(p); ee != nil {
-		info.Actions = info.Actions.Prune(
-			bePkgEditor.PreviewDraftActionKey,
-			bePkgEditor.PublishActionKey,
-			bePkgEditor.DeIndexPageActionKey,
-			bePkgEditor.TranslateActionKey,
-		)
-		var enjErr *beErrors.EnjinError
-		if errors.As(ee, &enjErr) {
-			f.Editor.PushErrorNotice(eid, printer.Sprintf(`page format error: %[1]s - %[2]s`, enjErr.Title, forms.StrictSanitize(enjErr.Summary)), false)
-			info.Actions = append(info.Actions, bePkgEditor.MakeViewErrorAction(printer))
-		} else {
-			f.Editor.PushErrorNotice(eid, printer.Sprintf(`page render error: %[1]s`, forms.StrictSanitize(ee.Error())), false)
-		}
-	}
-
-	ctx.SetSpecific("ShowSidebar", pm.Matter.String(".~.show-sidebar", "true"))
-	ctx.SetSpecific("SidebarTab", pm.Matter.String(".~.sidebar-tab", "details"))
-	ctx.SetSpecific("SidebarFieldTab", pm.Matter.String(".~.sidebar-field-tab", "page"))
-	ctx.SetSpecific("SidebarFieldCategoryTab", pm.Matter.String(".~.sidebar-field-category-tab", "file"))
-	ctx.SetSpecific("Page", pm)
-	ctx.SetSpecific("CPage", p)
-	var archetype string
-	if archetype = p.Archetype(); archetype != "" {
-		archetype += "." + p.Format()
-	}
-	ctx.SetSpecific("Fields", f.MakePageContextFields(r, archetype))
-	ctx.SetSpecific("IsTmplPage", IsTmplPage(bePath.Ext(info.File)))
-	ctx.SetSpecific("SelfEditorPath", f.SelfEditor().GetEditorPath())
-	ctx.SetSpecific("TranslatedLocales", f.GetTranslatedLocales(info))
-	ctx.SetSpecific("UntranslatedLocales", f.GetUntranslatedLocales(info))
-	pg.SetTitle(printer.Sprintf("Edit: %[1]s", info.Name))
-	modified = feature.AddUserNotices(r, f.Editor.PullNotices(eid)...)
-	return
 }

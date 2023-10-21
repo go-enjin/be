@@ -34,16 +34,18 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 )
 
-func (f *CFeature) ParseFormToDraft(fields context.Fields, form context.Context, info *editor.File, r *http.Request) (pm *matter.PageMatter, redirect string, errs map[string]error) {
+func (f *CFeature) ParseFormToDraft(pm *matter.PageMatter, fields context.Fields, form context.Context, info *editor.File, r *http.Request) (modified *matter.PageMatter, redirect string, errs map[string]error) {
 	var err error
 	eid := userbase.GetCurrentUserEID(r)
 	printer := lang.GetPrinterFromRequest(r)
 
-	if pm, err = f.ReadDraftPage(info); err != nil {
-		log.ErrorRF(r, "error encoding form context: %v", err)
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error encoding form context: "%[1]s"`, err.Error()), true)
-		redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditFilePath()
-		return
+	if pm == nil {
+		if pm, err = f.ReadDraftPage(info); err != nil {
+			log.ErrorRF(r, "error encoding form context: %v", err)
+			f.Editor.PushErrorNotice(eid, printer.Sprintf(`error encoding form context: "%[1]s"`, err.Error()), true)
+			redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditFilePath()
+			return
+		}
 	}
 
 	var formMatter context.Context
@@ -113,6 +115,7 @@ func (f *CFeature) ParseFormToDraft(fields context.Fields, form context.Context,
 	}
 
 	pm.Matter.KebabKeys()
+	modified = pm
 
 	return
 }

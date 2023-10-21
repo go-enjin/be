@@ -27,8 +27,10 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/types/page/matter"
+	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 // TODO: restrict front-matter changes for fields with .LockNonEmpty set to true
@@ -53,6 +55,15 @@ func AreVariablesAllowed(key, format string, fields context.Fields) (allowed boo
 	return
 }
 
+func (f *CFeature) NotifyErrors(eid string, printer *message.Printer, errs map[string]error) {
+	f.Editor.GetContext(eid).SetSpecific("FieldErrors", errs)
+	for _, key := range maps.SortedKeys(errs) {
+		ee := errs[key]
+		f.Editor.PushErrorNotice(eid, printer.Sprintf("%[1]s error: %[2]s", key, ee.Error()), true)
+	}
+	return
+}
+
 func (f *CFeature) OpChangeValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
 	printer := lang.GetPrinterFromRequest(r)
 	if info.Locked {
@@ -71,14 +82,16 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx, form c
 	}
 
 	printer := lang.GetPrinterFromRequest(r)
-	t := f.Enjin.MustGetTheme()
-	var archetype string
-	if archetype = form.String(".matter.archetype", ""); archetype != "" {
-		if _, match := t.MatchFormat(info.File); match != "" {
-			archetype += "." + match
-		}
+
+	var err error
+	var pm *matter.PageMatter
+	if pm, err = f.ReadDraftPage(info); err != nil {
+		log.ErrorRF(r, "error encoding form context: %v", err)
+		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error encoding form context: "%[1]s"`, err.Error()), true)
+		redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditFilePath()
+		return
 	}
-	fields := f.MakePageContextFields(r, archetype)
+	fields := f.MakePageContextFields(r, pm.Matter.String("archetype", ""))
 
 	_, target := feature.ParseEditorOpKey(r.PostFormValue("submit"))
 	var changeOp, changeType, changeTarget string
@@ -177,9 +190,10 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx, form c
 	}
 
 	var errs map[string]error
-	var pm *matter.PageMatter
-	if pm, redirect, errs = f.ParseFormToDraft(fields, form, info, r); redirect != "" {
+	if pm, redirect, errs = f.ParseFormToDraft(pm, fields, form, info, r); redirect != "" {
 		return
+	} else if len(errs) > 0 {
+		f.NotifyErrors(eid, printer, errs)
 	}
 
 	switch changeOp {
@@ -188,7 +202,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx, form c
 		pm.Matter.Delete("." + deleteTarget)
 	}
 
-	if err := f.WriteDraftPage(info, pm); err != nil {
+	if err = f.WriteDraftPage(info, pm); err != nil {
 		f.Editor.PushErrorNotice(eid, printer.Sprintf("error saving draft page changes: \"%[1]s\"", err.Error()), true)
 		return
 	}
@@ -235,14 +249,16 @@ func (f *CFeature) OpFileCommitValidate(r *http.Request, pg feature.Page, ctx, f
 
 func (f *CFeature) OpFileCommitHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (redirect string) {
 	printer := lang.GetPrinterFromRequest(r)
-	t := f.Enjin.MustGetTheme()
-	var archetype string
-	if archetype = form.String(".matter.archetype", ""); archetype != "" {
-		if _, match := t.MatchFormat(info.File); match != "" {
-			archetype += "." + match
-		}
+
+	var err error
+	var pm *matter.PageMatter
+	if pm, err = f.ReadDraftPage(info); err != nil {
+		log.ErrorRF(r, "error encoding form context: %v", err)
+		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error encoding form context: "%[1]s"`, err.Error()), true)
+		redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditFilePath()
+		return
 	}
-	fields := f.MakePageContextFields(r, archetype)
+	fields := f.MakePageContextFields(r, pm.Matter.String("archetype", ""))
 
 	_, target := feature.ParseEditorOpKey(r.PostFormValue("submit"))
 
@@ -252,12 +268,11 @@ func (f *CFeature) OpFileCommitHandler(r *http.Request, pg feature.Page, ctx, fo
 	}
 
 	var errs map[string]error
-	var pm *matter.PageMatter
-	if pm, redirect, errs = f.ParseFormToDraft(fields, form, info, r); redirect != "" {
+	if pm, redirect, errs = f.ParseFormToDraft(pm, fields, form, info, r); redirect != "" {
 		return
 	}
 
-	if err := f.WriteDraftPage(info, pm); err != nil {
+	if err = f.WriteDraftPage(info, pm); err != nil {
 		f.Editor.PushErrorNotice(eid, printer.Sprintf("error saving draft page changes: \"%[1]s\"", err.Error()), true)
 		return
 	}
@@ -277,7 +292,12 @@ func (f *CFeature) OpFileCommitHandler(r *http.Request, pg feature.Page, ctx, fo
 	filePath := info.EditFilePath()
 	pg.SetTitle(printer.Sprintf("Editing %[1]s: %[2]s", editorName, filePath))
 
-	f.Editor.PushInfoNotice(eid, printer.Sprintf("%[1]s draft page changes saved.", info.File), true)
+	if len(errs) > 0 {
+		f.NotifyErrors(eid, printer, errs)
+	} else {
+		f.Editor.PushInfoNotice(eid, printer.Sprintf("%[1]s draft page changes saved.", info.File), true)
+	}
+
 	return
 }
 
@@ -292,14 +312,15 @@ func (f *CFeature) OpFilePublishValidate(r *http.Request, pg feature.Page, ctx, 
 func (f *CFeature) OpFilePublishHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (redirect string) {
 	var err error
 	printer := lang.GetPrinterFromRequest(r)
-	t := f.Enjin.MustGetTheme()
-	var archetype string
-	if archetype = form.String(".matter.archetype", ""); archetype != "" {
-		if _, match := t.MatchFormat(info.File); match != "" {
-			archetype += "." + match
-		}
+
+	var pm *matter.PageMatter
+	if pm, err = f.ReadDraftPage(info); err != nil {
+		log.ErrorRF(r, "error encoding form context: %v", err)
+		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error encoding form context: "%[1]s"`, err.Error()), true)
+		redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditFilePath()
+		return
 	}
-	fields := f.MakePageContextFields(r, archetype)
+	fields := f.MakePageContextFields(r, pm.Matter.String("archetype", ""))
 
 	_, target := feature.ParseEditorOpKey(r.PostFormValue("submit"))
 
@@ -317,10 +338,10 @@ func (f *CFeature) OpFilePublishHandler(r *http.Request, pg feature.Page, ctx, f
 	if _, hasMatter := form["matter"]; hasMatter {
 		if _, hasBody := form["body"]; hasBody {
 			var errs map[string]error
-			var pm *matter.PageMatter
-			if pm, redirect, errs = f.ParseFormToDraft(fields, form, info, r); redirect != "" {
+			if pm, redirect, errs = f.ParseFormToDraft(pm, fields, form, info, r); redirect != "" {
 				return
 			} else if len(errs) > 0 {
+				f.NotifyErrors(eid, printer, errs)
 				ctx.SetSpecific("ShowSidebar", pm.Matter.String(".~.show-sidebar", "true"))
 				ctx.SetSpecific("SidebarTab", pm.Matter.String(".~.sidebar-tab", "settings"))
 				ctx.SetSpecific("SidebarFieldTab", pm.Matter.String(".~.sidebar-field-tab", "page"))
@@ -332,6 +353,7 @@ func (f *CFeature) OpFilePublishHandler(r *http.Request, pg feature.Page, ctx, f
 				editorName := f.SelfEditor().GetEditorName()
 				filePath := info.EditFilePath()
 				pg.SetTitle(printer.Sprintf("Editing %[1]s: %[2]s", editorName, filePath))
+
 				return
 			} else if err = f.WriteDraftPage(info, pm); err != nil {
 				f.Editor.PushErrorNotice(eid, printer.Sprintf("error writing draft page: \"%[1]s\"", err.Error()), true)
