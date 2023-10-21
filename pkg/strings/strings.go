@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"html/template"
 	"regexp"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -125,16 +126,22 @@ func EscapeHtmlAttribute(unescaped string) (escaped string) {
 
 func IsTrue(text string) bool {
 	switch strings.ToLower(text) {
-	case "1", "on", "yes", "y", "true":
+	case "true", "yes", "on", "1", "t", "y":
 		return true
+	}
+	if v, err := strconv.Atoi(text); err == nil {
+		return v > 0
 	}
 	return false
 }
 
 func IsFalse(text string) bool {
 	switch strings.ToLower(text) {
-	case "0", "nil", "off", "no", "n", "false":
+	case "false", "no", "off", "0", "f", "n", "":
 		return true
+	}
+	if v, err := strconv.Atoi(text); err == nil {
+		return v <= 0
 	}
 	return false
 }
