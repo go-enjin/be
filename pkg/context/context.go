@@ -269,6 +269,14 @@ func (c Context) Bool(key string, def bool) bool {
 	return def
 }
 
+func (c Context) Boolean(key string) (value, ok bool) {
+	v := c.Get(key)
+	if ok = v != nil; ok {
+		value = maps.ExtractBoolValue(v)
+	}
+	return
+}
+
 func (c Context) ValueAsInt(key string, def int) int {
 	if v := c.Get(key); v != nil {
 		switch t := v.(type) {
