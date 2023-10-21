@@ -511,6 +511,15 @@ func (f *CFeature) OpSearchHandler(r *http.Request, pg feature.Page, ctx context
 	//	return
 	//}
 
+	submit := r.PostFormValue("submit")
+	_, target := feature.ParseEditorOpKey(submit)
+	changeOp, changeTarget := feature.ParseEditorOpKey(target)
+	log.DebugRF(r, `target=%v; changeOp=%v; changeTarget=%v`, target, changeOp, changeTarget)
+
+	if changeOp == "cancel" {
+		form.Delete("search.query")
+	}
+
 	redirect = f.makePaginationRedirect(info, form)
 	return
 }
