@@ -59,16 +59,18 @@ func SearchWithin(input string, numPerPage, pageNumber int, pages []feature.Page
 	}
 
 	for _, pg := range pages {
-		if doc, e := indexing.SearchDocument(pg, pfp); e != nil {
-			err = fmt.Errorf("error preparing search document: %v - %v", pg.Url(), e)
-			return
-		} else if doc != nil {
-			key := langMode.ToUrl(defaultLang, pg.LanguageTag(), pg.Url())
-			if ee := localeIndexed[pg.LanguageTag()].Index(key, doc.Self()); ee != nil {
-				err = fmt.Errorf("error indexing search document: %v - %v", pg.Url(), ee)
+		if ignored, ok := pg.Context().Boolean("NoSearchIndexing"); !ok || (ok && !ignored) {
+			if doc, e := indexing.SearchDocument(pg, pfp); e != nil {
+				err = fmt.Errorf("error preparing search document: %v - %v", pg.Url(), e)
 				return
+			} else if doc != nil {
+				key := langMode.ToUrl(defaultLang, pg.LanguageTag(), pg.Url())
+				if ee := localeIndexed[pg.LanguageTag()].Index(key, doc.Self()); ee != nil {
+					err = fmt.Errorf("error indexing search document: %v - %v", pg.Url(), ee)
+					return
+				}
+				lookupPage[key] = pg
 			}
-			lookupPage[key] = pg
 		}
 	}
 
