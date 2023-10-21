@@ -174,6 +174,10 @@ func (e *Enjin) GetPanicHandler() feature.PanicHandler {
 	return e.eb.fPanicHandler
 }
 
+func (e *Enjin) GetLocaleHandler() feature.LocaleHandler {
+	return e.eb.fLocaleHandler
+}
+
 func (e *Enjin) GetServiceListener() feature.ServiceListener {
 	return e.eb.fServiceListener
 }
