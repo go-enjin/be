@@ -92,6 +92,7 @@ func (f *CFeature) RenderDashboard(w http.ResponseWriter, r *http.Request) {
 	}
 	printer := lang.GetPrinterFromRequest(r)
 
+	ctx.SetSpecific("EnjinContext", f.Enjin.Context().Copy())
 	ctx.SetSpecific("EnjinFeatures", f.Enjin.Features())
 
 	pg.SetTitle(printer.Sprintf("Dashboard"))
