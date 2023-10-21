@@ -182,7 +182,7 @@ func (f *CFeature) Apply(s feature.System) (err error) {
 
 		pages := make(map[string]feature.Page)
 		for _, found := range f.Enjin.FindPages("/") {
-			if ignored := found.Context().String("SitemapIgnored", "false"); ignored != "true" {
+			if ignored, ok := found.Context().Boolean("SitemapIgnored"); !ok || (ok && !ignored) {
 				priority := found.Context().Float64("SitemapPriority", 0.5)
 				found.Context().SetSpecific("SitemapPriority", priority)
 
