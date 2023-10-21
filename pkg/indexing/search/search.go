@@ -49,7 +49,7 @@ func SearchDocument(p feature.Page, pfp feature.PageFormatProvider) (doc search.
 		log.TraceF("skipping search index for (not known search page type): %v", p.Url())
 		return
 	}
-	if pgSearchable := p.Context().String("Searchable", "true"); pgSearchable != "true" {
+	if pgSearchable, ok := p.Context().Boolean("NoSearchIndex"); ok && !pgSearchable {
 		log.TraceF("skipping search index for (not searchable): %v", p.Url())
 		return
 	}
