@@ -16,6 +16,7 @@ package argv
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
@@ -28,13 +29,15 @@ const (
 )
 
 func ProcessRequest(r *http.Request) (argv *Argv, modified *http.Request) {
-	path := forms.CleanRequestPath(r.URL.Path)
+	urlPath := forms.CleanRequestPath(r.URL.Path)
+	reqPath := urlPath
 	if argv = DecodeHttpRequest(r); argv != nil {
 		r = argv.Set(r)
-		path = argv.Path
+		reqPath = argv.Path
 		log.TraceF("parsed request argv: %v", argv)
 	}
-	r.URL.Path = path
+	r.URL.Path = reqPath
+	r.RequestURI = strings.Replace(r.RequestURI, urlPath, reqPath, 1)
 	modified = r.Clone(r.Context())
 	return
 }
