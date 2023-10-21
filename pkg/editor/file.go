@@ -208,11 +208,13 @@ func (f *File) EditFilePath() (filePath string) {
 	if f.FSID != "" {
 		parts = append(parts, f.FSID)
 	}
-	if value := f.Code; value != "" {
-		parts = append(parts, value)
-	} else if f.Path != "" {
-		parts = append(parts, "und")
+
+	if f.Locale != nil {
+		parts = append(parts, f.Locale.String())
+	} else if f.Code != "" {
+		parts = append(parts, f.Code)
 	}
+
 	if f.Path != "" && f.Path != "/" {
 		parts = append(parts, f.Path)
 	}
