@@ -15,6 +15,8 @@
 package feature
 
 import (
+	"net/http"
+
 	beCatalog "github.com/go-enjin/be/pkg/lang/catalog"
 )
 
@@ -22,4 +24,9 @@ type LocalesProvider interface {
 	Feature
 
 	AddLocales(c beCatalog.Catalog)
+}
+
+type LocaleHandler interface {
+	Feature
+	LocaleHandler(next http.Handler) http.Handler
 }
