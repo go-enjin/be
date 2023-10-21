@@ -102,7 +102,7 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	router.Use(middleware.Compress(5))
 
 	// these should be request modifiers instead of enjin middleware
-	router.Use(e.langMiddleware)
+	router.Use(e.eb.fLocaleHandler.LocaleHandler)
 	router.Use(e.redirectionMiddleware)
 	router.Use(e.headersMiddleware)
 
