@@ -33,6 +33,7 @@ import (
 	"github.com/go-enjin/be/features/srv/listeners/httpd"
 	beLogHandler "github.com/go-enjin/be/features/srv/logging/handler"
 	beLogger "github.com/go-enjin/be/features/srv/logging/logger"
+	"github.com/go-enjin/be/features/srv/middleware/locales"
 	"github.com/go-enjin/be/features/srv/middleware/panics"
 	"github.com/go-enjin/be/features/srv/pages"
 	"github.com/go-enjin/be/features/srv/theme/renderer"
@@ -76,6 +77,7 @@ func New() MakePreset {
 	p.Name = Name
 	p.Features = feature.Features{
 		panics.New().Make(),
+		locales.New().Make(),
 		deny.New().Defaults().Make(),
 		proxy.New().Enable().Make(),
 		status.New().Make(),
