@@ -205,6 +205,9 @@ func (e *Enjin) SetupRootEnjin(ctx *cli.Context) (err error) {
 	if e.eb.fPanicHandler == nil {
 		err = fmt.Errorf("builder error: a feature.PanicHandler is required")
 		return
+	} else if e.eb.fLocaleHandler == nil {
+		err = fmt.Errorf("builder error: a feature.LocaleHandler is required")
+		return
 	}
 
 	if e.eb.fServiceLogHandler == nil {
