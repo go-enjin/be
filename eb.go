@@ -119,6 +119,7 @@ type EnjinBuilder struct {
 	fPageContextParsersProviders    []feature.PageContextParsersProvider
 
 	fPanicHandler      feature.PanicHandler
+	fLocaleHandler     feature.LocaleHandler
 	fServiceListener   feature.ServiceListener
 	fRoutePagesHandler feature.RoutePagesHandler
 	fServePagesHandler feature.ServePagesHandler

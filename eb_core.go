@@ -130,6 +130,7 @@ func (eb *EnjinBuilder) includeFeature(f feature.Feature) {
 	eb.fPageContextParsersProviders = checkRegisterFeature(f, eb.fPageContextParsersProviders)
 
 	eb.fPanicHandler = checkRegisterSingleFeature(f, eb.fPanicHandler)
+	eb.fLocaleHandler = checkRegisterSingleFeature(f, eb.fLocaleHandler)
 	eb.fServiceListener = checkRegisterSingleFeature(f, eb.fServiceListener)
 	eb.fRoutePagesHandler = checkRegisterSingleFeature(f, eb.fRoutePagesHandler)
 	eb.fServePagesHandler = checkRegisterSingleFeature(f, eb.fServePagesHandler)
