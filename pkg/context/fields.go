@@ -20,10 +20,32 @@ import (
 
 	"github.com/maruel/natural"
 
+	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 type Fields map[string]*Field
+
+func (f Fields) Init(printer *message.Printer, parsers Parsers) {
+	for _, field := range f {
+		if field.Printer == nil {
+			field.Printer = printer
+		}
+		if field.Format == "" {
+			field.Format = "string"
+		}
+		if field.Parse == nil {
+			if fn, ok := parsers[field.Format]; ok {
+				field.Parse = fn
+			} else {
+				log.WarnDF(1, "field %q parser func not found: %q, falling back to StringParser", field.Key, field.Format)
+				field.Parse = StringParser
+			}
+		}
+	}
+	return
+}
 
 func (f Fields) Lookup(key string) (field *Field, ok bool) {
 	key = strings.TrimPrefix(key, ".matter")
