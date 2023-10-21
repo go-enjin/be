@@ -22,7 +22,6 @@ import (
 	"sync"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/samber/lo"
 	"github.com/urfave/cli/v2"
 
 	beContext "github.com/go-enjin/be/pkg/context"
@@ -381,14 +380,22 @@ func (f *CFeature) PullNotices(eid string) (notices feature.UserNotices) {
 func (f *CFeature) GetContext(eid string) (ctx beContext.Context) {
 	f.userMutex.Lock()
 	defer f.userMutex.Unlock()
-	lo.Assign(ctx, f.userCache[eid])
+	var ok bool
+	if ctx, ok = f.userCache[eid]; !ok {
+		ctx = beContext.New()
+		f.userCache[eid] = ctx
+	}
 	return
 }
 
 func (f *CFeature) SetContext(eid string, ctx beContext.Context) {
 	f.userMutex.Lock()
 	defer f.userMutex.Unlock()
-	f.userCache[eid] = ctx
+	if v, ok := f.userCache[eid]; ok && v != nil {
+		f.userCache[eid].ApplySpecific(ctx)
+	} else {
+		f.userCache[eid] = ctx
+	}
 	return
 }
 
