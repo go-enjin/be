@@ -108,7 +108,7 @@ func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if pg, ctx, err = f.SelfEditor().PrepareEditPage("file-editor", f.EditorType, ""); err != nil {
+	if pg, ctx, err = f.SelfEditor().PrepareEditPage("fs-editor--file-editor", f.EditorType, ""); err != nil {
 		handled = true
 		log.ErrorRF(r, "error preparing %v editor page: %v", f.Tag(), err)
 		f.Enjin.ServeNotFound(w, r)

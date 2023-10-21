@@ -38,7 +38,7 @@ func (f *CFeature) RenderFileBrowser(w http.ResponseWriter, r *http.Request) {
 	var pg feature.Page
 	var ctx context.Context
 
-	if pg, ctx, err = f.SelfEditor().PrepareEditPage("file-browser", f.EditorType, ""); err != nil {
+	if pg, ctx, err = f.SelfEditor().PrepareEditPage("fs-editor--file-browser", f.EditorType, ""); err != nil {
 		log.ErrorRF(r, "error preparing %v editor page: %v", f.Tag(), err)
 		f.Enjin.ServeNotFound(w, r)
 		return

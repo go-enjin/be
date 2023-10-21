@@ -85,7 +85,7 @@ func (f *CFeature) RenderDashboard(w http.ResponseWriter, r *http.Request) {
 	var pg feature.Page
 	var ctx beContext.Context
 
-	if pg, ctx, err = f.SelfEditor().PrepareEditPage("editor-dashboard", f.EditorType, ""); err != nil {
+	if pg, ctx, err = f.SelfEditor().PrepareEditPage("fs-editor--dashboard", f.EditorType, ""); err != nil {
 		log.ErrorRF(r, "error preparing %v editor page: %v", f.Tag(), err)
 		f.Enjin.ServeNotFound(w, r)
 		return
