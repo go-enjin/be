@@ -187,14 +187,6 @@ func (f *CFeature) Shutdown() {
 	f.CFeature.Shutdown()
 }
 
-func (f *CFeature) HotReload() (err error) {
-	//log.DebugF("hot-reloading editor theme: %v", f.theme.Name())
-	//if err = f.theme.Reload(); err != nil {
-	//	err = fmt.Errorf("error hot-reloading editor theme: %v - %v", f.theme.Name(), err)
-	//}
-	return
-}
-
 func (f *CFeature) UserActions() (list feature.Actions) {
 	list = feature.Actions{
 		feature.NewAction(f.Tag().String(), "access", "editor"),
