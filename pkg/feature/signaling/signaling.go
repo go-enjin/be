@@ -25,13 +25,16 @@ type Signal string
 
 type Listener func(signal Signal, tag string, data []interface{}, argv []interface{}) (stop bool)
 
+type Feature interface {
+	SignalSupport
+	EmitterSupport
+}
+
 type EmitterSupport interface {
 	Emit(signal Signal, tag string, argv ...interface{}) (stopped bool)
 }
 
-type SignalsSupport interface {
-	EmitterSupport
-
+type SignalSupport interface {
 	Connect(signal Signal, handle string, l Listener, data ...interface{})
 	Disconnect(signal Signal, handle string)
 }
