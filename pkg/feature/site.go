@@ -15,46 +15,9 @@
 package feature
 
 import (
-	"github.com/go-enjin/golang-org-x-text/language"
-	"github.com/go-enjin/golang-org-x-text/message/catalog"
-
-	"github.com/go-enjin/be/pkg/lang"
 )
 
-type SiteEnjin interface {
-	SiteTag() (key string)
-	SiteName() (name string)
-	SiteTagLine() (tagLine string)
-	SiteLocales() (locales []language.Tag)
-	SiteLanguageMode() (mode lang.Mode)
-	SiteLanguageCatalog() (c catalog.Catalog)
-	SiteDefaultLanguage() (tag language.Tag)
-	SiteSupportsLanguage(tag language.Tag) (supported bool)
-	SiteLanguageDisplayName(tag language.Tag) (name string, ok bool)
 
-	FindTranslations(url string) (pages Pages)
-	FindTranslationUrls(url string) (pages map[language.Tag]string)
-	FindPage(tag language.Tag, url string) (p Page)
-	FindPages(prefix string) (pages []Page)
-}
 
-type SiteInfo struct {
-	Tag         string
-	Name        string
-	TagLine     string
-	Locales     []language.Tag
-	LangMode    lang.Mode
-	DefaultLang language.Tag
-}
 
-func MakeSiteInfo(e SiteEnjin) (info SiteInfo) {
-	info = SiteInfo{
-		Tag:         e.SiteTag(),
-		Name:        e.SiteName(),
-		TagLine:     e.SiteTagLine(),
-		Locales:     e.SiteLocales(),
-		LangMode:    e.SiteLanguageMode(),
-		DefaultLang: e.SiteDefaultLanguage(),
-	}
-	return
 }

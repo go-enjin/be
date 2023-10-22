@@ -22,8 +22,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/maruel/natural"
 	"github.com/go-chi/chi/v5"
+	"github.com/maruel/natural"
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
@@ -143,8 +143,8 @@ func (e *Enjin) Context() (ctx context.Context) {
 	ctx.SetSpecific("CurrentYear", now.Year())
 	ctx.SetSpecific("Release", globals.BinHash)
 	ctx.SetSpecific("Version", globals.Version)
-	ctx.SetSpecific("SiteInfo", feature.MakeSiteInfo(e))
-	ctx.SetSpecific("SiteEnjin", feature.SiteEnjin(e))
+	ctx.SetSpecific("EnjinInfo", feature.MakeEnjinInfo(e))
+	ctx.SetSpecific("EnjinBase", feature.EnjinBase(e))
 	return
 }
 
