@@ -43,7 +43,7 @@ var (
 type Feature interface {
 	filesystem.Feature[MakeFeature]
 
-	signaling.Feature
+	signaling.Signaling
 
 	feature.AuthUserProvider
 	feature.AuthUserManager

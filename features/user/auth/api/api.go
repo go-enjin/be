@@ -65,7 +65,7 @@ type Feature interface {
 	feature.AuthUserApi
 	feature.UseMiddleware
 	feature.ApplyMiddleware
-	signaling.Feature
+	signaling.Signaling
 }
 
 type MakeFeature interface {

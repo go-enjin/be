@@ -25,7 +25,7 @@ type Signal string
 
 type Listener func(signal Signal, tag string, data []interface{}, argv []interface{}) (stop bool)
 
-type Feature interface {
+type Signaling interface {
 	SignalSupport
 	EmitterSupport
 }

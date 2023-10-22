@@ -30,7 +30,7 @@ import (
 
 type EditorFeature interface {
 	Feature
-	signaling.Feature
+	signaling.Signaling
 	UserActionsProvider
 
 	SelfEditor() (self EditorFeature)
