@@ -569,11 +569,11 @@ func (f *CFeature) ListLocaleFileSystemLocales(r *http.Request, fsid string) (li
 			code := strings.TrimPrefix(mount, "/")
 			unique[mount] = struct{}{}
 			info := &editor.File{
-				FSBT:     found.BaseTag().String(),
-				FSID:     fsid,
-				Code:     code,
-				Name:     code,
-				Locale:   &language.Und, // above locales in path-space is Und
+				FSBT: found.BaseTag().String(),
+				FSID: fsid,
+				Code: code,
+				Name: code,
+				//Locale:   &language.Und, // above locales in path-space is Und
 				MimeType: beMime.DirectoryMimeType,
 				ReadOnly: !mountPoints.HasRWFS(),
 			}
