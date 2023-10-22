@@ -52,6 +52,7 @@ func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Reques
 	}
 
 	info = editor.ParseFile(fsid, code)
+	info.Code = code
 	info.File = ""
 	info.HasDraft = f.HasDraftLocales(fsid, code)
 
