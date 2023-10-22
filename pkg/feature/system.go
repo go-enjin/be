@@ -140,7 +140,7 @@ type Service interface {
 
 type System interface {
 	Service
-	signaling.SignalsSupport
+	signaling.Feature
 
 	Router() (router *chi.Mux)
 }
@@ -153,7 +153,7 @@ type RootInternals interface {
 
 type Internals interface {
 	Service
-	signaling.SignalsSupport
+	signaling.Feature
 	EnjinBase
 
 	Self() (self interface{})
