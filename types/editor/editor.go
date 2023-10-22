@@ -231,6 +231,7 @@ func (f *CEditorFeature[MakeTypedFeature]) PrepareEditPage(pageType, editorType,
 	content := feature.MakeRawPage(beContext.Context{
 		"type":        pageType,
 		"editor-type": editorType,
+		"layout":      f.Editor.BaseTag().String(),
 	}, headingContent)
 
 	if pg, err = page.New(f.Tag().String(), f.GetEditorPath(), content, now, now, f.Editor.EditorTheme(), ctx); err != nil {
