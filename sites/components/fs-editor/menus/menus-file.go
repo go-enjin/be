@@ -101,13 +101,14 @@ func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
 		))
 	}
 
-	pg.SetFormat("html.tmpl")
+	pg.SetFormat("tmpl")
+
 	var content string
 	buf := bytes.Buffer{}
 	var tt *htmlTemplate.Template
 	if tt, err = f.Editor.EditorTheme().NewHtmlTemplate(f.Enjin, "lorem-ipsum.tmpl", f.Enjin.Context()); err != nil {
 		content = "<p>" + err.Error() + "</p>"
-	} else if tt, err = tt.Parse(`{{ template "partials/editor/lorem-ipsum.tmpl" . }}`); err != nil {
+	} else if tt, err = tt.Parse(`{{ template "partials/fs-editor/lorem-ipsum.tmpl" . }}`); err != nil {
 		content = "<p>" + err.Error() + "</p>"
 	} else if err = tt.Execute(&buf, f.Enjin.Context()); err != nil {
 		content = "<p>" + err.Error() + "</p>"
