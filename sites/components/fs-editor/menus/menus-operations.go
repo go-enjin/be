@@ -73,7 +73,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx, form c
 
 	fileContents := parsed.String()
 	if err := f.SelfEditor().WriteDraft(info, []byte(fileContents)); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("error saving draft changes: \"%[1]s\"", err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error saving draft changes: \"%[1]s\"", err.Error()), true)
 		return
 	}
 
@@ -117,7 +117,7 @@ func (f *CFeature) OpFileCommitHandler(r *http.Request, pg feature.Page, ctx, fo
 
 	fileContents := parsed.String()
 	if err := f.SelfEditor().WriteDraft(info, []byte(fileContents)); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("error saving draft changes: \"%[1]s\"", err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error saving draft changes: \"%[1]s\"", err.Error()), true)
 		return
 	}
 
@@ -125,7 +125,7 @@ func (f *CFeature) OpFileCommitHandler(r *http.Request, pg feature.Page, ctx, fo
 	f.SelfEditor().UpdateFileInfoForEditing(info, r)
 
 	ctx.SetSpecific("TopMenu", parsed)
-	f.Editor.PushInfoNotice(eid, printer.Sprintf("%[1]s draft changes saved.", info.File), true)
+	f.Editor.Site().PushInfoNotice(eid, printer.Sprintf("%[1]s draft changes saved.", info.File), true)
 	return
 }
 
@@ -156,7 +156,7 @@ func (f *CFeature) OpFilePublishHandler(r *http.Request, pg feature.Page, ctx, f
 
 		fileContents := cleaned.String()
 		if err = f.SelfEditor().WriteDraft(info, []byte(fileContents)); err != nil {
-			f.Editor.PushErrorNotice(eid, printer.Sprintf("error saving final draft changes: \"%[1]s\"", err.Error()), true)
+			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error saving final draft changes: \"%[1]s\"", err.Error()), true)
 			return
 		}
 	}
@@ -164,26 +164,26 @@ func (f *CFeature) OpFilePublishHandler(r *http.Request, pg feature.Page, ctx, f
 	var data []byte
 	cleaned := menu.Menu{}
 	if data, err = f.SelfEditor().ReadDraft(info); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("error reading final draft: \"%[1]s\"", err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error reading final draft: \"%[1]s\"", err.Error()), true)
 		return
 	} else if err = json.Unmarshal(data, &cleaned); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("error decoding draft data: \"%[1]s\"", err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error decoding draft data: \"%[1]s\"", err.Error()), true)
 		return
 	} else if data, err = json.Marshal(cleaned); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("error encoding draft menu: \"%[1]s\"", err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error encoding draft menu: \"%[1]s\"", err.Error()), true)
 		return
 	} else if err = f.SelfEditor().WriteFile(info, data); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("error writing file: \"%[1]s\"", err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error writing file: \"%[1]s\"", err.Error()), true)
 		return
 	} else if err = f.SelfEditor().RemoveDraft(info); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("error removing final draft: \"%[1]s\"", err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error removing final draft: \"%[1]s\"", err.Error()), true)
 		return
 	} else if err = f.SelfEditor().UnLockEditorFile(info.FSID, info.FilePath()); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("error unlocking file: \"%[1]s\"", err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error unlocking file: \"%[1]s\"", err.Error()), true)
 		return
 	}
 
-	f.Editor.PushInfoNotice(eid, printer.Sprintf("%[1]s draft changes published.", info.File), true)
+	f.Editor.Site().PushInfoNotice(eid, printer.Sprintf("%[1]s draft changes published.", info.File), true)
 	redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditDirectoryPath()
 	return
 }
@@ -205,13 +205,13 @@ func (f *CFeature) OpMenuCreateHandler(r *http.Request, pg feature.Page, ctx, fo
 
 	if dstExists {
 		dst := dstUri
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`destination "%[1]s" exists already`, dst), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`destination "%[1]s" exists already`, dst), true)
 		return
 	} else if dstFS == nil || dstMP == nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`cannot create "%[2]s" on "%[1]s": filesystem not found`, dstInfo.FSID, dstInfo.File), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`cannot create "%[2]s" on "%[1]s": filesystem not found`, dstInfo.FSID, dstInfo.File), true)
 		return
 	} else if dstMP.RWFS == nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`cannot create "%[2]s" on "%[1]s": filesystem is read-only`, dstInfo.FSID, dstInfo.File), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`cannot create "%[2]s" on "%[1]s": filesystem is read-only`, dstInfo.FSID, dstInfo.File), true)
 		return
 	}
 
@@ -223,11 +223,11 @@ func (f *CFeature) OpMenuCreateHandler(r *http.Request, pg feature.Page, ctx, fo
 	dstInfo.File = strings.Replace(dstInfo.File, dstInfo.Name, realName, 1)
 
 	if err = dstMP.RWFS.WriteFile(dstInfo.FilePath(), data, 0664); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error writing "%[1]s": %[2]s`, dstUri, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error writing "%[1]s": %[2]s`, dstUri, err.Error()), true)
 		return
 	}
 
-	f.Editor.PushInfoNotice(eid, printer.Sprintf(`create new page "%[1]s"`, dstUri), true)
+	f.Editor.Site().PushInfoNotice(eid, printer.Sprintf(`create new page "%[1]s"`, dstUri), true)
 	if v, _ := form["return"].(string); v == "directory" {
 		redirect = f.SelfEditor().GetEditorPath() + "/" + dstInfo.EditDirectoryPath()
 	} else {

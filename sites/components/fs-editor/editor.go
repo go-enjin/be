@@ -19,20 +19,18 @@ package editor
 import (
 	"fmt"
 	"net/http"
-	"sync"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/urfave/cli/v2"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
-	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/userbase"
+	"github.com/go-enjin/be/types/site"
 	"github.com/go-enjin/golang-org-x-text/language"
 )
 
@@ -48,34 +46,26 @@ var (
 const Tag feature.Tag = "fs-editor"
 
 type Feature interface {
-	feature.Feature
+	feature.SiteFeature
 	feature.UseMiddleware
-	feature.ApplyMiddleware
 	feature.UserActionsProvider
 	feature.PageContextFieldsProvider
 }
 
 type MakeFeature interface {
+	feature.SiteMakeFeature[MakeFeature]
 	Make() Feature
 
-	Include(editorFeatures ...feature.Feature) MakeFeature
-	SetEditorPath(path string) MakeFeature
 	SetEditorTheme(name string) MakeFeature
 }
 
 type CFeature struct {
-	feature.CFeature
-
-	include feature.Features
+	site.CSiteFeature[MakeFeature]
 
 	themeName string
 	theme     feature.Theme
 
 	editorPath string
-
-	userMutex   *sync.RWMutex
-	userCache   map[string]beContext.Context
-	userNotices map[string]feature.UserNotices
 }
 
 func New() MakeFeature {
@@ -87,30 +77,15 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	f.Init(f)
 	f.PackageTag = Tag
 	f.FeatureTag = tag
+	f.SetSiteFeaturePathName(tag.String())
 	return f
 }
 
 func (f *CFeature) Init(this interface{}) {
-	f.CFeature.Init(this)
+	f.CSiteFeature.Init(this)
+	f.CSignaling.InitSignaling()
 	f.editorPath = DefaultEditorPath
-	f.userMutex = &sync.RWMutex{}
-	f.userCache = make(map[string]beContext.Context)
-	f.userNotices = make(map[string]feature.UserNotices)
 	return
-}
-
-func (f *CFeature) Include(editorFeatures ...feature.Feature) MakeFeature {
-	f.include = append(f.include, editorFeatures...)
-	return f
-}
-
-func (f *CFeature) SetEditorPath(path string) MakeFeature {
-	if f.editorPath == "" {
-		f.editorPath = DefaultEditorPath
-	} else {
-		f.editorPath = path
-	}
-	return f
 }
 
 func (f *CFeature) SetEditorTheme(name string) MakeFeature {
@@ -123,50 +98,16 @@ func (f *CFeature) Make() (feat Feature) {
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
-	if err = f.CFeature.Build(b); err != nil {
+	if err = f.CSiteFeature.Build(b); err != nil {
 		return
 	}
-	for _, ef := range f.include {
-		b.AddFeature(ef)
-	}
-	category := f.FeatureTag.String()
-	prefix := f.FeatureTag.Kebab()
-	b.AddFlags(&cli.StringFlag{
-		Name:     prefix + "-path",
-		Usage:    "specify the top-level editor URL path",
-		Value:    DefaultEditorPath,
-		Category: category,
-	})
 	return
 }
 
-func (f *CFeature) Setup(enjin feature.Internals) {
-	f.CFeature.Setup(enjin)
-	for _, ef := range feature.FilterTyped[feature.EditorFeature](enjin.Features().List()) {
-		ef.SetupEditor(f)
-	}
-}
-
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
-	if err = f.CFeature.Startup(ctx); err != nil {
+	if err = f.CSiteFeature.Startup(ctx); err != nil {
 		return
 	}
-
-	prefix := f.FeatureTag.Kebab()
-	pathKey := prefix + "-path"
-	if ctx.IsSet(pathKey) {
-		if v := ctx.String(pathKey); v != "" {
-			if v = forms.StrictSanitize(v); v != "" {
-				if v = bePath.TrimSlash(v); v != "" {
-					if v[0] != '/' {
-						v = "/" + v
-					}
-					f.editorPath = v
-				}
-			}
-		}
-	}
-	log.InfoF("%v editor path: %v", f.Tag(), f.editorPath)
 
 	if handler := f.Enjin.GetServePagesHandler(); handler == nil {
 		err = fmt.Errorf("enjin serve-pages handler not found")
@@ -181,10 +122,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 	log.DebugF("%v editor theme: %v", f.Tag(), f.theme.Name())
 	return
-}
-
-func (f *CFeature) Shutdown() {
-	f.CFeature.Shutdown()
 }
 
 func (f *CFeature) UserActions() (list feature.Actions) {
@@ -206,26 +143,57 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 	return nil
 }
 
-func (f *CFeature) Apply(s feature.System) (err error) {
+func (f *CFeature) SetupSiteFeature(s feature.Site) {
+	f.CSiteFeature.SetupSiteFeature(s)
+	for _, ef := range feature.FilterTyped[feature.EditorFeature](f.Enjin.Features().List()) {
+		ef.SetupEditor(f)
+	}
+}
 
-	s.Router().Route(f.editorPath, func(r chi.Router) {
+func (f *CFeature) RouteSiteFeature(r chi.Router) {
 
-		r.Use(userbase.RequireUserCan(f.Enjin, feature.NewAction(f.Tag().String(), "access", "editor")))
+	r.Use(userbase.RequireUserCan(f.Enjin, feature.NewAction(f.Tag().String(), "access", "editor")))
 
-		editorFeatures := feature.FilterTyped[feature.EditorFeature](f.Enjin.Features().List())
-		if len(editorFeatures) > 0 {
-			r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-				f.Enjin.ServeRedirect(editorFeatures[0].GetEditorPath(), w, r)
-			})
-		}
-		for _, ef := range editorFeatures {
-			r.Route("/"+ef.GetEditorName(), func(r chi.Router) {
-				ef.SetupEditorRoute(r)
-			})
-		}
+	editorFeatures := feature.FilterTyped[feature.EditorFeature](f.Enjin.Features().List())
+	if len(editorFeatures) > 0 {
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			f.Enjin.ServeRedirect(editorFeatures[0].GetEditorPath(), w, r)
+		})
+	}
+	for _, ef := range editorFeatures {
+		r.Route("/"+ef.GetEditorName(), func(r chi.Router) {
+			ef.SetupEditorRoute(r)
+		})
+	}
 
-	})
 	return
+}
+
+func (f *CFeature) SiteFeatureMenu() (m menu.Menu) {
+	for _, ef := range feature.FilterTyped[feature.EditorFeature](f.Enjin.Features().List()) {
+		m = append(m, &menu.Item{
+			Text:    ef.GetEditorName(),
+			Href:    ef.GetEditorPath(),
+			Lang:    language.English.String(),
+			SubMenu: ef.SelfEditor().GetEditorMenu(),
+		})
+	}
+	return
+}
+
+func (f *CFeature) EditorPath() (path string) {
+	path = f.SiteFeaturePath()
+	return
+}
+
+func (f *CFeature) EditorTheme() (t feature.Theme) {
+	return f.theme
+}
+
+func (f *CFeature) EditorSiteMenu() (siteMenu beContext.Context) {
+	return beContext.Context{
+		"MainMenu": f.SiteFeatureMenu(),
+	}
 }
 
 func (f *CFeature) MakePageContextFields(r *http.Request) (fields beContext.Fields) {
@@ -340,79 +308,6 @@ func (f *CFeature) MakePageContextFields(r *http.Request) (fields beContext.Fiel
 			Input:    "text",
 			Format:   "relative-url",
 		}
-	}
-	return
-}
-
-func (f *CFeature) EditorPath() (path string) {
-	path = f.editorPath
-	return
-}
-
-func (f *CFeature) EditorTheme() (t feature.Theme) {
-	return f.theme
-}
-
-func (f *CFeature) EditorSiteMenu() (siteMenu beContext.Context) {
-	mainMenu := menu.Menu{}
-	for _, ef := range feature.FilterTyped[feature.EditorFeature](f.Enjin.Features().List()) {
-		mainMenu = append(mainMenu, &menu.Item{
-			Text:    ef.GetEditorName(),
-			Href:    ef.GetEditorPath(),
-			Lang:    language.English.String(),
-			SubMenu: ef.SelfEditor().GetEditorMenu(),
-		})
-	}
-	return beContext.Context{
-		"MainMenu": mainMenu,
-	}
-}
-
-func (f *CFeature) PushInfoNotice(eid, message string, dismiss bool, actions ...feature.UserNoticeLink) {
-	f.PushNotices(eid, feature.MakeInfoNotice(message, dismiss, actions...))
-}
-
-func (f *CFeature) PushWarnNotice(eid, message string, dismiss bool, actions ...feature.UserNoticeLink) {
-	f.PushNotices(eid, feature.MakeWarnNotice(message, dismiss, actions...))
-}
-
-func (f *CFeature) PushErrorNotice(eid, message string, dismiss bool, actions ...feature.UserNoticeLink) {
-	f.PushNotices(eid, feature.MakeErrorNotice(message, dismiss, actions...))
-}
-
-func (f *CFeature) PushNotices(eid string, notices ...*feature.UserNotice) {
-	f.userMutex.Lock()
-	defer f.userMutex.Unlock()
-	f.userNotices[eid] = append(f.userNotices[eid], notices...)
-	return
-}
-
-func (f *CFeature) PullNotices(eid string) (notices feature.UserNotices) {
-	f.userMutex.Lock()
-	defer f.userMutex.Unlock()
-	notices = append(notices, f.userNotices[eid]...)
-	delete(f.userNotices, eid)
-	return
-}
-
-func (f *CFeature) GetContext(eid string) (ctx beContext.Context) {
-	f.userMutex.Lock()
-	defer f.userMutex.Unlock()
-	var ok bool
-	if ctx, ok = f.userCache[eid]; !ok {
-		ctx = beContext.New()
-		f.userCache[eid] = ctx
-	}
-	return
-}
-
-func (f *CFeature) SetContext(eid string, ctx beContext.Context) {
-	f.userMutex.Lock()
-	defer f.userMutex.Unlock()
-	if v, ok := f.userCache[eid]; ok && v != nil {
-		f.userCache[eid].ApplySpecific(ctx)
-	} else {
-		f.userCache[eid] = ctx
 	}
 	return
 }

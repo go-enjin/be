@@ -119,7 +119,7 @@ func (f *CFeature) SetupEditor(es feature.EditorSystem) {
 				filenames += key + ".json"
 			}
 			printer := lang.GetPrinterFromRequest(r)
-			f.Editor.PushErrorNotice(eid, printer.Sprintf(`a file name is required; %[1]s supports the following menu files: %[2]s`, t.Name(), filenames), true)
+			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`a file name is required; %[1]s supports the following menu files: %[2]s`, t.Name(), filenames), true)
 		}
 		return
 	})

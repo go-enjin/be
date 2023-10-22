@@ -56,10 +56,10 @@ func AreVariablesAllowed(key, format string, fields context.Fields) (allowed boo
 }
 
 func (f *CFeature) NotifyErrors(eid string, printer *message.Printer, errs map[string]error) {
-	f.Editor.GetContext(eid).SetSpecific("FieldErrors", errs)
+	f.Editor.Site().GetContext(eid).SetSpecific("FieldErrors", errs)
 	for _, key := range maps.SortedKeys(errs) {
 		ee := errs[key]
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("%[1]s error: %[2]s", key, ee.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("%[1]s error: %[2]s", key, ee.Error()), true)
 	}
 	return
 }
@@ -87,7 +87,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx, form c
 	var pm *matter.PageMatter
 	if pm, err = f.ReadDraftPage(info); err != nil {
 		log.ErrorRF(r, "error encoding form context: %v", err)
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error encoding form context: "%[1]s"`, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error encoding form context: "%[1]s"`, err.Error()), true)
 		redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditFilePath()
 		return
 	}
@@ -113,7 +113,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx, form c
 		form.Delete("change~add-new~key." + changeTarget)
 
 		if addNewKeyName == "" {
-			f.Editor.PushErrorNotice(eid, printer.Sprintf("kebab-cased key name is required"), true)
+			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("kebab-cased key name is required"), true)
 		} else {
 
 			kvName := "." + changeTarget + "." + addNewKeyName
@@ -126,7 +126,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx, form c
 				format = "." + format
 				errMsg = printer.Sprintf(`%[1]s page format does not support variables`, format)
 			} else if field, ok := fields[addNewKeyName]; ok {
-				f.Editor.PushErrorNotice(eid, printer.Sprintf(
+				f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(
 					`cannot add key named "%[1]s": is a reserved reserved name`,
 					field.Key,
 				), true)
@@ -138,7 +138,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx, form c
 			}
 			if errMsg != "" {
 				changeType = "nop"
-				f.Editor.PushErrorNotice(eid, errMsg, true)
+				f.Editor.Site().PushErrorNotice(eid, errMsg, true)
 			}
 
 			switch changeType {
@@ -203,7 +203,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx, form c
 	}
 
 	if err = f.WriteDraftPage(info, pm); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("error saving draft page changes: \"%[1]s\"", err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error saving draft page changes: \"%[1]s\"", err.Error()), true)
 		return
 	}
 
@@ -254,7 +254,7 @@ func (f *CFeature) OpFileCommitHandler(r *http.Request, pg feature.Page, ctx, fo
 	var pm *matter.PageMatter
 	if pm, err = f.ReadDraftPage(info); err != nil {
 		log.ErrorRF(r, "error encoding form context: %v", err)
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error encoding form context: "%[1]s"`, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error encoding form context: "%[1]s"`, err.Error()), true)
 		redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditFilePath()
 		return
 	}
@@ -273,7 +273,7 @@ func (f *CFeature) OpFileCommitHandler(r *http.Request, pg feature.Page, ctx, fo
 	}
 
 	if err = f.WriteDraftPage(info, pm); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("error saving draft page changes: \"%[1]s\"", err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error saving draft page changes: \"%[1]s\"", err.Error()), true)
 		return
 	}
 
@@ -295,7 +295,7 @@ func (f *CFeature) OpFileCommitHandler(r *http.Request, pg feature.Page, ctx, fo
 	if len(errs) > 0 {
 		f.NotifyErrors(eid, printer, errs)
 	} else {
-		f.Editor.PushInfoNotice(eid, printer.Sprintf("%[1]s draft page changes saved.", info.File), true)
+		f.Editor.Site().PushInfoNotice(eid, printer.Sprintf("%[1]s draft page changes saved.", info.File), true)
 	}
 
 	return
@@ -316,7 +316,7 @@ func (f *CFeature) OpFilePublishHandler(r *http.Request, pg feature.Page, ctx, f
 	var pm *matter.PageMatter
 	if pm, err = f.ReadDraftPage(info); err != nil {
 		log.ErrorRF(r, "error encoding form context: %v", err)
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error encoding form context: "%[1]s"`, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error encoding form context: "%[1]s"`, err.Error()), true)
 		redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditFilePath()
 		return
 	}
@@ -356,24 +356,24 @@ func (f *CFeature) OpFilePublishHandler(r *http.Request, pg feature.Page, ctx, f
 
 				return
 			} else if err = f.WriteDraftPage(info, pm); err != nil {
-				f.Editor.PushErrorNotice(eid, printer.Sprintf("error writing draft page: \"%[1]s\"", err.Error()), true)
+				f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error writing draft page: \"%[1]s\"", err.Error()), true)
 				return
 			}
 		}
 	}
 
 	if err = f.PublishDraftPage(info); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("error publishing draft page: \"%[1]s\"", err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error publishing draft page: \"%[1]s\"", err.Error()), true)
 		return
 	} else if err = f.SelfEditor().RemoveDraft(info); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("error removing final draft page: \"%[1]s\"", err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error removing final draft page: \"%[1]s\"", err.Error()), true)
 		return
 	} else if err = f.UnLockEditorFile(info.FSID, info.FilePath()); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("error unlocking page file: \"%[1]s\"", err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error unlocking page file: \"%[1]s\"", err.Error()), true)
 		return
 	}
 
-	f.Editor.PushInfoNotice(eid, printer.Sprintf("%[1]s draft page changes published.", info.File), true)
+	f.Editor.Site().PushInfoNotice(eid, printer.Sprintf("%[1]s draft page changes published.", info.File), true)
 	redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditDirectoryPath()
 	return
 }
@@ -383,7 +383,7 @@ func (f *CFeature) OpFileDeleteHandler(r *http.Request, pg feature.Page, ctx, fo
 	printer := lang.GetPrinterFromRequest(r)
 
 	if lockedBy, locked := f.IsEditorFileLocked(info.FSID, info.FilePath()); locked && eid != lockedBy {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("Cannot delete, file is locked by another user"), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("Cannot delete, file is locked by another user"), true)
 		return
 	}
 
@@ -400,7 +400,7 @@ func (f *CFeature) OpFileDeleteHandler(r *http.Request, pg feature.Page, ctx, fo
 
 	switch op {
 	case editor.DeleteDraftActionKey:
-		f.Editor.PushInfoNotice(eid, printer.Sprintf("%[1]s draft deleted.", info.File), true)
+		f.Editor.Site().PushInfoNotice(eid, printer.Sprintf("%[1]s draft deleted.", info.File), true)
 		if v, ok := form["return"].(string); ok && v == "directory" {
 			redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditDirectoryPath()
 		}
@@ -410,17 +410,17 @@ func (f *CFeature) OpFileDeleteHandler(r *http.Request, pg feature.Page, ctx, fo
 		var pm *matter.PageMatter
 		if pm, err = f.ReadPageMatter(info); err != nil {
 			log.ErrorRF(r, "error reading page matter: %v - %v", info.Name, err)
-			f.Editor.PushErrorNotice(eid, printer.Sprintf("error removing file: %[1]s - %[2]s", info.Name, err.Error()), true)
+			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error removing file: %[1]s - %[2]s", info.Name, err.Error()), true)
 			return
 		}
 
 		if err = f.RemovePage(info, pm); err != nil {
 			log.ErrorRF(r, "error removing file: %v - %v", info.Name, err)
-			f.Editor.PushErrorNotice(eid, printer.Sprintf("error removing file: %[1]s - %[2]s", info.Name, err.Error()), true)
+			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error removing file: %[1]s - %[2]s", info.Name, err.Error()), true)
 			return
 		}
 
-		f.Editor.PushInfoNotice(eid, printer.Sprintf("%[1]s file deleted.", info.File), true)
+		f.Editor.Site().PushInfoNotice(eid, printer.Sprintf("%[1]s file deleted.", info.File), true)
 		redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditDirectoryPath()
 	}
 
@@ -439,13 +439,13 @@ func (f *CFeature) OpFileIndexHandler(r *http.Request, pg feature.Page, ctx, for
 	printer := lang.GetPrinterFromRequest(r)
 
 	if lockedBy, locked := f.IsEditorFileLocked(info.FSID, info.FilePath()); locked && eid != lockedBy {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("Cannot index, file is locked by another user"), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("Cannot index, file is locked by another user"), true)
 		return
 	}
 
 	if _, _, err := f.InfoRenderCheck(info); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`cannot re-index broken pages`), true)
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`page format render error: %[1]s`, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`cannot re-index broken pages`), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`page format render error: %[1]s`, err.Error()), true)
 		return
 	}
 
@@ -457,7 +457,7 @@ func (f *CFeature) OpFileIndexHandler(r *http.Request, pg feature.Page, ctx, for
 
 	_ = f.UnLockEditorFile(info.FSID, info.FilePath())
 
-	f.Editor.PushInfoNotice(eid, printer.Sprintf(`"%[1]s" has been added to page indexing`, info.Name), true)
+	f.Editor.Site().PushInfoNotice(eid, printer.Sprintf(`"%[1]s" has been added to page indexing`, info.Name), true)
 
 	//f.Emit(feature.RepublishFileSignal, f.Tag().String(), r, pg, ctx, form, info, eid, &redirect)
 	return
@@ -475,7 +475,7 @@ func (f *CFeature) OpFileDeIndexHandler(r *http.Request, pg feature.Page, ctx, f
 	printer := lang.GetPrinterFromRequest(r)
 
 	if lockedBy, locked := f.IsEditorFileLocked(info.FSID, info.FilePath()); locked && eid != lockedBy {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("Cannot remove index, file is locked by another user"), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("Cannot remove index, file is locked by another user"), true)
 		return
 	}
 
@@ -487,7 +487,7 @@ func (f *CFeature) OpFileDeIndexHandler(r *http.Request, pg feature.Page, ctx, f
 
 	_ = f.UnLockEditorFile(info.FSID, info.FilePath())
 
-	f.Editor.PushInfoNotice(eid, printer.Sprintf(`"%[1]s" has been removed from page indexing`, info.Name), true)
+	f.Editor.Site().PushInfoNotice(eid, printer.Sprintf(`"%[1]s" has been removed from page indexing`, info.Name), true)
 
 	//f.Emit(feature.RepublishFileSignal, f.Tag().String(), r, pg, ctx, form, info, eid, &redirect)
 	return
@@ -501,8 +501,8 @@ func (f *CFeature) OpFileTranslateHandler(r *http.Request, pg feature.Page, ctx,
 	printer := lang.GetPrinterFromRequest(r)
 
 	if _, _, err := f.InfoRenderCheck(info); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`cannot translate broken pages`), true)
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`page format render error: %[1]s`, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`cannot translate broken pages`), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`page format render error: %[1]s`, err.Error()), true)
 		return
 	}
 
@@ -512,20 +512,20 @@ func (f *CFeature) OpFileTranslateHandler(r *http.Request, pg feature.Page, ctx,
 	}
 
 	if !srcExists {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`"%[1]s" not found`, srcUri), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`"%[1]s" not found`, srcUri), true)
 		return
 	} else if dstExists {
 		dst := srcUri
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`destination "%[1]s" exists already`, dst), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`destination "%[1]s" exists already`, dst), true)
 		return
 	} else if dstFS == nil || dstMP == nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`cannot copy "%[2]s" to "%[1]s": filesystem not found`, dstInfo.FSID, srcUri), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`cannot copy "%[2]s" to "%[1]s": filesystem not found`, dstInfo.FSID, srcUri), true)
 		return
 	} else if dstMP.RWFS == nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`cannot copy "%[2]s" to "%[1]s": filesystem is read-only`, dstInfo.FSID, srcUri), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`cannot copy "%[2]s" to "%[1]s": filesystem is read-only`, dstInfo.FSID, srcUri), true)
 		return
 	} else if srcFS == nil || srcMP == nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`cannot copy "%[2]s" from "%[1]s": filesystem not found`, info.FSID, srcUri), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`cannot copy "%[2]s" from "%[1]s": filesystem not found`, info.FSID, srcUri), true)
 		return
 	}
 
@@ -535,27 +535,27 @@ func (f *CFeature) OpFileTranslateHandler(r *http.Request, pg feature.Page, ctx,
 	var srcShasum, dstShasum string
 	var created, updated time.Time
 	if _, srcShasum, created, updated, err = srcMP.ROFS.FileStats(info.FilePath()); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error reading "%[1]s" file stats: %[2]s`, srcUri, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error reading "%[1]s" file stats: %[2]s`, srcUri, err.Error()), true)
 		return
 	} else if srcMatter, err = srcMP.ROFS.ReadPageMatter(info.FilePath()); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error reading "%[1]s" page matter: %[2]s`, srcUri, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error reading "%[1]s" page matter: %[2]s`, srcUri, err.Error()), true)
 		return
 	}
 	srcMatter.Matter.SetSpecific("translates", info.Url())
 	if srcData, err = srcMatter.Bytes(); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error preparing "%[1]s" page matter: %[2]s`, srcUri, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error preparing "%[1]s" page matter: %[2]s`, srcUri, err.Error()), true)
 		return
 	} else if err = dstMP.RWFS.WriteFile(dstInfo.FilePath(), srcData, 0664); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error writing "%[1]s": %[2]s`, dstUri, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error writing "%[1]s": %[2]s`, dstUri, err.Error()), true)
 		return
 	} else if err = dstMP.RWFS.ChangeTimes(dstInfo.FilePath(), created, updated); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error preserving file timestamps "%[1]s": %[2]s`, dstUri, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error preserving file timestamps "%[1]s": %[2]s`, dstUri, err.Error()), true)
 		return
 	} else if dstShasum, err = dstMP.RWFS.Shasum(dstInfo.FilePath()); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error reading "%[1]s" shasum: %[2]s`, dstUri, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error reading "%[1]s" shasum: %[2]s`, dstUri, err.Error()), true)
 		return
 	} else if srcShasum == dstShasum {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`source and destination file shasums are the same`), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`source and destination file shasums are the same`), true)
 		_ = dstMP.RWFS.Remove(dstInfo.FilePath())
 		return
 	}
@@ -568,7 +568,7 @@ func (f *CFeature) OpFileTranslateHandler(r *http.Request, pg feature.Page, ctx,
 		redirect = f.SelfEditor().GetEditorPath() + "/" + dstInfo.EditFilePath()
 	}
 
-	f.Editor.PushWarnNotice(eid, printer.Sprintf(`"%[1]s" %[2]s page started, please translate and publish`, info.Name, dstInfo.Locale.String()), true)
+	f.Editor.Site().PushWarnNotice(eid, printer.Sprintf(`"%[1]s" %[2]s page started, please translate and publish`, info.Name, dstInfo.Locale.String()), true)
 
 	f.Emit(feature.TranslateFileActionSignal, f.Tag().String(), r, pg, ctx, form, info, eid, &redirect)
 	return
@@ -591,13 +591,13 @@ func (f *CFeature) OpPageCreateHandler(r *http.Request, pg feature.Page, ctx, fo
 
 	if dstExists {
 		dst := dstUri
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`destination "%[1]s" exists already`, dst), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`destination "%[1]s" exists already`, dst), true)
 		return
 	} else if dstFS == nil || dstMP == nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`cannot create "%[2]s" on "%[1]s": filesystem not found`, dstInfo.FSID, dstInfo.File), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`cannot create "%[2]s" on "%[1]s": filesystem not found`, dstInfo.FSID, dstInfo.File), true)
 		return
 	} else if dstMP.RWFS == nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`cannot create "%[2]s" on "%[1]s": filesystem is read-only`, dstInfo.FSID, dstInfo.File), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`cannot create "%[2]s" on "%[1]s": filesystem is read-only`, dstInfo.FSID, dstInfo.File), true)
 		return
 	}
 
@@ -608,7 +608,7 @@ func (f *CFeature) OpPageCreateHandler(r *http.Request, pg feature.Page, ctx, fo
 	if dstArchetype != "" {
 		t := f.Enjin.MustGetTheme()
 		if format, data, err = t.MakeArchetype(f.Enjin, dstArchetype); err != nil {
-			f.Editor.PushErrorNotice(eid, printer.Sprintf(`error making archetype "%[1]s": %[2]s`, dstArchetype, err.Error()), true)
+			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error making archetype "%[1]s": %[2]s`, dstArchetype, err.Error()), true)
 			return
 		}
 	}
@@ -618,11 +618,11 @@ func (f *CFeature) OpPageCreateHandler(r *http.Request, pg feature.Page, ctx, fo
 	dstInfo.File = strings.Replace(dstInfo.File, dstInfo.Name, realName, 1)
 
 	if err = dstMP.RWFS.WriteFile(dstInfo.FilePath(), data, 0664); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error writing "%[1]s": %[2]s`, dstUri, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error writing "%[1]s": %[2]s`, dstUri, err.Error()), true)
 		return
 	}
 
-	f.Editor.PushInfoNotice(eid, printer.Sprintf(`create new page "%[1]s"`, dstUri), true)
+	f.Editor.Site().PushInfoNotice(eid, printer.Sprintf(`create new page "%[1]s"`, dstUri), true)
 	if v, _ := form["return"].(string); v == "directory" {
 		redirect = f.SelfEditor().GetEditorPath() + "/" + dstInfo.EditDirectoryPath()
 	} else {

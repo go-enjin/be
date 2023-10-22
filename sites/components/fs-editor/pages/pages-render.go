@@ -46,10 +46,10 @@ func (f *CFeature) FinalizeRenderFileEditor(r *http.Request, eid string, pg feat
 		)
 		var enjErr *errors.EnjinError
 		if errors2.As(ee, &enjErr) {
-			f.Editor.PushErrorNotice(eid, printer.Sprintf(`page format error: %[1]s - %[2]s`, enjErr.Title, forms.StrictSanitize(enjErr.Summary)), false)
+			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`page format error: %[1]s - %[2]s`, enjErr.Title, forms.StrictSanitize(enjErr.Summary)), false)
 			info.Actions = append(info.Actions, editor.MakeViewErrorAction(printer))
 		} else {
-			f.Editor.PushErrorNotice(eid, printer.Sprintf(`page render error: %[1]s`, forms.StrictSanitize(ee.Error())), false)
+			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`page render error: %[1]s`, forms.StrictSanitize(ee.Error())), false)
 		}
 	}
 
@@ -69,11 +69,11 @@ func (f *CFeature) FinalizeRenderFileEditor(r *http.Request, eid string, pg feat
 	ctx.SetSpecific("SelfEditorPath", f.SelfEditor().GetEditorPath())
 	ctx.SetSpecific("TranslatedLocales", f.GetTranslatedLocales(info))
 	ctx.SetSpecific("UntranslatedLocales", f.GetUntranslatedLocales(info))
-	if errs := f.Editor.GetContext(eid).Get("FieldErrors"); errs != nil {
-		f.Editor.GetContext(eid).Delete("FieldErrors")
+	if errs := f.Editor.Site().GetContext(eid).Get("FieldErrors"); errs != nil {
+		f.Editor.Site().GetContext(eid).Delete("FieldErrors")
 		ctx.SetSpecific("FieldErrors", errs)
 	}
 	pg.SetTitle(printer.Sprintf("Edit: %[1]s", info.Name))
-	modified = feature.AddUserNotices(r, f.Editor.PullNotices(eid)...)
+	modified = feature.AddUserNotices(r, f.Editor.Site().PullNotices(eid)...)
 	return
 }

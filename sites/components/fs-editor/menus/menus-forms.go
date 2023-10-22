@@ -35,18 +35,18 @@ func (f *CFeature) ParseCreateMenuForm(r *http.Request, pg feature.Page, ctx, fo
 	filePath, _ = form.FirstString(editor.CreateMenuActionKey + "~dst-path")
 
 	if fileLang, _ = form.FirstString(editor.CreateMenuActionKey + "~dst-lang"); fileLang == "" {
-		f.Editor.PushWarnNotice(eid, printer.Sprintf(`a locale is required to create a new page`), true)
+		f.Editor.Site().PushWarnNotice(eid, printer.Sprintf(`a locale is required to create a new page`), true)
 		stop = true
 		return
 	} else if fileLocale, err = language.Parse(fileLang); err != nil {
-		f.Editor.PushWarnNotice(eid, printer.Sprintf(`a valid locale is required to create a new page`), true)
+		f.Editor.Site().PushWarnNotice(eid, printer.Sprintf(`a valid locale is required to create a new page`), true)
 		stop = true
 		return
 	} else if fileName, _ = form.FirstString(editor.CreateMenuActionKey + "~dst-name"); fileName == "" {
 		if stop = f.Emit(feature.FileNameRequiredSignal, f.Tag().String(), r, pg, ctx, form, info, eid, redirect); stop {
 			return
 		}
-		f.Editor.PushWarnNotice(eid, printer.Sprintf(`a file name is required`), true)
+		f.Editor.Site().PushWarnNotice(eid, printer.Sprintf(`a file name is required`), true)
 		*redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditParentDirectoryPath()
 		stop = true
 		return

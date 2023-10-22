@@ -39,16 +39,16 @@ func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var pm *matter.PageMatter
 	if pm, err = f.SelfEditor().ReadDraftMatter(info); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error reading draft page matter: "%[1]s"`, err.Error()), false)
-		r = feature.AddUserNotices(r, f.Editor.PullNotices(eid)...)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error reading draft page matter: "%[1]s"`, err.Error()), false)
+		r = feature.AddUserNotices(r, f.Editor.Site().PullNotices(eid)...)
 		f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditFilePath(), w, r)
 		return
 	}
 
 	var p feature.Page
 	if p, err = page.NewFromPageMatter(pm, f.Editor.EditorTheme(), f.Enjin.Context()); err != nil {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error preparing draft page preview: "%[1]s"`, err.Error()), false)
-		r = feature.AddUserNotices(r, f.Editor.PullNotices(eid)...)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error preparing draft page preview: "%[1]s"`, err.Error()), false)
+		r = feature.AddUserNotices(r, f.Editor.Site().PullNotices(eid)...)
 		f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditFilePath(), w, r)
 		return
 	}
@@ -103,13 +103,13 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 	if info.HasDraft {
 		if data, err = f.SelfEditor().ReadDraft(info); err != nil {
 			log.ErrorRF(r, "error reading draft: %v", err)
-			f.Editor.PushErrorNotice(eid, printer.Sprintf(`error reading draft: "%v"`, err), true)
+			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error reading draft: "%v"`, err), true)
 			f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditDirectoryPath(), w, r)
 			return
 		}
 	} else if data, err = f.SelfEditor().ReadFile(info); err != nil {
 		log.ErrorRF(r, "error reading draft: %v", err)
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error reading file: "%v"`, err), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error reading file: "%v"`, err), true)
 		f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditDirectoryPath(), w, r)
 		return
 	}
@@ -117,14 +117,14 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 	var pm *matter.PageMatter
 	if pm, err = matter.ParsePageMatter(info.FSID, info.FilePath(), info.Created, info.Updated, data); err != nil {
 		log.ErrorRF(r, "error parsing page-matter: %v", err)
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error parsing page-matter: "%v"`, err), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error parsing page-matter: "%v"`, err), true)
 		f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditDirectoryPath(), w, r)
 		return
 	}
 
 	if r, err = f.FinalizeRenderFileEditor(r, eid, pg, pm, ctx, info); err != nil {
 		log.ErrorRF(r, "error finalizing edit page: %v", err)
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error finalizing edit page: "%v"`, err), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error finalizing edit page: "%v"`, err), true)
 		f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditDirectoryPath(), w, r)
 		return
 	}

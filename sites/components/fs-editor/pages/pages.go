@@ -182,7 +182,7 @@ func (f *CFeature) SetupEditor(es feature.EditorSystem) {
 		var r *http.Request
 		if r, _, _, _, _, eid, _, stop = feature.ParseSignalArgv(argv); stop {
 			printer := lang.GetPrinterFromRequest(r)
-			f.Editor.PushErrorNotice(eid, printer.Sprintf(`a file name is required; use "~index" for a directory landing page`), true)
+			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`a file name is required; use "~index" for a directory landing page`), true)
 			stop = true
 		}
 		return

@@ -54,20 +54,20 @@ func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
 	if info.HasDraft {
 		if data, err = f.SelfEditor().ReadDraft(info); err != nil {
 			log.ErrorRF(r, "error reading draft: %v", err)
-			f.Editor.PushErrorNotice(eid, printer.Sprintf(`error reading draft: "%v"`, err), true)
+			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error reading draft: "%v"`, err), true)
 			f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditDirectoryPath(), w, r)
 			return
 		}
 	} else if data, err = f.SelfEditor().ReadFile(info); err != nil {
 		log.ErrorRF(r, "error reading draft: %v", err)
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error reading file: "%v"`, err), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error reading file: "%v"`, err), true)
 		f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditDirectoryPath(), w, r)
 		return
 	}
 
 	if list, err = NewMenuFromJson(data); err != nil {
 		log.ErrorRF(r, "error reading draft: %v", err)
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error encoding menu: "%v"`, err), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error encoding menu: "%v"`, err), true)
 		f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditDirectoryPath(), w, r)
 		return
 	}
@@ -146,13 +146,13 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 	if info.HasDraft {
 		if data, err = f.SelfEditor().ReadDraft(info); err != nil {
 			log.ErrorRF(r, "error reading draft: %v", err)
-			f.Editor.PushErrorNotice(eid, printer.Sprintf(`error reading draft: "%v"`, err), true)
+			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error reading draft: "%v"`, err), true)
 			f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditDirectoryPath(), w, r)
 			return
 		}
 	} else if data, err = f.SelfEditor().ReadFile(info); err != nil {
 		log.ErrorRF(r, "error reading draft: %v", err)
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error reading file: "%v"`, err), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error reading file: "%v"`, err), true)
 		f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditDirectoryPath(), w, r)
 		return
 	}
@@ -160,7 +160,7 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 	var list Menu
 	if list, err = NewMenuFromJson(data); err != nil {
 		log.ErrorRF(r, "error reading draft: %v", err)
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error encoding menu: "%v"`, err), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error encoding menu: "%v"`, err), true)
 		f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditDirectoryPath(), w, r)
 		return
 	}
@@ -171,7 +171,7 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 	ctx.SetSpecific("SelfEditorPath", f.SelfEditor().GetEditorPath())
 	ctx.SetSpecific("TranslatedLocales", f.GetTranslatedLocales(info))
 	ctx.SetSpecific("UntranslatedLocales", f.GetUntranslatedLocales(info))
-	r = feature.AddUserNotices(r, f.Editor.PullNotices(eid)...)
+	r = feature.AddUserNotices(r, f.Editor.Site().PullNotices(eid)...)
 	pg.SetTitle(printer.Sprintf("Edit: %[1]s", info.Name))
 	f.SelfEditor().ServePreparedEditPage(pg, ctx, w, r)
 }

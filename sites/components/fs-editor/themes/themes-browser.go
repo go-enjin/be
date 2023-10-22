@@ -105,7 +105,7 @@ func (f *CFeature) RenderFileBrowser(w http.ResponseWriter, r *http.Request) {
 
 	ctx.SetSpecific("EditFiles", files)
 	printer := lang.GetPrinterFromRequest(r)
-	r = feature.AddUserNotices(r, f.Editor.PullNotices(eid)...)
+	r = feature.AddUserNotices(r, f.Editor.Site().PullNotices(eid)...)
 	pg.SetTitle(printer.Sprintf("Browsing: %[1]s", titlePath))
 	f.SelfEditor().ServePreparedEditPage(pg, ctx, w, r)
 }

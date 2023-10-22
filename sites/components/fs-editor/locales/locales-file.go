@@ -65,7 +65,7 @@ func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Reques
 		if code != "" {
 			fsidCode += "/" + code
 		}
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`error locking %[1]s locale for editing: %[2]s`, fsidCode, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error locking %[1]s locale for editing: %[2]s`, fsidCode, err.Error()), true)
 		handled = true
 		return
 	} else {
@@ -108,7 +108,7 @@ func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if pg, ctx, err = f.SelfEditor().PrepareEditPage("fs-editor--file-editor", f.EditorType, ""); err != nil {
+	if pg, ctx, err = f.SelfEditor().PrepareEditPage("file-editor", f.EditorType, ""); err != nil {
 		handled = true
 		log.ErrorRF(r, "error preparing %v editor page: %v", f.Tag(), err)
 		f.Enjin.ServeNotFound(w, r)
@@ -284,7 +284,7 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pg.SetTitle(printer.Sprintf("Edit: %[1]s", info.EditCodeFilePath()))
-	r = feature.AddUserNotices(r, f.Editor.PullNotices(eid)...)
+	r = feature.AddUserNotices(r, f.Editor.Site().PullNotices(eid)...)
 	f.SelfEditor().ServePreparedEditPage(pg, ctx, w, r)
 }
 
@@ -310,7 +310,7 @@ func (f *CFeature) ReceiveFileEditorChanges(w http.ResponseWriter, r *http.Reque
 	nonceValue := r.PostFormValue("nonce")
 	nonceValue = forms.StrictSanitize(nonceValue)
 	if !nonce.Validate("file-editor-form", nonceValue) {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("Form expired before submitting, please try again."), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("Form expired before submitting, please try again."), true)
 		f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditFilePath(), w, r)
 		return
 	}
@@ -345,20 +345,20 @@ func (f *CFeature) ReceiveFileEditorChanges(w http.ResponseWriter, r *http.Reque
 	if op, ok := f.FileOperations[action]; ok {
 		if !f.Enjin.ValidateUserRequest(op.Action, w, r) {
 			log.WarnRF(r, "user denied: %v", op.Action)
-			f.Editor.PushErrorNotice(eid, printer.Sprintf("Permission to perform the operation has been denied."), true)
+			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("Permission to perform the operation has been denied."), true)
 			f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditFilePath(), w, r)
 			return
 		}
 		if op.Confirm != "" {
 			if _, confirmed := formCtx[op.Confirm]; !confirmed {
-				f.Editor.PushErrorNotice(eid, printer.Sprintf("Unconfirmed operation, please confirm before submitting changes."), true)
+				f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("Unconfirmed operation, please confirm before submitting changes."), true)
 				f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditFilePath(), w, r)
 				return
 			}
 		}
 		if op.Validate != nil {
 			if err = op.Validate(r, pg, ctx, formCtx, info, eid); err != nil {
-				f.Editor.PushErrorNotice(eid, err.Error(), true)
+				f.Editor.Site().PushErrorNotice(eid, err.Error(), true)
 				f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditFilePath(), w, r)
 				return
 			}
@@ -370,7 +370,7 @@ func (f *CFeature) ReceiveFileEditorChanges(w http.ResponseWriter, r *http.Reque
 			}
 		}
 	} else {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf("Unknown operation, please try again."), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("Unknown operation, please try again."), true)
 	}
 
 	if v, ok := formCtx["return"].(string); ok {
