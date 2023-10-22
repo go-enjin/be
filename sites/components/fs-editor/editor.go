@@ -37,7 +37,7 @@ import (
 )
 
 var (
-	DefaultEditorPath = "/editor"
+	DefaultEditorPath = "/fs-editor"
 )
 
 var (
@@ -45,7 +45,7 @@ var (
 	_ MakeFeature = (*CFeature)(nil)
 )
 
-const Tag feature.Tag = "editor"
+const Tag feature.Tag = "fs-editor"
 
 type Feature interface {
 	feature.Feature
