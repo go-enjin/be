@@ -269,8 +269,10 @@ func (f *CEditorFeature[MakeTypedFeature]) ParseEditorUrlParams(r *http.Request)
 		fsid = ""
 		return
 	} else if code = chi.URLParam(r, "lang"); code == "" {
-		// no language code, file doesn't matter
-		return
+		if code = chi.URLParam(r, "code"); code == "" {
+			// no language or code, file doesn't matter
+			return
+		}
 	}
 	if tag, err := language.Parse(code); err == nil {
 		locale = &tag
