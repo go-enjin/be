@@ -40,7 +40,7 @@ func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Reques
 	var err error
 
 	fsid, code, file, _ := f.ParseEditorUrlParams(r)
-	if pg, ctx, err = f.SelfEditor().PrepareEditPage("fs-editor--file-editor", f.EditorType, ""); err != nil {
+	if pg, ctx, err = f.SelfEditor().PrepareEditPage("file-editor", f.EditorType, ""); err != nil {
 		log.ErrorRF(r, "error preparing %v editor page: %v", f.Tag(), err)
 		//f.Enjin.ServeNotFound(w, r)
 		f.RenderFileBrowser(w, r)
