@@ -35,6 +35,7 @@ import (
 
 var (
 	_ feature.EditorFeature = (*CEditorFeature[feature.EditorMakeFeature[feature.EditorFeature]])(nil)
+	//_ feature.EditorMakeFeature[feature.EditorFeature] = (*CEditorFeature[feature.EditorMakeFeature[feature.EditorFeature]])(nil)
 )
 
 type CEditorFeature[MakeTypedFeature interface{}] struct {
@@ -302,7 +303,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ParseCopyMoveTranslateForm(r *http.Re
 	} else if submit == bePkgEditor.TranslateActionKey {
 		param = bePkgEditor.TranslateActionKey
 	} else {
-		f.Editor.PushErrorNotice(eid, printer.Sprintf(`inconsistent operation requested`), true)
+		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`inconsistent operation requested`), true)
 		stop = true
 		return
 	}
@@ -315,7 +316,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ParseCopyMoveTranslateForm(r *http.Re
 		if stop = f.Emit(feature.FileNameRequiredSignal, f.Tag().String(), r, pg, ctx, form, info, eid, redirect); stop {
 			return
 		}
-		f.Editor.PushWarnNotice(eid, printer.Sprintf(`a file name is required`), true)
+		f.Editor.Site().PushWarnNotice(eid, printer.Sprintf(`a file name is required`), true)
 		return
 	}
 
@@ -334,7 +335,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ParseCopyMoveTranslateForm(r *http.Re
 
 	if param == bePkgEditor.TranslateActionKey {
 		if t, err := language.Parse(code); err != nil {
-			f.Editor.PushErrorNotice(eid, printer.Sprintf(`invalid language code given`), true)
+			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`invalid language code given`), true)
 			stop = true
 			return
 		} else {
@@ -346,7 +347,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ParseCopyMoveTranslateForm(r *http.Re
 
 	srcUri, dstUri = info.FSID+"://"+info.FilePath(), fsid+"://"+dstPath
 	if stop = srcUri == dstUri; stop {
-		f.Editor.PushWarnNotice(eid, printer.Sprintf(`"%[1]s" and destination are the same, nothing to do!`, srcUri), true)
+		f.Editor.Site().PushWarnNotice(eid, printer.Sprintf(`"%[1]s" and destination are the same, nothing to do!`, srcUri), true)
 		return
 	}
 
