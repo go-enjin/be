@@ -26,10 +26,12 @@ import (
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
+	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/golang-org-x-text/language"
 )
@@ -127,6 +129,14 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	for _, ef := range f.include {
 		b.AddFeature(ef)
 	}
+	category := f.FeatureTag.String()
+	prefix := f.FeatureTag.Kebab()
+	b.AddFlags(&cli.StringFlag{
+		Name:     prefix + "-path",
+		Usage:    "specify the top-level editor URL path",
+		Value:    DefaultEditorPath,
+		Category: category,
+	})
 	return
 }
 
@@ -142,6 +152,22 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
+	prefix := f.FeatureTag.Kebab()
+	pathKey := prefix + "-path"
+	if ctx.IsSet(pathKey) {
+		if v := ctx.String(pathKey); v != "" {
+			if v = forms.StrictSanitize(v); v != "" {
+				if v = bePath.TrimSlash(v); v != "" {
+					if v[0] != '/' {
+						v = "/" + v
+					}
+					f.editorPath = v
+				}
+			}
+		}
+	}
+	log.InfoF("%v editor path: %v", f.Tag(), f.editorPath)
+
 	if handler := f.Enjin.GetServePagesHandler(); handler == nil {
 		err = fmt.Errorf("enjin serve-pages handler not found")
 		return
@@ -153,7 +179,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if f.theme == nil {
 		f.theme = f.Enjin.MustGetTheme()
 	}
-	log.DebugF("using editor theme: %v", f.theme.Name())
+	log.DebugF("%v editor theme: %v", f.Tag(), f.theme.Name())
 	return
 }
 
