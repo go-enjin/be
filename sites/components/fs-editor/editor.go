@@ -215,7 +215,7 @@ func (f *CFeature) Apply(s feature.System) (err error) {
 		editorFeatures := feature.FilterTyped[feature.EditorFeature](f.Enjin.Features().List())
 		if len(editorFeatures) > 0 {
 			r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-				f.Enjin.ServeRedirect(f.editorPath+"/"+editorFeatures[0].GetEditorName(), w, r)
+				f.Enjin.ServeRedirect(editorFeatures[0].GetEditorPath(), w, r)
 			})
 		}
 		for _, ef := range editorFeatures {
@@ -358,7 +358,7 @@ func (f *CFeature) EditorSiteMenu() (siteMenu beContext.Context) {
 	for _, ef := range feature.FilterTyped[feature.EditorFeature](f.Enjin.Features().List()) {
 		mainMenu = append(mainMenu, &menu.Item{
 			Text:    ef.GetEditorName(),
-			Href:    f.editorPath + "/" + ef.GetEditorName(),
+			Href:    ef.GetEditorPath(),
 			Lang:    language.English.String(),
 			SubMenu: ef.SelfEditor().GetEditorMenu(),
 		})
