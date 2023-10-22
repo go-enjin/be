@@ -116,15 +116,14 @@ func (f *CFeature) makeUnderscore(ctx beContext.Context) interface{} {
 		if translated, ok = cache[untranslated]; ok {
 			return
 		}
-		printer, _ := ctx.Get(lang.PrinterKey).(*message.Printer)
-		if printer != nil {
+		if printer, ok := ctx.Get(lang.PrinterKey).(*message.Printer); ok && printer != nil {
 			translated = printer.Sprintf(format, argv...)
 			cache[untranslated] = translated
 			if untranslated != translated {
 				log.DebugF("template underscore translated: \"%v\" -> \"%v\"", format, translated)
 			}
 		} else {
-			log.DebugF("funcmap context missing language printer")
+			log.TraceF("template underscore language printer not found, using fmt.Sprintf")
 			translated = fmt.Sprintf(format, argv...)
 		}
 		return
