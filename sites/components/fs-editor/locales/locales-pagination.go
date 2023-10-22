@@ -46,6 +46,8 @@ func (f *CFeature) makePaginationRedirect(info *editor.File, form context.Contex
 		}
 	} else if searchQuery != "" {
 		redirect = fmt.Sprintf(`%s/%s/:%s#search`, f.GetEditorPath(), info.EditCodeFilePath(), url.PathEscape(searchQuery))
+	} else {
+		redirect = fmt.Sprintf(`%s/%s`, f.GetEditorPath(), info.EditCodeFilePath())
 	}
 	return
 }
