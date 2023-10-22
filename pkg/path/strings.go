@@ -22,8 +22,7 @@ import (
 )
 
 var (
-	RxDupeSlashes = regexp.MustCompile(`/+`)
-	RxTrimCuts    = regexp.MustCompile(`^[!/\s]*([^!/].+?)[/\s]*$`)
+	RxTrimCuts = regexp.MustCompile(`^[!/\s]*([^!/].+?)[/\s]*$`)
 )
 
 func CleanWithSlash(path string) (clean string) {
@@ -52,7 +51,7 @@ func CleanWithSlashes(path string) (clean string) {
 
 func Join(parts ...string) (joined string) {
 	joined = strings.Join(parts, string(os.PathSeparator))
-	joined = RxDupeSlashes.ReplaceAllString(joined, "/")
+	joined = filepath.Clean(joined)
 	return
 }
 
@@ -79,23 +78,26 @@ func ToSlug(path string) (slug string) {
 	return
 }
 
+// TrimSlash returns the filepath cleaned and without any trailing slash
 func TrimSlash(path string) (clean string) {
-	clean = RxDupeSlashes.ReplaceAllString(path, "/")
-	cleanLen := len(clean)
-	if cleanLen > 0 && clean[cleanLen-1] == '/' {
-		clean = clean[:cleanLen-1]
+	if path == "" {
+		return
 	}
+	clean = strings.TrimSpace(path)
+	clean = filepath.Clean(clean)
+	clean = strings.TrimSuffix(clean, "/")
 	return
 }
 
+// TrimSlashes returns the filepath cleaned and without any leading or trailing slashes
 func TrimSlashes(path string) (clean string) {
 	if path == "" {
 		return
 	}
 	clean = strings.TrimSpace(path)
+	clean = filepath.Clean(clean)
 	clean = strings.TrimPrefix(clean, "/")
 	clean = strings.TrimSuffix(clean, "/")
-	clean = filepath.Clean(clean)
 	return
 }
 
@@ -110,7 +112,7 @@ func SafeConcatRelPath(root string, paths ...string) (out string) {
 	root = TrimSlashes(root)
 	out = strings.TrimPrefix(out, root)
 	out = root + "/" + out
-	out = RxDupeSlashes.ReplaceAllString(out, "/")
+	out = filepath.Clean(out)
 	out = strings.TrimPrefix(out, "./")
 	out = strings.TrimPrefix(out, "/")
 	out = filepath.Clean(out)
