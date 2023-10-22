@@ -19,20 +19,11 @@ import (
 )
 
 type EditorSystem interface {
-	Feature
+	SiteFeature
 
 	EditorPath() (path string)
 	EditorTheme() (t Theme)
 	EditorSiteMenu() (siteMenu beContext.Context)
-
-	PushInfoNotice(eid, message string, dismiss bool, actions ...UserNoticeLink)
-	PushWarnNotice(eid, message string, dismiss bool, actions ...UserNoticeLink)
-	PushErrorNotice(eid, message string, dismiss bool, actions ...UserNoticeLink)
-	PushNotices(eid string, notices ...*UserNotice)
-	PullNotices(eid string) (notices UserNotices)
-
-	GetContext(eid string) (ctx beContext.Context)
-	SetContext(eid string, ctx beContext.Context)
 
 	ListPageTypes() (values []string)
 	ListPageLayouts() (names []string)
