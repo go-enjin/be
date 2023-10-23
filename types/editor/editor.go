@@ -16,7 +16,6 @@ package editor
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 
@@ -29,7 +28,6 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
-	"github.com/go-enjin/be/types/page"
 	"github.com/go-enjin/golang-org-x-text/language"
 )
 
@@ -224,21 +222,10 @@ func (f *CEditorFeature[MakeTypedFeature]) SetupEditorRoute(r chi.Router) {
 	r.Get("/", f.SelfEditor().RenderFileBrowser)
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) PrepareEditPage(pageType, editorType, headingContent string) (pg feature.Page, ctx beContext.Context, err error) {
-	now := time.Now().Unix()
-	ctx = f.Enjin.Context()
+func (f *CEditorFeature[MakeTypedFeature]) PrepareEditPage(pageType, editorType string) (pg feature.Page, ctx beContext.Context, err error) {
+	pg, ctx, err = f.Editor.Site().PreparePage(f.Editor.BaseTag().Kebab(), pageType, editorType, f.Editor.EditorTheme())
 
-	content := feature.MakeRawPage(beContext.Context{
-		"type":        pageType,
-		"editor-type": editorType,
-		"layout":      f.Editor.BaseTag().String(),
-	}, headingContent)
-
-	if pg, err = page.New(f.Tag().String(), f.GetEditorPath(), content, now, now, f.Editor.EditorTheme(), ctx); err != nil {
-		return
-	}
-
-	ctx.SetSpecific("SiteMenu", f.Editor.EditorSiteMenu())
+	ctx.SetSpecific("EditorType", editorType)
 	ctx.SetSpecific("EditorPath", f.Editor.EditorPath())
 	ctx.SetSpecific("EditorFeaturePath", f.SelfEditor().GetEditorPath())
 	ctx.SetSpecific("EditorName", f.Editor.Tag().String())
