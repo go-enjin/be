@@ -47,7 +47,7 @@ type CEditorFeature[MakeTypedFeature interface{}] struct {
 	EditingFileExtensions []string
 	EditAnyFileExtension  bool
 
-	Editor feature.EditorSystem
+	Editor feature.EditorSite
 
 	ViewBrowserAction feature.Action
 	ViewFileAction    feature.Action
@@ -122,7 +122,7 @@ func (f *CEditorFeature[MakeTypedFeature]) SelfEditor() (self feature.EditorFeat
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) SetupEditor(es feature.EditorSystem) {
+func (f *CEditorFeature[MakeTypedFeature]) SetupEditor(es feature.EditorSite) {
 	f.Editor = es
 
 	f.ViewBrowserAction = feature.NewAction(f.Editor.Tag().String(), "view", "file-browser")
