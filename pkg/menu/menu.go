@@ -16,6 +16,7 @@ package menu
 
 import (
 	"encoding/json"
+	"strconv"
 )
 
 type Item struct {
@@ -51,6 +52,19 @@ func NewMenuFromJson(data []byte) (menu Menu, err error) {
 func (m Menu) String() (value string) {
 	if data, err := json.MarshalIndent(m, "", "\t"); err == nil {
 		value = string(data)
+	}
+	return
+}
+
+func (m Menu) DeepActive() (index string) {
+	for idx, item := range m {
+		if item.Active {
+			index = strconv.Itoa(idx + 1)
+			if deep := item.SubMenu.DeepActive(); deep != "" {
+				index += "-" + deep
+			}
+			return
+		}
 	}
 	return
 }
