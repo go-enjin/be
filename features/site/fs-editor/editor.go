@@ -78,7 +78,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	f.Init(f)
 	f.PackageTag = Tag
 	f.FeatureTag = tag
-	f.SetSiteFeaturePathName(tag.String())
+	f.SetSiteFeatureName(tag.String())
 	return f
 }
 
