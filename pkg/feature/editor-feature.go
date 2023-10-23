@@ -41,7 +41,7 @@ type EditorFeature interface {
 	GetEditorPath() (path string)
 	GetEditorMenu() (m menu.Menu)
 
-	PrepareEditPage(pageType, editorType, headingContent string) (pg Page, ctx beContext.Context, err error)
+	PrepareEditPage(pageType, editorType string) (pg Page, ctx beContext.Context, err error)
 	ParseEditorUrlParams(r *http.Request) (fsid, code, file string, locale *language.Tag)
 	ServePreparedEditPage(pg Page, ctx beContext.Context, w http.ResponseWriter, r *http.Request)
 
