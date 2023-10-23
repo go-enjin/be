@@ -48,7 +48,7 @@ type SiteFeature interface {
 
 	Site() (s Site)
 
-	SiteFeaturePathName() (name string)
+	SiteFeatureName() (name string)
 	SiteFeaturePath() (path string)
 	SiteFeatureMenu() (m menu.Menu)
 
