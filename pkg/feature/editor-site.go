@@ -17,9 +17,6 @@ package feature
 type EditorSite interface {
 	SiteFeature
 
-	EditorPath() (path string)
-	EditorTheme() (t Theme)
-
 	ListPageTypes() (values []string)
 	ListPageLayouts() (names []string)
 }
