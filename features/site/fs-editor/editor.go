@@ -60,8 +60,6 @@ type MakeFeature interface {
 
 type CFeature struct {
 	site.CSiteFeature[feature.EditorFeature, MakeFeature]
-
-	editorPath string
 }
 
 func New() MakeFeature {
@@ -79,7 +77,6 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CSiteFeature.Init(this)
-	f.editorPath = DefaultEditorPath
 	return
 }
 
@@ -162,15 +159,6 @@ func (f *CFeature) SiteFeatureMenu() (m menu.Menu) {
 		})
 	}
 	return
-}
-
-func (f *CFeature) EditorPath() (path string) {
-	path = f.SiteFeaturePath()
-	return
-}
-
-func (f *CFeature) EditorTheme() (t feature.Theme) {
-	return f.theme
 }
 
 func (f *CFeature) MakePageContextFields(r *http.Request) (fields beContext.Fields) {
