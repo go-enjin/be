@@ -316,3 +316,11 @@ func (f *CFeature) PreparePage(layout, pageType, pagePath string, t feature.Them
 
 	return
 }
+
+func (f *CFeature) ServePreparedPage(pg feature.Page, ctx beContext.Context, t feature.Theme, w http.ResponseWriter, r *http.Request) {
+	handler := f.Enjin.GetServePagesHandler()
+	if err := handler.ServePage(pg, t, ctx, w, r); err != nil {
+		log.ErrorRF(r, "error serving %v prepared page: %v", f.Tag(), err)
+		f.Enjin.ServeInternalServerError(w, r)
+	}
+}
