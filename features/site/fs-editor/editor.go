@@ -55,6 +55,7 @@ type Feature interface {
 type MakeFeature interface {
 	feature.SiteMakeFeature[MakeFeature]
 	Make() Feature
+	feature.SiteIncludingMakeFeature[MakeFeature]
 
 	SetEditorTheme(name string) MakeFeature
 }
