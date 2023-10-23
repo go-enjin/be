@@ -101,6 +101,8 @@ func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
 		))
 	}
 
+	pg.SetType("page")
+	pg.SetLayout("defaults")
 	pg.SetFormat("tmpl")
 
 	var content string
