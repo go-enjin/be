@@ -42,7 +42,7 @@ func (f *CEditorFeature[MakeTypedFeature]) PrepareRenderFileEditor(w http.Respon
 	var filePath string
 
 	fsid, code, file, locale := f.ParseEditorUrlParams(r)
-	if pg, ctx, err = f.SelfEditor().PrepareEditPage("file-editor", f.EditorType, ""); err != nil {
+	if pg, ctx, err = f.SelfEditor().PrepareEditPage("file-editor", f.EditorType); err != nil {
 		log.ErrorRF(r, "error preparing %v editor page: %v", f.Tag(), err)
 		//f.Enjin.ServeNotFound(w, r)
 		f.RenderFileBrowser(w, r)
