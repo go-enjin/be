@@ -34,51 +34,46 @@ const (
 )
 
 var (
-	_ feature.SiteFeature = (*CSiteFeature[feature.SiteMakeFeature[feature.SiteFeature]])(nil)
+	_ feature.SiteFeature = (*CSiteFeature[feature.SiteFeature, feature.SiteMakeFeature[feature.MakeFeature]])(nil)
 	//_ feature.SiteMakeFeature[feature.SiteFeature] = (*CSiteFeature[feature.SiteMakeFeature[feature.SiteFeature]])(nil)
 )
 
-type CSiteFeature[MakeTypedFeature interface{}] struct {
+type CSiteFeature[T interface{}, M interface{}] struct {
 	feature.CFeature
 	signaling.CSignaling
+	feature.CSiteIncluding[T, M]
 
 	site feature.Site
 
-	include      feature.Features
 	sitePathName string
 }
 
-func (f *CSiteFeature[MakeTypedFeature]) Site() (s feature.Site) {
+func (f *CSiteFeature[T, M]) Site() (s feature.Site) {
 	s = f.site
 	return
 }
 
-func (f *CSiteFeature[MakeTypedFeature]) Init(this interface{}) {
+func (f *CSiteFeature[T, M]) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.CFeature.PackageTag = BaseTag
 	f.CSignaling.InitSignaling()
+	f.CSiteIncluding.InitSiteIncluding(this)
 	return
 }
 
-func (f *CSiteFeature[MakeTypedFeature]) Include(features ...feature.Feature) MakeTypedFeature {
-	f.include = append(f.include, features...)
-	t, _ := f.This().(MakeTypedFeature)
-	return t
-}
-
-func (f *CSiteFeature[MakeTypedFeature]) SetSiteFeaturePathName(name string) MakeTypedFeature {
+func (f *CSiteFeature[T, M]) SetSiteFeaturePathName(name string) M {
 	f.sitePathName = strcase.ToKebab(name)
-	t, _ := f.This().(MakeTypedFeature)
+	t, _ := f.This().(M)
 	return t
 }
 
-func (f *CSiteFeature[MakeTypedFeature]) Build(b feature.Buildable) (err error) {
+func (f *CSiteFeature[T, M]) Build(b feature.Buildable) (err error) {
 	if err = f.CFeature.Build(b); err != nil {
 		return
 	}
-	for _, ef := range f.include {
-		b.AddFeature(ef)
-	}
+
+	f.CSiteIncluding.BuildSiteIncluding(b)
+
 	category := f.Tag().String()
 	prefix := f.Tag().Kebab()
 	b.AddFlags(&cli.StringFlag{
@@ -90,7 +85,7 @@ func (f *CSiteFeature[MakeTypedFeature]) Build(b feature.Buildable) (err error) 
 	return
 }
 
-func (f *CSiteFeature[MakeTypedFeature]) Startup(ctx *cli.Context) (err error) {
+func (f *CSiteFeature[T, M]) Startup(ctx *cli.Context) (err error) {
 	if err = f.CFeature.Startup(ctx); err != nil {
 		return
 	}
@@ -109,25 +104,26 @@ func (f *CSiteFeature[MakeTypedFeature]) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CSiteFeature[MakeTypedFeature]) Shutdown() {
+func (f *CSiteFeature[T, M]) Shutdown() {
 	f.CFeature.Shutdown()
 }
 
-func (f *CSiteFeature[MakeTypedFeature]) SetupSiteFeature(s feature.Site) {
+func (f *CSiteFeature[T, M]) SetupSiteFeature(s feature.Site) {
 	f.site = s
+	f.CSiteIncluding.StartupSiteIncluding(f.Enjin)
 	return
 }
 
-func (f *CSiteFeature[MakeTypedFeature]) RouteSiteFeature(r chi.Router) {
+func (f *CSiteFeature[T, M]) RouteSiteFeature(r chi.Router) {
 	log.FatalF("%v.RouteSiteFeature method unimplemented", f.Tag())
 }
 
-func (f *CSiteFeature[MakeTypedFeature]) SiteFeaturePathName() (name string) {
+func (f *CSiteFeature[T, M]) SiteFeatureName() (name string) {
 	name = f.sitePathName
 	return
 }
 
-func (f *CSiteFeature[MakeTypedFeature]) SiteFeaturePath() (path string) {
+func (f *CSiteFeature[T, M]) SiteFeaturePath() (path string) {
 	var sitePath string
 	if v := f.site.SitePath(); v != "/" {
 		sitePath = v
@@ -136,6 +132,6 @@ func (f *CSiteFeature[MakeTypedFeature]) SiteFeaturePath() (path string) {
 	return
 }
 
-func (f *CSiteFeature[MakeTypedFeature]) SiteFeatureMenu() (m menu.Menu) {
+func (f *CSiteFeature[T, M]) SiteFeatureMenu() (m menu.Menu) {
 	return
 }
