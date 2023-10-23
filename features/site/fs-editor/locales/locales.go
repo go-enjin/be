@@ -91,7 +91,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) SetupEditor(es feature.EditorSystem) {
+func (f *CFeature) SetupEditor(es feature.EditorSite) {
 	f.CEditorFeature.SetupEditor(es)
 	f.DefaultOp = bePkgEditor.CancelActionKey
 	f.FileOperations = map[string]*feature.EditorOperation{

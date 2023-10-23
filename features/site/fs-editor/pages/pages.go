@@ -135,7 +135,7 @@ func (f *CFeature) SetupEditorRoute(r chi.Router) {
 	r.Post("/", f.SelfEditor().ReceiveFileEditorChanges)
 }
 
-func (f *CFeature) SetupEditor(es feature.EditorSystem) {
+func (f *CFeature) SetupEditor(es feature.EditorSite) {
 	f.CEditorFeature.SetupEditor(es)
 	f.FileOperations[bePkgEditor.ChangeActionKey] = &feature.EditorOperation{
 		Key:       bePkgEditor.ChangeActionKey,
