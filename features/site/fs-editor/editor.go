@@ -26,7 +26,6 @@ import (
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
-	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/pkg/userbase"
@@ -54,17 +53,13 @@ type Feature interface {
 
 type MakeFeature interface {
 	feature.SiteMakeFeature[MakeFeature]
-	Make() Feature
 	feature.SiteIncludingMakeFeature[MakeFeature]
 
-	SetEditorTheme(name string) MakeFeature
+	Make() Feature
 }
 
 type CFeature struct {
 	site.CSiteFeature[feature.EditorFeature, MakeFeature]
-
-	themeName string
-	theme     feature.Theme
 
 	editorPath string
 }
@@ -88,11 +83,6 @@ func (f *CFeature) Init(this interface{}) {
 	return
 }
 
-func (f *CFeature) SetEditorTheme(name string) MakeFeature {
-	f.themeName = name
-	return f
-}
-
 func (f *CFeature) Make() (feat Feature) {
 	return f
 }
@@ -114,13 +104,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
-	if f.themeName != "" {
-		f.theme = f.Enjin.MustGetThemeNamed(f.themeName)
-	}
-	if f.theme == nil {
-		f.theme = f.Enjin.MustGetTheme()
-	}
-	log.DebugF("%v editor theme: %v", f.Tag(), f.theme.Name())
 	return
 }
 
@@ -137,8 +120,9 @@ func (f *CFeature) UserActions() (list feature.Actions) {
 }
 
 func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
-	if s.MustGetTheme().Name() != f.theme.Name() {
-		return f.theme.Middleware
+	t := f.SiteFeatureTheme()
+	if s.MustGetTheme().Name() != t.Name() {
+		return t.Middleware
 	}
 	return nil
 }
