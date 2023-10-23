@@ -38,6 +38,8 @@ type Site interface {
 
 	GetContext(eid string) (ctx beContext.Context)
 	SetContext(eid string, ctx beContext.Context)
+
+	PreparePage(layout, pageType, pagePath string, t Theme) (pg Page, ctx beContext.Context, err error)
 }
 
 type SiteFeature interface {
