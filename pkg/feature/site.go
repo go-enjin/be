@@ -15,6 +15,8 @@
 package feature
 
 import (
+	"net/http"
+
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature/signaling"
 )
@@ -24,8 +26,8 @@ type Site interface {
 	signaling.Signaling
 
 	SitePath() (path string)
-	SiteTheme() (t Theme)
 	SiteMenu() (siteMenu beContext.Context)
+	SiteTheme() (t Theme)
 
 	PushInfoNotice(eid, message string, dismiss bool, actions ...UserNoticeLink)
 	PushWarnNotice(eid, message string, dismiss bool, actions ...UserNoticeLink)
@@ -37,4 +39,5 @@ type Site interface {
 	SetContext(eid string, ctx beContext.Context)
 
 	PreparePage(layout, pageType, pagePath string, t Theme) (pg Page, ctx beContext.Context, err error)
+	ServePreparedPage(pg Page, ctx beContext.Context, t Theme, w http.ResponseWriter, r *http.Request)
 }
