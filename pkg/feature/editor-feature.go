@@ -34,7 +34,7 @@ type EditorFeature interface {
 	UserActionsProvider
 
 	SelfEditor() (self EditorFeature)
-	SetupEditor(editor EditorSystem)
+	SetupEditor(editor EditorSite)
 	SetupEditorRoute(r chi.Router)
 
 	GetEditorName() (name string)
