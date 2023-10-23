@@ -25,7 +25,6 @@ import (
 	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
-	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/golang-org-x-text/language"
@@ -110,7 +109,7 @@ func (f *CEditorFeature[MakeTypedFeature]) GetEditorName() (name string) {
 }
 
 func (f *CEditorFeature[MakeTypedFeature]) GetEditorPath() (path string) {
-	return f.Editor.EditorPath() + "/" + f.EditorName
+	return f.Editor.SiteFeaturePath() + "/" + f.EditorName
 }
 
 func (f *CEditorFeature[MakeTypedFeature]) GetEditorMenu() (m menu.Menu) {
@@ -223,10 +222,10 @@ func (f *CEditorFeature[MakeTypedFeature]) SetupEditorRoute(r chi.Router) {
 }
 
 func (f *CEditorFeature[MakeTypedFeature]) PrepareEditPage(pageType, editorType string) (pg feature.Page, ctx beContext.Context, err error) {
-	pg, ctx, err = f.Editor.Site().PreparePage(f.Editor.BaseTag().Kebab(), pageType, editorType, f.Editor.EditorTheme())
+	pg, ctx, err = f.Editor.Site().PreparePage(f.Editor.BaseTag().Kebab(), pageType, editorType, f.Editor.SiteFeatureTheme())
 
 	ctx.SetSpecific("EditorType", editorType)
-	ctx.SetSpecific("EditorPath", f.Editor.EditorPath())
+	ctx.SetSpecific("EditorPath", f.Editor.SiteFeaturePath())
 	ctx.SetSpecific("EditorFeaturePath", f.SelfEditor().GetEditorPath())
 	ctx.SetSpecific("EditorName", f.Editor.Tag().String())
 	ctx.SetSpecific("EditorFeatureName", f.SelfEditor().GetEditorName())
@@ -273,11 +272,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ParseEditorUrlParams(r *http.Request)
 }
 
 func (f *CEditorFeature[MakeTypedFeature]) ServePreparedEditPage(pg feature.Page, ctx beContext.Context, w http.ResponseWriter, r *http.Request) {
-	handler := f.Enjin.GetServePagesHandler()
-	if err := handler.ServePage(pg, f.Editor.EditorTheme(), ctx, w, r); err != nil {
-		log.ErrorRF(r, "error serving %v editor file-browser page: %v", f.Tag(), err)
-		f.Enjin.ServeInternalServerError(w, r)
-	}
+	f.Editor.Site().ServePreparedPage(pg, ctx, f.Editor.SiteFeatureTheme(), w, r)
 }
 
 func (f *CEditorFeature[MakeTypedFeature]) ParseCopyMoveTranslateForm(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *bePkgEditor.File, eid string, redirect *string) (srcUri, dstUri string, dstInfo *bePkgEditor.File, srcFS, dstFS feature.FileSystemFeature, srcMP, dstMP *feature.CMountPoint, srcExists, dstExists bool, stop bool) {
