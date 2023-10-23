@@ -188,12 +188,6 @@ func (f *CFeature) EditorTheme() (t feature.Theme) {
 	return f.theme
 }
 
-func (f *CFeature) EditorSiteMenu() (siteMenu beContext.Context) {
-	return beContext.Context{
-		"MainMenu": f.SiteFeatureMenu(),
-	}
-}
-
 func (f *CFeature) MakePageContextFields(r *http.Request) (fields beContext.Fields) {
 	printer := lang.GetPrinterFromRequest(r)
 	fields = beContext.Fields{
