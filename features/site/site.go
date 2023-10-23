@@ -90,6 +90,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+	f.CSignaling.InitSignaling()
 	f.CSiteIncluding.InitSiteIncluding(this)
 	f.sitePath = DefaultSitePath
 	f.userMutex = &sync.RWMutex{}
