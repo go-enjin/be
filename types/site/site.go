@@ -46,11 +46,9 @@ type CSiteFeature[T interface{}, M interface{}] struct {
 	site feature.Site
 
 	sitePathName string
-}
 
-func (f *CSiteFeature[T, M]) Site() (s feature.Site) {
-	s = f.site
-	return
+	themeName string
+	theme     feature.Theme
 }
 
 func (f *CSiteFeature[T, M]) Init(this interface{}) {
@@ -61,8 +59,14 @@ func (f *CSiteFeature[T, M]) Init(this interface{}) {
 	return
 }
 
-func (f *CSiteFeature[T, M]) SetSiteFeaturePathName(name string) M {
+func (f *CSiteFeature[T, M]) SetSiteFeatureName(name string) M {
 	f.sitePathName = strcase.ToKebab(name)
+	t, _ := f.This().(M)
+	return t
+}
+
+func (f *CSiteFeature[T, M]) SetSiteFeatureTheme(name string) M {
+	f.themeName = name
 	t, _ := f.This().(M)
 	return t
 }
@@ -101,11 +105,22 @@ func (f *CSiteFeature[T, M]) Startup(ctx *cli.Context) (err error) {
 	}
 	log.InfoF("%v site feature path name: %v", f.Tag(), f.sitePathName)
 
+	if f.themeName == "" {
+		f.theme = f.Site().SiteTheme()
+	} else {
+		f.theme = f.Enjin.MustGetThemeNamed(f.themeName)
+	}
+	log.DebugF("%v using site feature theme: %v", f.Tag(), f.theme.Name())
 	return
 }
 
 func (f *CSiteFeature[T, M]) Shutdown() {
 	f.CFeature.Shutdown()
+}
+
+func (f *CSiteFeature[T, M]) Site() (s feature.Site) {
+	s = f.site
+	return
 }
 
 func (f *CSiteFeature[T, M]) SetupSiteFeature(s feature.Site) {
@@ -133,5 +148,10 @@ func (f *CSiteFeature[T, M]) SiteFeaturePath() (path string) {
 }
 
 func (f *CSiteFeature[T, M]) SiteFeatureMenu() (m menu.Menu) {
+	return
+}
+
+func (f *CSiteFeature[T, M]) SiteFeatureTheme() (t feature.Theme) {
+	t = f.theme
 	return
 }
