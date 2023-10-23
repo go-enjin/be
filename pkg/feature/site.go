@@ -58,5 +58,6 @@ type SiteFeature interface {
 
 type SiteMakeFeature[MakeTypedFeature interface{}] interface {
 	Include(features ...Feature) MakeTypedFeature
+	Including(tags ...Tag) MakeTypedFeature
 	SetSiteFeaturePathName(name string) MakeTypedFeature
 }
