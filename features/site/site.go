@@ -58,6 +58,7 @@ type MakeFeature interface {
 	feature.SiteIncludingMakeFeature[MakeFeature]
 
 	SetSitePath(path string) MakeFeature
+	SetSiteTheme(name string) MakeFeature
 
 	Make() Feature
 }
@@ -68,9 +69,9 @@ type CFeature struct {
 	feature.CSiteIncluding[feature.SiteFeature, MakeFeature]
 
 	themeName string
+	theme     feature.Theme
 
 	sitePath string
-	theme    feature.Theme
 
 	// TODO: make these kvs based
 	userMutex   *sync.RWMutex
@@ -149,14 +150,10 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 	log.InfoF("%v site path: %v", f.Tag(), f.sitePath)
 
-	if f.themeName != "" {
-		if f.theme, err = f.Enjin.GetThemeNamed(f.themeName); err != nil {
-			err = errors.Wrap(err, "error getting theme named "+f.themeName)
-			return
-		}
-	}
-	if f.theme == nil {
+	if f.themeName == "" {
 		f.theme = f.Enjin.MustGetTheme()
+	} else {
+		f.theme = f.Enjin.MustGetThemeNamed(f.themeName)
 	}
 	log.DebugF("using site theme: %v", f.theme.Name())
 
