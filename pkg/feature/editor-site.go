@@ -14,7 +14,7 @@
 
 package feature
 
-type EditorSystem interface {
+type EditorSite interface {
 	SiteFeature
 
 	EditorPath() (path string)
