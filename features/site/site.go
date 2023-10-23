@@ -17,6 +17,7 @@ package site
 import (
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/pkg/errors"
@@ -30,6 +31,7 @@ import (
 	"github.com/go-enjin/be/pkg/menu"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/userbase"
+	"github.com/go-enjin/be/types/page"
 )
 
 var (
@@ -287,5 +289,33 @@ func (f *CFeature) SetContext(eid string, ctx beContext.Context) {
 	} else {
 		f.userCache[eid] = ctx
 	}
+	return
+}
+
+func (f *CFeature) PreparePage(layout, pageType, pagePath string, t feature.Theme) (pg feature.Page, ctx beContext.Context, err error) {
+	content := feature.MakeRawPage(beContext.Context{
+		"type":   pageType,
+		"layout": layout,
+	}, "")
+
+	ctx = f.Enjin.Context()
+	now := time.Now().Unix()
+
+	if pg, err = page.New(f.Tag().String(), pagePath, content, now, now, t, ctx); err != nil {
+		err = errors.Wrap(err, "error making new page instance")
+		return
+	}
+
+	m := menu.Menu{}
+	for _, sf := range f.Features {
+		m = append(m, &menu.Item{
+			Text:    sf.SiteFeatureName(),
+			Href:    sf.SiteFeaturePath(),
+			SubMenu: sf.SiteFeatureMenu(),
+		})
+	}
+
+	ctx.SetSpecific("SiteMenu", beContext.Context{"MainMenu": m})
+
 	return
 }
