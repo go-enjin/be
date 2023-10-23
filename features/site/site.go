@@ -139,11 +139,8 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if ctx.IsSet(pathKey) {
 		if v := ctx.String(pathKey); v != "" {
 			if v = forms.StrictSanitize(v); v != "" {
-				if v = bePath.TrimSlash(v); v != "" {
-					if v[0] != '/' {
-						v = "/" + v
-					}
-					f.sitePath = v
+				if v = bePath.TrimSlashes(v); v != "" {
+					f.sitePath = "/" + v
 				}
 			}
 		}
