@@ -14,16 +14,11 @@
 
 package feature
 
-import (
-	beContext "github.com/go-enjin/be/pkg/context"
-)
-
 type EditorSystem interface {
 	SiteFeature
 
 	EditorPath() (path string)
 	EditorTheme() (t Theme)
-	EditorSiteMenu() (siteMenu beContext.Context)
 
 	ListPageTypes() (values []string)
 	ListPageLayouts() (names []string)
