@@ -29,7 +29,7 @@ func (f *CFeature) ServePreparedEditPage(pg feature.Page, ctx context.Context, w
 	handler := f.Enjin.GetServePagesHandler()
 	t := f.Enjin.MustGetTheme()
 	ctx.SetSpecific("PageArchetypes", t.ListArchetypes())
-	if err := handler.ServePage(pg, f.Editor.EditorTheme(), ctx, w, r); err != nil {
+	if err := handler.ServePage(pg, f.Editor.SiteFeatureTheme(), ctx, w, r); err != nil {
 		log.ErrorRF(r, "error serving %v editor generic page: %v", f.Tag(), err)
 		f.Enjin.ServeInternalServerError(w, r)
 	}
