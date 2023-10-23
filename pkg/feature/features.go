@@ -20,7 +20,16 @@ func (f Features) Len() (count int) {
 	return len(f)
 }
 
-func (f Features) Find(tag Tag) (found Feature) {
+func (f Features) Has(tag Tag) (present bool) {
+	for _, ef := range f {
+		if present = ef.Tag() == tag; present {
+			return
+		}
+	}
+	return
+}
+
+func (f Features) Get(tag Tag) (found Feature) {
 	for _, ef := range f {
 		if ef.Tag() == tag {
 			found = ef
