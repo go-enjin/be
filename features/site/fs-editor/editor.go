@@ -60,7 +60,7 @@ type MakeFeature interface {
 }
 
 type CFeature struct {
-	site.CSiteFeature[MakeFeature]
+	site.CSiteFeature[feature.EditorFeature, MakeFeature]
 
 	themeName string
 	theme     feature.Theme
@@ -83,7 +83,6 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CSiteFeature.Init(this)
-	f.CSignaling.InitSignaling()
 	f.editorPath = DefaultEditorPath
 	return
 }
@@ -145,7 +144,7 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 
 func (f *CFeature) SetupSiteFeature(s feature.Site) {
 	f.CSiteFeature.SetupSiteFeature(s)
-	for _, ef := range feature.FilterTyped[feature.EditorFeature](f.Enjin.Features().List()) {
+	for _, ef := range f.Features {
 		ef.SetupEditor(f)
 	}
 }
@@ -154,13 +153,12 @@ func (f *CFeature) RouteSiteFeature(r chi.Router) {
 
 	r.Use(userbase.RequireUserCan(f.Enjin, feature.NewAction(f.Tag().String(), "access", "editor")))
 
-	editorFeatures := feature.FilterTyped[feature.EditorFeature](f.Enjin.Features().List())
-	if len(editorFeatures) > 0 {
+	if len(f.Features) > 0 {
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			f.Enjin.ServeRedirect(editorFeatures[0].GetEditorPath(), w, r)
+			f.Enjin.ServeRedirect(f.Features[0].GetEditorPath(), w, r)
 		})
 	}
-	for _, ef := range editorFeatures {
+	for _, ef := range f.Features {
 		r.Route("/"+ef.GetEditorName(), func(r chi.Router) {
 			ef.SetupEditorRoute(r)
 		})
@@ -170,7 +168,7 @@ func (f *CFeature) RouteSiteFeature(r chi.Router) {
 }
 
 func (f *CFeature) SiteFeatureMenu() (m menu.Menu) {
-	for _, ef := range feature.FilterTyped[feature.EditorFeature](f.Enjin.Features().List()) {
+	for _, ef := range f.Features {
 		m = append(m, &menu.Item{
 			Text:    ef.GetEditorName(),
 			Href:    ef.GetEditorPath(),
