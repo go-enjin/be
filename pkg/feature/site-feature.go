@@ -15,26 +15,28 @@
 package feature
 
 import (
-	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-chi/chi/v5"
+
 	"github.com/go-enjin/be/pkg/feature/signaling"
+	"github.com/go-enjin/be/pkg/menu"
 )
 
-type Site interface {
+type SiteFeature interface {
 	Feature
 	signaling.Signaling
 
-	SitePath() (path string)
-	SiteTheme() (t Theme)
-	SiteMenu() (siteMenu beContext.Context)
+	Site() (s Site)
 
-	PushInfoNotice(eid, message string, dismiss bool, actions ...UserNoticeLink)
-	PushWarnNotice(eid, message string, dismiss bool, actions ...UserNoticeLink)
-	PushErrorNotice(eid, message string, dismiss bool, actions ...UserNoticeLink)
-	PushNotices(eid string, notices ...*UserNotice)
-	PullNotices(eid string) (notices UserNotices)
+	SiteFeatureName() (name string)
+	SiteFeaturePath() (path string)
+	SiteFeatureMenu() (m menu.Menu)
 
-	GetContext(eid string) (ctx beContext.Context)
-	SetContext(eid string, ctx beContext.Context)
+	SetupSiteFeature(s Site)
+	RouteSiteFeature(r chi.Router)
+}
 
-	PreparePage(layout, pageType, pagePath string, t Theme) (pg Page, ctx beContext.Context, err error)
+type SiteMakeFeature[MakeTypedFeature interface{}] interface {
+	SiteIncludingMakeFeature[MakeTypedFeature]
+
+	SetSiteFeaturePathName(name string) MakeTypedFeature
 }
