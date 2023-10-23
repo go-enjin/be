@@ -30,13 +30,13 @@ type SiteFeature interface {
 	SiteFeatureName() (name string)
 	SiteFeaturePath() (path string)
 	SiteFeatureMenu() (m menu.Menu)
+	SiteFeatureTheme() (t Theme)
 
 	SetupSiteFeature(s Site)
 	RouteSiteFeature(r chi.Router)
 }
 
 type SiteMakeFeature[MakeTypedFeature interface{}] interface {
-	SiteIncludingMakeFeature[MakeTypedFeature]
-
-	SetSiteFeaturePathName(name string) MakeTypedFeature
+	SetSiteFeatureName(name string) MakeTypedFeature
+	SetSiteFeatureTheme(name string) MakeTypedFeature
 }
