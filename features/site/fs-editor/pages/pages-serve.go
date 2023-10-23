@@ -38,6 +38,8 @@ func (f *CFeature) ServePreparedEditPage(pg feature.Page, ctx context.Context, w
 func (f *CFeature) ServePreviewEditPage(pg feature.Page, ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	printer := lang.GetPrinterFromRequest(r)
 
+	ctx.Delete("SiteMenu")
+
 	if ee := f.PageRenderCheck(pg); ee != nil {
 		var contents string
 		var enjErr *errors.EnjinError
