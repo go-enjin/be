@@ -53,7 +53,8 @@ type Feature interface {
 }
 
 type MakeFeature interface {
-	Include(siteFeatures ...feature.Feature) MakeFeature
+	feature.SiteIncludingMakeFeature[MakeFeature]
+
 	SetSitePath(path string) MakeFeature
 
 	Make() Feature
@@ -62,8 +63,7 @@ type MakeFeature interface {
 type CFeature struct {
 	feature.CFeature
 	signaling.CSignaling
-
-	include feature.Features
+	feature.CSiteIncluding[feature.SiteFeature, MakeFeature]
 
 	themeName string
 
@@ -90,16 +90,12 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+	f.CSiteIncluding.InitSiteIncluding(this)
 	f.sitePath = DefaultSitePath
 	f.userMutex = &sync.RWMutex{}
 	f.userCache = make(map[string]beContext.Context)
 	f.userNotices = make(map[string]feature.UserNotices)
 	return
-}
-
-func (f *CFeature) Include(siteFeatures ...feature.Feature) MakeFeature {
-	f.include = append(f.include, siteFeatures...)
-	return f
 }
 
 func (f *CFeature) SetSitePath(path string) MakeFeature {
@@ -120,9 +116,7 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	if err = f.CFeature.Build(b); err != nil {
 		return
 	}
-	for _, ef := range f.include {
-		b.AddFeature(ef)
-	}
+	f.BuildSiteIncluding(b)
 	category := f.FeatureTag.String()
 	prefix := f.FeatureTag.Kebab()
 	b.AddFlags(&cli.StringFlag{
@@ -166,7 +160,9 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 	log.DebugF("using site theme: %v", f.theme.Name())
 
-	for _, ef := range feature.FilterTyped[feature.SiteFeature](f.Enjin.Features().List()) {
+	f.CSiteIncluding.StartupSiteIncluding(f.Enjin)
+
+	for _, ef := range f.Features {
 		ef.SetupSiteFeature(f)
 	}
 	return
@@ -200,17 +196,16 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 func (f *CFeature) Apply(s feature.System) (err error) {
 
 	route := func(r chi.Router) {
-		siteFeatures := feature.FilterTyped[feature.SiteFeature](f.Enjin.Features().List())
 		if f.sitePath != "/" {
 			r.Use(userbase.RequireUserCan(f.Enjin, feature.NewAction(f.Tag().String(), "access", "site")))
-			if len(siteFeatures) > 0 {
+			if len(f.Features) > 0 {
 				r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-					f.Enjin.ServeRedirect(siteFeatures[0].SiteFeaturePath(), w, r)
+					f.Enjin.ServeRedirect(f.Features[0].SiteFeaturePath(), w, r)
 				})
 			}
 		}
-		for _, ef := range siteFeatures {
-			r.Route("/"+ef.SiteFeaturePathName(), func(r chi.Router) {
+		for _, ef := range f.Features {
+			r.Route("/"+ef.SiteFeatureName(), func(r chi.Router) {
 				ef.RouteSiteFeature(r)
 			})
 		}
@@ -236,9 +231,9 @@ func (f *CFeature) SiteTheme() (t feature.Theme) {
 
 func (f *CFeature) SiteMenu() (siteMenu beContext.Context) {
 	mainMenu := menu.Menu{}
-	for _, ef := range feature.FilterTyped[feature.SiteFeature](f.Enjin.Features().List()) {
+	for _, ef := range f.Features {
 		mainMenu = append(mainMenu, &menu.Item{
-			Text:    ef.SiteFeaturePathName(),
+			Text:    ef.SiteFeatureName(),
 			Href:    ef.SiteFeaturePath(),
 			SubMenu: ef.SiteFeatureMenu(),
 		})
