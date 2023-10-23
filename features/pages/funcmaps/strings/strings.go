@@ -108,6 +108,8 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		"trimPrefix":       strings.TrimPrefix,
 		"trimSuffix":       strings.TrimSuffix,
 		"rplString":        ReplaceString,
+		"hasPrefix":        strings.HasPrefix,
+		"hasSuffix":        strings.HasSuffix,
 	}
 	return
 }
