@@ -299,7 +299,7 @@ func (f *CFeature) PreparePage(layout, pageType, pagePath string, t feature.Them
 		return
 	}
 
-	ctx.SetSpecific("SiteMenu", beContext.Context{"MainMenu": f.SiteMenu()})
+	ctx.SetSpecific("SiteMenu", f.SiteMenu())
 	return
 }
 
