@@ -24,6 +24,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/types/site"
 )
 
@@ -74,6 +75,15 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CSiteFeature.Startup(ctx); err != nil {
 		return
 	}
+	return
+}
+
+func (f *CFeature) SiteFeatureMenu() (m menu.Menu) {
+	m = append(m, &menu.Item{
+		Text: f.SiteFeatureName(),
+		Href: f.SiteFeaturePath(),
+		Icon: "fa-solid fa-gauge",
+	})
 	return
 }
 

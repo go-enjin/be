@@ -229,11 +229,7 @@ func (f *CFeature) SiteTheme() (t feature.Theme) {
 func (f *CFeature) SiteMenu() (siteMenu beContext.Context) {
 	mainMenu := menu.Menu{}
 	for _, ef := range f.Features {
-		mainMenu = append(mainMenu, &menu.Item{
-			Text:    ef.SiteFeatureName(),
-			Href:    ef.SiteFeaturePath(),
-			SubMenu: ef.SiteFeatureMenu(),
-		})
+		mainMenu = append(mainMenu, ef.SiteFeatureMenu()...)
 	}
 	return beContext.Context{
 		"MainMenu": mainMenu,
@@ -303,17 +299,7 @@ func (f *CFeature) PreparePage(layout, pageType, pagePath string, t feature.Them
 		return
 	}
 
-	m := menu.Menu{}
-	for _, sf := range f.Features {
-		m = append(m, &menu.Item{
-			Text:    sf.SiteFeatureName(),
-			Href:    sf.SiteFeaturePath(),
-			SubMenu: sf.SiteFeatureMenu(),
-		})
-	}
-
-	ctx.SetSpecific("SiteMenu", beContext.Context{"MainMenu": m})
-
+	ctx.SetSpecific("SiteMenu", beContext.Context{"MainMenu": f.SiteMenu()})
 	return
 }
 

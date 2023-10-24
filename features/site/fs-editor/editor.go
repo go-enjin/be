@@ -30,7 +30,6 @@ import (
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/site"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 var (
@@ -150,14 +149,19 @@ func (f *CFeature) RouteSiteFeature(r chi.Router) {
 }
 
 func (f *CFeature) SiteFeatureMenu() (m menu.Menu) {
+	item := &menu.Item{
+		Text: f.SiteFeatureName(),
+		Href: f.SiteFeaturePath(),
+		Icon: "fa-solid fa-pen-to-square",
+	}
 	for _, ef := range f.Features {
-		m = append(m, &menu.Item{
+		item.SubMenu = append(item.SubMenu, &menu.Item{
 			Text:    ef.GetEditorName(),
 			Href:    ef.GetEditorPath(),
-			Lang:    language.English.String(),
 			SubMenu: ef.SelfEditor().GetEditorMenu(),
 		})
 	}
+	m = menu.Menu{item}
 	return
 }
 
