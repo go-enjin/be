@@ -26,6 +26,7 @@ import (
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
 )
 
@@ -141,9 +142,11 @@ func ElementAttributes(value interface{}) (html template.HTMLAttr) {
 	var parts []string
 	switch data := value.(type) {
 	case *menu.Item:
-		if data.Attributes != nil {
-			for k, v := range data.Attributes {
-				parts = append(parts, fmt.Sprintf(`%v="%v"`, k, v))
+		if data.Context != nil {
+			if attributes, ok := data.Context.Get("attributes").(map[string]interface{}); ok {
+				for _, k := range maps.SortedKeys(attributes) {
+					parts = append(parts, fmt.Sprintf(`%s=%q`, k, fmt.Sprintf("%v", attributes[k])))
+				}
 			}
 		}
 	case []template.HTMLAttr:
