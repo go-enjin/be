@@ -1,4 +1,4 @@
-// Copyright (c) 2022  The Go-Enjin Authors
+// Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,34 +16,29 @@ package menu
 
 import (
 	"encoding/json"
-	"strconv"
+
+	"github.com/go-enjin/be/pkg/context"
 )
 
-type Menu []*Item
+type Item struct {
+	Text string `json:"text"`
+	Href string `json:"href,omitempty"`
+	Lang string `json:"lang,omitempty"`
 
-func NewMenuFromJson(data []byte) (menu Menu, err error) {
-	if err = json.Unmarshal(data, &menu); err != nil {
-		return
-	}
-	return
+	Icon   string `json:"icon,omitempty"`
+	Image  string `json:"image,omitempty"`
+	ImgAlt string `json:"img-alt,omitempty"`
+
+	Active bool `json:"active,omitempty"`
+
+	SubMenu Menu `json:"sub-menu,omitempty"`
+
+	Context context.Context `json:"context,omitempty"`
 }
 
-func (m Menu) String() (value string) {
-	if data, err := json.MarshalIndent(m, "", "\t"); err == nil {
+func (i Item) String() (value string) {
+	if data, err := json.MarshalIndent(i, "", "\t"); err == nil {
 		value = string(data)
-	}
-	return
-}
-
-func (m Menu) DeepActive() (index string) {
-	for idx, item := range m {
-		if item.Active {
-			index = strconv.Itoa(idx + 1)
-			if deep := item.SubMenu.DeepActive(); deep != "" {
-				index += "-" + deep
-			}
-			return
-		}
 	}
 	return
 }

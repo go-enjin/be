@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package menus
+package menu
 
 import (
 	"encoding/json"
@@ -20,101 +20,59 @@ import (
 	"github.com/mrz1836/go-sanitize"
 
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/pkg/slices"
 )
 
-type Item struct {
-	Text string `json:"text"`
-	Href string `json:"href,omitempty"`
-	Lang string `json:"lang,omitempty"`
+type EditMenu []*EditItem
 
-	Active bool `json:"active,omitempty"`
-
-	Attributes map[string]string `json:"attributes,omitempty"`
-
-	SubMenu Menu `json:"sub-menu,omitempty"`
-
-	Expand   string `json:"expand,omitempty"`
-	Delete   bool   `json:"delete,omitempty"`
-	MoveUp   bool   `json:"move-up,omitempty"`
-	MoveDown bool   `json:"move-down,omitempty"`
-	Append   bool   `json:"append,omitempty"`
-}
-
-func (i Item) String() (value string) {
-	if data, err := json.MarshalIndent(i, "", "\t"); err == nil {
-		value = string(data)
-	}
-	return
-}
-
-func (i Item) AsItem() (clone *menu.Item) {
-	var subMenu menu.Menu
-	if len(i.SubMenu) > 0 {
-		subMenu = i.SubMenu.AsMenu()
-	}
-	clone = &menu.Item{
-		Text:       i.Text,
-		Href:       i.Href,
-		Lang:       i.Lang,
-		Active:     i.Active,
-		Attributes: i.Attributes,
-		SubMenu:    subMenu,
-	}
-	return
-}
-
-type Menu []*Item
-
-func NewMenuFromJson(data []byte) (menu Menu, err error) {
+func NewEditMenuFromJson(data []byte) (menu EditMenu, err error) {
 	if err = json.Unmarshal(data, &menu); err != nil {
 		return
 	}
 	return
 }
 
-func (m Menu) Len() (size int) {
+func (m EditMenu) Len() (size int) {
 	size = len(m)
 	return
 }
 
-func (m Menu) String() (value string) {
+func (m EditMenu) String() (value string) {
 	if data, err := json.MarshalIndent(m, "", "\t"); err == nil {
 		value = string(data)
 	}
 	return
 }
 
-func (m Menu) AsMenu() (clone menu.Menu) {
+func (m EditMenu) AsMenu() (clone Menu) {
 	for _, item := range m {
 		clone = append(clone, item.AsItem())
 	}
 	return
 }
 
-func (m Menu) ExpandAll() {
+func (m EditMenu) ExpandAll() {
 	for _, item := range m {
 		item.Expand = "true"
 		item.SubMenu.ExpandAll()
 	}
 }
 
-func (m Menu) CollapseAll() {
+func (m EditMenu) CollapseAll() {
 	for _, item := range m {
 		item.Expand = ""
 		item.SubMenu.CollapseAll()
 	}
 }
 
-func (m Menu) SanitizeAll() {
+func (m EditMenu) SanitizeAll() {
 	for _, item := range m {
 		item.Text = forms.StrictSanitize(item.Text)
 		item.Href = sanitize.URL(item.Href)
 	}
 }
 
-func (m Menu) ProcessAllChanges() (modified Menu) {
+func (m EditMenu) ProcessAllChanges() (modified EditMenu) {
 	var changed bool
 	for modified, changed = m.ProcessChanges(); changed; modified, changed = modified.ProcessChanges() {
 		// nop
@@ -122,13 +80,13 @@ func (m Menu) ProcessAllChanges() (modified Menu) {
 	return
 }
 
-func (m Menu) ProcessChanges() (modified Menu, changed bool) {
-	var process func(list Menu, top bool) (spill *Item, forward bool, modified Menu, changed bool)
-	process = func(list Menu, top bool) (spill *Item, forward bool, modified Menu, changed bool) {
+func (m EditMenu) ProcessChanges() (modified EditMenu, changed bool) {
+	var process func(list EditMenu, top bool) (spill *EditItem, forward bool, modified EditMenu, changed bool)
+	process = func(list EditMenu, top bool) (spill *EditItem, forward bool, modified EditMenu, changed bool) {
 		if last := len(list) - 1; last > -1 {
 			// depth first
 			for idx, item := range list {
-				var s *Item
+				var s *EditItem
 				var fwd bool
 				if s, fwd, item.SubMenu, changed = process(item.SubMenu, false); s != nil {
 					if fwd {
@@ -148,7 +106,7 @@ func (m Menu) ProcessChanges() (modified Menu, changed bool) {
 			}
 			// then this
 			last = len(modified) - 1 // revised last index
-			for idx, item := range append(Menu{}, modified...) {
+			for idx, item := range append(EditMenu{}, modified...) {
 				if changed = item.MoveUp; changed {
 					item.MoveUp = false
 					modified = slices.Remove(modified, idx)
@@ -175,7 +133,7 @@ func (m Menu) ProcessChanges() (modified Menu, changed bool) {
 					return
 				} else if changed = item.Append; changed {
 					item.Append = false
-					item.SubMenu = append(item.SubMenu, &Item{})
+					item.SubMenu = append(item.SubMenu, &EditItem{})
 					return
 				} else if changed = item.Delete; changed {
 					item.Delete = false

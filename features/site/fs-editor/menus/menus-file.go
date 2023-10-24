@@ -26,6 +26,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/menu"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -49,7 +50,7 @@ func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
 	printer := lang.GetPrinterFromRequest(r)
 
 	var err error
-	var list Menu
+	var list menu.EditMenu
 	var data []byte
 	if info.HasDraft {
 		if data, err = f.SelfEditor().ReadDraft(info); err != nil {
@@ -65,7 +66,7 @@ func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if list, err = NewMenuFromJson(data); err != nil {
+	if list, err = menu.NewEditMenuFromJson(data); err != nil {
 		log.ErrorRF(r, "error reading draft: %v", err)
 		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error encoding menu: "%v"`, err), true)
 		f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditDirectoryPath(), w, r)
@@ -160,8 +161,8 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var list Menu
-	if list, err = NewMenuFromJson(data); err != nil {
+	var list menu.EditMenu
+	if list, err = menu.NewEditMenuFromJson(data); err != nil {
 		log.ErrorRF(r, "error reading draft: %v", err)
 		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error encoding menu: "%v"`, err), true)
 		f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditDirectoryPath(), w, r)

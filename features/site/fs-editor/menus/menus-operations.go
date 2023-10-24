@@ -52,7 +52,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx, form c
 		_ = form.SetKV("."+target, true)
 	}
 
-	var parsed Menu
+	var parsed menu.EditMenu
 	if v, ok := form["menu"].([]interface{}); ok {
 		if parsed, redirect = f.ParseFormToDraft(v, info, r); redirect != "" {
 			return
@@ -68,7 +68,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx, form c
 	case "collapse":
 		parsed.CollapseAll()
 	case "append":
-		parsed = append(parsed, &Item{})
+		parsed = append(parsed, &menu.EditItem{})
 	}
 
 	fileContents := parsed.String()
@@ -105,7 +105,7 @@ func (f *CFeature) OpFileCommitValidate(r *http.Request, pg feature.Page, ctx, f
 
 func (f *CFeature) OpFileCommitHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (redirect string) {
 	printer := lang.GetPrinterFromRequest(r)
-	var parsed Menu
+	var parsed menu.EditMenu
 	if v, ok := form["menu"].([]interface{}); ok {
 		if parsed, redirect = f.ParseFormToDraft(v, info, r); redirect != "" {
 			return
@@ -142,7 +142,7 @@ func (f *CFeature) OpFilePublishHandler(r *http.Request, pg feature.Page, ctx, f
 	printer := lang.GetPrinterFromRequest(r)
 
 	if v, ok := form["menu"].([]interface{}); ok {
-		var parsed Menu
+		var parsed menu.EditMenu
 		if parsed, redirect = f.ParseFormToDraft(v, info, r); redirect != "" {
 			return
 		}

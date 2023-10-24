@@ -25,7 +25,7 @@ import (
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
-func (f *CFeature) ParseFormToDraft(list []interface{}, info *editor.File, r *http.Request) (parsed Menu, redirect string) {
+func (f *CFeature) ParseFormToDraft(list []interface{}, info *editor.File, r *http.Request) (parsed menu.EditMenu, redirect string) {
 	eid := userbase.GetCurrentUserEID(r)
 	printer := lang.GetPrinterFromRequest(r)
 	if data, ee := json.Marshal(list); ee != nil {
@@ -40,7 +40,7 @@ func (f *CFeature) ParseFormToDraft(list []interface{}, info *editor.File, r *ht
 	return
 }
 
-func (f *CFeature) ParseDraftToMenu(parsed Menu, info *editor.File, r *http.Request) (cleaned menu.Menu, redirect string) {
+func (f *CFeature) ParseDraftToMenu(parsed menu.EditMenu, info *editor.File, r *http.Request) (cleaned menu.Menu, redirect string) {
 	eid := userbase.GetCurrentUserEID(r)
 	printer := lang.GetPrinterFromRequest(r)
 	if data, ee := json.Marshal(parsed); ee != nil {
