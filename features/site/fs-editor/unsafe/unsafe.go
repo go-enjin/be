@@ -19,6 +19,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/types/editor"
 )
 
@@ -85,5 +86,14 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 			}
 		}
 	}
+	return
+}
+
+func (f *CFeature) EditorMenu() (m menu.Menu) {
+	m = append(m, &menu.Item{
+		Text: f.GetEditorName(),
+		Href: f.GetEditorPath(),
+		Icon: "fa-solid fa-dumpster-fire",
+	})
 	return
 }
