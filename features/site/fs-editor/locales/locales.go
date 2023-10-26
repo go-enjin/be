@@ -21,6 +21,7 @@ import (
 	bePkgEditor "github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/pkg/request/argv"
 	"github.com/go-enjin/be/types/editor"
 )
@@ -172,4 +173,13 @@ func (f *CFeature) SetupEditorRoute(r chi.Router) {
 	}
 
 	r.Get("/", f.SelfEditor().RenderFileBrowser)
+}
+
+func (f *CFeature) EditorMenu() (m menu.Menu) {
+	m = append(m, &menu.Item{
+		Text: f.GetEditorName(),
+		Href: f.GetEditorPath(),
+		Icon: "fa-solid fa-language",
+	})
+	return
 }
