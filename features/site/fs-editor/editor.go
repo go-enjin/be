@@ -152,7 +152,7 @@ func (f *CFeature) SiteFeatureMenu() (m menu.Menu) {
 	item := &menu.Item{
 		Text: f.SiteFeatureName(),
 		Href: f.SiteFeaturePath(),
-		Icon: "fa-solid fa-pen-to-square",
+		Icon: "fa-solid fa-box-archive",
 	}
 	for _, ef := range f.Features {
 		item.SubMenu = append(item.SubMenu, ef.EditorMenu()...)
