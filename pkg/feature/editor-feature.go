@@ -36,6 +36,7 @@ type EditorFeature interface {
 	SelfEditor() (self EditorFeature)
 	SetupEditor(editor EditorSite)
 	SetupEditorRoute(r chi.Router)
+	EditorMenu() (m menu.Menu)
 
 	GetEditorName() (name string)
 	GetEditorPath() (path string)
