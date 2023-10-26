@@ -169,7 +169,7 @@ func (f *CFeature) OpFilePublishHandler(r *http.Request, pg feature.Page, ctx, f
 	} else if err = json.Unmarshal(data, &cleaned); err != nil {
 		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error decoding draft data: \"%[1]s\"", err.Error()), true)
 		return
-	} else if data, err = json.Marshal(cleaned); err != nil {
+	} else if data, err = json.MarshalIndent(cleaned, "", "\t"); err != nil {
 		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error encoding draft menu: \"%[1]s\"", err.Error()), true)
 		return
 	} else if err = f.SelfEditor().WriteFile(info, data); err != nil {
