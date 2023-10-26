@@ -35,11 +35,12 @@ type EditItem struct {
 
 	Context context.Context `json:"context,omitempty"`
 
-	Expand   string `json:"expand,omitempty"`
-	Delete   bool   `json:"delete,omitempty"`
-	MoveUp   bool   `json:"move-up,omitempty"`
-	MoveDown bool   `json:"move-down,omitempty"`
-	Append   bool   `json:"append,omitempty"`
+	Expand       string `json:"expand,omitempty"`
+	ExpandExtras string `json:"expand-extras,omitempty"`
+	Delete       bool   `json:"delete,omitempty"`
+	MoveUp       bool   `json:"move-up,omitempty"`
+	MoveDown     bool   `json:"move-down,omitempty"`
+	Append       bool   `json:"append,omitempty"`
 }
 
 func (i EditItem) String() (value string) {
