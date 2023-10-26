@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package dashboard
+package enjin_info
 
 import (
 	"net/http"
@@ -23,12 +23,13 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/types/editor"
 )
 
 var (
 	DefaultEditorType = "dashboard"
-	DefaultEditorName = "dashboard"
+	DefaultEditorName = "enjin-info"
 )
 
 var (
@@ -36,7 +37,7 @@ var (
 	_ MakeFeature = (*CFeature)(nil)
 )
 
-const Tag feature.Tag = "editor-dashboard"
+const Tag feature.Tag = "fs-editor-enjin-info"
 
 type Feature interface {
 	feature.EditorFeature
@@ -97,4 +98,13 @@ func (f *CFeature) RenderDashboard(w http.ResponseWriter, r *http.Request) {
 
 	pg.SetTitle(printer.Sprintf("Dashboard"))
 	f.SelfEditor().ServePreparedEditPage(pg, ctx, w, r)
+}
+
+func (f *CFeature) EditorMenu() (m menu.Menu) {
+	m = append(m, &menu.Item{
+		Text: f.GetEditorName(),
+		Href: f.GetEditorPath(),
+		Icon: "fa-solid fa-circle-info",
+	})
+	return
 }
