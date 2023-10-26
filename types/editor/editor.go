@@ -104,6 +104,11 @@ func (f *CEditorFeature[MakeTypedFeature]) UserActions() (list feature.Actions) 
 	return
 }
 
+func (f *CEditorFeature[MakeTypedFeature]) SelfEditor() (self feature.EditorFeature) {
+	self, _ = f.This().(feature.EditorFeature)
+	return
+}
+
 func (f *CEditorFeature[MakeTypedFeature]) GetEditorName() (name string) {
 	return f.EditorName
 }
@@ -116,8 +121,11 @@ func (f *CEditorFeature[MakeTypedFeature]) GetEditorMenu() (m menu.Menu) {
 	return nil
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) SelfEditor() (self feature.EditorFeature) {
-	self, _ = f.This().(feature.EditorFeature)
+func (f *CEditorFeature[MakeTypedFeature]) EditorMenu() (m menu.Menu) {
+	m = append(m, &menu.Item{
+		Text: f.GetEditorName(),
+		Href: f.GetEditorPath(),
+	})
 	return
 }
 
