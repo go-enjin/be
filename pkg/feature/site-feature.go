@@ -15,28 +15,54 @@
 package feature
 
 import (
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 
+	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/menu"
+	"github.com/go-enjin/golang-org-x-text/message"
 )
+
+type SiteFeatures TypedFeatures[SiteFeature]
+
+type SiteFeatureLabelFn func(printer *message.Printer) (label string)
+
+type SiteMakeFeature[MakeTypedFeature interface{}] interface {
+	SetSiteFeatureKey(key string) MakeTypedFeature
+	SetSiteFeatureIcon(icon string) MakeTypedFeature
+	SetSiteFeatureTheme(name string) MakeTypedFeature
+	SetSiteFeatureLabel(fn SiteFeatureLabelFn) MakeTypedFeature
+}
 
 type SiteFeature interface {
 	Feature
+	UserActionsProvider
 	signaling.Signaling
 
 	Site() (s Site)
 
-	SiteFeatureName() (name string)
-	SiteFeaturePath() (path string)
-	SiteFeatureMenu() (m menu.Menu)
-	SiteFeatureTheme() (t Theme)
+	Action(verb string, details ...string) (action Action)
 
-	SetupSiteFeature(s Site)
+	SiteFeatureInfo(r *http.Request) (info *CSiteFeatureInfo)
+
+	SiteFeatureKey() (name string)
+	SiteFeatureIcon() (icon string)
+	SiteFeaturePath() (path string)
+	SiteFeatureMenu(r *http.Request) (m menu.Menu)
+	SiteFeatureTheme() (t Theme)
+	SiteFeatureLabel(printer *message.Printer) (label string)
+
+	SetupSiteFeature(s Site) (err error)
 	RouteSiteFeature(r chi.Router)
+
+	SiteSettingsFields(r *http.Request) (fields beContext.Fields)
+	SiteSettingsPanel(settingsPath string) (serve, handle http.HandlerFunc)
 }
 
-type SiteMakeFeature[MakeTypedFeature interface{}] interface {
-	SetSiteFeatureName(name string) MakeTypedFeature
-	SetSiteFeatureTheme(name string) MakeTypedFeature
+type SiteRootFeature interface {
+	SiteFeature
+
+	SiteRootHandler() (this http.Handler)
 }
