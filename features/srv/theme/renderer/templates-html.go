@@ -87,11 +87,24 @@ func (f *CFeature) NewHtmlTemplateFromContext(t feature.Theme, view string, ctx 
 	lookups := makeLookupList(pagetype, pageFormat, archetype, layoutName, view)
 
 	var tmpl *htmlTemplate.Template
-	if ctxTmpl, e := ctxLayout.NewHtmlTemplateFrom(f.Enjin, parentLayout, ctx); e != nil {
-		err = fmt.Errorf("error creating new %v layout template: %v", layoutName, e)
+
+	if parent := t.GetParent(); parent != nil {
+		if defaults, _, ok := parent.FindLayout(globals.DefaultThemeLayoutName); ok {
+			if tmpl, err = defaults.NewHtmlTemplateFrom(f.Enjin, parentLayout, ctx); err != nil {
+				err = fmt.Errorf("error creating new parent defaults to %v: %v", layoutName, err)
+				return
+			}
+		}
+	}
+
+	if tmpl == nil {
+		if tmpl, err = ctxLayout.NewHtmlTemplateFrom(f.Enjin, parentLayout, ctx); err != nil {
+			err = fmt.Errorf("error creating new %v layout template: %v", layoutName, err)
+			return
+		}
+	} else if err = ctxLayout.ApplyHtmlTemplate(f.Enjin, tmpl, ctx); err != nil {
+		err = fmt.Errorf("error applying parent defaults to %v: %v", layoutName, err)
 		return
-	} else {
-		tmpl = ctxTmpl
 	}
 
 	if parent := t.GetParent(); parent != nil {
