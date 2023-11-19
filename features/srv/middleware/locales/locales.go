@@ -144,6 +144,9 @@ func (f *CFeature) LocaleHandler(next http.Handler) (this http.Handler) {
 
 		r.URL.Path = reqPath
 		r.RequestURI = strings.Replace(r.RequestURI, urlPath, reqPath, 1)
+		if r.RequestURI == "" {
+			r.RequestURI = "/"
+		}
 
 		next.ServeHTTP(w, r.Clone(ctx))
 	})
