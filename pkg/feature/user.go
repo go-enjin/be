@@ -25,15 +25,28 @@ type AuthUser interface {
 	GetEmail() (email string)
 	GetImage() (image string)
 	GetOrigin() (origin string)
-	GetContext() (context context.Context)
+	GetGroups() (groups Groups)
+	GetActions() (groups Actions)
+
+	GetActive() (active bool)
+	GetAdminLocked() (locked bool)
+
+	GetSetting(key string) (value interface{})
+	GetSettings(includeKeys ...string) (settings context.Context)
+
+	UnsafeContext() (ctx context.Context)
+	SafeContext(includeKeys ...string) (ctx context.Context)
+
+	Can(action ...Action) (allowed bool)
+	CanAll(action ...Action) (allowed bool)
+
+	IsVisitor() (visitor bool)
+
+	Bytes() (data []byte)
 }
 
 type User interface {
 	AuthUser
-	GetOrigin() (origin string)
-	GetGroups() (groups Groups)
-	GetActions() (actions Actions)
 	AsPage() (pg Page)
-	Can(action Action) (allowed bool)
 	FilteredContext(includeKeys ...string) (ctx context.Context)
 }
