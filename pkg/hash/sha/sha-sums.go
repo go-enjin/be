@@ -1,4 +1,4 @@
-// Copyright (c) 2022  The Go-Enjin Authors
+// Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,28 +15,26 @@
 package sha
 
 import (
-	"fmt"
-	"hash"
-	"regexp"
+	"crypto/sha256"
+	"crypto/sha512"
 )
 
-var (
-	RxShasum64 = regexp.MustCompile(`^([a-f0-9]{64})$`)
-	RxShasum10 = regexp.MustCompile(`^([a-f0-9]{10})$`)
-)
-
-func makeShasum(h hash.Hash, data []byte) (shasum string, err error) {
-	if _, err = h.Write(data); err != nil {
-		return
-	}
-	shasum = fmt.Sprintf("%x", h.Sum(nil))
+func Shasum224[V []byte | string](v V) (shasum string, err error) {
+	shasum, err = makeShasum(sha256.New224(), []byte(v))
 	return
 }
 
-func mustShasum[V []byte | string](data V, fn func(data V) (shasum string, err error)) (shasum string) {
-	var err error
-	if shasum, err = fn(data); err != nil {
-		panic(err)
-	}
+func Shasum256[V []byte | string](v V) (shasum string, err error) {
+	shasum, err = makeShasum(sha256.New(), []byte(v))
+	return
+}
+
+func Shasum384[V []byte | string](v V) (shasum string, err error) {
+	shasum, err = makeShasum(sha512.New384(), []byte(v))
+	return
+}
+
+func Shasum512[V []byte | string](v V) (shasum string, err error) {
+	shasum, err = makeShasum(sha512.New(), []byte(v))
 	return
 }

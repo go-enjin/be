@@ -1,4 +1,4 @@
-// Copyright (c) 2022  The Go-Enjin Authors
+// Copyright (c) 2023  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,28 +15,11 @@
 package sha
 
 import (
+	"crypto/sha1"
 	"fmt"
-	"hash"
-	"regexp"
 )
 
-var (
-	RxShasum64 = regexp.MustCompile(`^([a-f0-9]{64})$`)
-	RxShasum10 = regexp.MustCompile(`^([a-f0-9]{10})$`)
-)
-
-func makeShasum(h hash.Hash, data []byte) (shasum string, err error) {
-	if _, err = h.Write(data); err != nil {
-		return
-	}
-	shasum = fmt.Sprintf("%x", h.Sum(nil))
-	return
-}
-
-func mustShasum[V []byte | string](data V, fn func(data V) (shasum string, err error)) (shasum string) {
-	var err error
-	if shasum, err = fn(data); err != nil {
-		panic(err)
-	}
+func DataHashSha1(data []byte) (shasum string) {
+	shasum = fmt.Sprintf("%x", sha1.Sum(data))
 	return
 }
