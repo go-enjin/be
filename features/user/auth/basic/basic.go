@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
 
@@ -30,17 +29,19 @@ import (
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	site_environ "github.com/go-enjin/be/pkg/feature/site-environ"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	beNet "github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/net/serve"
+	"github.com/go-enjin/be/pkg/request"
 	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/types/users"
 )
 
 const (
 	Tag            feature.Tag = "user-auth-basic"
-	UserContextKey             = beContext.RequestKey("user-auth-basic-user-key")
+	UserContextKey             = request.Key("user-auth-basic-user-key")
 )
 
 var (
@@ -74,6 +75,8 @@ type MakeFeature interface {
 
 type CFeature struct {
 	feature.CFeature
+
+	env *site_environ.CSiteEnviron[MakeFeature]
 
 	cacheControl string
 
@@ -133,6 +136,10 @@ func (f *CFeature) UsageNotes() (notes []string) {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+	f.env = site_environ.New[MakeFeature](this,
+		"regex", "regular expression",
+		"group", "space separated group names",
+	)
 	f.realm = "-"
 	f.logoutPath = "/logout"
 	f.redirectPath = "/"
@@ -272,6 +279,8 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CFeature.Startup(ctx); err != nil {
 		return
+	} else if err = f.env.StartupSiteEnviron(); err != nil {
+		return
 	}
 
 	report := func(conditional bool, format string, argv ...interface{}) {
@@ -340,31 +349,20 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		}
 	}
 
-	// patternKey := globals.MakeFlagEnvKey(category, "PROTECT_PATH_REGEX")
-	// groupKey := globals.MakeFlagEnvKey(category, "PROTECT_PATH_GROUP")
-
-	foundPatterns := make(map[string]string)
+	foundRegexs := make(map[string]string)
 	foundGroups := make(map[string]string)
-	for _, setting := range os.Environ() {
-		parts := strings.Split(setting, "=")
-		if len(parts) < 2 {
-			log.ErrorF("os.Environ returned with invalid format: \"%s\"", setting)
-			continue
+	if named, ok := f.env.GetSiteEnviron("regex"); ok {
+		for key, value := range named {
+			foundRegexs[key] = value
 		}
-		envKey, value := parts[0], strings.Join(parts[1:], "=")
-		if rxProtectPath.MatchString(envKey) {
-			m := rxProtectPath.FindAllStringSubmatch(envKey, 1)
-			name := m[0][1]
-			key := m[0][2]
-			if name == "GROUP" {
-				foundGroups[key] = value
-			} else if name == "REGEX" {
-				foundPatterns[key] = value
-			}
+	}
+	if named, ok := f.env.GetSiteEnviron("group"); ok {
+		for key, value := range named {
+			foundGroups[key] = value
 		}
 	}
 	var brokenPairs []string
-	for fpk, fpv := range foundPatterns {
+	for fpk, fpv := range foundRegexs {
 		if fgv, ok := foundGroups[fpk]; ok {
 			f.Protect(fpv, fgv)
 			log.DebugF(`"%v" group required for access to: "%v"`, fgv, fpv)
@@ -373,7 +371,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		}
 	}
 	for fgk, _ := range foundGroups {
-		if _, ok := foundPatterns[fgk]; !ok {
+		if _, ok := foundRegexs[fgk]; !ok {
 			if !slices.Within(fgk, brokenPairs) {
 				brokenPairs = append(brokenPairs, fgk)
 			}
