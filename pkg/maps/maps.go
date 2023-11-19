@@ -26,6 +26,23 @@ func IsMap(v interface{}) (ok bool) {
 	return
 }
 
+func PrettyMap[T comparable, V interface{}](m map[T]V) (pretty string) {
+	value := fmt.Sprintf("%#v", m)
+	last := len(value) - 1
+	pretty += "{"
+	var keeping bool
+	for i := 0; i < last; i++ {
+		if !keeping {
+			this, next := value[i], value[i+1]
+			keeping = this == '{' && next != '}'
+			continue
+		}
+		pretty += string(value[i])
+	}
+	pretty += "}"
+	return
+}
+
 func DebugWalk(thing map[string]interface{}) (results string) {
 	var walk func(depth string, tgt map[string]interface{}) (out string)
 	walk = func(depth string, tgt map[string]interface{}) (out string) {
