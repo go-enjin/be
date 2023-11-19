@@ -15,9 +15,13 @@
 package users
 
 import (
+	"encoding/json"
+	"strings"
+
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/hash/sha"
+	"github.com/go-enjin/be/pkg/userbase"
 )
 
 var (
@@ -25,13 +29,17 @@ var (
 )
 
 type AuthUser struct {
-	RID     string          `json:"real-id"`
-	EID     string          `json:"enjin-id"`
-	Name    string          `json:"name"`
-	Email   string          `json:"email"`
-	Image   string          `json:"image"`
-	Origin  string          `json:"origin"`
-	Context context.Context `json:"context"`
+	RID         string          `json:"real-id"`
+	EID         string          `json:"enjin-id"`
+	Name        string          `json:"name"`
+	Email       string          `json:"email"`
+	Image       string          `json:"image"`
+	Origin      string          `json:"origin"`
+	Groups      feature.Groups  `json:"groups"`
+	Actions     feature.Actions `json:"actions"`
+	Context     context.Context `json:"context"`
+	Active      bool            `json:"active"`
+	AdminLocked bool            `json:"admin-locked"`
 }
 
 func NewAuthUser(id, name, email, image string, ctx context.Context) (user *AuthUser) {
@@ -43,41 +51,139 @@ func NewAuthUser(id, name, email, image string, ctx context.Context) (user *Auth
 		Email:   email,
 		Image:   image,
 		Context: ctx,
+		Active:  true,
 	}
 	return
 }
 
-func (a *AuthUser) GetRID() (rid string) {
-	rid = a.RID
+func (u *AuthUser) GetRID() (rid string) {
+	rid = u.RID
 	return
 }
 
-func (a *AuthUser) GetEID() (eid string) {
-	eid = a.EID
+func (u *AuthUser) GetEID() (eid string) {
+	eid = u.EID
 	return
 }
 
-func (a *AuthUser) GetName() (name string) {
-	name = a.Name
+func (u *AuthUser) GetName() (name string) {
+	name = u.Name
 	return
 }
 
-func (a *AuthUser) GetEmail() (email string) {
-	email = a.Email
+func (u *AuthUser) GetEmail() (email string) {
+	email = u.Email
 	return
 }
 
-func (a *AuthUser) GetImage() (image string) {
-	image = a.Image
+func (u *AuthUser) GetImage() (image string) {
+	image = u.Image
 	return
 }
 
-func (a *AuthUser) GetOrigin() (origin string) {
-	origin = a.Origin
+func (u *AuthUser) GetOrigin() (origin string) {
+	origin = u.Origin
 	return
 }
 
-func (a *AuthUser) GetContext() (context context.Context) {
-	context = a.Context
+func (u *AuthUser) UnsafeContext() (ctx context.Context) {
+	ctx = u.Context
+	return
+}
+
+func (u *AuthUser) GetActive() (active bool) {
+	active = u.Active
+	return
+}
+
+func (u *AuthUser) GetAdminLocked() (locked bool) {
+	locked = u.AdminLocked
+	return
+}
+
+func (u *AuthUser) SafeContext(includeKeys ...string) (ctx context.Context) {
+	ctx = context.Context{
+		"EID":          u.EID,
+		"Name":         u.Name,
+		"Email":        u.Email,
+		"Image":        u.Image,
+		"DisplayName":  u.Context.String(".settings.display-name", u.Name),
+		"ProfileImage": u.Context.String(".settings.profile-image", u.Image),
+	}
+	for _, key := range includeKeys {
+		if k, v := u.Context.GetKV(key); k != "" {
+			// always filter out secure and settings user contexts
+			if strings.ToLower(k) != "secure" && strings.ToLower(k) != "settings" {
+				ctx[k] = v
+			}
+		}
+	}
+	ctx.CamelizeKeys()
+	return
+}
+
+func (u *AuthUser) GetSettings(limitKeys ...string) (settings context.Context) {
+	settings = context.Context{
+		"Email":        u.Email,
+		"DisplayName":  u.Context.String(".settings.display-name", u.Name),
+		"ProfileImage": u.Context.String(".settings.profile-image", u.Image),
+	}
+	if ctx := u.Context.Context("settings"); len(ctx) > 0 {
+		if len(limitKeys) > 0 {
+			for _, key := range limitKeys {
+				k, v := ctx.GetKV(key)
+				settings[k] = v
+			}
+		} else {
+			settings.ApplySpecific(ctx)
+		}
+	}
+	settings.CamelizeKeys()
+	return
+}
+
+func (u *AuthUser) GetSetting(key string) (value interface{}) {
+	if ctx := u.Context.Context("settings"); len(ctx) > 0 {
+		value = ctx.Get(key)
+	}
+	return
+}
+
+func (u *AuthUser) GetGroups() (groups feature.Groups) {
+	groups = append(groups, u.Groups...)
+	return
+}
+
+func (u *AuthUser) GetActions() (actions feature.Actions) {
+	actions = append(actions, u.Actions...)
+	return
+}
+
+func (u *AuthUser) IsVisitor() (visitor bool) {
+	visitor = u.EID == userbase.VisitorEID
+	return
+}
+
+func (u *AuthUser) Can(actions ...feature.Action) (allowed bool) {
+	if u.AdminLocked {
+		return
+	}
+	allowed = u.Actions.HasOneOf(actions)
+	return
+}
+
+func (u *AuthUser) CanAll(actions ...feature.Action) (allowed bool) {
+	if u.AdminLocked {
+		return
+	}
+	allowed = u.Actions.HasAllOf(actions)
+	return
+}
+
+func (u *AuthUser) Bytes() (data []byte) {
+	var err error
+	if data, err = json.MarshalIndent(u, "", "\t"); err != nil {
+		panic(err)
+	}
 	return
 }
