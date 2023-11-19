@@ -22,12 +22,17 @@ import (
 
 type EmailSender interface {
 	Feature
+
 	HasEmailAccount(account string) (present bool)
 	SendEmail(account string, message *gomail.Message) (err error)
 }
 
 type EmailProvider interface {
 	Feature
-	NewEmail(basename string, bodyCtx beContext.Context) (message *gomail.Message, err error)
+
+	NewEmail(path string, bodyCtx beContext.Context) (message *gomail.Message, err error)
 	MakeEmailBody(path string, ctx beContext.Context) (matter beContext.Context, body string, err error)
+
+	ListTemplates() (names []string)
+	HasTemplate(name string) (present bool)
 }
