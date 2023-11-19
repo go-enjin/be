@@ -23,7 +23,11 @@ import (
 	"github.com/go-enjin/be/pkg/maths"
 )
 
+type privateKey string
 
+const (
+	gNilValue privateKey = "nil"
+)
 
 type Variables interface {
 	maths.Number | byte | string
@@ -186,8 +190,39 @@ func FlatListEmpty(store feature.KeyValueStore, key string) (empty bool) {
 }
 
 func CountFlatList(store feature.KeyValueStore, key string) (count uint64) {
+	countKey := MakeFlatListKey(key, "count")
+	count = GetValue[uint64](store, countKey)
+	return
+}
+
+func ResetFlatList(store feature.KeyValueStore, key string) (reset bool) {
 	endKey := MakeFlatListKey(key, "end")
-	count = GetValue[uint64](store, endKey)
+	endIndex := GetValue[uint64](store, endKey)
+	freeKey := MakeFlatListKey(key, "free")
+	countKey := MakeFlatListKey(key, "count")
+
+	for i := uint64(0); i < endIndex; i++ {
+		idxKey := MakeFlatListKey(key, "idx", fmt.Sprintf("%d", i))
+		if err := store.Delete(idxKey); err != nil {
+			panic(err)
+		}
+	}
+
+	if err := store.Delete(freeKey); err != nil {
+		panic(err)
+	}
+
+	if err := store.Delete(countKey); err != nil {
+		panic(err)
+	}
+	return
+}
+
+func ResetFlatListIfEmpty(store feature.KeyValueStore, key string) (reset bool) {
+	count := CountFlatList(store, key)
+	if reset = count == 0; reset {
+		reset = ResetFlatList(store, key)
+	}
 	return
 }
 
@@ -234,6 +269,11 @@ func YieldFlatList[T interface{}](store feature.KeyValueStore, key string) (yiel
 		for i := uint64(0); i < endIdx; i++ {
 			idxKey := MakeFlatListKey(key, "idx", fmt.Sprintf("%d", i))
 			if v, e := store.Get(idxKey); e == nil {
+				if isNil, ok := v.(privateKey); ok {
+					if isNil == gNilValue {
+						continue
+					}
+				}
 				if vs, ok := v.(string); ok {
 					if item, ee := DecodeValue[T](vs); ee == nil {
 						yield <- item
@@ -250,11 +290,58 @@ func YieldFlatList[T interface{}](store feature.KeyValueStore, key string) (yiel
 	return
 }
 
+func FirstInFlatList[T comparable](store feature.KeyValueStore, key string) (value T, ok bool) {
+
+	if CountFlatList(store, key) == 0 {
+		return
+	}
+
+	endKey := MakeFlatListKey(key, "end")
+	endIndex := GetValue[uint64](store, endKey)
+
+	for i := uint64(0); i < endIndex; i++ {
+		idxKey := MakeFlatListKey(key, "idx", fmt.Sprintf("%d", i))
+		if v, e := store.Get(idxKey); e == nil {
+			if isNil, present := v.(privateKey); present && isNil == gNilValue {
+				continue
+			} else if value, ok = v.(T); ok {
+				return
+			}
+		}
+	}
+
+	return
+}
+
+func LastInFlatList[T comparable](store feature.KeyValueStore, key string) (value T, ok bool) {
+
+	if CountFlatList(store, key) == 0 {
+		return
+	}
+
+	endKey := MakeFlatListKey(key, "end")
+	endIndex := GetValue[uint64](store, endKey)
+
+	for i := endIndex - 1; i > 0; i-- {
+		idxKey := MakeFlatListKey(key, "idx", fmt.Sprintf("%d", i))
+		if v, e := store.Get(idxKey); e == nil {
+			if isNil, present := v.(privateKey); present && isNil == gNilValue {
+				continue
+			} else if value, ok = v.(T); ok {
+				return
+			}
+		}
+	}
+
+	return
+}
+
 func AppendToFlatList[T comparable](store feature.KeyValueStore, key string, value T) (err error) {
 	endKey := MakeFlatListKey(key, "end")
 	endIndex := GetValue[uint64](store, endKey)
 	freeKey := MakeFlatListKey(key, "free")
 	freeIndexes, _ := GetSlice[uint64](store, freeKey)
+	countKey := MakeFlatListKey(key, "count")
 
 	var dstIdx uint64
 
@@ -274,7 +361,14 @@ func AppendToFlatList[T comparable](store feature.KeyValueStore, key string, val
 	dstKey := MakeFlatListKey(key, "idx", fmt.Sprintf("%d", dstIdx))
 	if err = store.Set(dstKey, value); err != nil {
 		err = fmt.Errorf("error storing value at key: %v - %v", dstKey, err)
+		return
 	}
+
+	if err = store.Set(countKey, GetValue[uint64](store, countKey)+1); err != nil {
+		err = fmt.Errorf("error storing flat-list count at key: %v - %v", countKey, err)
+		return
+	}
+
 	return
 }
 
@@ -285,6 +379,7 @@ func RemoveFromFlatList[T comparable](store feature.KeyValueStore, key string, v
 	endIndex := GetValue[uint64](store, endKey)
 	freeKey := MakeFlatListKey(key, "free")
 	freeIndexes, _ := GetSlice[uint64](store, freeKey)
+	countKey := MakeFlatListKey(key, "count")
 
 	var found bool
 	var rmIdx uint64
@@ -305,7 +400,12 @@ func RemoveFromFlatList[T comparable](store feature.KeyValueStore, key string, v
 		if err = SetSlice[uint64](store, freeKey, freeIndexes); err != nil {
 			return
 		}
-		if err = store.Set(rmKey, nil); err != nil {
+		if err = store.Set(rmKey, gNilValue); err != nil {
+			return
+		}
+
+		if err = store.Set(countKey, GetValue[uint64](store, countKey)-1); err != nil {
+			err = fmt.Errorf("error storing flat-list count at key: %v - %v", countKey, err)
 			return
 		}
 	}
