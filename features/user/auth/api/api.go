@@ -533,7 +533,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		if kvcf, ok := f.Enjin.Features().Get(f.refreshCacheTag); !ok {
 			err = fmt.Errorf("%v feature: %v feature not found", f.Tag(), f.refreshCacheTag)
 			return
-		} else if kvcs, ok := feature.AsTyped[beKvs.KeyValueCaches](kvcf); !ok {
+		} else if kvcs, ok := feature.AsTyped[feature.KeyValueCaches](kvcf); !ok {
 			err = fmt.Errorf("%v feature: %v feature is not a kvs.KeyValueCaches", f.Tag(), f.refreshCacheTag)
 			return
 		} else if kvc, ee := kvcs.Get(f.refreshCacheName); ee != nil {

@@ -190,7 +190,7 @@ func (f *CFeature) AuthApiServeHTTP(next http.Handler, w http.ResponseWriter, r 
 
 				if u, eee := f.ubm.GetUser(eid); eee == nil {
 
-					r = userbase.SetCurrentUser(u, r)
+					r = userbase.SetCurrentUser(r, u)
 					f.Emit(userbase.UserLoadedSignal, f.Tag().String(), u)
 
 					log.TraceF("%v feature setting current user: %v - groups=%#+v, actions=%#+v", f.Tag(), u.GetEID(), u.GetGroups(), u.GetActions())
