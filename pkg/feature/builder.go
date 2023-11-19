@@ -62,7 +62,7 @@ type Builder interface {
 
 	// AddFeature appends the given feature within the built Enjin (appends it to the end of the list of features
 	// included)
-	AddFeature(f Feature) Builder
+	AddFeature(f ...Feature) Builder
 
 	// PrependFeature prepends the given feature within the built Enjin (inserts it at the start of the list of
 	// features included)
