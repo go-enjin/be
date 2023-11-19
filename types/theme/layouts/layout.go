@@ -24,8 +24,8 @@ import (
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	bePath "github.com/go-enjin/be/pkg/path"
-	"github.com/go-enjin/be/pkg/slices"
 )
 
 var (
@@ -35,10 +35,8 @@ var (
 type Layout struct {
 	path string
 	name string
-	keys []string
 
 	fileSystem beFs.FileSystem
-	lastMods   map[string]int64
 	cache      map[string]string
 
 	sync.RWMutex
@@ -49,7 +47,6 @@ func NewLayout(path string, efs beFs.FileSystem) (layout feature.ThemeLayout, er
 	l.path = path
 	l.name = bePath.Base(path)
 	l.fileSystem = efs
-	l.lastMods = make(map[string]int64)
 	l.cache = make(map[string]string)
 	if err = l.load(); err == nil {
 		layout = l
@@ -60,8 +57,6 @@ func NewLayout(path string, efs beFs.FileSystem) (layout feature.ThemeLayout, er
 func (l *Layout) load() (err error) {
 	l.Lock()
 	defer l.Unlock()
-
-	l.keys = make([]string, 0)
 
 	var walker func(p string) (e error)
 	walker = func(p string) (e error) {
@@ -79,34 +74,14 @@ func (l *Layout) load() (err error) {
 			entryPath := entry
 
 			var ee error
-			var lastMod int64
-			if lastMod, ee = l.fileSystem.LastModified(entryPath); ee != nil {
-				log.ErrorF("error fileSystem.LastModified: %v", ee)
-				continue
-			} else if v, ok := l.lastMods[entryName]; ok {
-				if v == lastMod {
-					if !slices.Present(entryName, l.keys...) {
-						l.keys = append(l.keys, entryName)
-					}
-					continue
-				}
-				log.TraceF("updating known entry: %v", entryName)
-				delete(l.lastMods, entryName)
-				delete(l.cache, entryName)
-			}
-
 			var data []byte
 			if data, ee = l.fileSystem.ReadFile(entryPath); ee != nil {
 				e = fmt.Errorf("error fileSystem.ReadFile: %v", ee)
 				return
 			}
 
-			l.lastMods[entryName] = lastMod
+			//l.lastMods[entryName] = lastMod
 			l.cache[entryName] = lang.PruneTranslatorComments(string(data))
-
-			if !slices.Present(entryName, l.keys...) {
-				l.keys = append(l.keys, entryName)
-			}
 
 			log.TraceF("cached %v layout %v data: %v", l.name, entryName, entryPath)
 		}
@@ -119,5 +94,21 @@ func (l *Layout) load() (err error) {
 
 func (l *Layout) Name() (name string) {
 	name = l.name
+	return
+}
+
+func (l *Layout) Apply(other feature.ThemeLayout) {
+	for _, name := range other.CacheKeys() {
+		l.cache[name] = other.CacheValue(name)
+	}
+}
+
+func (l *Layout) CacheKeys() (keys []string) {
+	keys = maps.SortedKeys(l.cache)
+	return
+}
+
+func (l *Layout) CacheValue(key string) (value string) {
+	value, _ = l.cache[key]
 	return
 }

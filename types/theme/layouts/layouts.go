@@ -20,6 +20,8 @@ import (
 	"sync"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/fs"
+	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -48,9 +50,24 @@ func NewLayouts(t feature.Theme) (layouts *Layouts, err error) {
 func (l *Layouts) load() (err error) {
 	l.Lock()
 	defer l.Unlock()
+	tree := []feature.Theme{
+		l.theme,
+	}
+	for t := l.theme.GetParent(); t != nil; t = t.GetParent() {
+		tree = append(tree, t)
+	}
+	for i := len(tree) - 1; i >= 0; i-- {
+		if err = l.loadTheme(tree[i].ThemeFS()); err != nil {
+			return
+		}
+	}
+	return
+}
+
+func (l *Layouts) loadTheme(tfs fs.FileSystem) (err error) {
 
 	var paths []string
-	if paths, err = l.theme.ThemeFS().ListDirs("layouts"); err != nil {
+	if paths, err = tfs.ListDirs("layouts"); err != nil {
 		if strings.Contains(err.Error(), "no such file or directory") ||
 			strings.Contains(err.Error(), "file does not exist") {
 			err = nil
@@ -63,9 +80,11 @@ func (l *Layouts) load() (err error) {
 
 	for _, path := range paths {
 		name := bePath.Base(path)
-		if layout, e := NewLayout(path, l.theme.ThemeFS()); e != nil {
+		if layout, e := NewLayout(path, tfs); e != nil {
 			err = fmt.Errorf("error creating new layout: %v - %v", path, e)
 			return
+		} else if _, present := l.cache[name]; present {
+			l.cache[name].Apply(layout)
 		} else {
 			l.cache[name] = layout
 			log.TraceF("%v theme: loaded %v layout", l.theme.Name(), layout.Name())
@@ -89,9 +108,9 @@ func (l *Layouts) ListLayouts() (names []string) {
 	for name, _ := range l.cache {
 		unique[name] = struct{}{}
 	}
-	delete(unique, "defaults")
-	delete(unique, "partials")
-	names = append([]string{"defaults"}, maps.SortedKeys(unique)...)
+	delete(unique, globals.DefaultThemeLayoutName)
+	delete(unique, globals.PartialThemeLayoutName)
+	names = append([]string{globals.DefaultThemeLayoutName}, maps.SortedKeys(unique)...)
 	return
 }
 
