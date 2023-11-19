@@ -16,6 +16,7 @@ package be
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/golang-org-x-text/language"
@@ -231,5 +232,70 @@ func (e *Enjin) PageContextParsers() (parsers context.Parsers) {
 			}
 		}
 	}
+	return
+}
+
+func (e *Enjin) CreateNonce(key string) (value string) {
+	if e.eb.fNonceFactory != nil {
+		value = e.eb.fNonceFactory.CreateNonce(key)
+	} else {
+		value = e.nonces.CreateNonce(key)
+	}
+	return
+}
+
+func (e *Enjin) VerifyNonce(key, value string) (valid bool) {
+	if e.eb.fNonceFactory != nil {
+		valid = e.eb.fNonceFactory.VerifyNonce(key, value)
+	} else {
+		valid = e.nonces.VerifyNonce(key, value)
+	}
+	return
+}
+
+func (e *Enjin) CreateToken(key string) (value, shasum string) {
+	if e.eb.fTokenFactory != nil {
+		value, shasum = e.eb.fTokenFactory.CreateToken(key)
+	} else {
+		value, shasum = e.tokens.CreateToken(key)
+	}
+	return
+}
+
+func (e *Enjin) CreateTokenWith(key string, duration time.Duration) (value, shasum string) {
+	if e.eb.fTokenFactory != nil {
+		value, shasum = e.eb.fTokenFactory.CreateTokenWith(key, duration)
+	} else {
+		value, shasum = e.tokens.CreateTokenWith(key, duration)
+	}
+	return
+}
+
+func (e *Enjin) VerifyToken(key, value string) (valid bool) {
+	if e.eb.fTokenFactory != nil {
+		valid = e.eb.fTokenFactory.VerifyToken(key, value)
+	} else {
+		valid = e.tokens.VerifyToken(key, value)
+	}
+	return
+}
+
+func (e *Enjin) NewSyncLocker(tag feature.Tag, key string, store feature.KeyValueStore) (l feature.SyncLocker) {
+	l = e.eb.fSyncLockerFactory.NewSyncLocker(tag, key, store)
+	return
+}
+
+func (e *Enjin) NewSyncLockerWith(tag feature.Tag, key string, store feature.KeyValueStore, timeout, interval time.Duration) (l feature.SyncLocker) {
+	l = e.eb.fSyncLockerFactory.NewSyncLockerWith(tag, key, store, timeout, interval)
+	return
+}
+
+func (e *Enjin) NewSyncRWLocker(tag feature.Tag, key string, readStore, writeStore feature.KeyValueStore) (l feature.SyncRWLocker) {
+	l = e.eb.fSyncLockerFactory.NewSyncRWLocker(tag, key, readStore, writeStore)
+	return
+}
+
+func (e *Enjin) NewSyncRWLockerWith(tag feature.Tag, key string, readStore, writeStore feature.KeyValueStore, timeout, interval time.Duration) (l feature.SyncRWLocker) {
+	l = e.eb.fSyncLockerFactory.NewSyncRWLockerWith(tag, key, readStore, writeStore, timeout, interval)
 	return
 }

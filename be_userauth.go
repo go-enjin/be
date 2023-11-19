@@ -16,15 +16,18 @@ package be
 
 import (
 	"net/http"
+
+	"github.com/go-enjin/be/pkg/userbase"
 )
 
 func (e *Enjin) userAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r = userbase.AppendCurrentPermissions(r, e.GetPublicAccess()...)
 		for _, uap := range e.eb.fAuthProviders {
-			if handled, req := uap.AuthenticateRequest(w, r); handled {
+			if handled, modified := uap.AuthenticateRequest(w, r); handled {
 				return
-			} else if req != nil {
-				r = req
+			} else if modified != nil {
+				r = modified
 			}
 		}
 		next.ServeHTTP(w, r)

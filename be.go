@@ -29,13 +29,15 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/be/pkg/factories/nonces"
+	"github.com/go-enjin/be/pkg/factories/tokens"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/lang/catalog"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
+	"github.com/go-enjin/be/pkg/signals"
 	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/golang-org-x-text/language"
 )
@@ -71,8 +73,9 @@ type Enjin struct {
 	router *chi.Mux
 	enjins []*Enjin
 
-	signaling     map[signaling.Signal][]*signalListener
-	signalingLock *sync.RWMutex
+	nonces  feature.NonceFactory
+	tokens  feature.TokenFactory
+	lockers feature.SyncLockerFactory
 
 	mutex *sync.RWMutex
 }
@@ -115,15 +118,14 @@ func newEnjin(eb *EnjinBuilder) *Enjin {
 		contentSecurityPolicy: csp.NewPolicyHandler(),
 		permissionsPolicy:     permissions.NewPolicyHandler(),
 		// make variables
-		catalog:       catalog.New(),
-		signaling:     make(map[signaling.Signal][]*signalListener),
-		signalingLock: &sync.RWMutex{},
-		mutex:         &sync.RWMutex{},
+		catalog: catalog.New(),
+		mutex:   &sync.RWMutex{},
 	}
+	e.cli.Action = e.action
+
 	e.initConsoles()
 	e.setupFeatures()
 	e.ReloadLocales()
-	e.cli.Action = e.action
 	return e
 }
 
@@ -133,8 +135,6 @@ func newIncludedEnjin(eb *EnjinBuilder, parent *Enjin) *Enjin {
 		contentSecurityPolicy: csp.NewPolicyHandler(),
 		permissionsPolicy:     permissions.NewPolicyHandler(),
 		catalog:               catalog.New(),
-		signaling:             make(map[signaling.Signal][]*signalListener),
-		signalingLock:         &sync.RWMutex{},
 		mutex:                 &sync.RWMutex{},
 	}
 	e.initConsoles()
@@ -166,6 +166,47 @@ func (e *Enjin) Self() (self interface{}) {
 	return e
 }
 
+func (e *Enjin) setupInternals(ctx *cli.Context) (err error) {
+
+	if len(e.eb.theming) == 0 {
+		err = fmt.Errorf("builder error: at least one theme is required")
+		return
+	} else if e.eb.fServiceListener == nil {
+		err = fmt.Errorf("builder error: a feature.ServiceListener is required")
+		return
+	} else if e.eb.fPanicHandler == nil {
+		err = fmt.Errorf("builder error: a feature.PanicHandler is required")
+		return
+	} else if e.eb.fLocaleHandler == nil {
+		err = fmt.Errorf("builder error: a feature.LocaleHandler is required")
+		return
+	} else if e.eb.fSyncLockerFactory == nil {
+		err = fmt.Errorf("builder error: a feature.SyncLockerFactoryFeature is required")
+		return
+	}
+
+	if e.eb.fNonceFactory == nil {
+		e.nonces = nonces.New(-1)
+		log.DebugF("feature.NonceFactoryFeature not found, falling back to built-in factory (this enjin will not scale)")
+	}
+	if e.eb.fTokenFactory == nil {
+		e.tokens = tokens.New(-1)
+		log.DebugF("feature.TokenFactoryFeature not found, falling back to built-in factory (this enjin will not scale)")
+	}
+
+	if e.eb.fServiceLogHandler == nil {
+		err = fmt.Errorf("builder error: a feature.ServiceLogHandler is required")
+		return
+	} else if list := feature.FilterTyped[feature.ServiceLogger](e.eb.features.List()); len(list) == 0 {
+		err = fmt.Errorf("builder error: at least one feature.ServiceLogger is required")
+		return
+	} else {
+		middleware.DefaultLogger = e.eb.fServiceLogHandler.LogHandler
+	}
+
+	return
+}
+
 func (e *Enjin) SetupRootEnjin(ctx *cli.Context) (err error) {
 
 	e.debug = ctx.Bool("debug")
@@ -194,30 +235,8 @@ func (e *Enjin) SetupRootEnjin(ctx *cli.Context) (err error) {
 		}
 	}
 
-	if len(e.eb.theming) == 0 {
-		err = fmt.Errorf("builder error: at least one theme is required")
+	if err = e.setupInternals(ctx); err != nil {
 		return
-	} else if e.eb.fServiceListener == nil {
-		err = fmt.Errorf("builder error: a feature.ServiceListener is required")
-		return
-	}
-
-	if e.eb.fPanicHandler == nil {
-		err = fmt.Errorf("builder error: a feature.PanicHandler is required")
-		return
-	} else if e.eb.fLocaleHandler == nil {
-		err = fmt.Errorf("builder error: a feature.LocaleHandler is required")
-		return
-	}
-
-	if e.eb.fServiceLogHandler == nil {
-		err = fmt.Errorf("builder error: a feature.ServiceLogHandler is required")
-		return
-	} else if list := feature.FilterTyped[feature.ServiceLogger](e.eb.features.List()); len(list) == 0 {
-		err = fmt.Errorf("builder error: at least one feature.ServiceLogger is required")
-		return
-	} else {
-		middleware.DefaultLogger = e.eb.fServiceLogHandler.LogHandler
 	}
 
 	if domains := ctx.StringSlice("domain"); domains != nil && len(domains) > 0 {
@@ -252,6 +271,13 @@ func (e *Enjin) setupFeatures() {
 func (e *Enjin) startupFeatures(ctx *cli.Context) (err error) {
 	for _, f := range e.eb.features.List() {
 		if err = f.Startup(ctx); err != nil {
+			err = fmt.Errorf("error starting up %q feature: %v", f.Tag(), err)
+			return
+		}
+	}
+	for _, f := range feature.FilterTyped[feature.PostStartupFeature](e.eb.features.List()) {
+		if err = f.PostStartup(ctx); err != nil {
+			err = fmt.Errorf("error running post-startup for %q feature: %v", f.Tag(), err)
 			return
 		}
 	}
@@ -278,6 +304,11 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 		}
 
 		enjin := newIncludedEnjin(eb, e)
+		if err = enjin.setupInternals(ctx); err != nil {
+			log.FatalDF(5, "%v enjin setup error: %v", err)
+			continue
+		}
+
 		e.enjins = append(e.enjins, enjin)
 
 		if err = enjin.startupFeatures(ctx); err != nil {
@@ -308,5 +339,5 @@ func (e *Enjin) Shutdown() {
 	if err := e.eb.fServiceListener.StopListening(); err != nil {
 		log.ErrorF("error stopping http listener: %v - %v", e.eb.fServiceListener.Tag(), err)
 	}
-	e.Notify("enjin shutdown")
+	e.Notify("enjin shutdown complete")
 }

@@ -158,7 +158,7 @@ func (e *Enjin) GetPrepareServePagesFeatures() []feature.PrepareServePagesFeatur
 	return e.eb.fPrepareServePagesFeatures
 }
 
-func (e *Enjin) GetFinalizeServePagesFeatures() []feature.FinalizeServePagesFeature {
+func (e *Enjin) GetFinalizeServePagesFeatures() []feature.FinalizeServeRequestFeature {
 	return e.eb.fFinalizeServePagesFeatures
 }
 

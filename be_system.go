@@ -359,20 +359,18 @@ func (e *Enjin) TranslateShortcodes(content string, ctx context.Context) (modifi
 }
 
 func (e *Enjin) ValidateUserRequest(action feature.Action, w http.ResponseWriter, r *http.Request) (valid bool) {
-	if user := userbase.GetCurrentUser(r); user == nil {
-		if !e.PublicUserActions().Has(action) {
-			log.WarnRF(r, "visitor does not have permission: %v", action)
-			e.ServeNotFound(w, r)
-			return
-		}
-		log.WarnRF(r, "visitor has permission: %v", action)
-	} else if !user.Can(action) {
-		log.WarnRF(r, "user does not have permission: %v - %v", user.GetEID(), action)
-		e.ServeNotFound(w, r)
+	if action.IsNil() {
+		log.ErrorRDF(r, 1, "developer error - action requested is nil")
 		return
-	} else {
-		log.WarnRF(r, "user has permission: %v - %v", user.GetEID(), action)
 	}
-	valid = true
+
+	eid := userbase.GetCurrentEID(r)
+	if valid = userbase.CurrentUserCan(r, action); valid {
+		log.DebugRDF(r, 1, "user %q is allowed to: %v", eid, action)
+		return
+	}
+
+	log.WarnRDF(r, 1, "user %q is not allowed to: %v", eid, action)
+	e.ServeNotFound(w, r)
 	return
 }

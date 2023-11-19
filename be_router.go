@@ -15,8 +15,6 @@
 package be
 
 import (
-	"context"
-	"fmt"
 	"net/http"
 	"sort"
 
@@ -24,10 +22,10 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/headers"
+	"github.com/go-enjin/be/pkg/request"
 	"github.com/go-enjin/be/pkg/request/argv"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
@@ -36,14 +34,12 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	router.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-			r = r.Clone(context.WithValue(r.Context(), "enjin-id", e.String()))
+			r = request.Set(r,
+				request.KeyEnjinID, e.String(),
+				request.KeyHomePath, "/",
+			)
 
-			if e.debug {
-				w.Header().Set("Server", fmt.Sprintf("%v/%v-%v", globals.BinName, globals.Version, globals.BinHash))
-			} else {
-				w.Header().Set("Server", globals.BinName)
-			}
-
+			w.Header().Set("Server", e.ServerName())
 			next.ServeHTTP(w, r)
 			return
 		})
@@ -88,7 +84,9 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		router.Use(func(next http.Handler) http.Handler {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				for _, rr := range e.eb.fRequestRewriters {
-					r = rr.RewriteRequest(w, r)
+					if modified := rr.RewriteRequest(w, r); modified != nil {
+						r = modified
+					}
 				}
 				next.ServeHTTP(w, r)
 			})

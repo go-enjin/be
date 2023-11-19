@@ -25,49 +25,75 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/net/serve"
+	"github.com/go-enjin/be/pkg/request"
 	"github.com/go-enjin/be/pkg/request/argv"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
+func (e *Enjin) FinalizeServeRequest(w http.ResponseWriter, r *http.Request) {
+	for _, fsp := range e.GetFinalizeServePagesFeatures() {
+		if m := fsp.FinalizeServeRequest(w, r); m != nil {
+			r = m
+		}
+	}
+}
+
 func (e *Enjin) ServeRedirect(destination string, w http.ResponseWriter, r *http.Request) {
+	e.FinalizeServeRequest(w, r)
 	http.Redirect(w, r, destination, http.StatusSeeOther)
 }
 
+func (e *Enjin) ServeRedirectHomePath(w http.ResponseWriter, r *http.Request) {
+	e.ServeRedirect(request.GetHomePath(r), w, r)
+}
+
 func (e *Enjin) Serve204(w http.ResponseWriter, r *http.Request) {
+	e.FinalizeServeRequest(w, r)
 	serve.Serve204(w, r)
 }
 
 func (e *Enjin) Serve400(w http.ResponseWriter, r *http.Request) {
+	e.FinalizeServeRequest(w, r)
 	serve.Serve400(w, r)
 }
 
 func (e *Enjin) Serve401(w http.ResponseWriter, r *http.Request) {
+	e.FinalizeServeRequest(w, r)
 	serve.Serve401(w, r)
 }
 
 func (e *Enjin) ServeBasic401(w http.ResponseWriter, r *http.Request) {
+	e.FinalizeServeRequest(w, r)
 	serve.ServeBasic401(w, r)
 }
 
 func (e *Enjin) Serve403(w http.ResponseWriter, r *http.Request) {
+	e.FinalizeServeRequest(w, r)
 	serve.Serve403(w, r)
 }
 
 func (e *Enjin) Serve404(w http.ResponseWriter, r *http.Request) {
+	e.FinalizeServeRequest(w, r)
 	serve.Serve404(w, r)
 }
 
 func (e *Enjin) Serve405(w http.ResponseWriter, r *http.Request) {
+	e.FinalizeServeRequest(w, r)
 	serve.Serve405(w, r)
 }
 
 func (e *Enjin) Serve500(w http.ResponseWriter, r *http.Request) {
+	e.FinalizeServeRequest(w, r)
 	serve.Serve500(w, r)
 }
 
 func (e *Enjin) ServeNotFound(w http.ResponseWriter, r *http.Request) {
 	e.ServeStatusPage(404, w, r)
+}
+
+func (e *Enjin) ServeForbidden(w http.ResponseWriter, r *http.Request) {
+	e.ServeStatusPage(403, w, r)
 }
 
 func (e *Enjin) ServeInternalServerError(w http.ResponseWriter, r *http.Request) {
@@ -79,7 +105,6 @@ func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Reque
 	reqLangTag := lang.GetTag(r)
 
 	if path, ok := e.eb.statusPages[status]; ok {
-
 		if pg := e.FindPage(reqLangTag, path); pg != nil {
 			pg.Context().SetSpecific(argv.RequestIgnoredKey, true)
 			if err := e.ServePage(pg, w, r); err != nil {
@@ -169,7 +194,7 @@ func (e *Enjin) ServePage(p feature.Page, w http.ResponseWriter, r *http.Request
 
 	pUrl := p.Url()
 
-	if v, ok := r.Context().Value("userbase-denied-allow-error-page").(bool); ok && v {
+	if v, ok := r.Context().Value(gDenyUserAndAllowErrorPage).(bool); ok && v {
 		log.DebugRF(r, "bypassing all user access controls to show an error page of some sort: %v", pUrl)
 	} else {
 
@@ -181,27 +206,18 @@ func (e *Enjin) ServePage(p feature.Page, w http.ResponseWriter, r *http.Request
 			// this requires that the user must have a group with this action
 			log.DebugRF(r, "found access control page action: %v", check)
 
-			if user := userbase.GetCurrentUser(r); user != nil {
-				if !user.Can(check) {
-					log.WarnF("denying user %v access (%v) to: %v", user.GetEID(), check, pUrl)
-					r = r.Clone(context.WithValue(r.Context(), "userbase-denied-allow-error-page", true))
-					e.ServeNotFound(w, r)
-					return
-				} else {
-					log.DebugRF(r, "authenticated user allowed to: (%v) %v", check, pUrl)
-				}
-			} else if e.PublicUserActions().Has(check) {
-				log.DebugRF(r, "public user allowed to: (%v) %v", check, pUrl)
-			} else {
-				log.ErrorRF(r, "denying access, authenticated user not found and public has no access: (%v) %v", check, pUrl)
-				r = r.Clone(context.WithValue(r.Context(), "userbase-denied-allow-error-page", true))
+			eid := userbase.GetCurrentEID(r)
+			if !userbase.CurrentUserCan(r, check) {
+				log.WarnF("denying user %q access (%v) to: %v", eid, check, pUrl)
+				r = r.Clone(context.WithValue(r.Context(), gDenyUserAndAllowErrorPage, true))
 				e.ServeNotFound(w, r)
 				return
 			}
+			log.DebugRF(r, "allowing user %q access (%v) to: %v", eid, check, pUrl)
 
 		} else {
 			log.ErrorRF(r, `denying access, page action not found: "%v"`, check)
-			r = r.Clone(context.WithValue(r.Context(), "userbase-denied-allow-error-page", true))
+			r = r.Clone(context.WithValue(r.Context(), gDenyUserAndAllowErrorPage, true))
 			e.ServeNotFound(w, r)
 			return
 		}
@@ -213,6 +229,7 @@ func (e *Enjin) ServePage(p feature.Page, w http.ResponseWriter, r *http.Request
 }
 
 func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request) {
+	e.FinalizeServeRequest(w, r)
 
 	for _, prh := range e.eb.fDataRestrictionHandlers {
 		// log.TraceRF(r, "checking restricted data with: %v", f.Tag())
