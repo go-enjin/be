@@ -26,6 +26,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/types/site"
+	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 var (
@@ -46,7 +47,7 @@ type MakeFeature interface {
 }
 
 type CFeature struct {
-	site.CSiteFeature[feature.Feature, MakeFeature]
+	site.CSiteFeature[MakeFeature]
 }
 
 func New() MakeFeature {
@@ -58,7 +59,13 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	f.Init(f)
 	f.PackageTag = Tag
 	f.FeatureTag = tag
-	f.SetSiteFeatureName(tag.String())
+	f.SetSiteFeatureKey("dashboard")
+	f.SetSiteFeatureIcon("fa-solid fa-gauge")
+	f.SetSiteFeatureLabel(func(printer *message.Printer) (label string) {
+		label = printer.Sprintf("Dashboard")
+		return
+	})
+	f.CSiteFeature.Construct(f)
 	return f
 }
 
@@ -78,35 +85,43 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) SiteFeatureMenu() (m menu.Menu) {
-	m = append(m, &menu.Item{
-		Text: f.SiteFeatureName(),
-		Href: f.SiteFeaturePath(),
-		Icon: "fa-solid fa-gauge",
-	})
+func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
+	info := f.SiteFeatureInfo(r)
+	m = menu.Menu{
+		{
+			Text: info.Label,
+			Href: f.SiteFeaturePath(),
+			Icon: info.Icon,
+		},
+	}
 	return
 }
 
 func (f *CFeature) RouteSiteFeature(r chi.Router) {
-	r.Get("/", f.RenderDashboard)
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		f.RenderDashboard(f.SiteFeaturePath(), w, r)
+	})
 }
 
-func (f *CFeature) RenderDashboard(w http.ResponseWriter, r *http.Request) {
-	var err error
-	var pg feature.Page
-	var ctx beContext.Context
+func (f *CFeature) RenderDashboard(path string, w http.ResponseWriter, r *http.Request) {
 	t := f.SiteFeatureTheme()
-
-	if pg, ctx, err = f.Site().PreparePage("site", "dashboard", f.SiteFeaturePath(), t); err != nil {
-		log.ErrorRF(r, "error preparing %v dashboard page: %v", f.Tag(), err)
-		f.Enjin.ServeNotFound(w, r)
-		return
-	}
 	printer := lang.GetPrinterFromRequest(r)
 
-	ctx.SetSpecific("EnjinContext", f.Enjin.Context().Copy())
-	ctx.SetSpecific("EnjinFeatures", f.Enjin.Features())
+	ctx := beContext.Context{
+		"Title":         f.SiteFeatureLabel(printer),
+		"EnjinContext":  f.Enjin.Context().Copy(),
+		"EnjinFeatures": f.Enjin.Features(),
+	}
 
-	pg.SetTitle(printer.Sprintf("Dashboard"))
-	f.Site().ServePreparedPage(pg, ctx, t, w, r)
+	if err := f.Site().PrepareAndServePage("site", "dashboard", path, t, w, r, ctx); err != nil {
+		log.ErrorRF(r, "error preparing %v dashboard page: %v", f.Tag(), err)
+		f.Enjin.ServeInternalServerError(w, r)
+		return
+	}
+}
+
+func (f *CFeature) SiteRootHandler() (this http.Handler) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		f.RenderDashboard(f.Site().SitePath(), w, r)
+	})
 }
