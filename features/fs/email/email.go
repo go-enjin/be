@@ -32,6 +32,7 @@ import (
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
+	"github.com/go-enjin/be/pkg/maps"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/types/page/matter"
 )
@@ -84,12 +85,12 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	toFlag, tmplFlag, accountFlag := f.makeCliKeys()
 	b.AddFlags(
 		&cli.StringFlag{
-			Name:     toFlag,
+			Name:     tmplFlag,
 			Usage:    "specify template to send a test email",
 			Category: tag,
 		},
 		&cli.StringFlag{
-			Name:     tmplFlag,
+			Name:     toFlag,
 			Usage:    "specify recipient of test email",
 			Category: tag,
 		},
@@ -138,6 +139,27 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *CFeature) Shutdown() {
+	return
+}
+
+func (f *CFeature) ListTemplates() (names []string) {
+	unique := make(map[string]struct{})
+	for _, file := range f.MountPoints.ListFiles(".") {
+		if strings.HasSuffix(file, ".tmpl") {
+			file = bePath.Base(file)
+			if _, present := unique[file]; present {
+				unique[file] = struct{}{}
+			}
+		}
+	}
+	names = maps.SortedKeys(unique)
+	return
+}
+
+func (f *CFeature) HasTemplate(name string) (present bool) {
+	if present = f.Exists(name + ".html.tmpl"); present {
+	} else if present = f.Exists(name + ".tmpl"); present {
+	}
 	return
 }
 
