@@ -30,6 +30,7 @@ import (
 	"github.com/go-enjin/be/features/requests/pages/request"
 	"github.com/go-enjin/be/features/requests/pages/restrictions"
 	"github.com/go-enjin/be/features/requests/pages/sitemenus"
+	"github.com/go-enjin/be/features/srv/factories/spinlockers"
 	"github.com/go-enjin/be/features/srv/listeners/httpd"
 	beLogHandler "github.com/go-enjin/be/features/srv/logging/handler"
 	beLogger "github.com/go-enjin/be/features/srv/logging/logger"
@@ -77,6 +78,7 @@ func New() MakePreset {
 	p.Name = Name
 	p.Features = feature.Features{
 		panics.New().Make(),
+		spinlockers.New().Make(),
 		locales.New().Make(),
 		deny.New().Defaults().Make(),
 		proxy.New().Enable().Make(),
