@@ -40,6 +40,14 @@ const (
 	TranslateActionKey    = "translate"
 	ChangeActionKey       = "change"
 	SearchActionKey       = "search"
+
+	CreateUserActionKey      = "create-user"
+	DeleteUserActionKey      = "delete-user"
+	ReactivateUserActionKey  = "reactivate-user"
+	DeactivateUserActionKey  = "deactivate-user"
+	AdminLockUserActionKey   = "admin-lock-user"
+	AdminUnlockUserActionKey = "admin-unlock-user"
+	ResetUserOtpActionKey    = "reset-user-otp"
 )
 
 func MakeViewErrorAction(printer *message.Printer) (action *Action) {
@@ -286,6 +294,100 @@ func MakeDeIndexPageAction(printer *message.Printer, filename string) (action *A
 		Active: true,
 		Method: PostFormMethod,
 		Prompt: printer.Sprintf(`Remove page indexing on "%[1]s"?`, filename),
+		Order:  100,
+	}
+}
+
+func MakeCreateUser(printer *message.Printer) (action *Action) {
+	return &Action{
+		Key:    CreateUserActionKey,
+		Name:   printer.Sprintf("Create User"),
+		Icon:   "fa-solid fa-person-circle-plus",
+		Class:  "important",
+		Active: true,
+		Method: PostFormMethod,
+		Prompt: printer.Sprintf(`Create a new user?`),
+		Dialog: "create-user",
+		Order:  1,
+	}
+}
+
+func MakeDeleteUser(printer *message.Printer, eid string) (action *Action) {
+	return &Action{
+		Key:    DeleteUserActionKey,
+		Name:   printer.Sprintf("Delete User"),
+		Icon:   "fa-solid fa-person-circle-minus",
+		Class:  "danger",
+		Active: true,
+		Method: PostFormMethod,
+		Prompt: printer.Sprintf(`Delete user "%[1]s"? (there is no recovery from this action)`, eid),
+		Dialog: "delete-user",
+		Order:  101,
+	}
+}
+
+func MakeReactivateUser(printer *message.Printer, eid string) (action *Action) {
+	return &Action{
+		Key:    ReactivateUserActionKey,
+		Name:   printer.Sprintf("Reactivate User"),
+		Icon:   "fa-solid fa-person-circle-check",
+		Class:  "important",
+		Active: true,
+		Method: PostFormMethod,
+		Prompt: printer.Sprintf(`Reactivate primary sign-in for "%[1]s"?`, eid),
+		Order:  80,
+	}
+}
+
+func MakeDeactivateUser(printer *message.Printer, eid string) (action *Action) {
+	return &Action{
+		Key:    DeactivateUserActionKey,
+		Name:   printer.Sprintf("Deactivate User"),
+		Icon:   "fa-solid fa-person-circle-xmark",
+		Class:  "caution",
+		Active: true,
+		Method: PostFormMethod,
+		Prompt: printer.Sprintf(`Deactivate primary sign-in for "%[1]s"?`, eid),
+		Order:  80,
+	}
+}
+
+func MakeAdminLockUser(printer *message.Printer, eid string) (action *Action) {
+	return &Action{
+		Key:    AdminLockUserActionKey,
+		Name:   printer.Sprintf("Block User"),
+		Icon:   "fa-solid fa-ban",
+		Class:  "caution",
+		Active: true,
+		Method: PostFormMethod,
+		Prompt: printer.Sprintf(`Block user "%[1]s"?`, eid),
+		Order:  90,
+	}
+}
+
+func MakeAdminUnlockUser(printer *message.Printer, eid string) (action *Action) {
+	return &Action{
+		Key:    AdminUnlockUserActionKey,
+		Name:   printer.Sprintf("Unblock User"),
+		Icon:   "fa-solid fa-circle-check",
+		Class:  "important",
+		Active: true,
+		Method: PostFormMethod,
+		Prompt: printer.Sprintf(`Unblock user "%[1]s"?`, eid),
+		Order:  90,
+	}
+}
+
+func MakeResetUserOtp(printer *message.Printer, eid string) (action *Action) {
+	return &Action{
+		Key:    ResetUserOtpActionKey,
+		Name:   printer.Sprintf("Reset User Multi-Factor Authentication?"),
+		Icon:   "fa-solid fa-person-burst",
+		Class:  "danger",
+		Active: true,
+		Method: PostFormMethod,
+		Prompt: printer.Sprintf(`Reset multi-factor settings for "%[1]s"?`, eid),
+		Dialog: "reset-user-otp",
 		Order:  100,
 	}
 }
