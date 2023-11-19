@@ -15,11 +15,13 @@
 package feature
 
 import (
+	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/fs"
 )
 
 type Buildable interface {
 	Builder
+	signaling.SignalSupport
 
 	// MakeEnvKey returns name with EnvPrefix (SCREAMING_SNAKE formatted)
 	MakeEnvKey(name string) (key string)
