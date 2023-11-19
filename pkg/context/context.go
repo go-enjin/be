@@ -28,6 +28,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/maths"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
@@ -81,7 +82,7 @@ func (c Context) Keys() (keys []string) {
 	return
 }
 
-// Copy makes a duplicate of this Context
+// Copy makes a deep-copy of this Context
 func (c Context) Copy() (ctx Context) {
 	ctx = maps.DeepCopy(c)
 	return
@@ -159,7 +160,7 @@ func (c Context) ApplySpecific(contexts ...Context) {
 	return
 }
 
-// Has returns true if the given Context key exists
+// Has returns true if the given Context key exists and is not nil
 func (c Context) Has(key string) (present bool) {
 	present = c.Get(key) != nil
 	return
@@ -338,45 +339,35 @@ func (c Context) ValueAsInt(key string, def int) int {
 
 func (c Context) Int(key string, def int) int {
 	if v := c.Get(key); v != nil {
-		if i, ok := v.(int); ok {
-			return i
-		}
+		return maths.ToInt(v, def)
 	}
 	return def
 }
 
 func (c Context) Int64(key string, def int64) int64 {
 	if v := c.Get(key); v != nil {
-		if i, ok := v.(int64); ok {
-			return i
-		}
+		return maths.ToInt64(v, def)
 	}
 	return def
 }
 
 func (c Context) Uint(key string, def uint) uint {
 	if v := c.Get(key); v != nil {
-		if i, ok := v.(uint); ok {
-			return i
-		}
+		return maths.ToUint(v, def)
 	}
 	return def
 }
 
 func (c Context) Uint64(key string, def uint64) uint64 {
 	if v := c.Get(key); v != nil {
-		if i, ok := v.(uint64); ok {
-			return i
-		}
+		return maths.ToUint64(v, def)
 	}
 	return def
 }
 
 func (c Context) Float64(key string, def float64) float64 {
 	if v := c.Get(key); v != nil {
-		if f, ok := v.(float64); ok {
-			return f
-		}
+		return maths.ToFloat64(v, def)
 	}
 	return def
 }
