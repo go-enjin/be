@@ -47,3 +47,8 @@ func (m Menu) DeepActive() (index string) {
 	}
 	return
 }
+
+func (m Menu) SanitizeAll() {
+	SanitizeMenu(m)
+	return
+}

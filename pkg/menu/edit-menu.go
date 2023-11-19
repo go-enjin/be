@@ -17,9 +17,6 @@ package menu
 import (
 	"encoding/json"
 
-	"github.com/mrz1836/go-sanitize"
-
-	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/slices"
 )
 
@@ -66,10 +63,7 @@ func (m EditMenu) CollapseAll() {
 }
 
 func (m EditMenu) SanitizeAll() {
-	for _, item := range m {
-		item.Text = forms.StrictSanitize(item.Text)
-		item.Href = sanitize.URL(item.Href)
-	}
+	SanitizeMenu(m)
 }
 
 func (m EditMenu) ProcessAllChanges() (modified EditMenu) {
