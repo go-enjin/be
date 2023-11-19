@@ -15,101 +15,80 @@
 package userbase
 
 import (
-	"context"
 	"net/http"
 
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 )
 
 var (
-	VisitorUserName = "visitor"
+	VisitorEID  = "visitor"
+	VisitorName = "Visitor"
+
+	UsersGroup  feature.Group = "users"
+	PublicGroup feature.Group = "public"
+
+	UserActiveKey      = "user-active"
+	UserAdminLockedKey = "user-admin-locked"
 )
 
-const CurrentUserKey beContext.RequestKey = "current-user"
-
 func IsValidEID(eid string) (valid bool) {
-	valid = eid != "" && (eid == VisitorUserName || len(eid) == 10)
+	valid = eid != "" && (eid == VisitorEID || len(eid) == 10)
 	return
 }
 
-func GetCurrentUserEID(r *http.Request) (eid string) {
-	if user := GetCurrentUser(r); user != nil {
-		eid = user.GetEID()
-	} else {
-		eid = VisitorUserName
+func IsUserActive(au feature.AuthUser) (active bool) {
+	if adminLocked, ok := au.UnsafeContext().Get(UserAdminLockedKey).(bool); ok && adminLocked {
+		return
 	}
-	return
-}
-
-func GetCurrentUser(r *http.Request) (u feature.User) {
-	if v := r.Context().Value(CurrentUserKey); v != nil {
-		u, _ = v.(feature.User)
+	if v, ok := au.UnsafeContext().Get(UserActiveKey).(bool); ok {
+		active = v
 	}
-	return
-}
-
-func SetCurrentUser(u feature.User, r *http.Request) (modified *http.Request) {
-	modified = r.Clone(context.WithValue(r.Context(), CurrentUserKey, u))
 	return
 }
 
 func CurrentUserCan(r *http.Request, actions ...feature.Action) (allow bool) {
-	if user := GetCurrentUser(r); user != nil {
+	if permissions := GetCurrentPermissions(r); permissions.Len() > 0 {
 		for _, action := range actions {
-			if allow = user.Can(action); allow {
-				break
+			if allow = permissions.Has(action); allow {
+				log.DebugRF(r, "current user can: %q", action)
+				return
 			}
 		}
 	}
+	log.DebugRF(r, "current user has none of: %+v", actions)
 	return
 }
 
 func CurrentUserCanAll(r *http.Request, actions ...feature.Action) (allow bool) {
-	if user := GetCurrentUser(r); user != nil {
+	if user := GetCurrentPermissions(r); user != nil {
 		for _, action := range actions {
-			if allow = user.Can(action); !allow {
-				break
+			if allow = user.Has(action); !allow {
+				log.DebugRF(r, "current cannot: %q", action)
+				return
 			}
 		}
 	}
+	log.DebugRF(r, "current user has all of: %+v", actions)
 	return
-}
-
-func RequireCurrentUser(enjin feature.Internals) func(next http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if user := GetCurrentUser(r); user == nil {
-				enjin.ServeNotFound(w, r)
-				return
-			}
-			next.ServeHTTP(w, r)
-		})
-	}
 }
 
 func RequireUserCan(enjin feature.Internals, actions ...feature.Action) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			var can bool
-			if user := GetCurrentUser(r); user != nil {
-				for _, action := range actions {
-					if can = user.Can(action); can {
-						log.WarnRF(r, "user has: %v", action)
-						break
-					}
-				}
-			} else {
-				for _, action := range actions {
-					if can = enjin.PublicUserActions().Has(action); can {
-						log.WarnRF(r, "public user has: %v", action)
-						break
-					}
+			var permissions feature.Actions
+			if permissions = GetCurrentPermissions(r); permissions.Len() == 0 {
+				permissions = enjin.PublicUserActions()
+			}
+			for _, action := range actions {
+				if can = permissions.Has(action); can {
+					log.WarnRF(r, "current user can: %v", action)
+					break
 				}
 			}
 			if !can {
-				log.WarnRF(r, "user missing any of: %+v", actions)
+				log.WarnRF(r, "current user has none of: %+v", actions)
 				enjin.ServeNotFound(w, r)
 				return
 			}
@@ -121,31 +100,19 @@ func RequireUserCan(enjin feature.Internals, actions ...feature.Action) func(nex
 func RequireUserCanAll(enjin feature.Internals, actions ...feature.Action) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if user := GetCurrentUser(r); user != nil {
-				for _, action := range actions {
-					if !user.Can(action) {
-						log.WarnRF(r, "user missing action: %+v", action)
-						enjin.ServeNotFound(w, r)
-						return
-					}
-				}
+			var permissions feature.Actions
+			if permissions = GetCurrentPermissions(r); permissions.Len() > 0 {
+				permissions = enjin.PublicUserActions()
 			}
 			for _, action := range actions {
-				if !enjin.PublicUserActions().Has(action) {
-					log.WarnRF(r, "public user missing action: %+v", action)
+				if !permissions.Has(action) {
+					log.WarnRF(r, "current user has no permission to: %+v", action)
 					enjin.ServeNotFound(w, r)
 					return
 				}
 			}
+			log.WarnRF(r, "current user has all of: %+v", actions)
 			next.ServeHTTP(w, r)
 		})
 	}
 }
-
-//func RequireCurrentUserMiddleware(next http.Handler) http.Handler {
-//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//		if user := GetCurrentUser(r); user == nil {
-//			serve.
-//		}
-//	})
-//}

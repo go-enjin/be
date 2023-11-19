@@ -14,24 +14,11 @@
 
 package userbase
 
-import (
-	"context"
-	"net/http"
+type tPrivateRequestKey string
 
-	beContext "github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/feature"
+const (
+	gCurrentEidKey         tPrivateRequestKey = "current-eid"
+	gCurrentUserKey        tPrivateRequestKey = "current-user"
+	gCurrentAuthUserKey    tPrivateRequestKey = "current-auth-user"
+	gCurrentPermissionsKey tPrivateRequestKey = "current-permissions"
 )
-
-const CurrentAuthUserKey beContext.RequestKey = "current-auth-user"
-
-func GetCurrentAuthUser(r *http.Request) (u feature.AuthUser) {
-	if v := r.Context().Value(CurrentAuthUserKey); v != nil {
-		u, _ = v.(feature.AuthUser)
-	}
-	return
-}
-
-func SetCurrentAuthUser(u feature.AuthUser, r *http.Request) (modified *http.Request) {
-	modified = r.Clone(context.WithValue(r.Context(), CurrentAuthUserKey, u))
-	return
-}
