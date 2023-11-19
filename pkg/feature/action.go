@@ -24,7 +24,7 @@ import (
 // and one or more additional details, separated by periods. For example: the
 // action `view_fs-content_page` has a verb of "view", a subject of "fs-content"
 // and one additional detail of "page". Details are individually converted to
-// kebab-case and joined with hyphens, ie: `view_fs-content_page.search`
+// kebab-case and joined with periods, ie: `view_fs-content_page.search`
 type Action string
 
 func ParseAction(line string) (action Action) {
@@ -57,6 +57,11 @@ func NewAction(subject string, verb string, details ...string) Action {
 		}
 	}
 	return Action(action)
+}
+
+func (a Action) IsNil() (empty bool) {
+	empty = a == ""
+	return
 }
 
 func (a Action) String() string {
