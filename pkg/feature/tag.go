@@ -18,12 +18,12 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
+
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 const (
-	NilTag          Tag = ""
-	EnjinTag        Tag = "enjin"
-	EnjinLocalesTag Tag = "enjin-locales"
+	NilTag Tag = ""
 )
 
 // Tag is the primary identifier type for enjin Feature implementations
@@ -49,6 +49,11 @@ func (t Tag) String() string {
 // Camel returns the Tag as a CamelCased string
 func (t Tag) Camel() string {
 	return strcase.ToCamel(string(t))
+}
+
+// SpacedCamel returns the tag as a Spaced Camel Cased string (first letters capitalized, separated by spaces)
+func (t Tag) SpacedCamel() string {
+	return beStrings.ToSpacedCamel(t.Kebab())
 }
 
 // Kebab returns the Tag as a kebab-cased string
