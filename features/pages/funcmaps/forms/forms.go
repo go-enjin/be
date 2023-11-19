@@ -21,7 +21,6 @@ import (
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/forms/nonce"
 )
 
 var _ Feature = (*CFeature)(nil)
@@ -66,6 +65,11 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	return
 }
 
+func (f *CFeature) Setup(enjin feature.Internals) {
+	f.Enjin = enjin
+	return
+}
+
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
@@ -76,12 +80,10 @@ func (f *CFeature) Shutdown() {
 
 func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 	fm = feature.FuncMap{
-		"Nonce": Nonce,
+		"Nonce": func(key string) (value string) {
+			value = f.Enjin.CreateNonce(key)
+			return
+		},
 	}
-	return
-}
-
-func Nonce(name string) (value string) {
-	value = nonce.Make(name)
 	return
 }
