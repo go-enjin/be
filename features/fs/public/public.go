@@ -30,6 +30,7 @@ import (
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
+	uses_actions "github.com/go-enjin/be/pkg/feature/uses-actions"
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
@@ -68,6 +69,7 @@ type MakeFeature interface {
 
 type CFeature struct {
 	filesystem.CFeature[MakeFeature]
+	uses_actions.CUsesActions
 
 	dirIndex string
 
@@ -95,6 +97,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	f.Init(f)
 	f.PackageTag = Tag
 	f.FeatureTag = tag
+	f.CUsesActions.ConstructUsesActions(f)
 	return f
 }
 
@@ -174,12 +177,9 @@ func (f *CFeature) Shutdown() {
 }
 
 func (f *CFeature) UserActions() (list feature.Actions) {
-
-	tag := f.Tag().Kebab()
 	list = feature.Actions{
-		feature.NewAction(tag, "view", "public"),
+		f.Action("view", "public"),
 	}
-
 	return
 }
 
