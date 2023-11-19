@@ -218,6 +218,6 @@ func (f *CFeature) MustDB(tag string) (db interface{}) {
 		db = v
 		return
 	}
-	log.FatalDF(1, "gorm db connection %v not found", tag)
+	log.PanicDF(1, "gorm db connection %v not found", tag)
 	return
 }
