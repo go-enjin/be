@@ -21,9 +21,10 @@ import (
 )
 
 type EditItem struct {
-	Text string `json:"text"`
-	Href string `json:"href,omitempty"`
-	Lang string `json:"lang,omitempty"`
+	Text   string `json:"text"`
+	Href   string `json:"href,omitempty"`
+	Lang   string `json:"lang,omitempty"`
+	Target string `json:"target,omitempty"`
 
 	Icon   string `json:"icon,omitempty"`
 	Image  string `json:"image,omitempty"`
@@ -59,6 +60,7 @@ func (i EditItem) AsItem() (clone *Item) {
 		Text:    i.Text,
 		Href:    i.Href,
 		Lang:    i.Lang,
+		Target:  i.Target,
 		Icon:    i.Icon,
 		Image:   i.Image,
 		ImgAlt:  i.ImgAlt,

@@ -21,9 +21,10 @@ import (
 )
 
 type Item struct {
-	Text string `json:"text"`
-	Href string `json:"href,omitempty"`
-	Lang string `json:"lang,omitempty"`
+	Text   string `json:"text"`
+	Href   string `json:"href,omitempty"`
+	Lang   string `json:"lang,omitempty"`
+	Target string `json:"target,omitempty"`
 
 	Icon   string `json:"icon,omitempty"`
 	Image  string `json:"image,omitempty"`
