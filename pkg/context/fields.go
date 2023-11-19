@@ -78,7 +78,7 @@ func (f Fields) SortedKeys() (keys []string) {
 			// page tab levels first
 		} else if less = isFieldCategoryLess(a.Category, b.Category); less {
 			// important categories next
-		} else if less = a.Weight > b.Weight; less {
+		} else if less = a.Weight < b.Weight; less {
 			// weighted fields
 		} else if a.Weight == b.Weight {
 			// finally sorted natural by key
