@@ -29,6 +29,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/net/serve"
+	"github.com/go-enjin/be/pkg/request"
 )
 
 var (
@@ -149,6 +150,7 @@ func (f *CFeature) ServePage(p feature.Page, t feature.Theme, ctx beContext.Cont
 
 	ctx.SetSpecific("Theme", t)
 	ctx.SetSpecific("BaseUrl", net.BaseURL(r))
+	ctx.SetSpecific("HomePath", request.GetHomePath(r))
 	ctx.SetSpecific("UserNotices", feature.GetUserNotices(r))
 
 	for _, pspf := range f.Enjin.GetPrepareServePagesFeatures() {
@@ -185,11 +187,6 @@ func (f *CFeature) ServePage(p feature.Page, t feature.Theme, ctx beContext.Cont
 	contentDisposition := ctx.String("ContentDisposition", "inline")
 	r = r.Clone(context.WithValue(r.Context(), "Content-Disposition", contentDisposition))
 
-	for _, fspf := range f.Enjin.GetFinalizeServePagesFeatures() {
-		fspf.FinalizeServePage(w, r)
-	}
-
 	f.Enjin.ServeData(data, mime, w, r)
-
 	return
 }
