@@ -219,6 +219,17 @@ func (c Context) DeleteKeys(keys ...string) {
 	}
 }
 
+// Bytes returns the key's value as a byte slice, returning the given default if
+// not found or not actually a byte slice value.
+func (c Context) Bytes(key string, def []byte) []byte {
+	if v := c.Get(key); v != nil {
+		if s, ok := v.([]byte); ok {
+			return s
+		}
+	}
+	return def
+}
+
 // String returns the key's value as a string, returning the given default if
 // not found or not actually a string value.
 func (c Context) String(key, def string) string {
