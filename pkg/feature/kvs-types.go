@@ -12,16 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package kvs
+package feature
+
+// TODO: investigate KeyValueStore implementing sync.RWMutex
 
 type KeyValueCaches interface {
+	Feature
+
 	Get(name string) (kvs KeyValueCache, err error)
 }
 
 type KeyValueCache interface {
+	// ListBuckets returns the names of all buckets
+	ListBuckets() (names []string)
 	// Bucket returns the named bucket or adds a new bucket and returns that
 	Bucket(name string) (kvs KeyValueStore, err error)
-	// MustBucket uses Bucket and log.FatalDF on error
+	// MustBucket uses Bucket and on error will log.ErrorDF and panic
 	MustBucket(name string) (kvs KeyValueStore)
 	// AddBucket adds and returns a new bucket, errors if already exists
 	AddBucket(name string) (kvs KeyValueStore, err error)
