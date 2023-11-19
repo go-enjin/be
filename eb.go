@@ -226,21 +226,15 @@ func (eb *EnjinBuilder) prepareBuild() {
 	eb.publicFileSystems = fs.NewRegistry(eb.tag)
 
 	var built feature.Tags
-	for _, f := range eb.features.List() {
-		if err = f.Self().Build(eb); err != nil {
-			log.FatalDF(2, "feature [%v] - %v", f.Tag(), err)
-			return
-		}
-		built = append(built, f.Tag())
-	}
-	if built.Len() < eb.features.List().Len() {
-		// features were added during the build phase also need to have .Build called
+	for built.Len() < eb.features.List().Len() {
+		// guarantee all features, even those added during the build phase, are actually built
 		for _, f := range eb.features.List() {
 			if !built.Has(f.Tag()) {
 				if err = f.Self().Build(eb); err != nil {
-					log.FatalDF(2, "feature [%v] - %v", f.Tag(), err)
+					log.FatalDF(2, "error building %v feature: %v", f.Tag(), err)
 					return
 				}
+				built = append(built, f.Tag())
 			}
 		}
 	}
