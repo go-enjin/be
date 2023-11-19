@@ -26,4 +26,6 @@ var (
 	RxSplitHtmlTagAttributes = regexp.MustCompile(`\s+`)
 	RxEmpty                  = regexp.MustCompile(`(?ms)\A\s*\z`)
 	RxTmplTags               = regexp.MustCompile(`\{\{.+?}}`)
+	RxHash10                 = regexp.MustCompile(`^\s*([a-fA-F0-9]{10})\s*$`)
+	RxSixDigits              = regexp.MustCompile(`^\s*([0-9]{6})\s*$`)
 )
