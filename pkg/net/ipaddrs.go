@@ -48,6 +48,7 @@ func GetIpFromRequest(r *http.Request) (ip string, err error) {
 	// Get IP from CF-Connecting-IP header
 	ip = r.Header.Get("Cf-Connecting-Ip")
 	if netIP := net.ParseIP(ip); netIP != nil {
+		ip = netIP.String()
 		// log.DebugF("cf-connecting-ip: %v", ip)
 		return
 	}
@@ -57,7 +58,7 @@ func GetIpFromRequest(r *http.Request) (ip string, err error) {
 	ips := rxSplitForwardedFor.Split(xff, -1)
 	if len(ips) > 0 {
 		if netIP := net.ParseIP(ips[0]); netIP != nil {
-			ip = ips[0]
+			ip = netIP.String()
 			// log.DebugF("x-forward-for: %v", ip)
 			return
 		}
@@ -66,6 +67,7 @@ func GetIpFromRequest(r *http.Request) (ip string, err error) {
 	// Get IP from the X-REAL-IP header
 	ip = r.Header.Get("X-Real-IP")
 	if netIP := net.ParseIP(ip); netIP != nil {
+		ip = netIP.String()
 		// log.DebugF("x-real-ip: %v", ip)
 		return
 	}
@@ -83,12 +85,12 @@ func GetIpFromRequest(r *http.Request) (ip string, err error) {
 func GetRemoteAddr(r *http.Request) (ip string) {
 	if sip, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
 		if netIP := net.ParseIP(sip); netIP != nil {
-			ip = sip
+			ip = netIP.String()
 			return
 		}
 	}
 	if netIP := net.ParseIP(r.RemoteAddr); netIP != nil {
-		ip = r.RemoteAddr
+		ip = netIP.String()
 	}
 	return
 }
@@ -96,8 +98,8 @@ func GetRemoteAddr(r *http.Request) (ip string) {
 func ParseIpFromRequest(r *http.Request) (ip net.IP, err error) {
 	var address string
 	if address, err = GetIpFromRequest(r); err == nil {
-		if idx := strings.Index(address, ":"); idx > -1 {
-			address = address[0:idx]
+		if host, _, ee := net.SplitHostPort(address); ee == nil {
+			address = host
 		}
 		return net.ParseIP(address), nil
 	}
@@ -139,6 +141,42 @@ func IsNetIpPrivate(ip net.IP) (private bool) {
 	for _, cidr := range PrivateNetworks {
 		if private = cidr.Contains(ip); private {
 			break
+		}
+	}
+	return
+}
+
+func ParseIP(input ...string) (ips []net.IP, err error) {
+	for _, lines := range input {
+		for _, line := range strings.Split(lines, "\n") {
+			for _, part := range strings.Split(line, " ") {
+				if cleaned := strings.TrimSpace(part); cleaned != "" {
+					if parsed := net.ParseIP(cleaned); parsed == nil {
+						err = fmt.Errorf("%q is not an address", cleaned)
+						return
+					} else {
+						ips = append(ips, parsed)
+					}
+				}
+			}
+		}
+	}
+	return
+}
+
+func ParseCIDR(input ...string) (cidrs []*net.IPNet, err error) {
+	for _, lines := range input {
+		for _, line := range strings.Split(lines, "\n") {
+			for _, part := range strings.Split(line, " ") {
+				if cleaned := strings.TrimSpace(part); cleaned != "" {
+					if _, network, ee := net.ParseCIDR(cleaned); ee != nil {
+						err = fmt.Errorf("error parsing CIDR %q: %w", cleaned, ee)
+						return
+					} else {
+						cidrs = append(cidrs, network)
+					}
+				}
+			}
 		}
 	}
 	return
