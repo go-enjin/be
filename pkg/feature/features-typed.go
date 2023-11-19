@@ -20,6 +20,15 @@ func (tf TypedFeatures[T]) Len() (count int) {
 	return len(tf)
 }
 
+func (tf TypedFeatures[T]) Tags() (tags Tags) {
+	for _, v := range tf {
+		if f, ok := interface{}(v).(Feature); ok {
+			tags = append(tags, f.Tag())
+		}
+	}
+	return
+}
+
 func (tf TypedFeatures[T]) Has(tag Tag) (present bool) {
 	for _, v := range tf {
 		if f, ok := interface{}(v).(Feature); ok {
@@ -31,11 +40,39 @@ func (tf TypedFeatures[T]) Has(tag Tag) (present bool) {
 	return
 }
 
-func (tf TypedFeatures[T]) Get(tag Tag) (found Feature) {
+func (tf TypedFeatures[T]) Find(name string) (tag Tag) {
+	for _, v := range tf {
+		if f, ok := interface{}(v).(Feature); ok {
+			t := f.Tag()
+			if t.String() == name {
+				tag = t
+				return
+			} else if t.Kebab() == name {
+				tag = t
+				return
+			}
+		}
+	}
+	return
+}
+
+func (tf TypedFeatures[T]) Get(tag Tag) (found T) {
+	if tag.IsNil() {
+		return
+	}
 	for _, v := range tf {
 		if f, ok := interface{}(v).(Feature); ok && f.Tag() == tag {
-			found = f
+			found, _ = f.This().(T)
 			return
+		}
+	}
+	return
+}
+
+func (tf TypedFeatures[T]) AsFeatures() (features Features) {
+	for _, v := range tf {
+		if f, ok := interface{}(v).(Feature); ok {
+			features = append(features, f)
 		}
 	}
 	return
