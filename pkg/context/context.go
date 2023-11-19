@@ -381,6 +381,20 @@ func (c Context) Float64(key string, def float64) float64 {
 	return def
 }
 
+// Context looks for the given key and if the value is of Context type, returns it
+func (c Context) Context(key string) (ctx Context) {
+	if v := c.Get(key); v != nil {
+		var ok bool
+		if ctx, ok = v.(Context); !ok {
+			ctx, _ = v.(map[string]interface{})
+		}
+	}
+	if ctx == nil {
+		ctx = New()
+	}
+	return
+}
+
 // AsMap returns this Context, shallowly copied, as a new map[string]interface{}
 // instance.
 func (c Context) AsMap() (out map[string]interface{}) {
