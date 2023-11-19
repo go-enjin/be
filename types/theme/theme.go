@@ -22,7 +22,6 @@ import (
 
 	"github.com/maruel/natural"
 
-	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
@@ -192,7 +191,8 @@ func (t *CTheme) GetConfig() (config *feature.ThemeConfig) {
 				mergeContext.SetSpecific(key, v)
 			}
 		}
-		config.Context = mergeContext
+		mergeContext.ApplySpecific(config.Context)
+		config.Context = mergeContext // don't clobber this theme's stuff with the parent's
 
 		config.Supports.Menus = parentConfig.Supports.Menus.Append(config.Supports.Menus)
 		config.Supports.Locales = parentConfig.Supports.Locales
@@ -209,8 +209,6 @@ func (t *CTheme) GetConfig() (config *feature.ThemeConfig) {
 				config.Supports.Archetypes[pk] = pv
 			}
 		}
-	} else {
-		config.Context = context.New()
 	}
 
 	if l := t.Layouts(); l != nil {
