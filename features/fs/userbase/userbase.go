@@ -27,6 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
 	"github.com/go-enjin/be/pkg/feature/signaling"
+	uses_actions "github.com/go-enjin/be/pkg/feature/uses-actions"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/page/matter"
@@ -89,6 +90,7 @@ type MakeFeature interface {
 type CFeature struct {
 	filesystem.CFeature[MakeFeature]
 	signaling.CSignaling
+	uses_actions.CUsesActions
 
 	authPath string
 
@@ -113,6 +115,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	f.Init(f)
 	f.PackageTag = Tag
 	f.FeatureTag = tag
+	f.CUsesActions.ConstructUsesActions(f)
 	return f
 }
 
@@ -255,23 +258,20 @@ func (f *CFeature) Shutdown() {
 }
 
 func (f *CFeature) UserActions() (list feature.Actions) {
-
-	tag := f.Tag().Kebab()
 	list = feature.Actions{
-		feature.NewAction(tag, "view-own", "auth-user"),
-		feature.NewAction(tag, "view-other", "auth-user"),
-		feature.NewAction(tag, "edit-own", "auth-user"),
-		feature.NewAction(tag, "edit-other", "auth-user"),
-		feature.NewAction(tag, "delete-own", "auth-user"),
-		feature.NewAction(tag, "delete-other", "auth-user"),
-		feature.NewAction(tag, "view-own", "user"),
-		feature.NewAction(tag, "view-other", "user"),
-		feature.NewAction(tag, "edit-own", "user"),
-		feature.NewAction(tag, "edit-other", "user"),
-		feature.NewAction(tag, "delete-own", "user"),
-		feature.NewAction(tag, "delete-other", "user"),
+		f.Action("view-own", "auth-user"),
+		f.Action("view-other", "auth-user"),
+		f.Action("edit-own", "auth-user"),
+		f.Action("edit-other", "auth-user"),
+		f.Action("delete-own", "auth-user"),
+		f.Action("delete-other", "auth-user"),
+		f.Action("view-own", "user"),
+		f.Action("view-other", "user"),
+		f.Action("edit-own", "user"),
+		f.Action("edit-other", "user"),
+		f.Action("delete-own", "user"),
+		f.Action("delete-other", "user"),
 	}
-
 	return
 }
 
@@ -284,11 +284,11 @@ func (f *CFeature) NewAuthUser(id, name, email, picture, audience string, attrib
 	return
 }
 
-func (f *CFeature) SetAuthUser(u feature.AuthUser) (err error) {
+func (f *CFeature) SetAuthUser(au feature.AuthUser) (err error) {
 	f.Lock()
 	defer f.Unlock()
 
-	user, _ := u.(*beUser.AuthUser)
+	user, _ := au.(*beUser.AuthUser)
 
 	authUserFilename := f.makeAuthFilePath(user.EID)
 

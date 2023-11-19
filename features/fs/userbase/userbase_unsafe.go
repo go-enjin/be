@@ -252,7 +252,7 @@ func (f *CFeature) parseGroupActionsFile(group feature.Group) (pm *matter.PageMa
 		pm = matter.NewPageMatter(f.Tag().String(), groupFilename+".text", "", matter.JsonMatter, beContext.Context{})
 	}
 
-	bodyList = feature.NewActionsFromStringNL(pm.Body)
+	bodyList = feature.ParseActions(pm.Body)
 	return
 }
 
