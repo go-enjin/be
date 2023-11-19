@@ -96,7 +96,8 @@ func (f *CFeature) PrepareServePage(ctx beContext.Context, t feature.Theme, p fe
 	return
 }
 
-func (f *CFeature) FinalizeServePage(w http.ResponseWriter, r *http.Request) {
+func (f *CFeature) FinalizeServeRequest(w http.ResponseWriter, r *http.Request) (modified *http.Request) {
 	f.Enjin.PermissionsPolicy().FinalizeRequest(w, r)
 	f.Enjin.ContentSecurityPolicy().FinalizeRequest(w, r)
+	return
 }
