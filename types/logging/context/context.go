@@ -43,7 +43,9 @@ func New(r *http.Request, size, status int, when time.Time, duration time.Durati
 		when:     when,
 		duration: duration,
 	}
-	if ctx.url, err = url.ParseRequestURI(r.RequestURI); err != nil {
+	if r.RequestURI == "" {
+		ctx.url, _ = url.Parse("/")
+	} else if ctx.url, err = url.ParseRequestURI(r.RequestURI); err != nil {
 		return
 	}
 	c = ctx
