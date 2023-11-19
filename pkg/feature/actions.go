@@ -14,30 +14,23 @@
 
 package feature
 
-import "strings"
+import (
+	"encoding/json"
+	"strings"
+)
 
-// Actions are the collection of one or more groups
+// Actions are the collection of one or more user Action permissions
 type Actions []Action
 
-func ParseActions(lines string) (actions Actions, err error) {
-	for _, line := range strings.Split(lines, "\n") {
-		if line = strings.TrimSpace(line); line != "" {
-			actions = append(actions, ParseAction(line))
+func ParseActions(lines ...string) (actions Actions) {
+	for _, newlines := range lines {
+		for _, line := range strings.Split(newlines, "\n") {
+			for _, part := range strings.Split(line, " ") {
+				if part = strings.TrimSpace(part); part != "" {
+					actions = append(actions, ParseAction(part))
+				}
+			}
 		}
-	}
-	return
-}
-
-func NewActionsFromStringNL(newlines string) (actions Actions) {
-	if parsed, err := ParseActions(newlines); err == nil {
-		actions = actions.Append(parsed...)
-	}
-	return
-}
-
-func NewActionsFromStrings(slice ...string) (actions Actions) {
-	if parsed, err := ParseActions(strings.Join(slice, "\n")); err == nil {
-		actions = actions.Append(parsed...)
 	}
 	return
 }
@@ -135,6 +128,14 @@ func (a Actions) FilterUnknown(other Actions) (unknown Actions) {
 		if !a.Has(action) {
 			unknown = append(unknown, action)
 		}
+	}
+	return
+}
+
+func (a Actions) Bytes() (data []byte) {
+	var err error
+	if data, err = json.MarshalIndent(a, "", "\t"); err != nil {
+		panic(err)
 	}
 	return
 }
