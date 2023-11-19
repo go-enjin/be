@@ -17,13 +17,12 @@
 package strcase
 
 import (
-	"strings"
-
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/golang-org-x-text/cases"
 	"github.com/go-enjin/golang-org-x-text/language"
 )
@@ -100,24 +99,10 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		"toScreamingKebab":     strcase.ToScreamingKebab,
 		"toSnake":              strcase.ToSnake,
 		"toScreamingSnake":     strcase.ToScreamingSnake,
-		"toDeepKey":            ToDeepKey,
-		"toDeepVar":            ToDeepVar,
-	}
-	return
-}
-
-func ToDeepKey(s string) (deepKey string) {
-	parts := strings.Split(strings.TrimPrefix(s, "."), ".")
-	for _, part := range parts {
-		deepKey += "." + strcase.ToKebab(part)
-	}
-	return
-}
-
-func ToDeepVar(s string) (deepKey string) {
-	parts := strings.Split(strings.TrimPrefix(s, "."), ".")
-	for _, part := range parts {
-		deepKey += "." + strcase.ToKebab(part)
+		"toDeepKey":            beStrings.ToDeepKey,
+		"toDeepVar":            beStrings.ToDeepVar,
+		"toSpaced":             beStrings.ToSpaced,
+		"toSpacedCamel":        beStrings.ToSpacedCamel,
 	}
 	return
 }
