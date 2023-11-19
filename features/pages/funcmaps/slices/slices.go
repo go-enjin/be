@@ -99,8 +99,10 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		"sortedFirstLetters":         SortedFirstLetters,
 		"sortedLastNameFirstLetters": SortedLastNameFirstLetters,
 		"iterate":                    Iterate,
-		"makeSlice":                  MakeSlice,
+		"makeSlice":                  MakeSlice[interface{}],
 		"makeStringSlice":            MakeStringSlice,
+		"appendSlice":                AppendSlice[interface{}],
+		"appendStringSlice":          AppendStringSlice,
 		"stringInStrings":            slices.Present[string],
 		"withinStrings":              slices.Within[string, []string],
 		"anyWithinStrings":           slices.AnyWithin[string, []string],
@@ -108,12 +110,25 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 	return
 }
 
-func MakeSlice(values ...interface{}) (output []interface{}) {
+func MakeSlice[T interface{}](values ...T) (output []T) {
 	output = append(output, values...)
 	return
 }
 
 func MakeStringSlice(values ...interface{}) (output []string) {
+	for _, value := range values {
+		output = append(output, fmt.Sprintf("%v", value))
+	}
+	return
+}
+
+func AppendSlice[T interface{}](slice []T, values ...T) (combined []T) {
+	combined = append(slice, values...)
+	return
+}
+
+func AppendStringSlice(slice []string, values ...interface{}) (output []string) {
+	output = append(output, slice...)
 	for _, value := range values {
 		output = append(output, fmt.Sprintf("%v", value))
 	}
