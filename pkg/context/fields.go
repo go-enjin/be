@@ -58,6 +58,11 @@ func (f Fields) Lookup(key string) (field *Field, ok bool) {
 	return
 }
 
+func (f Fields) Len() (count int) {
+	count = len(f)
+	return
+}
+
 func (f Fields) Keys() (keys []string) {
 	for k, _ := range f {
 		keys = append(keys, k)
