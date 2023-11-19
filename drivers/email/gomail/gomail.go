@@ -30,6 +30,9 @@ import (
 	"github.com/go-enjin/be/pkg/maps"
 )
 
+// TODO: implement email sending queues to batch up and disconnect the actual sending process from the request pipeline,
+//       keeping the existing options in-tact
+
 const Tag feature.Tag = "drivers-email-gomail"
 
 var (
@@ -83,6 +86,10 @@ func (f *CFeature) Make() Feature {
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
+	if err = f.CFeature.Build(b); err != nil {
+		return
+	}
+
 	tag := f.Tag().String()
 	var accountFlags []cli.Flag
 	for _, key := range maps.SortedKeys(f.accounts) {
