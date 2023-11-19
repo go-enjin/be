@@ -29,12 +29,16 @@ const (
 )
 
 func ProcessRequest(r *http.Request) (argv *Argv, modified *http.Request) {
+	// TODO: figure out more reliable way to modify r.RequestURI and consolidate
 	urlPath := forms.CleanRequestPath(r.URL.Path)
 	reqPath := urlPath
 	if argv = DecodeHttpRequest(r); argv != nil {
 		r = argv.Set(r)
 		reqPath = argv.Path
 		log.TraceF("parsed request argv: %v", argv)
+	}
+	if reqPath == "" {
+		reqPath = "/"
 	}
 	r.URL.Path = reqPath
 	r.RequestURI = strings.Replace(r.RequestURI, urlPath, reqPath, 1)
