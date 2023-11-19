@@ -212,7 +212,7 @@ func (f *File) EditFilePath() (filePath string) {
 		parts = append(parts, f.FSID)
 	}
 
-	if f.Locale != nil {
+	if f.Locale != nil && f.Locale.String() == f.Code {
 		parts = append(parts, f.Locale.String())
 	} else if f.Code != "" {
 		parts = append(parts, f.Code)
