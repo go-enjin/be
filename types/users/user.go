@@ -75,8 +75,13 @@ func (u *User) AsPage() feature.Page {
 	return &u.CPage
 }
 
-func (u *User) Can(action feature.Action) (allowed bool) {
-	allowed = u.Actions.Has(action)
+func (u *User) Can(actions ...feature.Action) (allowed bool) {
+	allowed = u.Actions.HasOneOf(actions)
+	return
+}
+
+func (u *User) CanAll(actions ...feature.Action) (allowed bool) {
+	allowed = u.Actions.HasAllOf(actions)
 	return
 }
 
