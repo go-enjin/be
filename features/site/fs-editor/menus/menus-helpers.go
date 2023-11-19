@@ -26,30 +26,32 @@ import (
 )
 
 func (f *CFeature) ParseFormToDraft(list []interface{}, info *editor.File, r *http.Request) (parsed menu.EditMenu, redirect string) {
-	eid := userbase.GetCurrentUserEID(r)
+	eid := userbase.GetCurrentEID(r)
 	printer := lang.GetPrinterFromRequest(r)
 	if data, ee := json.Marshal(list); ee != nil {
 		log.ErrorRF(r, "error encoding form context: %v", ee)
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error encoding form context: "%[1]s"`, ee.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error encoding form context: "%[1]s"`, ee.Error()))
 		redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditFilePath()
+		return
 	} else if ee = json.Unmarshal(data, &parsed); ee != nil {
 		log.ErrorRF(r, "error decoding form context: %v", ee)
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error decoding form context: "%[1]s"`, ee.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error decoding form context: "%[1]s"`, ee.Error()))
 		redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditFilePath()
+		return
 	}
 	return
 }
 
 func (f *CFeature) ParseDraftToMenu(parsed menu.EditMenu, info *editor.File, r *http.Request) (cleaned menu.Menu, redirect string) {
-	eid := userbase.GetCurrentUserEID(r)
+	eid := userbase.GetCurrentEID(r)
 	printer := lang.GetPrinterFromRequest(r)
 	if data, ee := json.Marshal(parsed); ee != nil {
 		log.ErrorRF(r, "error encoding cleaned menu: %v", ee)
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error encoding cleaned menu: "%v"`, ee), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error encoding cleaned menu: "%v"`, ee))
 		redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditFilePath()
 	} else if ee = json.Unmarshal(data, &cleaned); ee != nil {
 		log.ErrorRF(r, "error decoding cleaned menu: %v", ee)
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error decoding cleaned menu: "%v"`, ee), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error decoding cleaned menu: "%v"`, ee))
 		redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditFilePath()
 	}
 	return

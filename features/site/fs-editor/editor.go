@@ -25,15 +25,13 @@ import (
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/feature/site-including"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/site"
-)
-
-var (
-	DefaultEditorPath = "/fs-editor"
+	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 var (
@@ -52,13 +50,14 @@ type Feature interface {
 
 type MakeFeature interface {
 	feature.SiteMakeFeature[MakeFeature]
-	feature.SiteIncludingMakeFeature[MakeFeature]
+	site_including.MakeFeature[MakeFeature]
 
 	Make() Feature
 }
 
 type CFeature struct {
-	site.CSiteFeature[feature.EditorFeature, MakeFeature]
+	site.CSiteFeature[MakeFeature]
+	site_including.CSiteIncluding[feature.EditorFeature, MakeFeature]
 }
 
 func New() MakeFeature {
@@ -70,12 +69,19 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	f.Init(f)
 	f.PackageTag = Tag
 	f.FeatureTag = tag
-	f.SetSiteFeatureName(tag.String())
+	f.SetSiteFeatureKey("fs-editor")
+	f.SetSiteFeatureIcon("fa-solid fa-box-archive")
+	f.SetSiteFeatureLabel(func(printer *message.Printer) (label string) {
+		label = printer.Sprintf("FS Editor")
+		return
+	})
+	f.CUsesActions.ConstructUsesActions(f)
 	return f
 }
 
 func (f *CFeature) Init(this interface{}) {
 	f.CSiteFeature.Init(this)
+	f.CSiteIncluding.InitSiteIncluding(this)
 	return
 }
 
@@ -87,6 +93,7 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	if err = f.CSiteFeature.Build(b); err != nil {
 		return
 	}
+	f.CSiteIncluding.BuildSiteIncluding(b)
 	return
 }
 
@@ -94,6 +101,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CSiteFeature.Startup(ctx); err != nil {
 		return
 	}
+	f.CSiteIncluding.StartupSiteIncluding(f.Enjin)
 
 	if handler := f.Enjin.GetServePagesHandler(); handler == nil {
 		err = fmt.Errorf("enjin serve-pages handler not found")
@@ -104,14 +112,13 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *CFeature) UserActions() (list feature.Actions) {
-	list = feature.Actions{
-		feature.NewAction(f.Tag().String(), "access", "editor"),
-		feature.NewAction(f.Tag().String(), "edit", "file-editor"),
-		feature.NewAction(f.Tag().String(), "view", "file-editor"),
-		feature.NewAction(f.Tag().String(), "view", "file-browser"),
-		feature.NewAction(f.Tag().String(), "create", "file-browser"),
-		feature.NewAction(f.Tag().String(), "delete", "file-browser"),
-	}
+	list = append(f.CSiteFeature.UserActions(),
+		f.Action("edit", "file-editor"),
+		f.Action("view", "file-editor"),
+		f.Action("view", "file-browser"),
+		f.Action("create", "file-browser"),
+		f.Action("delete", "file-browser"),
+	)
 	return
 }
 
@@ -123,16 +130,26 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 	return nil
 }
 
-func (f *CFeature) SetupSiteFeature(s feature.Site) {
-	f.CSiteFeature.SetupSiteFeature(s)
+func (f *CFeature) SetupSiteFeature(s feature.Site) (err error) {
+	if err = f.CSiteFeature.SetupSiteFeature(s); err != nil {
+		return
+	}
+	// setup site feature first
+	for _, ef := range f.Features {
+		if err = ef.SetupSiteFeature(s); err != nil {
+			return
+		}
+	}
+	// then setup editors
 	for _, ef := range f.Features {
 		ef.SetupEditor(f)
 	}
+	return
 }
 
 func (f *CFeature) RouteSiteFeature(r chi.Router) {
 
-	r.Use(userbase.RequireUserCan(f.Enjin, feature.NewAction(f.Tag().String(), "access", "editor")))
+	r.Use(userbase.RequireUserCan(f.Enjin, f.Action("access", "feature")))
 
 	if len(f.Features) > 0 {
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -140,7 +157,7 @@ func (f *CFeature) RouteSiteFeature(r chi.Router) {
 		})
 	}
 	for _, ef := range f.Features {
-		r.Route("/"+ef.GetEditorName(), func(r chi.Router) {
+		r.Route("/"+ef.GetEditorKey(), func(r chi.Router) {
 			ef.SetupEditorRoute(r)
 		})
 	}
@@ -148,14 +165,16 @@ func (f *CFeature) RouteSiteFeature(r chi.Router) {
 	return
 }
 
-func (f *CFeature) SiteFeatureMenu() (m menu.Menu) {
+func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
 	item := &menu.Item{
-		Text: f.SiteFeatureName(),
+		Text: f.SiteFeatureKey(),
 		Href: f.SiteFeaturePath(),
-		Icon: "fa-solid fa-box-archive",
+		Icon: f.SiteFeatureIcon(),
 	}
 	for _, ef := range f.Features {
-		item.SubMenu = append(item.SubMenu, ef.EditorMenu()...)
+		if userbase.CurrentUserCan(r, ef.Action("access", "feature")) {
+			item.SubMenu = append(item.SubMenu, ef.EditorMenu(r)...)
+		}
 	}
 	m = menu.Menu{item}
 	return

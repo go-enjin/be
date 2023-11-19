@@ -43,7 +43,7 @@ func (f *CFeature) OpRetakeHandler(r *http.Request, pg feature.Page, ctx context
 	printer := lang.GetPrinterFromRequest(r)
 	if err := f.LockLocale(eid, info.FSID, info.Code); err != nil {
 		log.ErrorRF(r, "error locking %v locale for editing by others: %v", info.FSID+"/"+info.Code, err)
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error taking over editing: %[1]s`, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error taking over editing: %[1]s`, err.Error()))
 		return
 	}
 	//if info.Code != "" {
@@ -67,7 +67,7 @@ func (f *CFeature) OpUnlockHandler(r *http.Request, pg feature.Page, ctx context
 	printer := lang.GetPrinterFromRequest(r)
 	if err := f.UnlockLocales(info.FSID, info.Code); err != nil {
 		log.ErrorRF(r, "error unlocking %v locale for editing by others: %v", info.FSID+"/"+info.Code, err)
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error unlocking locale for editing by others: %[1]s`, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error unlocking locale for editing by others: %[1]s`, err.Error()))
 		return
 	}
 	if info.Code != "" {
@@ -116,21 +116,21 @@ func (f *CFeature) OpCommitHandler(r *http.Request, pg feature.Page, ctx context
 	var ld *LocaleData
 	mountPoints := f.FindMountPoints(info.FSID, info.Code)
 	if ld, err = f.ReadDraftLocales(info.FSID, info.Code, mountPoints, false); err != nil {
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error reading locales data: %[1]s", err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("error reading locales data: %[1]s", err.Error()))
 		return
 	}
 
 	if err = f.performDraftChanges(r, translations, ld); err != nil {
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error performing draft changes: %[1]s`, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error performing draft changes: %[1]s`, err.Error()))
 		return
 	}
 
 	if err = f.WriteDraftLocales(ld, mountPoints); err != nil {
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error writing draft changes: %[1]s`, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error writing draft changes: %[1]s`, err.Error()))
 		return
 	}
 
-	f.Editor.Site().PushInfoNotice(eid, printer.Sprintf(`draft locale changes saved`), true)
+	f.Editor.Site().PushInfoNotice(eid, true, printer.Sprintf(`draft locale changes saved`))
 	redirect = f.makePaginationRedirect(info, form)
 	return
 }
@@ -153,17 +153,17 @@ func (f *CFeature) OpPublishHandler(r *http.Request, pg feature.Page, ctx contex
 	var ld *LocaleData
 	mountPoints := f.FindMountPoints(info.FSID, info.Code)
 	if ld, err = f.ReadDraftLocales(info.FSID, info.Code, mountPoints, false); err != nil {
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error reading locales data: %[1]s", err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("error reading locales data: %[1]s", err.Error()))
 		return
 	}
 
 	if err = f.performDraftChanges(r, translations, ld); err != nil {
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error performing draft changes: %[1]s`, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error performing draft changes: %[1]s`, err.Error()))
 		return
 	}
 
 	if err = f.WriteLocales(ld, mountPoints); err != nil {
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error writing draft changes: %[1]s`, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error writing draft changes: %[1]s`, err.Error()))
 		return
 	}
 
@@ -177,7 +177,7 @@ func (f *CFeature) OpPublishHandler(r *http.Request, pg feature.Page, ctx contex
 		log.ErrorRF(r, "error unlocking %v locale for editing by others: %v", info.FSID+"/"+info.Code, err)
 	}
 
-	f.Editor.Site().PushInfoNotice(eid, printer.Sprintf(`draft locale changes published`), true)
+	f.Editor.Site().PushInfoNotice(eid, true, printer.Sprintf(`draft locale changes published`))
 
 	if info.Code != "" {
 		redirect = f.GetEditorPath() + "/" + info.FSID
@@ -232,12 +232,12 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context
 	mountPoints := f.FindMountPoints(info.FSID, info.Code)
 
 	if ld, err = f.ReadDraftLocales(info.FSID, info.Code, mountPoints, false); err != nil {
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error reading locales data: %[1]s", err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("error reading locales data: %[1]s", err.Error()))
 		return
 	}
 
 	if err = f.performDraftChanges(r, translations, ld); err != nil {
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error performing draft changes: %[1]s`, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error performing draft changes: %[1]s`, err.Error()))
 		return
 	}
 
@@ -253,13 +253,13 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context
 
 		var shasum, dstPath string
 		if parts := strings.Split(changeTarget, "."); len(parts) != 1 {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incomplete form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incomplete form submission`))
 			return
 		} else if shasum = parts[0]; len(shasum) != 10 {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incomplete form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incomplete form submission`))
 			return
 		} else if dstPath, _ = form[submit+"~dst-locale-system"].(string); dstPath == "" {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incomplete form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incomplete form submission`))
 			return
 		}
 		var dstFsid, dstCode string
@@ -268,7 +268,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context
 		} else if len(parts) == 2 {
 			dstFsid, dstCode = parts[0], parts[1]
 		} else {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incorrect form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incorrect form submission`))
 			return
 		}
 
@@ -276,14 +276,14 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context
 
 		var dstLd *LocaleData
 		if dstLd, err = f.ReadDraftLocales(info.FSID, info.Code, dstMountPoints, false); err != nil {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("destination not found, cannot copy"), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("destination not found, cannot copy"))
 			return
 		}
 
 		var ok bool
 		var msgs map[language.Tag]*LocaleMessage
 		if msgs, ok = ld.Data[shasum]; !ok {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`message not found, cannot copy`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`message not found, cannot copy`))
 			return
 		}
 
@@ -292,29 +292,29 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context
 			dstLd.Order = append(dstLd.Order, shasum)
 		}
 		if err = f.WriteDraftLocales(dstLd, dstMountPoints); err != nil {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error writing draft changes: %[1]s`, err.Error()), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error writing draft changes: %[1]s`, err.Error()))
 			return
 		}
 
 		changed = false
-		f.Editor.Site().PushInfoNotice(eid, printer.Sprintf(`translation copied to: %[1]s`, dstPath), true)
+		f.Editor.Site().PushInfoNotice(eid, true, printer.Sprintf(`translation copied to: %[1]s`, dstPath))
 		redirect = f.GetEditorPath() + "/" + dstPath
 
 	case "add-translation":
 
 		var key, comment string
 		if key, _ = form["add-translation.key"].(string); key == "" {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`translation key is required to create a new entry`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`translation key is required to create a new entry`))
 			return
 		} else if comment, _ = form["add-translation.comment"].(string); comment == "" {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`translation comment is required to create a new entry`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`translation comment is required to create a new entry`))
 			return
 		}
 
 		msg := ParseNewMessage(key, comment)
 		locales := f.Enjin.SiteLocales()
 		if _, present := ld.Data[msg.Shasum]; present {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`translation key exists already`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`translation key exists already`))
 			return
 		}
 		ld.Data[msg.Shasum] = map[language.Tag]*LocaleMessage{}
@@ -327,15 +327,15 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context
 
 		var shasum string
 		if parts := strings.Split(changeTarget, "."); len(parts) != 1 {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incomplete form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incomplete form submission`))
 			return
 		} else if shasum = parts[0]; len(shasum) != 10 {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incomplete form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incomplete form submission`))
 			return
 		}
 
 		if _, present := ld.Data[shasum]; !present {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`translation not found, nothing to delete`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`translation not found, nothing to delete`))
 			return
 		}
 
@@ -347,26 +347,26 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context
 		var tag language.Tag
 		var shasum, key string
 		if parts := strings.Split(changeTarget, "."); len(parts) != 2 {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incomplete form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incomplete form submission`))
 			return
 		} else if tag, err = language.Parse(parts[0]); err != nil {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incorrect form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incorrect form submission`))
 			return
 		} else if shasum = parts[1]; len(shasum) != 10 {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incomplete form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incomplete form submission`))
 			return
 		} else if key, _ = form["add-translation-case."+tag.String()+"."+shasum].(string); key == "" {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incomplete form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incomplete form submission`))
 			return
 		} else if key = catalog.ParsePluralCaseKey(key); key == "" {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`invalid plural translation case key`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`invalid plural translation case key`))
 			return
 		}
 
 		if msg, ok := ld.Data[shasum][tag]; ok {
 			if msg.Translation.Select != nil {
 				if _, present := msg.Translation.Select.Cases[key]; present {
-					f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`translation case "%[1]s" exists already`, key), true)
+					f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`translation case "%[1]s" exists already`, key))
 					return
 				}
 				msg.Translation.Select.Cases[key] = msg.Key
@@ -379,25 +379,25 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context
 		var tag language.Tag
 		var shasum, key string
 		if parts := strings.Split(changeTarget, "."); len(parts) != 3 {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incomplete form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incomplete form submission`))
 			return
 		} else if tag, err = language.Parse(parts[0]); err != nil {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incorrect form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incorrect form submission`))
 			return
 		} else if shasum = parts[1]; len(shasum) != 10 {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incomplete form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incomplete form submission`))
 			return
 		} else if idx, err = strconv.Atoi(parts[2]); err != nil {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incorrect form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incorrect form submission`))
 			return
 		} else if key, _ = form["delete-translation-case."+tag.String()+"."+shasum+"."+strconv.Itoa(idx)].(string); key == "" {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incomplete form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incomplete form submission`))
 			return
 		} else if key = catalog.ParsePluralCaseKey(key); key == "" {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`invalid plural translation case key`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`invalid plural translation case key`))
 			return
 		} else if key == "other" {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`"other" translation case is required, cannot delete`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`"other" translation case is required, cannot delete`))
 			return
 		}
 
@@ -414,10 +414,10 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context
 
 		var shasum string
 		if parts := strings.Split(changeTarget, "."); len(parts) != 1 {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incomplete form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incomplete form submission`))
 			return
 		} else if shasum = parts[0]; len(shasum) != 10 {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incomplete form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incomplete form submission`))
 			return
 		}
 
@@ -430,7 +430,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context
 			}
 		}
 		if defArg == "" {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`translation cannot be converted to plural form`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`translation cannot be converted to plural form`))
 			return
 		}
 
@@ -449,10 +449,10 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context
 
 		var shasum string
 		if parts := strings.Split(changeTarget, "."); len(parts) != 1 {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incomplete form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incomplete form submission`))
 			return
 		} else if shasum = parts[0]; len(shasum) != 10 {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`incomplete form submission`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incomplete form submission`))
 			return
 		}
 
@@ -475,17 +475,17 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context
 		}
 
 	default:
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`unknown operation`), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`unknown operation`))
 		return
 
 	}
 
 	if changed {
 		if err = f.WriteDraftLocales(ld, mountPoints); err != nil {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error writing draft changes: %[1]s`, err.Error()), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error writing draft changes: %[1]s`, err.Error()))
 			return
 		}
-		f.Editor.Site().PushInfoNotice(eid, printer.Sprintf(`draft locale changes saved`), true)
+		f.Editor.Site().PushInfoNotice(eid, true, printer.Sprintf(`draft locale changes saved`))
 	}
 
 	redirect = f.makePaginationRedirect(info, form)

@@ -17,15 +17,15 @@ package pages
 import (
 	"net/http"
 
-	"github.com/go-enjin/be/pkg/context"
+	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/path"
 )
 
-func (f *CFeature) MakePageArchetypeContextFields(r *http.Request, name string) (fields context.Fields) {
+func (f *CFeature) MakePageArchetypeContextFields(r *http.Request, name string) (fields beContext.Fields) {
 
 	tc := f.Enjin.MustGetTheme().GetConfig()
-	fields = context.Fields{}
+	fields = beContext.Fields{}
 	basename := path.Base(name)
 
 	if found, ok := tc.Supports.Archetypes[basename]; ok {
@@ -50,7 +50,7 @@ func (f *CFeature) MakePageArchetypeContextFields(r *http.Request, name string) 
 	return
 }
 
-func (f *CFeature) MakePageContextFields(r *http.Request, archetype string) (fields context.Fields) {
+func (f *CFeature) MakePageContextFields(r *http.Request, archetype string) (fields beContext.Fields) {
 	fields = f.Enjin.MakePageContextFields(r)
 	for k, v := range f.MakePageArchetypeContextFields(r, archetype) {
 		if _, present := fields[k]; !present {

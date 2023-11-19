@@ -27,12 +27,13 @@ import (
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
-	"github.com/go-enjin/be/types/editor"
+	"github.com/go-enjin/be/types/site/fs-editor"
+	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 var (
 	DefaultEditorType = "page"
-	DefaultEditorName = "pages"
+	DefaultEditorKey  = "pages"
 )
 
 var (
@@ -40,7 +41,7 @@ var (
 	_ MakeFeature = (*CFeature)(nil)
 )
 
-const Tag feature.Tag = "editor-pages"
+const Tag feature.Tag = "fs-editor-pages"
 
 type Feature interface {
 	feature.EditorFeature
@@ -55,7 +56,7 @@ type MakeFeature interface {
 }
 
 type CFeature struct {
-	editor.CEditorFeature[MakeFeature]
+	fs_editor.CEditorFeature[MakeFeature]
 
 	contentFsTags feature.Tags
 
@@ -71,12 +72,19 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	f.Init(f)
 	f.PackageTag = Tag
 	f.FeatureTag = tag
+	f.SetSiteFeatureKey("pages")
+	f.SetSiteFeatureIcon("fa-solid fa-file-pen")
+	f.SetSiteFeatureLabel(func(printer *message.Printer) (label string) {
+		label = printer.Sprintf("Pages")
+		return
+	})
+	f.CEditorFeature.Construct(f)
 	return f
 }
 
 func (f *CFeature) Init(this interface{}) {
 	f.CEditorFeature.Init(this)
-	f.CEditorFeature.EditorName = DefaultEditorName
+	f.CEditorFeature.EditorKey = DefaultEditorKey
 	f.CEditorFeature.EditorType = DefaultEditorType
 	return
 }
@@ -141,6 +149,7 @@ func (f *CFeature) SetupEditor(es feature.EditorSite) {
 	f.FileOperations[bePkgEditor.ChangeActionKey] = &feature.EditorOperation{
 		Key:       bePkgEditor.ChangeActionKey,
 		Action:    f.UpdateFileAction,
+		Validate:  f.OpChangeValidate,
 		Operation: f.OpChangeHandler,
 	}
 	f.FileOperations[bePkgEditor.IndexPageActionKey] = &feature.EditorOperation{
@@ -183,18 +192,26 @@ func (f *CFeature) SetupEditor(es feature.EditorSite) {
 		var r *http.Request
 		if r, _, _, _, _, eid, _, stop = feature.ParseSignalArgv(argv); stop {
 			printer := lang.GetPrinterFromRequest(r)
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`a file name is required; use "~index" for a directory landing page`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`a file name is required; use "~index" for a directory landing page`))
 			stop = true
 		}
 		return
 	})
 }
 
-func (f *CFeature) EditorMenu() (m menu.Menu) {
-	m = append(m, &menu.Item{
-		Text: f.GetEditorName(),
-		Href: f.GetEditorPath(),
-		Icon: "fa-solid fa-file-pen",
-	})
+func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
+	info := f.SiteFeatureInfo(r)
+	m = menu.Menu{
+		{
+			Text: info.Label,
+			Href: f.GetEditorPath(),
+			Icon: info.Icon,
+		},
+	}
+	return
+}
+
+func (f *CFeature) EditorMenu(r *http.Request) (m menu.Menu) {
+	m = f.SiteFeatureMenu(r)
 	return
 }

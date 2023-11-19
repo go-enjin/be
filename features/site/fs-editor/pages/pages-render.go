@@ -46,10 +46,10 @@ func (f *CFeature) FinalizeRenderFileEditor(r *http.Request, eid string, pg feat
 		)
 		var enjErr *errors.EnjinError
 		if errors2.As(ee, &enjErr) {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`page format error: %[1]s - %[2]s`, enjErr.Title, forms.StrictSanitize(enjErr.Summary)), false)
+			f.Editor.Site().PushErrorNotice(eid, false, printer.Sprintf(`page format error: %[1]s - %[2]s`, enjErr.Title, forms.StrictSanitize(enjErr.Summary)))
 			info.Actions = append(info.Actions, editor.MakeViewErrorAction(printer))
 		} else {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`page render error: %[1]s`, forms.StrictSanitize(ee.Error())), false)
+			f.Editor.Site().PushErrorNotice(eid, false, printer.Sprintf(`page render error: %[1]s`, forms.StrictSanitize(ee.Error())))
 		}
 	}
 

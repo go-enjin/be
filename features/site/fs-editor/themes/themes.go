@@ -15,18 +15,21 @@
 package themes
 
 import (
+	"net/http"
+
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/features/fs/themes"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
-	"github.com/go-enjin/be/types/editor"
+	"github.com/go-enjin/be/types/site/fs-editor"
+	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 var (
 	DefaultEditorType = "theme"
-	DefaultEditorName = "themes"
+	DefaultEditorKey  = "themes"
 )
 
 var (
@@ -34,7 +37,7 @@ var (
 	_ MakeFeature = (*CFeature)(nil)
 )
 
-const Tag feature.Tag = "editor-themes"
+const Tag feature.Tag = "fs-editor-themes"
 
 type Feature interface {
 	feature.EditorFeature
@@ -47,7 +50,7 @@ type MakeFeature interface {
 }
 
 type CFeature struct {
-	editor.CEditorFeature[MakeFeature]
+	fs_editor.CEditorFeature[MakeFeature]
 }
 
 func New() MakeFeature {
@@ -59,12 +62,19 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	f.Init(f)
 	f.PackageTag = Tag
 	f.FeatureTag = tag
+	f.SetSiteFeatureKey("themes")
+	f.SetSiteFeatureIcon("fa-solid fa-palette")
+	f.SetSiteFeatureLabel(func(printer *message.Printer) (label string) {
+		label = printer.Sprintf("Themes")
+		return
+	})
+	f.CEditorFeature.Construct(f)
 	return f
 }
 
 func (f *CFeature) Init(this interface{}) {
 	f.CEditorFeature.Init(this)
-	f.CEditorFeature.EditorName = DefaultEditorName
+	f.CEditorFeature.EditorKey = DefaultEditorKey
 	f.CEditorFeature.EditorType = DefaultEditorType
 	f.CEditorFeature.EditAnyFileExtension = true
 	return
@@ -90,11 +100,19 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) EditorMenu() (m menu.Menu) {
-	m = append(m, &menu.Item{
-		Text: f.GetEditorName(),
-		Href: f.GetEditorPath(),
-		Icon: "fa-solid fa-palette",
-	})
+func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
+	info := f.SiteFeatureInfo(r)
+	m = menu.Menu{
+		{
+			Text: info.Label,
+			Href: f.GetEditorPath(),
+			Icon: info.Icon,
+		},
+	}
+	return
+}
+
+func (f *CFeature) EditorMenu(r *http.Request) (m menu.Menu) {
+	m = f.SiteFeatureMenu(r)
 	return
 }

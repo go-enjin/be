@@ -24,12 +24,13 @@ import (
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
-	"github.com/go-enjin/be/types/editor"
+	"github.com/go-enjin/be/types/site/fs-editor"
+	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 var (
-	DefaultEditorType = "dashboard"
-	DefaultEditorName = "enjin-info"
+	DefaultEditorType = "enjin-info"
+	DefaultEditorKey  = "enjin-info"
 )
 
 var (
@@ -50,7 +51,7 @@ type MakeFeature interface {
 }
 
 type CFeature struct {
-	editor.CEditorFeature[MakeFeature]
+	fs_editor.CEditorFeature[MakeFeature]
 }
 
 func New() MakeFeature {
@@ -62,12 +63,19 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	f.Init(f)
 	f.PackageTag = Tag
 	f.FeatureTag = tag
+	f.SetSiteFeatureKey("enjin-info")
+	f.SetSiteFeatureIcon("fa-solid fa-circle-info")
+	f.SetSiteFeatureLabel(func(printer *message.Printer) (label string) {
+		label = printer.Sprintf("Enjin Info")
+		return
+	})
+	f.CEditorFeature.Construct(f)
 	return f
 }
 
 func (f *CFeature) Init(this interface{}) {
 	f.CEditorFeature.Init(this)
-	f.CEditorFeature.EditorName = DefaultEditorName
+	f.CEditorFeature.EditorKey = DefaultEditorKey
 	f.CEditorFeature.EditorType = DefaultEditorType
 	return
 }
@@ -86,7 +94,7 @@ func (f *CFeature) RenderDashboard(w http.ResponseWriter, r *http.Request) {
 	var pg feature.Page
 	var ctx beContext.Context
 
-	if pg, ctx, err = f.SelfEditor().PrepareEditPage("dashboard", f.EditorType); err != nil {
+	if pg, ctx, err = f.SelfEditor().PrepareEditPage("enjin-info", f.EditorType, r); err != nil {
 		log.ErrorRF(r, "error preparing %v editor page: %v", f.Tag(), err)
 		f.Enjin.ServeNotFound(w, r)
 		return
@@ -100,11 +108,24 @@ func (f *CFeature) RenderDashboard(w http.ResponseWriter, r *http.Request) {
 	f.SelfEditor().ServePreparedEditPage(pg, ctx, w, r)
 }
 
-func (f *CFeature) EditorMenu() (m menu.Menu) {
-	m = append(m, &menu.Item{
-		Text: f.GetEditorName(),
-		Href: f.GetEditorPath(),
-		Icon: "fa-solid fa-circle-info",
-	})
+func (f *CFeature) SiteFeatureKey() (key string) {
+	key = "enjin-info"
+	return
+}
+
+func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
+	info := f.SiteFeatureInfo(r)
+	m = menu.Menu{
+		{
+			Text: info.Label,
+			Href: f.GetEditorPath(),
+			Icon: info.Icon,
+		},
+	}
+	return
+}
+
+func (f *CFeature) EditorMenu(r *http.Request) (m menu.Menu) {
+	m = f.SiteFeatureMenu(r)
 	return
 }

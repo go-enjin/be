@@ -40,7 +40,7 @@ func (f *CFeature) RenderFileBrowser(w http.ResponseWriter, r *http.Request) {
 	var pg feature.Page
 	var ctx context.Context
 
-	if pg, ctx, err = f.SelfEditor().PrepareEditPage("file-browser", f.EditorType); err != nil {
+	if pg, ctx, err = f.SelfEditor().PrepareEditPage("file-browser", f.EditorType, r); err != nil {
 		log.ErrorRF(r, "error preparing %v editor page: %v", f.Tag(), err)
 		f.Enjin.ServeNotFound(w, r)
 		return
@@ -51,7 +51,7 @@ func (f *CFeature) RenderFileBrowser(w http.ResponseWriter, r *http.Request) {
 		filePath = path.TrimSlashes(filePath)
 	}
 
-	eid := userbase.GetCurrentUserEID(r)
+	eid := userbase.GetCurrentEID(r)
 
 	ctx.SetSpecific("EditorEID", eid)
 	ctx.SetSpecific("EditFSID", fsid)
@@ -72,7 +72,7 @@ func (f *CFeature) RenderFileBrowser(w http.ResponseWriter, r *http.Request) {
 
 	var titlePath string
 	if fsid == "" {
-		titlePath = f.SelfEditor().GetEditorName()
+		titlePath = f.SelfEditor().GetEditorKey()
 		files = append(files, f.SelfEditor().ListFileSystems()...)
 	} else if code == "" {
 		titlePath = fsid

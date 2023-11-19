@@ -25,12 +25,13 @@ import (
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
-	"github.com/go-enjin/be/types/editor"
+	"github.com/go-enjin/be/types/site/fs-editor"
+	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 var (
 	DefaultEditorType = "menu"
-	DefaultEditorName = "menus"
+	DefaultEditorKey  = "menus"
 )
 
 var (
@@ -38,7 +39,7 @@ var (
 	_ MakeFeature = (*CFeature)(nil)
 )
 
-const Tag feature.Tag = "editor-menus"
+const Tag feature.Tag = "fs-editor-menus"
 
 type Feature interface {
 	feature.EditorFeature
@@ -51,7 +52,7 @@ type MakeFeature interface {
 }
 
 type CFeature struct {
-	editor.CEditorFeature[MakeFeature]
+	fs_editor.CEditorFeature[MakeFeature]
 }
 
 func New() MakeFeature {
@@ -63,18 +64,32 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	f.Init(f)
 	f.PackageTag = Tag
 	f.FeatureTag = tag
+	f.SetSiteFeatureKey("menus")
+	f.SetSiteFeatureIcon("fa-solid fa-bars-staggered")
+	f.SetSiteFeatureLabel(func(printer *message.Printer) (label string) {
+		label = printer.Sprintf("Menus")
+		return
+	})
+	f.CEditorFeature.Construct(f)
 	return f
 }
 
 func (f *CFeature) Init(this interface{}) {
 	f.CEditorFeature.Init(this)
-	f.CEditorFeature.EditorName = DefaultEditorName
+	f.CEditorFeature.EditorKey = DefaultEditorKey
 	f.CEditorFeature.EditorType = DefaultEditorType
 	return
 }
 
 func (f *CFeature) Make() (feat Feature) {
 	return f
+}
+
+func (f *CFeature) Build(b feature.Buildable) (err error) {
+	if err = f.CEditorFeature.Build(b); err != nil {
+		return
+	}
+	return
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
@@ -93,6 +108,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 
 func (f *CFeature) SetupEditor(es feature.EditorSite) {
 	f.CEditorFeature.SetupEditor(es)
+
 	f.FileOperations[bePkgEditor.ChangeActionKey] = &feature.EditorOperation{
 		Key:       bePkgEditor.ChangeActionKey,
 		Action:    f.UpdateFileAction,
@@ -120,17 +136,25 @@ func (f *CFeature) SetupEditor(es feature.EditorSite) {
 				filenames += key + ".json"
 			}
 			printer := lang.GetPrinterFromRequest(r)
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`a file name is required; %[1]s supports the following menu files: %[2]s`, t.Name(), filenames), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`a file name is required; %[1]s supports the following menu files: %[2]s`, t.Name(), filenames))
 		}
 		return
 	})
 }
 
-func (f *CFeature) EditorMenu() (m menu.Menu) {
-	m = append(m, &menu.Item{
-		Text: f.GetEditorName(),
-		Href: f.GetEditorPath(),
-		Icon: "fa-solid fa-bars-staggered",
-	})
+func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
+	info := f.SiteFeatureInfo(r)
+	m = menu.Menu{
+		{
+			Text: info.Label,
+			Href: f.GetEditorPath(),
+			Icon: info.Icon,
+		},
+	}
+	return
+}
+
+func (f *CFeature) EditorMenu(r *http.Request) (m menu.Menu) {
+	m = f.SiteFeatureMenu(r)
 	return
 }

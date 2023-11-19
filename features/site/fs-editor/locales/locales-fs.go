@@ -336,7 +336,7 @@ func (f *CFeature) IsLocaleLocked(fsid, code string) (locked bool, eid string, e
 			if locked = rwfs.Exists(lockfile); !locked {
 				continue
 			} else if data, err := rwfs.ReadFile(lockfile); err == nil {
-				if v := string(data); len(v) == 10 || v == userbase.VisitorUserName {
+				if v := string(data); len(v) == 10 || v == userbase.VisitorEID {
 					eid = v
 				} else {
 					log.ErrorF("lockfile contains invalid data: %v", lockfile)
@@ -474,7 +474,7 @@ func (f *CFeature) UpdateFileInfo(info *editor.File, r *http.Request) {
 	// browser row actions and editing page
 	//f.CEditorFeature.UpdateFileInfo(info, r)
 	printer := lang.GetPrinterFromRequest(r)
-	eid := userbase.GetCurrentUserEID(r)
+	eid := userbase.GetCurrentEID(r)
 
 	if info.Locked {
 		info.Actions = append(info.Actions, editor.MakeRetakeFileAction(printer, info.EditCodeFilePath()))
@@ -493,7 +493,7 @@ func (f *CFeature) UpdateFileInfo(info *editor.File, r *http.Request) {
 }
 
 func (f *CFeature) ListLocales(r *http.Request) (list editor.Files) {
-	//eid := userbase.GetCurrentUserEID(r)
+	//eid := userbase.GetCurrentEID(r)
 	for _, mpf := range f.EditingFileSystems {
 		bt := mpf.BaseTag().String()
 		fsid := mpf.Tag().String()
@@ -534,7 +534,7 @@ func (f *CFeature) ListLocales(r *http.Request) (list editor.Files) {
 }
 
 func (f *CFeature) ListLocaleFileSystems(r *http.Request) (list editor.Files) {
-	eid := userbase.GetCurrentUserEID(r)
+	eid := userbase.GetCurrentEID(r)
 	for _, mpf := range f.EditingFileSystems {
 		fsid := mpf.Tag().String()
 		mountedPoints := mpf.GetMountedPoints()
@@ -562,7 +562,7 @@ func (f *CFeature) ListLocaleFileSystems(r *http.Request) (list editor.Files) {
 }
 
 func (f *CFeature) ListLocaleFileSystemLocales(r *http.Request, fsid string) (list editor.Files) {
-	eid := userbase.GetCurrentUserEID(r)
+	eid := userbase.GetCurrentEID(r)
 	unique := map[string]struct{}{}
 	if found := f.FindFS(fsid); found != nil {
 		for mount, mountPoints := range found.GetMountedPoints() {

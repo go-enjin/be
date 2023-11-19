@@ -157,7 +157,7 @@ func (f *CFeature) RemoveDirectory(info *editor.File) (err error) {
 }
 
 func (f *CFeature) PrepareEditableFile(r *http.Request, info *editor.File) (editFile *editor.File) {
-	eid := userbase.GetCurrentUserEID(r)
+	eid := userbase.GetCurrentEID(r)
 	printer := lang.GetPrinterFromRequest(r)
 
 	for _, mpf := range f.EditingFileSystems {
@@ -298,7 +298,7 @@ func (f *CFeature) ListFileSystemFiles(r *http.Request, fsid, code, dirs string)
 		return
 	}
 	//isUnd := code == language.Und.String()
-	eid := userbase.GetCurrentUserEID(r)
+	eid := userbase.GetCurrentEID(r)
 	printer := lang.GetPrinterFromRequest(r)
 	//dirsPath := editor.MakeLangCodePath(code, dirs)
 	dirsPath := dirs

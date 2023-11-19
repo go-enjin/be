@@ -24,7 +24,6 @@ import (
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/forms/nonce"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
@@ -37,7 +36,7 @@ import (
 
 func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Request) (pg feature.Page, ctx context.Context, info *editor.File, eid string, mountPoints feature.MountPoints, handled bool) {
 
-	eid = userbase.GetCurrentUserEID(r)
+	eid = userbase.GetCurrentEID(r)
 	printer := lang.GetPrinterFromRequest(r)
 
 	var err error
@@ -66,7 +65,7 @@ func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Reques
 		if code != "" {
 			fsidCode += "/" + code
 		}
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error locking %[1]s locale for editing: %[2]s`, fsidCode, err.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error locking %[1]s locale for editing: %[2]s`, fsidCode, err.Error()))
 		handled = true
 		return
 	} else {
@@ -109,7 +108,7 @@ func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if pg, ctx, err = f.SelfEditor().PrepareEditPage("file-editor", f.EditorType); err != nil {
+	if pg, ctx, err = f.SelfEditor().PrepareEditPage("file-editor", f.EditorType, r); err != nil {
 		handled = true
 		log.ErrorRF(r, "error preparing %v editor page: %v", f.Tag(), err)
 		f.Enjin.ServeNotFound(w, r)
@@ -150,7 +149,7 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 	var mountPoints feature.MountPoints
 	var info *editor.File
 
-	eid := userbase.GetCurrentUserEID(r)
+	eid := userbase.GetCurrentEID(r)
 	fsid := chi.URLParam(r, "fsid")
 	code := chi.URLParam(r, "code")
 	printer := lang.GetPrinterFromRequest(r)
@@ -208,7 +207,7 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 						continue
 					}
 					delete(ld.Data, shasum)
-					order, _ = slices.Prune(order, shasum)
+					order = slices.Prune(order, shasum)
 				}
 			}
 			ld.Order = order
@@ -310,8 +309,8 @@ func (f *CFeature) ReceiveFileEditorChanges(w http.ResponseWriter, r *http.Reque
 
 	nonceValue := r.PostFormValue("nonce")
 	nonceValue = forms.StrictSanitize(nonceValue)
-	if !nonce.Validate("file-editor-form", nonceValue) {
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("Form expired before submitting, please try again."), true)
+	if !f.Enjin.VerifyNonce("file-editor-form", nonceValue) {
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("Form expired before submitting, please try again."))
 		f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditFilePath(), w, r)
 		return
 	}
@@ -346,20 +345,20 @@ func (f *CFeature) ReceiveFileEditorChanges(w http.ResponseWriter, r *http.Reque
 	if op, ok := f.FileOperations[action]; ok {
 		if !f.Enjin.ValidateUserRequest(op.Action, w, r) {
 			log.WarnRF(r, "user denied: %v", op.Action)
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("Permission to perform the operation has been denied."), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("Permission to perform the operation has been denied."))
 			f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditFilePath(), w, r)
 			return
 		}
 		if op.Confirm != "" {
 			if _, confirmed := formCtx[op.Confirm]; !confirmed {
-				f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("Unconfirmed operation, please confirm before submitting changes."), true)
+				f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("Unconfirmed operation, please confirm before submitting changes."))
 				f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditFilePath(), w, r)
 				return
 			}
 		}
 		if op.Validate != nil {
 			if err = op.Validate(r, pg, ctx, formCtx, info, eid); err != nil {
-				f.Editor.Site().PushErrorNotice(eid, err.Error(), true)
+				f.Editor.Site().PushErrorNotice(eid, true, err.Error())
 				f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditFilePath(), w, r)
 				return
 			}
@@ -371,7 +370,7 @@ func (f *CFeature) ReceiveFileEditorChanges(w http.ResponseWriter, r *http.Reque
 			}
 		}
 	} else {
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("Unknown operation, please try again."), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("Unknown operation, please try again."))
 	}
 
 	if v, ok := formCtx["return"].(string); ok {

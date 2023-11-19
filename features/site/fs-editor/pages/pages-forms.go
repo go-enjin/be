@@ -36,13 +36,13 @@ import (
 
 func (f *CFeature) ParseFormToDraft(pm *matter.PageMatter, fields context.Fields, form context.Context, info *editor.File, r *http.Request) (modified *matter.PageMatter, redirect string, errs map[string]error) {
 	var err error
-	eid := userbase.GetCurrentUserEID(r)
+	eid := userbase.GetCurrentEID(r)
 	printer := lang.GetPrinterFromRequest(r)
 
 	if pm == nil {
 		if pm, err = f.ReadDraftPage(info); err != nil {
 			log.ErrorRF(r, "error encoding form context: %v", err)
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error encoding form context: "%[1]s"`, err.Error()), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error encoding form context: "%[1]s"`, err.Error()))
 			redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditFilePath()
 			return
 		}
@@ -109,7 +109,7 @@ func (f *CFeature) ParseFormToDraft(pm *matter.PageMatter, fields context.Fields
 		pm.Body = strings.ReplaceAll(contents, "\r", "")
 	} else {
 		log.ErrorRF(r, "error decoding form body: %v", err)
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`error decoding form body: "%v"`, err), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error decoding form body: "%v"`, err))
 		redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditFilePath()
 		return
 	}
@@ -133,30 +133,30 @@ func (f *CFeature) ParseCreatePageForm(r *http.Request, pg feature.Page, ctx, fo
 	filePath, _ = form.FirstString(editor.CreatePageActionKey + "~dst-path")
 
 	if fileLang, _ = form.FirstString(editor.CreatePageActionKey + "~dst-lang"); fileLang == "" {
-		f.Editor.Site().PushWarnNotice(eid, printer.Sprintf(`a locale is required to create a new page`), true)
+		f.Editor.Site().PushWarnNotice(eid, true, printer.Sprintf(`a locale is required to create a new page`))
 		stop = true
 		return
 	} else if fileLocale, err = language.Parse(fileLang); err != nil {
-		f.Editor.Site().PushWarnNotice(eid, printer.Sprintf(`a valid locale is required to create a new page`), true)
+		f.Editor.Site().PushWarnNotice(eid, true, printer.Sprintf(`a valid locale is required to create a new page`))
 		stop = true
 		return
 	} else if fileName, _ = form.FirstString(editor.CreatePageActionKey + "~dst-name"); fileName == "" {
 		if stop = f.Emit(feature.FileNameRequiredSignal, f.Tag().String(), r, pg, ctx, form, info, eid, redirect); stop {
 			return
 		}
-		f.Editor.Site().PushWarnNotice(eid, printer.Sprintf(`a file name is required`), true)
+		f.Editor.Site().PushWarnNotice(eid, true, printer.Sprintf(`a file name is required`))
 		*redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditParentDirectoryPath()
 		stop = true
 		return
 	}
 
 	if fileFormat, _ = form.FirstString(editor.CreatePageActionKey + "~dst-format"); fileFormat == "" {
-		f.Editor.Site().PushWarnNotice(eid, printer.Sprintf(`a file format is required to create a new page`), true)
+		f.Editor.Site().PushWarnNotice(eid, true, printer.Sprintf(`a file format is required to create a new page`))
 		*redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditParentDirectoryPath()
 		stop = true
 		return
 	} else if _, matched := t.MatchFormat("not-a-thing." + fileFormat); matched == "" {
-		f.Editor.Site().PushWarnNotice(eid, printer.Sprintf(`a valid file format is required to create a new page`), true)
+		f.Editor.Site().PushWarnNotice(eid, true, printer.Sprintf(`a valid file format is required to create a new page`))
 		*redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditParentDirectoryPath()
 		stop = true
 		return
@@ -168,7 +168,7 @@ func (f *CFeature) ParseCreatePageForm(r *http.Request, pg feature.Page, ctx, fo
 	if createMode == "arch" {
 		if archetype, _ = form.FirstString(editor.CreatePageActionKey + "~dst-archetype"); archetype != "" && !slices.Within(archetype, archetypes) {
 			archetypeNames := strings.Join(archetypes, ", ")
-			f.Editor.Site().PushWarnNotice(eid, printer.Sprintf(`a supported archetype is required to create a new page, supported archetypes are: %[1]s`, archetypeNames), true)
+			f.Editor.Site().PushWarnNotice(eid, true, printer.Sprintf(`a supported archetype is required to create a new page, supported archetypes are: %[1]s`, archetypeNames))
 			*redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditParentDirectoryPath()
 			stop = true
 			return
@@ -176,7 +176,7 @@ func (f *CFeature) ParseCreatePageForm(r *http.Request, pg feature.Page, ctx, fo
 			if archetype != "" {
 				var match string
 				if _, match = t.MatchFormat(archetype); match == "" {
-					f.Editor.Site().PushWarnNotice(eid, printer.Sprintf(`archetype page format not supported`), true)
+					f.Editor.Site().PushWarnNotice(eid, true, printer.Sprintf(`archetype page format not supported`))
 					*redirect = f.SelfEditor().GetEditorPath() + "/" + info.EditParentDirectoryPath()
 					return
 				}
@@ -186,8 +186,8 @@ func (f *CFeature) ParseCreatePageForm(r *http.Request, pg feature.Page, ctx, fo
 		}
 	}
 
-	fsid = forms.KebabValue(fsid)
-	fileName = forms.KebabValue(fileName)
+	fsid = forms.StrictCleanKebabValue(fsid)
+	fileName = forms.StrictCleanKebabValue(fileName)
 	if filePath = forms.KebabRelativePath(filePath); filePath != "" {
 		fullPath = filePath + "/" + fileName + "." + fileFormat
 	} else {
