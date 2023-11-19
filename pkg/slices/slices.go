@@ -176,3 +176,37 @@ func StartsWith[V comparable, S ~[]V](src S, others ...S) (same bool) {
 	same = true
 	return
 }
+
+// Append returns a new slice appended with only values not within the src slice
+func Append[V comparable, S ~[]V](src S, values ...V) (modified S) {
+	unique := make(map[V]struct{})
+	for _, v := range src {
+		unique[v] = struct{}{}
+	}
+	modified = append(modified, src...)
+	for _, v := range values {
+		if _, present := unique[v]; !present {
+			unique[v] = struct{}{}
+			modified = append(modified, v)
+		}
+	}
+	return
+}
+
+// Merge returns a new slice with the new values found within others appended to the src slice
+func Merge[V comparable, S ~[]V](src S, others ...S) (modified S) {
+	unique := make(map[V]struct{})
+	for _, v := range src {
+		unique[v] = struct{}{}
+	}
+	modified = append(modified, src...)
+	for _, other := range others {
+		for _, v := range other {
+			if _, present := unique[v]; !present {
+				unique[v] = struct{}{}
+				modified = append(modified, v)
+			}
+		}
+	}
+	return
+}
