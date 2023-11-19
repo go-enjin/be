@@ -25,7 +25,7 @@ import (
 	"github.com/go-enjin/be/pkg/strings"
 )
 
-func ValuesSortedByKeys[V interface{}](data map[string]V) (values []V) {
+func ValuesSortedByKeys[K ~string, V interface{}](data map[K]V) (values []V) {
 	for _, k := range SortedKeys(data) {
 		values = append(values, data[k])
 	}
@@ -34,14 +34,14 @@ func ValuesSortedByKeys[V interface{}](data map[string]V) (values []V) {
 
 // SortedKeyLengths returns the list of keys natural sorted and from longest to
 // shortest
-func SortedKeyLengths[V interface{}](data map[string]V) (keys []string) {
+func SortedKeyLengths[K ~string, V interface{}](data map[K]V) (keys []K) {
 	for key, _ := range data {
 		keys = append(keys, key)
 	}
 	// longest -> shortest, natsort same lengths
 	sort.Slice(keys, func(i, j int) (less bool) {
 		if il, jl := len(keys[i]), len(keys[j]); il == jl {
-			less = natural.Less(keys[i], keys[j])
+			less = natural.Less(string(keys[i]), string(keys[j]))
 		} else {
 			less = il > jl
 		}
@@ -50,19 +50,25 @@ func SortedKeyLengths[V interface{}](data map[string]V) (keys []string) {
 	return
 }
 
-func SortedKeys[V interface{}](data map[string]V) (keys []string) {
+func SortedKeys[K ~string, V interface{}](data map[K]V) (keys []K) {
 	for key, _ := range data {
 		keys = append(keys, key)
 	}
-	sort.Sort(natural.StringSlice(keys))
+	sort.Slice(keys, func(i, j int) (less bool) {
+		less = natural.Less(string(keys[i]), string(keys[j]))
+		return
+	})
 	return
 }
 
-func ReverseSortedKeys[V interface{}](data map[string]V) (keys []string) {
+func ReverseSortedKeys[K ~string, V interface{}](data map[K]V) (keys []K) {
 	for key, _ := range data {
 		keys = append(keys, key)
 	}
-	sort.Sort(sort.Reverse(natural.StringSlice(keys)))
+	sort.Slice(keys, func(i, j int) (less bool) {
+		less = natural.Less(string(keys[j]), string(keys[i]))
+		return
+	})
 	return
 }
 
@@ -88,34 +94,46 @@ func ReverseOrderedKeys[K cmp.Ordered, V interface{}](data map[K]V) (keys []K) {
 	return
 }
 
-func SortedKeysByLastKeyword[V interface{}](data map[string]V) (keys []string) {
-	lookup := make(map[string]string)
+func SortedKeysByLastKeyword[K ~string, V interface{}](data map[K]V) (keys []K) {
+	lookup := make(map[K]string)
 	for key, _ := range data {
-		keywords := regexps.RxKeywords.FindAllString(key, -1)
+		keywords := regexps.RxKeywords.FindAllString(string(key), -1)
 		lookup[key] = keywords[len(keywords)-1]
 		keys = append(keys, key)
 	}
 	sort.Slice(keys, func(i, j int) (less bool) {
-		less = natural.Less(lookup[keys[i]], lookup[keys[j]])
+		a, b := keys[i], keys[j]
+		la, lb := lookup[a], lookup[b]
+		if la == lb {
+			less = natural.Less(string(a), string(b))
+			return
+		}
+		less = natural.Less(la, lb)
 		return less
 	})
 	return
 }
 
-func SortedKeysByLastName[V interface{}](data map[string]V) (keys []string) {
-	lookup := make(map[string]string)
+func SortedKeysByLastName[K ~string, V interface{}](data map[K]V) (keys []K) {
+	lookup := make(map[K]string)
 	for key, _ := range data {
-		lookup[key] = strings.LastName(key)
+		lookup[key] = strings.LastName(string(key))
 		keys = append(keys, key)
 	}
 	sort.Slice(keys, func(i, j int) (less bool) {
-		less = natural.Less(lookup[keys[i]], lookup[keys[j]])
+		a, b := keys[i], keys[j]
+		la, lb := lookup[a], lookup[b]
+		if la == lb {
+			less = natural.Less(string(a), string(b))
+			return
+		}
+		less = natural.Less(la, lb)
 		return less
 	})
 	return
 }
 
-func Keys[V interface{}](data map[string]V) (keys []string) {
+func Keys[K ~string, V interface{}](data map[K]V) (keys []K) {
 	for key, _ := range data {
 		keys = append(keys, key)
 	}
