@@ -97,6 +97,10 @@ type Theme interface {
 type ThemeLayout interface {
 	Name() (name string)
 
+	Apply(other ThemeLayout)
+	CacheKeys() (keys []string)
+	CacheValue(key string) (value string)
+
 	NewHtmlTemplate(enjin Internals, ctx context.Context) (tmpl *htmlTemplate.Template, err error)
 	NewTextTemplate(enjin Internals, ctx context.Context) (tmpl *textTemplate.Template, err error)
 
