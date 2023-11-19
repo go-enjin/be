@@ -27,6 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/net/serve"
 	"github.com/go-enjin/be/pkg/request"
 	"github.com/go-enjin/be/pkg/request/argv"
+	"github.com/go-enjin/be/pkg/signals"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/userbase"
 )
@@ -42,6 +43,7 @@ func (e *Enjin) FinalizeServeRequest(w http.ResponseWriter, r *http.Request) {
 func (e *Enjin) ServeRedirect(destination string, w http.ResponseWriter, r *http.Request) {
 	e.FinalizeServeRequest(w, r)
 	http.Redirect(w, r, destination, http.StatusSeeOther)
+	e.Emit(signals.ServedRedirect, feature.EnjinTag.String(), interface{}(e).(feature.Internals), r)
 }
 
 func (e *Enjin) ServeRedirectHomePath(w http.ResponseWriter, r *http.Request) {
@@ -51,41 +53,49 @@ func (e *Enjin) ServeRedirectHomePath(w http.ResponseWriter, r *http.Request) {
 func (e *Enjin) Serve204(w http.ResponseWriter, r *http.Request) {
 	e.FinalizeServeRequest(w, r)
 	serve.Serve204(w, r)
+	e.Emit(signals.Served204, feature.EnjinTag.String(), interface{}(e).(feature.Internals), r)
 }
 
 func (e *Enjin) Serve400(w http.ResponseWriter, r *http.Request) {
 	e.FinalizeServeRequest(w, r)
 	serve.Serve400(w, r)
+	e.Emit(signals.Served400, feature.EnjinTag.String(), interface{}(e).(feature.Internals), r)
 }
 
 func (e *Enjin) Serve401(w http.ResponseWriter, r *http.Request) {
 	e.FinalizeServeRequest(w, r)
 	serve.Serve401(w, r)
+	e.Emit(signals.Served401, feature.EnjinTag.String(), interface{}(e).(feature.Internals), r)
 }
 
 func (e *Enjin) ServeBasic401(w http.ResponseWriter, r *http.Request) {
 	e.FinalizeServeRequest(w, r)
 	serve.ServeBasic401(w, r)
+	e.Emit(signals.ServedBasic401, feature.EnjinTag.String(), interface{}(e).(feature.Internals), r)
 }
 
 func (e *Enjin) Serve403(w http.ResponseWriter, r *http.Request) {
 	e.FinalizeServeRequest(w, r)
 	serve.Serve403(w, r)
+	e.Emit(signals.Served403, feature.EnjinTag.String(), interface{}(e).(feature.Internals), r)
 }
 
 func (e *Enjin) Serve404(w http.ResponseWriter, r *http.Request) {
 	e.FinalizeServeRequest(w, r)
 	serve.Serve404(w, r)
+	e.Emit(signals.Served404, feature.EnjinTag.String(), interface{}(e).(feature.Internals), r)
 }
 
 func (e *Enjin) Serve405(w http.ResponseWriter, r *http.Request) {
 	e.FinalizeServeRequest(w, r)
 	serve.Serve405(w, r)
+	e.Emit(signals.Served405, feature.EnjinTag.String(), interface{}(e).(feature.Internals), r)
 }
 
 func (e *Enjin) Serve500(w http.ResponseWriter, r *http.Request) {
 	e.FinalizeServeRequest(w, r)
 	serve.Serve500(w, r)
+	e.Emit(signals.Served500, feature.EnjinTag.String(), interface{}(e).(feature.Internals), r)
 }
 
 func (e *Enjin) ServeNotFound(w http.ResponseWriter, r *http.Request) {
@@ -101,6 +111,8 @@ func (e *Enjin) ServeInternalServerError(w http.ResponseWriter, r *http.Request)
 }
 
 func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Request) {
+	e.Emit(signals.PreServeStatusPage, feature.EnjinTag.String(), interface{}(e).(feature.Internals), status, r)
+
 	r = serve.SetServeStatus(status, r)
 	reqLangTag := lang.GetTag(r)
 
@@ -138,6 +150,8 @@ func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Reque
 		log.WarnRF(r, "unsupported status page: %v, serving 404 instead", status)
 		e.ServeStatusPage(404, w, r)
 	}
+
+	e.Emit(signals.PostServeStatusPage, feature.EnjinTag.String(), interface{}(e).(feature.Internals), status, r)
 }
 
 func (e *Enjin) ServePath(urlPath string, w http.ResponseWriter, r *http.Request) (err error) {
@@ -145,6 +159,7 @@ func (e *Enjin) ServePath(urlPath string, w http.ResponseWriter, r *http.Request
 	for _, mw := range e.eb.fServePathFeatures {
 		if err = mw.ServePath(urlPath, e, w, r); err == nil {
 			// serve path middleware handled
+			e.Emit(signals.ServedPath, feature.EnjinTag.String(), interface{}(e).(feature.Internals), urlPath, r)
 			return
 		}
 	}
@@ -153,6 +168,8 @@ func (e *Enjin) ServePath(urlPath string, w http.ResponseWriter, r *http.Request
 	if p, ok := pages[urlPath]; ok {
 		if err = e.ServePage(p, w, r); err == nil {
 			// eb page found
+			e.Emit(signals.ServedPath, feature.EnjinTag.String(), interface{}(e).(feature.Internals), urlPath, r)
+			e.Emit(signals.ServedPathPage, feature.EnjinTag.String(), interface{}(e).(feature.Internals), urlPath, p, r)
 			return
 		}
 	}
@@ -181,6 +198,9 @@ func (e *Enjin) ServeStatusJSON(status int, v interface{}, w http.ResponseWriter
 }
 
 func (e *Enjin) ServePage(p feature.Page, w http.ResponseWriter, r *http.Request) (err error) {
+
+	e.Emit(signals.PreServePage, feature.EnjinTag.String(), interface{}(e).(feature.Internals), p, r)
+
 	if pUrl := p.Url(); pUrl != "" && pUrl[0] == '!' {
 		err = fmt.Errorf("cannot serve not-path page: %v", pUrl)
 		return
@@ -225,10 +245,13 @@ func (e *Enjin) ServePage(p feature.Page, w http.ResponseWriter, r *http.Request
 	}
 
 	err = e.eb.fServePagesHandler.ServePage(p, e.MustGetTheme(), e.Context(), w, r)
+	e.Emit(signals.PostServePage, feature.EnjinTag.String(), interface{}(e).(feature.Internals), p, r)
 	return
 }
 
 func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request) {
+	e.Emit(signals.PreServeData, feature.EnjinTag.String(), interface{}(e).(feature.Internals), &data, mime, r)
+
 	e.FinalizeServeRequest(w, r)
 
 	for _, prh := range e.eb.fDataRestrictionHandlers {
@@ -296,4 +319,5 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 
 	w.WriteHeader(status)
 	_, _ = w.Write(data)
+	e.Emit(signals.PostServeData, feature.EnjinTag.String(), interface{}(e).(feature.Internals), &data, mime, status, r)
 }

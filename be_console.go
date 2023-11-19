@@ -34,6 +34,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
+	"github.com/go-enjin/be/pkg/signals"
 )
 
 var (
@@ -76,6 +77,8 @@ func init() {
 }
 
 func (e *Enjin) initConsoles() {
+	e.Emit(signals.PreInitConsoleFeatures, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
+
 	numConsoles := len(e.eb.consoles)
 	if numConsoles > 0 {
 		var included []string
@@ -95,6 +98,8 @@ func (e *Enjin) initConsoles() {
 			Action:      e.consoleAction,
 		})
 	}
+
+	e.Emit(signals.PostInitConsoleFeatures, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 }
 
 func (e *Enjin) consoleAction(ctx *cli.Context) (err error) {

@@ -123,9 +123,13 @@ func newEnjin(eb *EnjinBuilder) *Enjin {
 	}
 	e.cli.Action = e.action
 
+	e.Emit(signals.PreNewEnjin, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
+
 	e.initConsoles()
 	e.setupFeatures()
 	e.ReloadLocales()
+
+	e.Emit(signals.PostNewEnjin, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 	return e
 }
 
@@ -137,9 +141,17 @@ func newIncludedEnjin(eb *EnjinBuilder, parent *Enjin) *Enjin {
 		catalog:               catalog.New(),
 		mutex:                 &sync.RWMutex{},
 	}
+	e.Emit(signals.PreNewEnjinIncluded, feature.EnjinTag.String(),
+		interface{}(e).(feature.Internals),
+		interface{}(parent).(feature.Internals),
+	)
 	e.initConsoles()
 	e.setupFeatures()
 	e.ReloadLocales()
+	e.Emit(signals.PostNewEnjinIncluded, feature.EnjinTag.String(),
+		interface{}(e).(feature.Internals),
+		interface{}(parent).(feature.Internals),
+	)
 	return e
 }
 
@@ -259,16 +271,20 @@ func (e *Enjin) SetupRootEnjin(ctx *cli.Context) (err error) {
 		}
 	}
 
+	e.Emit(signals.RootEnjinSetup, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 	return
 }
 
 func (e *Enjin) setupFeatures() {
+	e.Emit(signals.PreSetupFeaturesPhase, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 	for _, f := range e.eb.features.List() {
 		f.Setup(e)
 	}
+	e.Emit(signals.PostSetupFeaturesPhase, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 }
 
 func (e *Enjin) startupFeatures(ctx *cli.Context) (err error) {
+	e.Emit(signals.PreStartupFeaturesPhase, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 	for _, f := range e.eb.features.List() {
 		if err = f.Startup(ctx); err != nil {
 			err = fmt.Errorf("error starting up %q feature: %v", f.Tag(), err)
@@ -281,6 +297,7 @@ func (e *Enjin) startupFeatures(ctx *cli.Context) (err error) {
 			return
 		}
 	}
+	e.Emit(signals.PostStartupFeaturesPhase, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 	return
 }
 
@@ -329,15 +346,19 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 
 	root := chi.NewRouter()
 	root.Mount("/", hr)
+	e.Emit(signals.RootEnjinStarting, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 	return e.eb.fServiceListener.StartListening(root, e)
 }
 
 func (e *Enjin) Shutdown() {
+	e.Emit(signals.PreShutdownFeaturesPhase, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 	for _, f := range e.eb.features.List() {
 		f.Shutdown()
 	}
+	e.Emit(signals.PostShutdownFeaturesPhase, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 	if err := e.eb.fServiceListener.StopListening(); err != nil {
 		log.ErrorF("error stopping http listener: %v - %v", e.eb.fServiceListener.Tag(), err)
 	}
+	e.Emit(signals.RootEnjinShutdown, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 	e.Notify("enjin shutdown complete")
 }

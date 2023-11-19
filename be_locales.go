@@ -15,6 +15,8 @@
 package be
 
 import (
+	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/signals"
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/language/display"
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
@@ -25,6 +27,8 @@ import (
 )
 
 func (e *Enjin) ReloadLocales() {
+	e.Emit(signals.PreEnjinReloadLocales, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
+
 	ctlg := pkgLangCatalog.New()
 	// include locale features
 	for _, lp := range e.eb.fLocalesProviders {
@@ -35,6 +39,7 @@ func (e *Enjin) ReloadLocales() {
 	e.catalog = ctlg
 	e.locales = ctlg.LocaleTagsWithDefault(e.eb.defaultLang)
 	e.mutex.Unlock()
+	e.Emit(signals.PostEnjinReloadLocales, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 }
 
 func (e *Enjin) SiteLocales() (locales []language.Tag) {

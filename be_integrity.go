@@ -20,13 +20,17 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/signals"
 	"github.com/go-enjin/be/pkg/slug"
 )
 
 func (e *Enjin) startupIntegrityChecks(ctx *cli.Context) (err error) {
+	e.Emit(signals.PreEnjinIntegrityChecks, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
+
 	eicPrefix := "enjin integrity checks"
 	eicLogMsg := func(status, format string, argv ...interface{}) (msg string) {
 		msgFmt := fmt.Sprintf("%v %v: %v", eicPrefix, status, format)
@@ -104,5 +108,6 @@ func (e *Enjin) startupIntegrityChecks(ctx *cli.Context) (err error) {
 		}
 	}
 
+	e.Emit(signals.PostEnjinIntegrityChecks, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 	return
 }

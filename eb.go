@@ -294,6 +294,8 @@ func (eb *EnjinBuilder) prepareBuild() {
 }
 
 func (eb *EnjinBuilder) Build() feature.Runner {
+	eb.Emit(signals.PreBuildFeaturesPhase, feature.EnjinTag.String(), interface{}(eb).(feature.Buildable))
+
 	eb.prepareBuild()
 
 	eb.flags = append(
@@ -374,5 +376,6 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 		feature.NewAction("enjin", "view", "page"),
 	)
 
+	eb.Emit(signals.PostBuildFeaturesPhase, feature.EnjinTag.String(), interface{}(eb).(feature.Buildable))
 	return newEnjin(eb)
 }

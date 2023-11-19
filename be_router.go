@@ -27,10 +27,13 @@ import (
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/request"
 	"github.com/go-enjin/be/pkg/request/argv"
+	"github.com/go-enjin/be/pkg/signals"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
+	e.Emit(signals.PreEnjinSetupRouter, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
+
 	router.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -205,5 +208,6 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		router.HandleFunc("/*", e.ServeNotFound)
 	}
 
+	e.Emit(signals.PostEnjinSetupRouter, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 	return
 }

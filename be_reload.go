@@ -20,6 +20,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/signals"
 )
 
 func (e *Enjin) HotReloading() (enabled bool) {
@@ -31,6 +32,7 @@ func (e *Enjin) performHotReload(r *http.Request) (err error) {
 	if e.eb.hotReload {
 		log.DebugRF(r, "hot-reloading locales")
 		e.ReloadLocales()
+		e.Emit(signals.PreHotReloadFeatures, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 		for _, f := range feature.FilterTyped[feature.HotReloadableFeature](e.eb.features.List()) {
 			log.DebugRF(r, "hot-reloading %v feature", f.Tag())
 			if err = f.HotReload(); err != nil {
@@ -38,6 +40,7 @@ func (e *Enjin) performHotReload(r *http.Request) (err error) {
 				return
 			}
 		}
+		e.Emit(signals.PostHotReloadFeatures, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 	}
 	return
 }
