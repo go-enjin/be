@@ -15,9 +15,13 @@
 package strings
 
 import (
+	"fmt"
+	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	"github.com/maruel/natural"
 
 	"github.com/go-enjin/be/pkg/regexps"
@@ -72,5 +76,36 @@ func SortedByLastName(data []string) (keys []string) {
 		less = natural.Less(lookup[keys[i]], lookup[keys[j]])
 		return less
 	})
+	return
+}
+
+func NameFromEmail(email string) (name string) {
+	if before, after, found := strings.Cut(email, "@"); found {
+		name = strcase.ToCamel(strcase.ToDelimited(before, ' '))
+		name += " @"
+		if parts := strings.Split(after, "."); len(parts) > 1 {
+			name += strcase.ToCamel(parts[len(parts)-2])
+		} else {
+			name += strcase.ToCamel(after)
+		}
+	}
+	return
+}
+
+var (
+	RxNameSuffix = regexp.MustCompile(`\((\d+)\)\s*$`)
+)
+
+// IncrementFileName will return the given label with a specific number suffix incremented. If the label does not end with
+// the pattern `\(\d+\)\s*$`, one is appended with a space, if the pattern matches no spaces are added and the
+// digit is modified and any trailing space removed
+func IncrementFileName(name string) (modified string) {
+	if RxNameSuffix.MatchString(name) {
+		m := RxNameSuffix.FindAllStringSubmatch(name, 1)
+		d, _ := strconv.Atoi(m[0][1])
+		modified = RxNameSuffix.ReplaceAllString(name, fmt.Sprintf("(%d)", d+1))
+	} else {
+		modified = name + " (1)"
+	}
 	return
 }
