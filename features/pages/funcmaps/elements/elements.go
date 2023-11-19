@@ -142,6 +142,12 @@ func ElementAttributes(value interface{}) (html template.HTMLAttr) {
 	var parts []string
 	switch data := value.(type) {
 	case *menu.Item:
+		if target := strings.ToLower(data.Target); target != "" {
+			switch target {
+			case "_self", "_blank", "_parent", "_top":
+				parts = append(parts, `target="`+target+`"`)
+			}
+		}
 		if data.Context != nil {
 			if attributes, ok := data.Context.Get("attributes").(map[string]interface{}); ok {
 				for _, k := range maps.SortedKeys(attributes) {
