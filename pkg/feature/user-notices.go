@@ -18,7 +18,7 @@ import (
 	"context"
 	"net/http"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/request"
 )
 
 type UserNotices []*UserNotice
@@ -27,6 +27,7 @@ type UserNotice struct {
 	Type    string           `json:"type"`
 	Dismiss bool             `json:"dismiss"`
 	Summary string           `json:"summary"`
+	Content []string         `json:"content"`
 	Actions []UserNoticeLink `json:"actions"`
 }
 
@@ -37,7 +38,7 @@ type UserNoticeLink struct {
 }
 
 const (
-	UserNoticesRequestKey beContext.RequestKey = "user-notices"
+	UserNoticesRequestKey request.Key = "user-notices"
 )
 
 func GetUserNotices(r *http.Request) (notices UserNotices) {
@@ -54,29 +55,88 @@ func AddUserNotices(r *http.Request, notes ...*UserNotice) (modified *http.Reque
 	return
 }
 
-func MakeInfoNotice(message string, dismiss bool, actions ...UserNoticeLink) (notice *UserNotice) {
+func FilterUserNotices(r *http.Request, fn func(notice *UserNotice) (keep bool)) (m *http.Request) {
+	var keepers UserNotices
+	notices, _ := r.Context().Value(UserNoticesRequestKey).(UserNotices)
+	if len(notices) > 0 {
+		for _, notice := range notices {
+			if fn(notice) {
+				keepers = append(keepers, notice)
+			}
+		}
+	}
+	m = r
+	return
+}
+
+func NewNotice(key string, dismiss bool, summary string, actions ...UserNoticeLink) (notice *UserNotice) {
+	if key == "" {
+		key = "info"
+	}
 	return &UserNotice{
-		Type:    "info",
+		Type:    key,
 		Dismiss: dismiss,
-		Summary: message,
+		Summary: summary,
 		Actions: actions,
 	}
 }
 
-func MakeWarnNotice(message string, dismiss bool, actions ...UserNoticeLink) (notice *UserNotice) {
-	return &UserNotice{
-		Type:    "warn",
-		Dismiss: dismiss,
-		Summary: message,
-		Actions: actions,
+func parseNoticeArgv(argv []interface{}) (content []string, actions []UserNoticeLink) {
+	for _, arg := range argv {
+		switch t := arg.(type) {
+		case string:
+			content = append(content, t)
+		case UserNoticeLink:
+			actions = append(actions, t)
+		}
 	}
+	return
 }
 
-func MakeErrorNotice(message string, dismiss bool, actions ...UserNoticeLink) (notice *UserNotice) {
-	return &UserNotice{
-		Type:    "error",
-		Dismiss: dismiss,
-		Summary: message,
-		Actions: actions,
-	}
+func MakeImportantNotice(dismiss bool, message string, argv ...interface{}) (notice *UserNotice) {
+	content, actions := parseNoticeArgv(argv)
+	notice = NewNotice("important", dismiss, message, actions...)
+	notice.Content = content
+	return
+}
+
+func AddImportantNotice(r *http.Request, dismiss bool, message string, argv ...interface{}) (modified *http.Request) {
+	modified = AddUserNotices(r, MakeImportantNotice(dismiss, message, argv...))
+	return
+}
+
+func MakeInfoNotice(dismiss bool, message string, argv ...interface{}) (notice *UserNotice) {
+	content, actions := parseNoticeArgv(argv)
+	notice = NewNotice("info", dismiss, message, actions...)
+	notice.Content = content
+	return
+}
+
+func AddInfoNotice(r *http.Request, dismiss bool, message string, argv ...interface{}) (modified *http.Request) {
+	modified = AddUserNotices(r, MakeInfoNotice(dismiss, message, argv...))
+	return
+}
+
+func MakeWarnNotice(dismiss bool, message string, argv ...interface{}) (notice *UserNotice) {
+	content, actions := parseNoticeArgv(argv)
+	notice = NewNotice("warn", dismiss, message, actions...)
+	notice.Content = content
+	return
+}
+
+func AddWarnNotice(r *http.Request, dismiss bool, message string, argv ...interface{}) (modified *http.Request) {
+	modified = AddUserNotices(r, MakeWarnNotice(dismiss, message, argv...))
+	return
+}
+
+func MakeErrorNotice(dismiss bool, message string, argv ...interface{}) (notice *UserNotice) {
+	content, actions := parseNoticeArgv(argv)
+	notice = NewNotice("error", dismiss, message, actions...)
+	notice.Content = content
+	return
+}
+
+func AddErrorNotice(r *http.Request, dismiss bool, message string, argv ...interface{}) (modified *http.Request) {
+	modified = AddUserNotices(r, MakeErrorNotice(dismiss, message, argv...))
+	return
 }
