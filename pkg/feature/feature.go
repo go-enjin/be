@@ -26,10 +26,27 @@ import (
 const NotImplemented Tag = "not-implemented"
 
 type Feature interface {
+	// Construct is used as the last call within the standard NewTagged(tag) constructor and is used by extended types
+	// to perform initializations which require the .FeatureTag set
+	Construct(this interface{})
+	// Init is used as the first call within the standard NewTagged(tag) constructor to perform initializations which
+	// do not require the .FeatureTag set
 	Init(this interface{})
+	// Tag is the feature.Tag for this particular feature instance
 	Tag() (tag Tag)
+	// BaseTag is the stock tag common to all feature instances of this type
 	BaseTag() (pkg Tag)
+	// This returns an interface{} reference to the underlying structure instance
 	This() (this interface{})
+	// Self returns f.this, typed as a Feature, in such a way that calling f.Self().Thing() from a base type will invoke
+	// the type's overloaded method; for example:
+	//  - feature A implements `.Thing()` method and calls `f.Thing()` from some `.OtherThing()` method
+	//  - feature B embeds feature A and overloads the `.Thing()` method
+	//  - when feature A calls `f.Thing()` within `.OtherThing()`, feature A's method is invoked
+	//  - if feature A instead calls `f.Self().Thing()` instead, feature B's method is invoked
+	//
+	// The example above is of course contrived as this only works with Feature methods, however, the design pattern can
+	// be re-used in other systems to achieve the same effect
 	Self() (f Feature)
 	Depends() (deps Tags)
 	UsageNotes() (notes []string)
@@ -56,6 +73,10 @@ type CFeature struct {
 }
 
 func (f *CFeature) UsageNotes() (notes []string) {
+	return
+}
+
+func (f *CFeature) Construct(this interface{}) {
 	return
 }
 
