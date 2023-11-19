@@ -165,6 +165,14 @@ func (c Context) Has(key string) (present bool) {
 	return
 }
 
+// HasExact returns true if the specific Context key given exists and is not nil
+func (c Context) HasExact(key string) (present bool) {
+	if v, ok := c[key]; ok {
+		present = v != nil
+	}
+	return
+}
+
 // Set CamelCases the given key and sets that within this Context
 func (c Context) Set(key string, value interface{}) Context {
 	key = strcase.ToCamel(key)
