@@ -266,6 +266,8 @@ func PathParser(spec *Field, input interface{}) (parsed interface{}, err error) 
 	case string:
 		if t = strings.TrimSpace(t); t != "" {
 			parsed = filepath.Clean(t)
+		} else {
+			parsed = ""
 		}
 	default:
 		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
@@ -284,6 +286,8 @@ func UrlParser(spec *Field, input interface{}) (parsed interface{}, err error) {
 			if v, err = url.Parse(t); err == nil {
 				parsed = v.String()
 			}
+		} else {
+			parsed = ""
 		}
 	default:
 		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
