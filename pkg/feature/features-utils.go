@@ -15,6 +15,8 @@
 package feature
 
 import (
+	"fmt"
+
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/values"
 )
@@ -49,6 +51,18 @@ func FilterTyped[T interface{}](list Features) (found []T) {
 		if fT, ok := f.This().(T); ok {
 			found = append(found, fT)
 		}
+	}
+	return
+}
+
+func GetTyped[T interface{}](tag Tag, list Features) (f T, err error) {
+	if found := list.Get(tag); found == nil {
+		err = fmt.Errorf("%q feature not found", tag.String())
+	} else if sup, ok := found.This().(T); ok {
+		f = sup
+	} else {
+		var t *T
+		err = fmt.Errorf("%q is not a %T", tag.String(), values.TypeOf(t)[1:])
 	}
 	return
 }
