@@ -65,7 +65,7 @@ func (g Groups) Remove(groups ...Group) (modified Groups) {
 }
 
 func (g Groups) Append(groups ...Group) (modified Groups) {
-	modified = g
+	modified = append(modified, g...)
 	for _, group := range groups {
 		if group != "" && !g.Has(group) {
 			modified = append(modified, group)
@@ -75,7 +75,7 @@ func (g Groups) Append(groups ...Group) (modified Groups) {
 }
 
 func (g Groups) AppendString(names ...string) (modified Groups) {
-	modified = g
+	modified = append(modified, g...)
 	for _, name := range names {
 		if name != "" {
 			if namedGroup := NewGroup(name); !modified.Has(namedGroup) {
