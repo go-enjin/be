@@ -26,6 +26,9 @@ var EnjinMk string
 //go:embed _files/feature.go.tmpl
 var FeatureGoTmpl string
 
+//go:embed _files/site-feature.go.tmpl
+var SiteFeatureGoTmpl string
+
 //go:embed _files/license-go-enjin.go.tmpl
 var LicenseGoEnjinGoTmpl string
 
