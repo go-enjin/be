@@ -76,9 +76,9 @@ func CleanRelativePath(path string) (cleaned string) {
 	return
 }
 
-// KebabValue uses StrictClean on the given string, replaces all slashes with dashes and renders the string in
-// kebab-cased format
-func KebabValue(name string) (cleaned string) {
+// StrictCleanKebabValue uses StrictClean on the given string, replaces all slashes with dashes and renders the string
+// in kebab-cased format
+func StrictCleanKebabValue(name string) (cleaned string) {
 	cleaned = strings.ReplaceAll(StrictClean(name), "/", "-")
 	cleaned = strcase.ToKebab(name)
 	return
