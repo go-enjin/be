@@ -27,7 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
-	"github.com/go-enjin/be/pkg/kvs"
+	uses_actions "github.com/go-enjin/be/pkg/feature/uses-actions"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/types/page"
@@ -70,6 +70,7 @@ type MakeFeature interface {
 
 type CFeature struct {
 	filesystem.CFeature[MakeFeature]
+	uses_actions.CUsesActions
 
 	gcPercent int
 
@@ -79,7 +80,7 @@ type CFeature struct {
 	indexProviders  []feature.PageIndexFeature
 	searchProviders []feature.SearchEnjinFeature
 
-	cache kvs.KeyValueCache
+	cache feature.KeyValueCache
 }
 
 func New() MakeFeature {
@@ -91,6 +92,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	f.Init(f)
 	f.PackageTag = Tag
 	f.FeatureTag = tag
+	f.CUsesActions.ConstructUsesActions(f)
 	return f
 }
 
@@ -182,12 +184,9 @@ func (f *CFeature) Shutdown() {
 }
 
 func (f *CFeature) UserActions() (list feature.Actions) {
-
-	tag := f.Tag().Kebab()
 	list = feature.Actions{
-		feature.NewAction(tag, "view", "page"),
+		f.Action("view", "page"),
 	}
-
 	return
 }
 
