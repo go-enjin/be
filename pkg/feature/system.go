@@ -89,7 +89,10 @@ type Service interface {
 	ContentSecurityPolicy() (handler *csp.PolicyHandler)
 	PermissionsPolicy() (handler *permissions.PolicyHandler)
 
+	FinalizeServeRequest(w http.ResponseWriter, r *http.Request)
+
 	ServeRedirect(destination string, w http.ResponseWriter, r *http.Request)
+	ServeRedirectHomePath(w http.ResponseWriter, r *http.Request)
 
 	Serve204(w http.ResponseWriter, r *http.Request)
 	Serve400(w http.ResponseWriter, r *http.Request)
@@ -101,6 +104,7 @@ type Service interface {
 	Serve500(w http.ResponseWriter, r *http.Request)
 
 	ServeNotFound(w http.ResponseWriter, r *http.Request)
+	ServeForbidden(w http.ResponseWriter, r *http.Request)
 	ServeInternalServerError(w http.ResponseWriter, r *http.Request)
 
 	ServeStatusPage(status int, w http.ResponseWriter, r *http.Request)
@@ -127,6 +131,10 @@ type Service interface {
 
 	GetPublicAccess() (actions Actions)
 	FindAllUserActions() (list Actions)
+
+	NonceFactory
+	TokenFactory
+	SyncLockerFactory
 
 	Notify(tag string)
 	NotifyF(tag, format string, argv ...interface{})
@@ -230,7 +238,7 @@ type Internals interface {
 	GetServiceLoggers() []ServiceLogger
 	GetLocalesProviders() []LocalesProvider
 	GetPrepareServePagesFeatures() []PrepareServePagesFeature
-	GetFinalizeServePagesFeatures() []FinalizeServePagesFeature
+	GetFinalizeServePagesFeatures() []FinalizeServeRequestFeature
 	GetPageContextFieldsProviders() []PageContextFieldsProvider
 	GetPageContextParsersProviders() []PageContextParsersProvider
 	GetPanicHandler() PanicHandler
