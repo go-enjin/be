@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package editor
+package fs_editor
 
 import (
 	"net/http"
@@ -22,24 +22,24 @@ import (
 	beContext "github.com/go-enjin/be/pkg/context"
 	bePkgEditor "github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
+	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/types/site"
 	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 var (
 	_ feature.EditorFeature = (*CEditorFeature[feature.EditorMakeFeature[feature.EditorFeature]])(nil)
-	//_ feature.EditorMakeFeature[feature.EditorFeature] = (*CEditorFeature[feature.EditorMakeFeature[feature.EditorFeature]])(nil)
 )
 
 type CEditorFeature[MakeTypedFeature interface{}] struct {
-	feature.CFeature
-	signaling.CSignaling
+	site.CSiteFeature[MakeTypedFeature]
 
-	EditorName            string
+	EditorKey             string
 	EditorType            string
 	EditorTags            feature.Tags
 	EditingFileSystems    []feature.FileSystemFeature
@@ -58,15 +58,19 @@ type CEditorFeature[MakeTypedFeature interface{}] struct {
 	FileOperations map[string]*feature.EditorOperation
 }
 
+func (f *CEditorFeature[MakeTypedFeature]) Construct(this interface{}) {
+	f.CSiteFeature.Construct(this)
+	return
+}
+
 func (f *CEditorFeature[MakeTypedFeature]) Init(this interface{}) {
-	f.CFeature.Init(this)
-	f.CSignaling.InitSignaling()
+	f.CSiteFeature.Init(this)
 	f.EditorType = "unimplemented"
 	return
 }
 
 func (f *CEditorFeature[MakeTypedFeature]) SetEditorName(name string) MakeTypedFeature {
-	f.EditorName = name
+	f.EditorKey = name
 	typed, _ := f.This().(MakeTypedFeature)
 	return typed
 }
@@ -84,11 +88,11 @@ func (f *CEditorFeature[MakeTypedFeature]) SetEditingTags(tags ...feature.Tag) M
 }
 
 func (f *CEditorFeature[MakeTypedFeature]) Build(b feature.Buildable) (err error) {
-	if err = f.CFeature.Build(b); err != nil {
+	if err = f.CSiteFeature.Build(b); err != nil {
 		return
 	}
-	if f.EditorName == "" {
-		f.EditorName = f.Tag().Spaced()
+	if f.EditorKey == "" {
+		f.EditorKey = f.Tag().Spaced()
 	}
 	return
 }
@@ -104,39 +108,69 @@ func (f *CEditorFeature[MakeTypedFeature]) UserActions() (list feature.Actions) 
 	return
 }
 
+func (f *CEditorFeature[MakeTypedFeature]) SiteFeatureInfo(r *http.Request) (info *feature.CSiteFeatureInfo) {
+	printer := lang.GetPrinterFromRequest(r)
+	info = feature.NewSiteFeatureInfo(
+		f.Self().Tag().Kebab(),
+		f.SelfEditor().SiteFeatureKey(),
+		f.SelfEditor().SiteFeatureIcon(),
+		f.SelfEditor().SiteFeatureLabel(printer),
+	)
+	return
+}
+
+func (f *CEditorFeature[MakeTypedFeature]) SiteFeatureKey() (key string) {
+	key = f.GetEditorKey()
+	return
+}
+
+func (f *CEditorFeature[MakeTypedFeature]) SiteFeatureLabel(printer *message.Printer) (label string) {
+	label = beStrings.ToSpacedCamel(f.GetEditorKey())
+	return
+}
+
+func (f *CEditorFeature[MakeTypedFeature]) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
+	info := f.SiteFeatureInfo(r)
+	m = menu.Menu{
+		{
+			Text: info.Label,
+			Href: f.SelfEditor().GetEditorPath(),
+			Icon: info.Icon,
+		},
+	}
+	return
+}
+
 func (f *CEditorFeature[MakeTypedFeature]) SelfEditor() (self feature.EditorFeature) {
 	self, _ = f.This().(feature.EditorFeature)
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) GetEditorName() (name string) {
-	return f.EditorName
+func (f *CEditorFeature[MakeTypedFeature]) GetEditorKey() (name string) {
+	return f.EditorKey
 }
 
 func (f *CEditorFeature[MakeTypedFeature]) GetEditorPath() (path string) {
-	return f.Editor.SiteFeaturePath() + "/" + f.EditorName
+	return f.Editor.SiteFeaturePath() + "/" + f.EditorKey
 }
 
 func (f *CEditorFeature[MakeTypedFeature]) GetEditorMenu() (m menu.Menu) {
 	return nil
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) EditorMenu() (m menu.Menu) {
-	m = append(m, &menu.Item{
-		Text: f.GetEditorName(),
-		Href: f.GetEditorPath(),
-	})
+func (f *CEditorFeature[MakeTypedFeature]) EditorMenu(r *http.Request) (m menu.Menu) {
+	m = f.SiteFeatureMenu(r)
 	return
 }
 
 func (f *CEditorFeature[MakeTypedFeature]) SetupEditor(es feature.EditorSite) {
 	f.Editor = es
 
-	f.ViewBrowserAction = feature.NewAction(f.Editor.Tag().String(), "view", "file-browser")
-	f.ViewFileAction = feature.NewAction(f.Editor.Tag().String(), "view", "file-editor")
-	f.CreateFileAction = feature.NewAction(f.Editor.Tag().String(), "create", "file-editor")
-	f.UpdateFileAction = feature.NewAction(f.Editor.Tag().String(), "edit", "file-editor")
-	f.DeleteFileAction = feature.NewAction(f.Editor.Tag().String(), "delete", "file-editor")
+	f.ViewBrowserAction = f.Action("view", "file-browser")
+	f.ViewFileAction = f.Action("view", "file-editor")
+	f.CreateFileAction = f.Action("create", "file-editor")
+	f.UpdateFileAction = f.Action("edit", "file-editor")
+	f.DeleteFileAction = f.Action("delete", "file-editor")
 
 	f.DefaultOp = bePkgEditor.CancelActionKey
 	f.FileOperations = map[string]*feature.EditorOperation{
@@ -229,14 +263,14 @@ func (f *CEditorFeature[MakeTypedFeature]) SetupEditorRoute(r chi.Router) {
 	r.Get("/", f.SelfEditor().RenderFileBrowser)
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) PrepareEditPage(pageType, editorType string) (pg feature.Page, ctx beContext.Context, err error) {
-	pg, ctx, err = f.Editor.Site().PreparePage(f.Editor.BaseTag().Kebab(), pageType, editorType, f.Editor.SiteFeatureTheme())
+func (f *CEditorFeature[MakeTypedFeature]) PrepareEditPage(pageType, editorType string, r *http.Request) (pg feature.Page, ctx beContext.Context, err error) {
+	printer := lang.GetPrinterFromRequest(r)
+	pg, ctx, err = f.Editor.Site().PreparePage(f.Editor.BaseTag().Kebab(), pageType, editorType, f.Editor.SiteFeatureTheme(), r)
 
 	ctx.SetSpecific("EditorType", editorType)
-	ctx.SetSpecific("EditorPath", f.Editor.SiteFeaturePath())
+	ctx.SetSpecific("EditorFeatureKey", f.SelfEditor().GetEditorKey())
 	ctx.SetSpecific("EditorFeaturePath", f.SelfEditor().GetEditorPath())
-	ctx.SetSpecific("EditorName", f.Editor.Tag().String())
-	ctx.SetSpecific("EditorFeatureName", f.SelfEditor().GetEditorName())
+	ctx.SetSpecific("EditorFeatureLabel", f.SelfEditor().SiteFeatureLabel(printer))
 
 	fsids := map[string]string{}
 	for _, nfo := range f.SelfEditor().ListFileSystems() {
@@ -294,7 +328,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ParseCopyMoveTranslateForm(r *http.Re
 	} else if submit == bePkgEditor.TranslateActionKey {
 		param = bePkgEditor.TranslateActionKey
 	} else {
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`inconsistent operation requested`), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`inconsistent operation requested`))
 		stop = true
 		return
 	}
@@ -307,12 +341,12 @@ func (f *CEditorFeature[MakeTypedFeature]) ParseCopyMoveTranslateForm(r *http.Re
 		if stop = f.Emit(feature.FileNameRequiredSignal, f.Tag().String(), r, pg, ctx, form, info, eid, redirect); stop {
 			return
 		}
-		f.Editor.Site().PushWarnNotice(eid, printer.Sprintf(`a file name is required`), true)
+		f.Editor.Site().PushWarnNotice(eid, true, printer.Sprintf(`a file name is required`))
 		return
 	}
 
-	fsid = forms.KebabValue(fsid)
-	fileName = forms.KebabValue(fileName)
+	fsid = forms.StrictCleanKebabValue(fsid)
+	fileName = forms.StrictCleanKebabValue(fileName)
 	if filePath = forms.KebabRelativePath(filePath); filePath != "" {
 		fullPath = filePath + "/" + fileName
 	} else {
@@ -326,7 +360,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ParseCopyMoveTranslateForm(r *http.Re
 
 	if param == bePkgEditor.TranslateActionKey {
 		if t, err := language.Parse(code); err != nil {
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf(`invalid language code given`), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`invalid language code given`))
 			stop = true
 			return
 		} else {
@@ -338,7 +372,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ParseCopyMoveTranslateForm(r *http.Re
 
 	srcUri, dstUri = info.FSID+"://"+info.FilePath(), fsid+"://"+dstPath
 	if stop = srcUri == dstUri; stop {
-		f.Editor.Site().PushWarnNotice(eid, printer.Sprintf(`"%[1]s" and destination are the same, nothing to do!`, srcUri), true)
+		f.Editor.Site().PushWarnNotice(eid, true, printer.Sprintf(`"%[1]s" and destination are the same, nothing to do!`, srcUri))
 		return
 	}
 

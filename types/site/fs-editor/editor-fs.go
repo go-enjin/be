@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package editor
+package fs_editor
 
 import (
 	"fmt"
@@ -152,7 +152,7 @@ func (f *CEditorFeature[MakeTypedFeature]) RemoveDirectory(info *editor.File) (e
 }
 
 func (f *CEditorFeature[MakeTypedFeature]) PrepareEditableFile(r *http.Request, info *editor.File) (editFile *editor.File) {
-	eid := userbase.GetCurrentUserEID(r)
+	eid := userbase.GetCurrentEID(r)
 	printer := lang.GetPrinterFromRequest(r)
 
 	for _, mpf := range f.EditingFileSystems {
@@ -184,7 +184,7 @@ func (f *CEditorFeature[MakeTypedFeature]) PrepareEditableFile(r *http.Request, 
 }
 
 func (f *CEditorFeature[MakeTypedFeature]) UpdatePathInfo(info *editor.File, r *http.Request) {
-	//eid := userbase.GetCurrentUserEID(r)
+	//eid := userbase.GetCurrentEID(r)
 	//printer := lang.GetPrinterFromRequest(r)
 	//if !info.ReadOnly {
 	//	info.Actions = append(info.Actions, editor.MakeCreatePageAction(printer))
@@ -194,7 +194,7 @@ func (f *CEditorFeature[MakeTypedFeature]) UpdatePathInfo(info *editor.File, r *
 }
 
 func (f *CEditorFeature[MakeTypedFeature]) UpdateFileInfo(info *editor.File, r *http.Request) {
-	eid := userbase.GetCurrentUserEID(r)
+	eid := userbase.GetCurrentEID(r)
 	printer := lang.GetPrinterFromRequest(r)
 
 	info.HasDraft = f.SelfEditor().DraftExists(info)
@@ -429,7 +429,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ListFileSystemFiles(r *http.Request, 
 		return
 	}
 	isUnd := code == language.Und.String()
-	eid := userbase.GetCurrentUserEID(r)
+	eid := userbase.GetCurrentEID(r)
 	printer := lang.GetPrinterFromRequest(r)
 	dirsPath := editor.MakeLangCodePath(code, dirs)
 	for _, mpf := range f.EditingFileSystems {

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package editor
+package fs_editor
 
 import (
 	"net/http"
@@ -24,7 +24,6 @@ import (
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/forms/nonce"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
@@ -35,14 +34,14 @@ import (
 
 func (f *CEditorFeature[MakeTypedFeature]) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Request) (pg feature.Page, ctx context.Context, info *editor.File, currentUser string, handled bool) {
 
-	currentUser = userbase.GetCurrentUserEID(r)
+	currentUser = userbase.GetCurrentEID(r)
 	printer := lang.GetPrinterFromRequest(r)
 
 	var err error
 	var filePath string
 
 	fsid, code, file, locale := f.ParseEditorUrlParams(r)
-	if pg, ctx, err = f.SelfEditor().PrepareEditPage("file-editor", f.EditorType); err != nil {
+	if pg, ctx, err = f.SelfEditor().PrepareEditPage("file-editor", f.EditorType, r); err != nil {
 		log.ErrorRF(r, "error preparing %v editor page: %v", f.Tag(), err)
 		//f.Enjin.ServeNotFound(w, r)
 		f.RenderFileBrowser(w, r)
@@ -118,13 +117,13 @@ func (f *CEditorFeature[MakeTypedFeature]) PrepareRenderFileEditor(w http.Respon
 
 	} else if !f.EditAnyFileExtension && !path.HasAnyExt(file, f.EditingFileExtensions...) {
 		log.ErrorRF(r, "user trying to edit file with unsupported extension: %v - %+v", file, f.EditingFileExtensions)
-		f.Editor.Site().PushErrorNotice(currentUser, printer.Sprintf("Unsupported file type."), true)
+		f.Editor.Site().PushErrorNotice(currentUser, true, printer.Sprintf("Unsupported file type."))
 		f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditDirectoryPath(), w, r)
 		handled = true
 		return
 	} else if !f.Enjin.ValidateUserRequest(f.ViewFileAction, w, r) {
 		log.WarnRF(r, "user denied: %v", f.ViewFileAction)
-		f.Editor.Site().PushErrorNotice(currentUser, printer.Sprintf("Permission denied."), true)
+		f.Editor.Site().PushErrorNotice(currentUser, true, printer.Sprintf("Permission denied."))
 		f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditDirectoryPath(), w, r)
 		handled = true
 		return
@@ -138,7 +137,7 @@ func (f *CEditorFeature[MakeTypedFeature]) PrepareRenderFileEditor(w http.Respon
 		ctx.SetSpecific("EditFileLocked", eid)
 	} else if ee := f.LockEditorFile(currentUser, fsid, info.FilePath()); ee != nil {
 		info.ReadOnly = true
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error reading file: \"%[1]s\"", ee.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("error reading file: \"%[1]s\"", ee.Error()))
 	}
 
 	f.SelfEditor().UpdateFileInfoForEditing(info, r)
@@ -172,7 +171,7 @@ func (f *CEditorFeature[MakeTypedFeature]) RenderFileEditor(w http.ResponseWrite
 	if info.HasDraft {
 		if data, ee := f.SelfEditor().ReadDraft(info); ee != nil {
 			log.ErrorRF(r, "error reading draft: %v - %v", info.FilePath(), ee)
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error reading draft: \"%[1]s\"", ee.Error()), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("error reading draft: \"%[1]s\"", ee.Error()))
 			info.Actions = editor.Actions{}
 		} else {
 			body = string(data)
@@ -180,7 +179,7 @@ func (f *CEditorFeature[MakeTypedFeature]) RenderFileEditor(w http.ResponseWrite
 		}
 	} else if data, ee := f.SelfEditor().ReadFile(info); ee != nil {
 		log.ErrorRF(r, "error reading file: %v - %v", info.FilePath(), ee)
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("error reading file: \"%[1]s\"", ee.Error()), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("error reading file: \"%[1]s\"", ee.Error()))
 		info.Actions = editor.Actions{}
 	} else {
 		body = string(data)
@@ -213,8 +212,8 @@ func (f *CEditorFeature[MakeTypedFeature]) ReceiveFileEditorChanges(w http.Respo
 
 	nonceValue := r.PostFormValue("nonce")
 	nonceValue = forms.StrictSanitize(nonceValue)
-	if !nonce.Validate("file-editor-form", nonceValue) {
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("Form expired before submitting, please try again."), true)
+	if !f.Enjin.VerifyNonce("file-editor-form", nonceValue) {
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("Form expired before submitting, please try again."))
 		f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditFilePath(), w, r)
 		return
 	}
@@ -249,20 +248,20 @@ func (f *CEditorFeature[MakeTypedFeature]) ReceiveFileEditorChanges(w http.Respo
 	if op, ok := f.FileOperations[action]; ok {
 		if !f.Enjin.ValidateUserRequest(op.Action, w, r) {
 			log.WarnRF(r, "user denied: %v", op.Action)
-			f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("Permission to perform the operation has been denied."), true)
+			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("Permission to perform the operation has been denied."))
 			f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditFilePath(), w, r)
 			return
 		}
 		if op.Confirm != "" {
 			if _, confirmed := formCtx[op.Confirm]; !confirmed {
-				f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("Unconfirmed operation, please confirm before submitting changes."), true)
+				f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("Unconfirmed operation, please confirm before submitting changes."))
 				f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditFilePath(), w, r)
 				return
 			}
 		}
 		if op.Validate != nil {
 			if err = op.Validate(r, pg, ctx, formCtx, info, eid); err != nil {
-				f.Editor.Site().PushErrorNotice(eid, err.Error(), true)
+				f.Editor.Site().PushErrorNotice(eid, true, err.Error())
 				f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditFilePath(), w, r)
 				return
 			}
@@ -274,7 +273,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ReceiveFileEditorChanges(w http.Respo
 			}
 		}
 	} else {
-		f.Editor.Site().PushErrorNotice(eid, printer.Sprintf("Unknown operation, please try again."), true)
+		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("Unknown operation, please try again."))
 	}
 
 	if v, ok := formCtx["return"].(string); ok {
