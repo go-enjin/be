@@ -92,6 +92,7 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		fm["_"] = f.makeUnderscore(ctx)
 		fm["__"] = f.makeUnderscoreUnderscore(ctx)
 		fm["_tag"] = f.makeUnderscoreTag(ctx)
+		fm["__tag"] = f.makeUnderscoreUnderscoreTag(ctx)
 		fm["_txs"] = f.makeTranslations(ctx)
 	}
 	return
@@ -221,6 +222,13 @@ func (f *CFeature) makeUnderscoreTag(ctx beContext.Context) interface{} {
 		if name, ok = f.Enjin.SiteLanguageDisplayName(tag); !ok {
 			name = display.Tags(tag).Name(tag)
 		}
+		return
+	}
+}
+
+func (f *CFeature) makeUnderscoreUnderscoreTag(ctx beContext.Context) interface{} {
+	return func(tx, tag language.Tag) (name string) {
+		name = display.Tags(tx).Name(tag)
 		return
 	}
 }
