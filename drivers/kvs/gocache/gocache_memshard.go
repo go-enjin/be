@@ -24,6 +24,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 )
 
 var (
@@ -60,9 +61,15 @@ func newMemShardCache() (cache *cMemShardCache) {
 	return
 }
 
+func (c *cMemShardCache) ListBuckets() (names []string) {
+	names = maps.SortedKeys(c.buckets)
+	return
+}
+
 func (c *cMemShardCache) MustBucket(name string) (kvs feature.KeyValueStore) {
 	if v, err := c.Bucket(name); err != nil {
-		log.FatalDF(1, "error getting required bucket \"%v\": - %v", name, err)
+		log.ErrorDF(1, "error getting required bucket \"%v\": - %v", name, err)
+		panic(err)
 	} else {
 		kvs = v
 	}

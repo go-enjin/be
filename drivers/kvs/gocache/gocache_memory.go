@@ -19,6 +19,7 @@ package gocache
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/patrickmn/go-cache"
 
@@ -27,16 +28,22 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 )
 
 type MemorySupport interface {
 	AddMemoryCache(name string, buckets ...string) MakeFeature
+	AddExpiringMemoryCache(name string, duration, interval time.Duration, buckets ...string) MakeFeature
 }
 
 func (f *CFeature) AddMemoryCache(name string, buckets ...string) MakeFeature {
+	return f.AddExpiringMemoryCache(name, cache.NoExpiration, cache.NoExpiration, buckets...)
+}
+
+func (f *CFeature) AddExpiringMemoryCache(name string, expiration, interval time.Duration, buckets ...string) MakeFeature {
 	f.Lock()
 	defer f.Unlock()
-	f.caches[name] = newLocalCache()
+	f.caches[name] = newLocalCache(expiration, interval)
 	for _, bucket := range buckets {
 		if _, err := f.caches[name].AddBucket(bucket); err != nil {
 			log.FatalDF(1, "error adding bucket to cache: %v - %v", name, bucket)
@@ -48,20 +55,30 @@ func (f *CFeature) AddMemoryCache(name string, buckets ...string) MakeFeature {
 var _ feature.KeyValueCache = (*cLocalCache)(nil)
 
 type cLocalCache struct {
-	buckets map[string]*cLocalStore
+	buckets    map[string]*cLocalStore
+	interval   time.Duration
+	expiration time.Duration
 	sync.RWMutex
 }
 
-func newLocalCache() (cache *cLocalCache) {
+func newLocalCache(expiration, interval time.Duration) (cache *cLocalCache) {
 	cache = &cLocalCache{
-		buckets: make(map[string]*cLocalStore),
+		buckets:    make(map[string]*cLocalStore),
+		interval:   interval,
+		expiration: expiration,
 	}
+	return
+}
+
+func (c *cLocalCache) ListBuckets() (names []string) {
+	names = maps.SortedKeys(c.buckets)
 	return
 }
 
 func (c *cLocalCache) MustBucket(name string) (kvs feature.KeyValueStore) {
 	if v, err := c.Bucket(name); err != nil {
-		log.FatalDF(1, "error getting required bucket \"%v\": - %v", name, err)
+		log.ErrorDF(1, "error getting required bucket \"%v\": - %v", name, err)
+		panic(err)
 	} else {
 		kvs = v
 	}

@@ -20,12 +20,15 @@ import (
 	"fmt"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/erni27/imcache"
+	"github.com/patrickmn/go-cache"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/gob"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 )
 
 var IMCacheShardCount = 50
@@ -35,9 +38,13 @@ type IMCacheSupport interface {
 }
 
 func (f *CFeature) AddIMCacheCache(name string, buckets ...string) MakeFeature {
+	return f.AddExpiringIMCacheCache(name, cache.NoExpiration, cache.NoExpiration, buckets...)
+}
+
+func (f *CFeature) AddExpiringIMCacheCache(name string, expiration, interval time.Duration, buckets ...string) MakeFeature {
 	f.Lock()
 	defer f.Unlock()
-	f.caches[name] = newIMCacheCache()
+	f.caches[name] = newIMCacheCache(expiration, interval)
 	for _, bucket := range buckets {
 		if _, err := f.caches[name].AddBucket(bucket); err != nil {
 			log.FatalDF(1, "error adding bucket to cache: %v - %v", name, bucket)
@@ -49,20 +56,30 @@ func (f *CFeature) AddIMCacheCache(name string, buckets ...string) MakeFeature {
 var _ feature.KeyValueCache = (*cIMCacheCache)(nil)
 
 type cIMCacheCache struct {
-	buckets map[string]*cIMCacheStore
+	buckets    map[string]*cIMCacheStore
+	expiration time.Duration
+	interval   time.Duration
 	sync.RWMutex
 }
 
-func newIMCacheCache() (cache *cIMCacheCache) {
+func newIMCacheCache(expiration, interval time.Duration) (cache *cIMCacheCache) {
 	cache = &cIMCacheCache{
-		buckets: make(map[string]*cIMCacheStore),
+		expiration: expiration,
+		interval:   interval,
+		buckets:    make(map[string]*cIMCacheStore),
 	}
+	return
+}
+
+func (c *cIMCacheCache) ListBuckets() (names []string) {
+	names = maps.SortedKeys(c.buckets)
 	return
 }
 
 func (c *cIMCacheCache) MustBucket(name string) (kvs feature.KeyValueStore) {
 	if v, err := c.Bucket(name); err != nil {
-		log.FatalDF(1, "error getting required bucket \"%v\": - %v", name, err)
+		log.ErrorDF(1, "error getting required bucket \"%v\": - %v", name, err)
+		panic(err)
 	} else {
 		kvs = v
 	}
@@ -85,7 +102,7 @@ func (c *cIMCacheCache) AddBucket(name string) (kvs feature.KeyValueStore, err e
 		err = BucketExists
 		return
 	}
-	c.buckets[name] = newIMCacheBucket()
+	c.buckets[name] = newIMCacheBucket(c.expiration, c.interval)
 	kvs = c.buckets[name]
 	return
 }
@@ -108,15 +125,30 @@ func (c *cIMCacheCache) GetBucketSource(name string) (src interface{}) {
 var _ feature.KeyValueStore = (*cIMCacheStore)(nil)
 
 type cIMCacheStore struct {
-	//cache imcache.Cache[string, []byte]
 	cache *imcache.Sharded[string, []byte]
+
+	expiration time.Duration
+	interval   time.Duration
 
 	sync.RWMutex
 }
 
-func newIMCacheBucket() (store *cIMCacheStore) {
+func newIMCacheBucket(expiration, interval time.Duration) (store *cIMCacheStore) {
+	var options []imcache.Option[string, []byte]
+	if expiration > 1 {
+		options = append(options, imcache.WithDefaultExpirationOption[string, []byte](expiration))
+	}
+	if interval > 1 {
+		options = append(options, imcache.WithCleanerOption[string, []byte](interval))
+	}
 	store = &cIMCacheStore{
-		cache: imcache.NewSharded[string, []byte](IMCacheShardCount, imcache.DefaultStringHasher64{}),
+		expiration: expiration,
+		interval:   interval,
+		cache: imcache.NewSharded[string, []byte](
+			IMCacheShardCount,
+			imcache.DefaultStringHasher64{},
+			options...,
+		),
 	}
 	return
 }

@@ -20,26 +20,33 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/allegro/bigcache/v3"
-
 	gocache "github.com/eko/gocache/lib/v4/cache"
 	store_go_cache "github.com/eko/gocache/store/bigcache/v4"
+	"github.com/patrickmn/go-cache"
 
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/gob"
+	"github.com/go-enjin/be/pkg/maps"
 
-	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
 )
 
 type BigCacheSupport interface {
 	AddBigCache(name string, buckets ...string) MakeFeature
+	AddExpiringBigCache(name string, lifeWindow, cleanWindow time.Duration, buckets ...string) MakeFeature
 }
 
 func (f *CFeature) AddBigCache(name string, buckets ...string) MakeFeature {
+	return f.AddExpiringBigCache(name, cache.NoExpiration, cache.NoExpiration, buckets...)
+}
+
+func (f *CFeature) AddExpiringBigCache(name string, lifeWindow, cleanWindow time.Duration, buckets ...string) MakeFeature {
 	f.Lock()
 	defer f.Unlock()
-	f.caches[name] = newBigCache()
+	f.caches[name] = newBigCache(lifeWindow, cleanWindow)
 	for _, bucket := range buckets {
 		if _, err := f.caches[name].AddBucket(bucket); err != nil {
 			log.FatalDF(1, "error adding bucket to cache: %v - %v", name, bucket)
@@ -51,20 +58,30 @@ func (f *CFeature) AddBigCache(name string, buckets ...string) MakeFeature {
 var _ feature.KeyValueCache = (*cBigCache)(nil)
 
 type cBigCache struct {
-	buckets map[string]*cBigCacheStore
+	buckets     map[string]*cBigCacheStore
+	lifeWindow  time.Duration
+	cleanWindow time.Duration
 	sync.RWMutex
 }
 
-func newBigCache() (cache *cBigCache) {
+func newBigCache(lifeWindow, cleanWindow time.Duration) (cache *cBigCache) {
 	cache = &cBigCache{
-		buckets: make(map[string]*cBigCacheStore),
+		lifeWindow:  lifeWindow,
+		cleanWindow: cleanWindow,
+		buckets:     make(map[string]*cBigCacheStore),
 	}
+	return
+}
+
+func (c *cBigCache) ListBuckets() (names []string) {
+	names = maps.SortedKeys(c.buckets)
 	return
 }
 
 func (c *cBigCache) MustBucket(name string) (kvs feature.KeyValueStore) {
 	if v, err := c.Bucket(name); err != nil {
-		log.FatalDF(1, "error getting required bucket \"%v\": - %v", name, err)
+		log.ErrorDF(1, "error getting required bucket \"%v\": - %v", name, err)
+		panic(err)
 	} else {
 		kvs = v
 	}

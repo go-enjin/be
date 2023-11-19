@@ -26,6 +26,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/gob"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 )
 
 type RistrettoSupport interface {
@@ -58,9 +59,15 @@ func newRistrettoCache() (cache *cRistrettoCache) {
 	return
 }
 
+func (c *cRistrettoCache) ListBuckets() (names []string) {
+	names = maps.SortedKeys(c.buckets)
+	return
+}
+
 func (c *cRistrettoCache) MustBucket(name string) (kvs feature.KeyValueStore) {
 	if v, err := c.Bucket(name); err != nil {
-		log.FatalDF(1, "error getting required bucket \"%v\": - %v", name, err)
+		log.ErrorDF(1, "error getting required bucket \"%v\": - %v", name, err)
+		panic(err)
 	} else {
 		kvs = v
 	}
