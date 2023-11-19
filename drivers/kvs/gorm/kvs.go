@@ -25,7 +25,6 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/gob"
-	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -38,7 +37,7 @@ var (
 
 type Feature interface {
 	feature.Feature
-	kvs.KeyValueStoreAny
+	feature.KeyValueStoreAny
 }
 
 type MakeFeature interface {
