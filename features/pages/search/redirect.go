@@ -24,7 +24,6 @@ import (
 	"golang.org/x/net/html"
 
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/forms/nonce"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 )
@@ -44,7 +43,7 @@ func (f *CFeature) handleQueryRedirect(r *http.Request) (redirect string, err er
 				value = vv
 			}
 			value = forms.Sanitize(value)
-			if nonce.Validate("site-search-form", value) {
+			if f.Enjin.VerifyNonce("site-search-form", value) {
 				foundNonce = true
 			} else {
 				err = fmt.Errorf(printer.Sprintf("search form expired"))
