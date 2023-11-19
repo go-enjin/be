@@ -18,12 +18,13 @@ import (
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/serve"
+	"github.com/go-enjin/be/pkg/request"
 )
 
 const (
-	PolicyTag           beContext.RequestKey = "content-security-policy"
-	ReportNonceTag      beContext.RequestKey = "content-security-policy-report-nonce"
-	RequestNonceDataTag beContext.RequestKey = "content-security-policy-request-nonce-data"
+	PolicyTag           request.Key = "content-security-policy"
+	ReportNonceTag      request.Key = "content-security-policy-report-nonce"
+	RequestNonceDataTag request.Key = "content-security-policy-request-nonce-data"
 )
 
 const (

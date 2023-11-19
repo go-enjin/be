@@ -18,13 +18,13 @@ import (
 	"context"
 	"net/http"
 
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/lang"
+	"github.com/go-enjin/be/pkg/request"
 )
 
 const (
-	ServeStatusResponseKey beContext.RequestKey = "ServeStatusResponse"
-	CacheControlKey        beContext.RequestKey = "Cache-Control"
+	ServeStatusResponseKey request.Key = "ServeStatusResponse"
+	CacheControlKey        request.Key = "Cache-Control"
 )
 
 func StatusHasBody(status int) (allowed bool) {
