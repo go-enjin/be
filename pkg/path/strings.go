@@ -27,23 +27,20 @@ var (
 
 func CleanWithSlash(path string) (clean string) {
 	var lead string
-	if strings.HasPrefix(path, "!") {
+	if lead = "/"; strings.HasPrefix(path, "!") {
 		lead = "!"
-	} else {
-		lead = "/"
 	}
-	clean = RxTrimCuts.ReplaceAllString(path, "$1")
-	clean = filepath.Clean(clean)
-	if clean == "." || clean == lead {
-		clean = ""
+	trimmed := RxTrimCuts.ReplaceAllString(path, "$1")
+	cleaned := filepath.Clean(trimmed)
+	if cleaned == "." || cleaned == lead {
+		cleaned = ""
 	}
-	clean = lead + clean
+	clean = lead + cleaned
 	return
 }
 
 func CleanWithSlashes(path string) (clean string) {
-	clean = CleanWithSlash(path)
-	if clean != "/" {
+	if clean = CleanWithSlash(path); clean != "/" {
 		clean += "/"
 	}
 	return
