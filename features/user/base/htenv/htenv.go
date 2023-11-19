@@ -22,6 +22,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
+	site_environ "github.com/go-enjin/be/pkg/feature/site-environ"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/types/users"
@@ -47,6 +48,8 @@ type MakeFeature interface {
 
 type CFeature struct {
 	feature.CFeature
+
+	env *site_environ.CSiteEnviron[MakeFeature]
 
 	users  map[string]*users.AuthUser
 	hashes map[string]string
@@ -80,6 +83,10 @@ func (f *CFeature) UsageNotes() (notes []string) {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+	f.env = site_environ.New[MakeFeature](this,
+		"user", "bcrypt-password-hash",
+		"group", "space separated usernames",
+	)
 	f.users = make(map[string]*users.AuthUser)
 	f.hashes = make(map[string]string)
 	f.groups = make(map[feature.Group][]string)
@@ -99,6 +106,8 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CFeature.Startup(ctx); err != nil {
+		return
+	} else if err = f.env.StartupSiteEnviron(); err != nil {
 		return
 	}
 	err = f.loadEnvironment()

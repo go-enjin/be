@@ -17,80 +17,43 @@
 package htenv
 
 import (
-	"os"
 	"strings"
 
 	"github.com/iancoleman/strcase"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/types/users"
 )
 
 func (f *CFeature) loadEnvironment() (err error) {
-	environ := os.Environ()
 
-	var loadedUsers []string
-	for _, env := range environ {
-		if parts := strings.SplitN(env, "=", 2); len(parts) == 2 {
-			if name, hash, ok := f.parseEnvUser(parts[0], parts[1]); ok {
-				f.hashes[name] = hash
-				f.users[name] = users.NewAuthUser(name, name, "", "", beContext.Context{})
-				log.DebugF("including user: %v=%v", name, f.hashes[name])
-				loadedUsers = append(loadedUsers, name)
+	if named, ok := f.env.GetSiteEnviron("user"); ok {
+		for name, hash := range named {
+			f.hashes[name] = hash
+			f.users[name] = users.NewAuthUser(f.Tag().String()+"--"+name, name, "", "", beContext.Context{})
+		}
+	}
+
+	if named, ok := f.env.GetSiteEnviron("group"); ok {
+		for groupName, userList := range named {
+			group := feature.Group(groupName)
+			for _, username := range strings.Split(userList, " ") {
+				if username = strcase.ToKebab(username); username != "" {
+					if !slices.Within(username, f.groups[group]) {
+						f.groups[group] = append(f.groups[group], username)
+					}
+				}
 			}
 		}
 	}
 
-	var loadedGroups feature.Groups
-	for _, env := range environ {
-		if parts := strings.SplitN(env, "=", 2); len(parts) == 2 {
-			if name, users, ok := f.parseEnvGroup(parts[0], parts[1]); ok {
-				f.groups[name] = append(f.groups[name], users...)
-				loadedGroups = append(loadedGroups, name)
-			}
-		}
-	}
-
-	log.DebugF("found %d env users: %v", len(loadedUsers), loadedUsers)
-	log.DebugF("found %d env groups: %v", len(loadedGroups), loadedGroups)
-	return
-}
-
-func (f *CFeature) parseEnvUser(key, value string) (name, password string, ok bool) {
-	prefix := globals.MakeFlagEnvKey(f.Tag().String(), "USER") + "_"
-	prefix = strcase.ToKebab(prefix)
-	prefixLen := len(prefix)
-	name = strcase.ToKebab(key)
-	if ln := len(name); prefixLen < ln {
-		if name[0:prefixLen] == prefix {
-			name = name[prefixLen:]
-			password = value
-			ok = true
-			// log.DebugF("user: %v, pass: %v", name, password)
-		}
-	}
-	return
-}
-
-func (f *CFeature) parseEnvGroup(key, value string) (group feature.Group, users []string, ok bool) {
-	prefix := globals.MakeFlagEnvKey(f.Tag().String(), "GROUP") + "_"
-	prefix = strcase.ToKebab(prefix)
-	name := strcase.ToKebab(key)
-	if strings.HasPrefix(name, prefix) {
-		name = strings.TrimPrefix(name, prefix)
-		group = feature.NewGroup(name)
-		for _, user := range strings.Split(value, " ") {
-			user = strcase.ToKebab(user)
-			if !slices.Present(user, users...) {
-				users = append(users, user)
-			}
-		}
-		ok = len(users) > 0
-		// log.DebugF("group: %v, users: %v", name, users)
-	}
+	usernames := maps.SortedKeys(f.users)
+	groupNames := maps.SortedKeys(f.groups)
+	log.DebugDF(1, "found %d env users: %v", len(usernames), usernames)
+	log.DebugDF(1, "found %d env groups: %v", len(groupNames), groupNames)
 	return
 }
