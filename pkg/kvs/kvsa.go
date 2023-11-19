@@ -14,11 +14,15 @@
 
 package kvs
 
+import (
+	"github.com/go-enjin/be/pkg/feature"
+)
+
 type cKVSA struct {
-	kvs KeyValueStore
+	kvs feature.KeyValueStore
 }
 
-func NewKVSA(kvs KeyValueStore) (kvsa KeyValueStoreAny) {
+func NewKVSA(kvs feature.KeyValueStore) (kvsa feature.KeyValueStoreAny) {
 	kvsa = &cKVSA{
 		kvs: kvs,
 	}

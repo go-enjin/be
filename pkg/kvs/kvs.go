@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/gob"
 )
 
@@ -35,7 +36,7 @@ type Variables interface {
 	Numbers | Contents
 }
 
-func GetSlice[T Variables](store KeyValueStore, key interface{}) (values []T, err error) {
+func GetSlice[T Variables](store feature.KeyValueStore, key interface{}) (values []T, err error) {
 	var v interface{}
 	if v, err = store.Get(key); err != nil {
 		return
@@ -47,7 +48,7 @@ func GetSlice[T Variables](store KeyValueStore, key interface{}) (values []T, er
 	return
 }
 
-func RemoveFromSlice[T Variables](store KeyValueStore, key interface{}, values ...T) (err error) {
+func RemoveFromSlice[T Variables](store feature.KeyValueStore, key interface{}, values ...T) (err error) {
 	var list []T
 	lookup := make(map[T]bool)
 	for _, value := range values {
@@ -66,12 +67,12 @@ func RemoveFromSlice[T Variables](store KeyValueStore, key interface{}, values .
 	return
 }
 
-func SetSlice[T Variables](store KeyValueStore, key interface{}, values []T) (err error) {
+func SetSlice[T Variables](store feature.KeyValueStore, key interface{}, values []T) (err error) {
 	err = store.Set(key, values)
 	return
 }
 
-func AppendToSlice[T Variables](store KeyValueStore, key interface{}, values ...T) (err error) {
+func AppendToSlice[T Variables](store feature.KeyValueStore, key interface{}, values ...T) (err error) {
 	var list []T
 	if v, e := store.Get(key); e == nil {
 		list, _ = v.([]T)
@@ -80,7 +81,7 @@ func AppendToSlice[T Variables](store KeyValueStore, key interface{}, values ...
 	return
 }
 
-func StringSliceEmpty(store KeyValueStore, key interface{}) (empty bool) {
+func StringSliceEmpty(store feature.KeyValueStore, key interface{}) (empty bool) {
 	var err error
 	var v interface{}
 	if v, err = store.Get(key); err != nil {
@@ -91,7 +92,7 @@ func StringSliceEmpty(store KeyValueStore, key interface{}) (empty bool) {
 	return
 }
 
-func GetStringSlice(store KeyValueStore, key interface{}) (values []string, err error) {
+func GetStringSlice(store feature.KeyValueStore, key interface{}) (values []string, err error) {
 	var v interface{}
 	if v, err = store.Get(key); err != nil {
 		return
@@ -104,7 +105,7 @@ func GetStringSlice(store KeyValueStore, key interface{}) (values []string, err 
 	return
 }
 
-func AppendToStringSlice(store KeyValueStore, key interface{}, values ...string) (err error) {
+func AppendToStringSlice(store feature.KeyValueStore, key interface{}, values ...string) (err error) {
 	var list string
 	if v, e := store.Get(key); e == nil {
 		list, _ = v.(string)
@@ -120,7 +121,7 @@ func AppendToStringSlice(store KeyValueStore, key interface{}, values ...string)
 	return
 }
 
-func GetValue[T interface{}](store KeyValueStore, key interface{}) (value T) {
+func GetValue[T interface{}](store feature.KeyValueStore, key interface{}) (value T) {
 	if v, e := store.Get(key); e == nil {
 		if vt, ok := v.(T); ok {
 			value = vt
@@ -129,7 +130,7 @@ func GetValue[T interface{}](store KeyValueStore, key interface{}) (value T) {
 	return
 }
 
-func AddToNumber[T Numbers](store KeyValueStore, key interface{}, increment T) (updated T, err error) {
+func AddToNumber[T maths.Number](store feature.KeyValueStore, key interface{}, increment T) (updated T, err error) {
 	if v, e := store.Get(key); e == nil {
 		if vt, ok := v.(T); ok {
 			updated = vt + increment
@@ -147,7 +148,7 @@ func MakeFlatListKey(key string, suffixes ...string) (name string) {
 	return
 }
 
-func GetFlatList[T interface{}](store KeyValueStore, key string) (values []T) {
+func GetFlatList[T interface{}](store feature.KeyValueStore, key string) (values []T) {
 	endKey := MakeFlatListKey(key, "end")
 	endIdx := GetValue[uint64](store, endKey)
 
@@ -186,18 +187,18 @@ func DecodeValue[T interface{}](encoded string) (value T, err error) {
 	return
 }
 
-func FlatListEmpty(store KeyValueStore, key string) (empty bool) {
+func FlatListEmpty(store feature.KeyValueStore, key string) (empty bool) {
 	empty = CountFlatList(store, key) == 0
 	return
 }
 
-func CountFlatList(store KeyValueStore, key string) (count uint64) {
+func CountFlatList(store feature.KeyValueStore, key string) (count uint64) {
 	endKey := MakeFlatListKey(key, "end")
 	count = GetValue[uint64](store, endKey)
 	return
 }
 
-func CountFlatListValues[T comparable](store KeyValueStore, key string) (counts map[T]uint64) {
+func CountFlatListValues[T comparable](store feature.KeyValueStore, key string) (counts map[T]uint64) {
 	counts = make(map[T]uint64)
 	for v := range YieldFlatList[interface{}](store, key) {
 		if value, ok := v.(T); ok {
@@ -213,7 +214,7 @@ func CountFlatListValues[T comparable](store KeyValueStore, key string) (counts 
 	return
 }
 
-func CountDistinctFlatListValues[T comparable](store KeyValueStore, key string) (count uint64) {
+func CountDistinctFlatListValues[T comparable](store feature.KeyValueStore, key string) (count uint64) {
 	track := make(map[T]struct{})
 	for v := range YieldFlatList[interface{}](store, key) {
 		if value, ok := v.(T); ok {
@@ -230,9 +231,9 @@ func CountDistinctFlatListValues[T comparable](store KeyValueStore, key string) 
 	return
 }
 
-func YieldFlatList[T interface{}](store KeyValueStore, key string) (yield chan T) {
+func YieldFlatList[T interface{}](store feature.KeyValueStore, key string) (yield chan T) {
 	yield = make(chan T)
-	go func(store KeyValueStore, key string, yield chan T) {
+	go func(store feature.KeyValueStore, key string, yield chan T) {
 		defer close(yield)
 		endKey := MakeFlatListKey(key, "end")
 		endIdx := GetValue[uint64](store, endKey)
@@ -256,7 +257,7 @@ func YieldFlatList[T interface{}](store KeyValueStore, key string) (yield chan T
 	return
 }
 
-func AppendToFlatList[T comparable](store KeyValueStore, key string, value T) (err error) {
+func AppendToFlatList[T comparable](store feature.KeyValueStore, key string, value T) (err error) {
 	endKey := MakeFlatListKey(key, "end")
 	endIndex := GetValue[uint64](store, endKey)
 	freeKey := MakeFlatListKey(key, "free")
@@ -286,7 +287,7 @@ func AppendToFlatList[T comparable](store KeyValueStore, key string, value T) (e
 
 // TODO: figure out how to shrink kvs flat lists
 
-func RemoveFromFlatList[T comparable](store KeyValueStore, key string, value T) (err error) {
+func RemoveFromFlatList[T comparable](store feature.KeyValueStore, key string, value T) (err error) {
 	endKey := MakeFlatListKey(key, "end")
 	endIndex := GetValue[uint64](store, endKey)
 	freeKey := MakeFlatListKey(key, "free")
