@@ -29,20 +29,20 @@ import (
 )
 
 type EditorFeature interface {
-	Feature
+	SiteFeature
 	signaling.Signaling
 	UserActionsProvider
 
 	SelfEditor() (self EditorFeature)
 	SetupEditor(editor EditorSite)
 	SetupEditorRoute(r chi.Router)
-	EditorMenu() (m menu.Menu)
+	EditorMenu(r *http.Request) (m menu.Menu)
 
-	GetEditorName() (name string)
+	GetEditorKey() (name string)
 	GetEditorPath() (path string)
 	GetEditorMenu() (m menu.Menu)
 
-	PrepareEditPage(pageType, editorType string) (pg Page, ctx beContext.Context, err error)
+	PrepareEditPage(pageType, editorType string, r *http.Request) (pg Page, ctx beContext.Context, err error)
 	ParseEditorUrlParams(r *http.Request) (fsid, code, file string, locale *language.Tag)
 	ServePreparedEditPage(pg Page, ctx beContext.Context, w http.ResponseWriter, r *http.Request)
 
@@ -100,6 +100,8 @@ type EditorFeature interface {
 }
 
 type EditorMakeFeature[MakeTypedFeature interface{}] interface {
+	SiteMakeFeature[MakeTypedFeature]
+
 	SetEditorName(name string) MakeTypedFeature
 	SetEditorType(editorType string) MakeTypedFeature
 	SetEditingTags(tags ...Tag) MakeTypedFeature
