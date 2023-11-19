@@ -32,6 +32,7 @@ type CLogger struct {
 	w      http.ResponseWriter
 	size   int
 	status int
+	wrote  bool
 }
 
 func NewLogger(w http.ResponseWriter) (logger feature.ServiceResponseLogger, writer http.ResponseWriter) {
@@ -66,8 +67,13 @@ func (l *CLogger) Write(b []byte) (int, error) {
 }
 
 func (l *CLogger) WriteHeader(s int) {
-	l.w.WriteHeader(s)
+	if l.wrote {
+		//log.WarnF("superfluous WriteHeader call")
+		return
+	}
+	l.wrote = true
 	l.status = s
+	l.w.WriteHeader(s)
 }
 
 func (l *CLogger) Hijack() (net.Conn, *bufio.ReadWriter, error) {
