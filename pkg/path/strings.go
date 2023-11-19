@@ -179,10 +179,44 @@ func TrimTrailingSlash(path string) (out string) {
 	return
 }
 
-func TopDirectory(path string) (dirName string) {
+func TopDirectory(path string) (name string) {
 	trimmed := TrimSlashes(path)
-	if before, _, _ := strings.Cut(trimmed, "/"); path != before {
-		dirName = before
+	if before, _, _ := strings.Cut(trimmed, "/"); trimmed != before {
+		name = before
+	}
+	return
+}
+
+func TopPathName(path string) (name string) {
+	trimmed := TrimSlashes(path)
+	if before, _, _ := strings.Cut(trimmed, "/"); trimmed != before {
+		name = before
+	} else {
+		name = trimmed
+	}
+	return
+}
+
+func MatchExact(path, prefix string) (match bool) {
+	if path = CleanWithSlash(path); path != "" {
+		if prefix = CleanWithSlash(prefix); prefix != "" {
+			if match = path == prefix; match {
+				return
+			}
+		}
+	}
+	return
+}
+
+func MatchCut(path, prefix string) (suffix string, match bool) {
+	if path = CleanWithSlash(path); path != "" {
+		if prefix = CleanWithSlash(prefix); prefix != "" {
+			if match = path == prefix; match {
+				return
+			} else if match = strings.HasPrefix(path, prefix+"/"); match {
+				suffix = path[len(prefix):]
+			}
+		}
 	}
 	return
 }
