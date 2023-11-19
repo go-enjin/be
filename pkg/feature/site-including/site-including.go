@@ -12,46 +12,56 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package feature
+package site_including
 
-type SiteIncludingMakeFeature[M interface{}] interface {
-	Include(features ...Feature) M
-	Including(tags ...Tag) M
+import (
+	"github.com/go-enjin/be/pkg/feature"
+)
+
+type MakeFeature[M interface{}] interface {
+	Include(features ...feature.Feature) M
+	Including(tags ...feature.Tag) M
 }
 
 type CSiteIncluding[T interface{}, M interface{}] struct {
-	IncludeFeatures   Features
-	IncludingFeatures Tags
-	Features          TypedFeatures[T]
+	IncludeFeatures   feature.Features
+	IncludingFeatures feature.Tags
+	Features          feature.TypedFeatures[T]
 
-	_siteIncludingThis interface{}
+	this interface{}
 }
 
-func (si *CSiteIncluding[T, M]) InitSiteIncluding(this interface{}) {
-	si._siteIncludingThis = this
+func New[T interface{}, M interface{}](this interface{}) (si *CSiteIncluding[T, M]) {
+	si = &CSiteIncluding[T, M]{}
+	si.InitSiteIncluding(this)
 	return
 }
 
-func (si *CSiteIncluding[T, M]) Include(features ...Feature) M {
+func (si *CSiteIncluding[T, M]) InitSiteIncluding(this interface{}) {
+	si.this = this
+	return
+}
+
+func (si *CSiteIncluding[T, M]) Include(features ...feature.Feature) M {
 	si.IncludeFeatures = append(si.IncludeFeatures, features...)
-	t, _ := si._siteIncludingThis.(M)
+	t, _ := si.this.(M)
 	return t
 }
 
-func (si *CSiteIncluding[T, M]) Including(tags ...Tag) M {
+func (si *CSiteIncluding[T, M]) Including(tags ...feature.Tag) M {
 	si.IncludingFeatures = append(si.IncludingFeatures, tags...)
-	t, _ := si._siteIncludingThis.(M)
+	t, _ := si.this.(M)
 	return t
 }
 
-func (si *CSiteIncluding[T, M]) BuildSiteIncluding(b Buildable) {
+func (si *CSiteIncluding[T, M]) BuildSiteIncluding(b feature.Buildable) {
 	for _, ef := range si.IncludeFeatures {
 		b.AddFeature(ef)
 	}
 	return
 }
 
-func (si *CSiteIncluding[T, M]) StartupSiteIncluding(enjin Internals) {
+func (si *CSiteIncluding[T, M]) StartupSiteIncluding(enjin feature.Internals) {
 
 	for _, v := range si.IncludeFeatures {
 		if ef, ok := v.This().(T); ok {
