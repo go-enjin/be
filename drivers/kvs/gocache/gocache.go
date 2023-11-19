@@ -22,7 +22,6 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/kvs"
 )
 
 // TODO: implement a means of specifying supported cache configurations instead of hard-coded defaults
@@ -41,7 +40,7 @@ var (
 
 type Feature interface {
 	feature.Feature
-	kvs.KeyValueCaches
+	feature.KeyValueCaches
 }
 
 type MakeFeature interface {
@@ -57,7 +56,7 @@ type MakeFeature interface {
 type CFeature struct {
 	feature.CFeature
 
-	caches map[string]kvs.KeyValueCache
+	caches map[string]feature.KeyValueCache
 }
 
 func New() MakeFeature {
@@ -74,7 +73,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
-	f.caches = make(map[string]kvs.KeyValueCache)
+	f.caches = make(map[string]feature.KeyValueCache)
 }
 
 func (f *CFeature) Make() Feature {
@@ -96,7 +95,7 @@ func (f *CFeature) Shutdown() {
 	return
 }
 
-func (f *CFeature) Get(name string) (kvs kvs.KeyValueCache, err error) {
+func (f *CFeature) Get(name string) (kvs feature.KeyValueCache, err error) {
 	if c, ok := f.caches[name]; ok {
 		kvs = c
 		return

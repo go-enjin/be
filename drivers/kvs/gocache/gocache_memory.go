@@ -25,7 +25,7 @@ import (
 	gocache "github.com/eko/gocache/lib/v4/cache"
 	store_go_cache "github.com/eko/gocache/store/go_cache/v4"
 
-	"github.com/go-enjin/be/pkg/kvs"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -45,7 +45,7 @@ func (f *CFeature) AddMemoryCache(name string, buckets ...string) MakeFeature {
 	return f
 }
 
-var _ kvs.KeyValueCache = (*cLocalCache)(nil)
+var _ feature.KeyValueCache = (*cLocalCache)(nil)
 
 type cLocalCache struct {
 	buckets map[string]*cLocalStore
@@ -59,7 +59,7 @@ func newLocalCache() (cache *cLocalCache) {
 	return
 }
 
-func (c *cLocalCache) MustBucket(name string) (kvs kvs.KeyValueStore) {
+func (c *cLocalCache) MustBucket(name string) (kvs feature.KeyValueStore) {
 	if v, err := c.Bucket(name); err != nil {
 		log.FatalDF(1, "error getting required bucket \"%v\": - %v", name, err)
 	} else {
@@ -68,7 +68,7 @@ func (c *cLocalCache) MustBucket(name string) (kvs kvs.KeyValueStore) {
 	return
 }
 
-func (c *cLocalCache) Bucket(name string) (kvs kvs.KeyValueStore, err error) {
+func (c *cLocalCache) Bucket(name string) (kvs feature.KeyValueStore, err error) {
 	if v, e := c.GetBucket(name); e == nil {
 		kvs = v
 		return
@@ -77,7 +77,7 @@ func (c *cLocalCache) Bucket(name string) (kvs kvs.KeyValueStore, err error) {
 	return
 }
 
-func (c *cLocalCache) AddBucket(name string) (kvs kvs.KeyValueStore, err error) {
+func (c *cLocalCache) AddBucket(name string) (kvs feature.KeyValueStore, err error) {
 	c.Lock()
 	defer c.Unlock()
 	if _, exists := c.buckets[name]; exists {
@@ -94,7 +94,7 @@ func (c *cLocalCache) AddBucket(name string) (kvs kvs.KeyValueStore, err error) 
 	return
 }
 
-func (c *cLocalCache) GetBucket(name string) (kvs kvs.KeyValueStore, err error) {
+func (c *cLocalCache) GetBucket(name string) (kvs feature.KeyValueStore, err error) {
 	c.RLock()
 	defer c.RUnlock()
 	if v, ok := c.buckets[name]; ok {
@@ -114,7 +114,7 @@ func (c *cLocalCache) GetBucketSource(name string) (src interface{}) {
 	return
 }
 
-var _ kvs.KeyValueStore = (*cLocalStore)(nil)
+var _ feature.KeyValueStore = (*cLocalStore)(nil)
 
 type cLocalStore struct {
 	cache *gocache.Cache[interface{}]

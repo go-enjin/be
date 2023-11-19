@@ -48,7 +48,7 @@ func (f *CFeature) AddBigCache(name string, buckets ...string) MakeFeature {
 	return f
 }
 
-var _ kvs.KeyValueCache = (*cBigCache)(nil)
+var _ feature.KeyValueCache = (*cBigCache)(nil)
 
 type cBigCache struct {
 	buckets map[string]*cBigCacheStore
@@ -62,7 +62,7 @@ func newBigCache() (cache *cBigCache) {
 	return
 }
 
-func (c *cBigCache) MustBucket(name string) (kvs kvs.KeyValueStore) {
+func (c *cBigCache) MustBucket(name string) (kvs feature.KeyValueStore) {
 	if v, err := c.Bucket(name); err != nil {
 		log.FatalDF(1, "error getting required bucket \"%v\": - %v", name, err)
 	} else {
@@ -71,7 +71,7 @@ func (c *cBigCache) MustBucket(name string) (kvs kvs.KeyValueStore) {
 	return
 }
 
-func (c *cBigCache) Bucket(name string) (kvs kvs.KeyValueStore, err error) {
+func (c *cBigCache) Bucket(name string) (kvs feature.KeyValueStore, err error) {
 	if v, e := c.GetBucket(name); e == nil {
 		kvs = v
 		return
@@ -80,7 +80,7 @@ func (c *cBigCache) Bucket(name string) (kvs kvs.KeyValueStore, err error) {
 	return
 }
 
-func (c *cBigCache) AddBucket(name string) (kvs kvs.KeyValueStore, err error) {
+func (c *cBigCache) AddBucket(name string) (kvs feature.KeyValueStore, err error) {
 	c.Lock()
 	defer c.Unlock()
 	if v, exists := c.buckets[name]; exists {
@@ -111,7 +111,7 @@ func (c *cBigCache) AddBucket(name string) (kvs kvs.KeyValueStore, err error) {
 	return
 }
 
-func (c *cBigCache) GetBucket(name string) (kvs kvs.KeyValueStore, err error) {
+func (c *cBigCache) GetBucket(name string) (kvs feature.KeyValueStore, err error) {
 	c.RLock()
 	defer c.RUnlock()
 	if v, ok := c.buckets[name]; ok {
@@ -131,7 +131,7 @@ func (c *cBigCache) GetBucketSource(name string) (src interface{}) {
 	return
 }
 
-var _ kvs.KeyValueStore = (*cBigCacheStore)(nil)
+var _ feature.KeyValueStore = (*cBigCacheStore)(nil)
 
 type cBigCacheStore struct {
 	cache *gocache.Cache[interface{}]

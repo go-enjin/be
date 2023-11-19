@@ -23,8 +23,8 @@ import (
 
 	"github.com/erni27/imcache"
 
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/gob"
-	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -46,7 +46,7 @@ func (f *CFeature) AddIMCacheCache(name string, buckets ...string) MakeFeature {
 	return f
 }
 
-var _ kvs.KeyValueCache = (*cIMCacheCache)(nil)
+var _ feature.KeyValueCache = (*cIMCacheCache)(nil)
 
 type cIMCacheCache struct {
 	buckets map[string]*cIMCacheStore
@@ -60,7 +60,7 @@ func newIMCacheCache() (cache *cIMCacheCache) {
 	return
 }
 
-func (c *cIMCacheCache) MustBucket(name string) (kvs kvs.KeyValueStore) {
+func (c *cIMCacheCache) MustBucket(name string) (kvs feature.KeyValueStore) {
 	if v, err := c.Bucket(name); err != nil {
 		log.FatalDF(1, "error getting required bucket \"%v\": - %v", name, err)
 	} else {
@@ -69,7 +69,7 @@ func (c *cIMCacheCache) MustBucket(name string) (kvs kvs.KeyValueStore) {
 	return
 }
 
-func (c *cIMCacheCache) Bucket(name string) (kvs kvs.KeyValueStore, err error) {
+func (c *cIMCacheCache) Bucket(name string) (kvs feature.KeyValueStore, err error) {
 	if v, e := c.GetBucket(name); e == nil {
 		kvs = v
 		return
@@ -78,7 +78,7 @@ func (c *cIMCacheCache) Bucket(name string) (kvs kvs.KeyValueStore, err error) {
 	return
 }
 
-func (c *cIMCacheCache) AddBucket(name string) (kvs kvs.KeyValueStore, err error) {
+func (c *cIMCacheCache) AddBucket(name string) (kvs feature.KeyValueStore, err error) {
 	c.Lock()
 	defer c.Unlock()
 	if _, exists := c.buckets[name]; exists {
@@ -90,7 +90,7 @@ func (c *cIMCacheCache) AddBucket(name string) (kvs kvs.KeyValueStore, err error
 	return
 }
 
-func (c *cIMCacheCache) GetBucket(name string) (kvs kvs.KeyValueStore, err error) {
+func (c *cIMCacheCache) GetBucket(name string) (kvs feature.KeyValueStore, err error) {
 	c.RLock()
 	defer c.RUnlock()
 	if v, ok := c.buckets[name]; ok {
@@ -105,7 +105,7 @@ func (c *cIMCacheCache) GetBucketSource(name string) (src interface{}) {
 	return
 }
 
-var _ kvs.KeyValueStore = (*cIMCacheStore)(nil)
+var _ feature.KeyValueStore = (*cIMCacheStore)(nil)
 
 type cIMCacheStore struct {
 	//cache imcache.Cache[string, []byte]
