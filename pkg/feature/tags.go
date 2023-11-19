@@ -22,14 +22,48 @@ import (
 
 type Tags []Tag
 
+// StringsAsTags returns a list of Tags based on the names given
+func StringsAsTags(names []string) (tags Tags) {
+	for _, name := range names {
+		tags = tags.Append(Tag(name))
+	}
+	return
+}
+
+// SortedFeatureTags returns a natural.StringSlice list of Tag keys
+func SortedFeatureTags[V interface{}](data map[Tag]V) (tags Tags) {
+	var keys []string
+	for key, _ := range data {
+		keys = append(keys, key.String())
+	}
+	sort.Sort(natural.StringSlice(keys))
+	tags = StringsAsTags(keys)
+	return
+}
+
 // Has returns true if the list of Tags includes the given tag
-func (t Tags) Has(tag Tag) bool {
+func (t Tags) Has(tag Tag) (present bool) {
 	for _, tt := range t {
-		if tag == tt {
-			return true
+		if present = tag == tt; present {
+			return
 		}
 	}
-	return false
+	return
+}
+
+// Find returns the first tag matching the given name exactly, or matching by kebab-cased comparison
+func (t Tags) Find(name string) (found Tag, ok bool) {
+	tag := Tag(name)
+	kebab := tag.Kebab()
+	for _, found = range t {
+		if ok = tag == found; ok {
+			return
+		} else if ok = kebab == found.Kebab(); ok {
+			return
+		}
+	}
+	found = NilTag
+	return
 }
 
 // Append returns a (unique) list with the given tags appended
@@ -66,24 +100,5 @@ func (t Tags) Strings() (names []string) {
 	for _, tag := range t {
 		names = append(names, string(tag))
 	}
-	return
-}
-
-// StringsAsTags returns a list of Tags based on the names given
-func StringsAsTags(names []string) (tags Tags) {
-	for _, name := range names {
-		tags = tags.Append(Tag(name))
-	}
-	return
-}
-
-// SortedFeatureTags returns a natural.StringSlice list of Tag keys
-func SortedFeatureTags[V interface{}](data map[Tag]V) (tags Tags) {
-	var keys []string
-	for key, _ := range data {
-		keys = append(keys, key.String())
-	}
-	sort.Sort(natural.StringSlice(keys))
-	tags = StringsAsTags(keys)
 	return
 }
