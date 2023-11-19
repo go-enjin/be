@@ -52,6 +52,7 @@ type UserActionsProvider interface {
 	Feature
 
 	UserActions() (list Actions)
+	Action(verb string, details ...string) (action Action)
 }
 
 type AuthProvider interface {
