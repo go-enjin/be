@@ -28,12 +28,14 @@ import (
 	beCli "github.com/go-enjin/be/pkg/cli"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/headers"
+	"github.com/go-enjin/be/pkg/signals"
 )
 
 var _ feature.Builder = (*EnjinBuilder)(nil)
@@ -44,6 +46,8 @@ type htmlHeadTag struct {
 }
 
 type EnjinBuilder struct {
+	signaling.CSignaling
+
 	flags        []cli.Flag
 	commands     cli.Commands
 	pages        map[string]feature.Page
@@ -114,9 +118,13 @@ type EnjinBuilder struct {
 	fServiceLoggers                 []feature.ServiceLogger
 	fLocalesProviders               []feature.LocalesProvider
 	fPrepareServePagesFeatures      []feature.PrepareServePagesFeature
-	fFinalizeServePagesFeatures     []feature.FinalizeServePagesFeature
+	fFinalizeServePagesFeatures     []feature.FinalizeServeRequestFeature
 	fPageContextFieldsProviders     []feature.PageContextFieldsProvider
 	fPageContextParsersProviders    []feature.PageContextParsersProvider
+
+	fNonceFactory      feature.NonceFactoryFeature
+	fTokenFactory      feature.TokenFactoryFeature
+	fSyncLockerFactory feature.SyncLockerFactoryFeature
 
 	fPanicHandler      feature.PanicHandler
 	fLocaleHandler     feature.LocaleHandler
@@ -134,6 +142,7 @@ type EnjinBuilder struct {
 
 func New() (be *EnjinBuilder) {
 	be = new(EnjinBuilder)
+	be.InitSignaling()
 	be.theme = ""
 	be.flags = make([]cli.Flag, 0)
 	be.commands = make(cli.Commands, 0)

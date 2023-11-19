@@ -129,6 +129,10 @@ func (eb *EnjinBuilder) includeFeature(f feature.Feature) {
 	eb.fPageContextFieldsProviders = checkRegisterFeature(f, eb.fPageContextFieldsProviders)
 	eb.fPageContextParsersProviders = checkRegisterFeature(f, eb.fPageContextParsersProviders)
 
+	eb.fNonceFactory = checkRegisterSingleFeature(f, eb.fNonceFactory)
+	eb.fTokenFactory = checkRegisterSingleFeature(f, eb.fTokenFactory)
+	eb.fSyncLockerFactory = checkRegisterSingleFeature(f, eb.fSyncLockerFactory)
+
 	eb.fPanicHandler = checkRegisterSingleFeature(f, eb.fPanicHandler)
 	eb.fLocaleHandler = checkRegisterSingleFeature(f, eb.fLocaleHandler)
 	eb.fServiceListener = checkRegisterSingleFeature(f, eb.fServiceListener)
@@ -149,15 +153,20 @@ func (eb *EnjinBuilder) PrependFeature(f feature.Feature) feature.Builder {
 	return eb
 }
 
-func (eb *EnjinBuilder) AddFeature(f feature.Feature) feature.Builder {
-	if f == nil {
+func (eb *EnjinBuilder) AddFeature(features ...feature.Feature) feature.Builder {
+	if len(features) == 0 {
 		return eb
 	}
-	log.DebugF("adding feature: %v", f.Tag())
-	if err := eb.features.Add(f); err != nil {
-		log.FatalDF(1, "error adding feature: %T - %v", f, err)
+	for _, f := range features {
+		if f == nil {
+			continue
+		}
+		log.DebugF("adding feature: %v", f.Tag())
+		if err := eb.features.Add(f); err != nil {
+			log.FatalDF(1, "error adding feature: %T - %v", f, err)
+		}
+		eb.includeFeature(f)
 	}
-	eb.includeFeature(f)
 	return eb
 }
 
