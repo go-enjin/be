@@ -22,6 +22,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/signals"
 )
 
 var (
@@ -93,10 +94,12 @@ func (f *CFeature) PanicHandler(next http.Handler) http.Handler {
 				log.ErrorRF(r, "recovering from panic: %v\n(begin stacktrace)\n%s\n(end stacktrace)", err, buf)
 				defer func() {
 					if ee := recover(); ee != nil {
-						log.ErrorRF(r, "recovering from secondary panic")
+						f.Enjin.Emit(signals.EnjinSecondaryPanicRecovery, feature.EnjinTag.String(), w, r, err, ee)
+						log.ErrorRF(r, "recovering from secondary panic (without stacktrace)")
 						f.Enjin.Serve500(w, r)
 					}
 				}()
+				f.Enjin.Emit(signals.EnjinPanicRecovery, feature.EnjinTag.String(), w, r, err)
 				f.Enjin.ServeInternalServerError(w, r)
 			}
 		}()
