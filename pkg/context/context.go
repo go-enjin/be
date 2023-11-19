@@ -59,6 +59,18 @@ func NewFromOsEnviron(slices ...[]string) (c Context) {
 	return
 }
 
+// Len returns the number of keys in the Context
+func (c Context) Len() (count int) {
+	count = len(c)
+	return
+}
+
+// Empty returns true if there is nothing stored in the Context
+func (c Context) Empty() (empty bool) {
+	empty = c.Len() == 0
+	return
+}
+
 // Keys returns a list of all the map keys in the Context, sorted in natural
 // order for consistency
 func (c Context) Keys() (keys []string) {
