@@ -27,16 +27,16 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/request"
 )
 
 const (
-	RequestKey         beContext.RequestKey = "RequestArgv"
-	RequestRedirectKey string               = "RequestRedirect"
-	RequestIgnoredKey  string               = "RequestArgvIgnored"
-	RequestConsumedKey string               = "RequestArgvConsumed"
+	RequestKey         request.Key = "RequestArgv"
+	RequestRedirectKey string      = "RequestRedirect"
+	RequestIgnoredKey  string      = "RequestArgvIgnored"
+	RequestConsumedKey string      = "RequestArgvConsumed"
 )
 
 const (
