@@ -18,7 +18,6 @@ package pql
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"strings"
 
@@ -30,6 +29,7 @@ import (
 	"github.com/go-enjin/be/features/pages/pql/matcher"
 	"github.com/go-enjin/be/features/pages/pql/selector"
 	"github.com/go-enjin/be/pkg/feature"
+	uses_kvc "github.com/go-enjin/be/pkg/feature/uses-kvc"
 	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/pages"
@@ -54,7 +54,7 @@ type Feature interface {
 }
 
 type MakeFeature interface {
-	Make() Feature
+	uses_kvc.MakeFeature[MakeFeature]
 
 	// SetKeyValueCache Specifies the feature.KeyValueCaches tag and
 	// feature.KeyValueCache name to use for storing runtime data
@@ -69,27 +69,25 @@ type MakeFeature interface {
 	// this instead of IncludeContextKeys when needing to remove one or more of
 	// the default list of inclusions
 	SetIncludedContextKeys(keys ...string) MakeFeature
+
+	Make() Feature
 }
 
 type CFeature struct {
 	feature.CFeature
-
-	kvcTag  feature.Tag
-	kvcName string
-
-	cache kvs.KeyValueCache
+	uses_kvc.CUsesKVC[MakeFeature]
 
 	excludeContextKeys []string
 	includeContextKeys []string
 
-	allUrlsBucket           kvs.KeyValueStore
-	pageUrlsBucket          kvs.KeyValueStore
-	pageStubsBucket         kvs.KeyValueStore
-	permalinksBucket        kvs.KeyValueStore
-	redirectionsBucket      kvs.KeyValueStore
-	translatedByBucket      kvs.KeyValueStore
-	translationsBucket      map[language.Tag]kvs.KeyValueStore
-	contextValueKeyedBucket kvs.KeyValueStore
+	allUrlsBucket           feature.KeyValueStore
+	pageUrlsBucket          feature.KeyValueStore
+	pageStubsBucket         feature.KeyValueStore
+	permalinksBucket        feature.KeyValueStore
+	redirectionsBucket      feature.KeyValueStore
+	translatedByBucket      feature.KeyValueStore
+	translationsBucket      map[language.Tag]feature.KeyValueStore
+	contextValueKeyedBucket feature.KeyValueStore
 }
 
 func New() MakeFeature {
@@ -106,14 +104,9 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+	f.CUsesKVC.InitUsesKVC(f)
 	f.includeContextKeys = BaseIncludeContextKeys()
-	f.translationsBucket = make(map[language.Tag]kvs.KeyValueStore)
-}
-
-func (f *CFeature) SetKeyValueCache(tag feature.Tag, name string) MakeFeature {
-	f.kvcTag = tag
-	f.kvcName = name
-	return f
+	f.translationsBucket = make(map[language.Tag]feature.KeyValueStore)
 }
 
 func (f *CFeature) SetIncludedContextKeys(keys ...string) MakeFeature {
@@ -137,8 +130,9 @@ func (f *CFeature) Make() Feature {
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
-	if f.kvcTag == "" || f.kvcName == "" {
-		err = fmt.Errorf("%v feature requires a KeyValueCache, use f.SetKeyValueCache(tag,name) during enjin build process", f.Tag())
+	if err = f.CFeature.Build(b); err != nil {
+		return
+	} else if err = f.CUsesKVC.BuildUsesKVC(); err != nil {
 		return
 	}
 	return
@@ -147,45 +141,29 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CFeature.Startup(ctx); err != nil {
 		return
-	}
-
-	if kvcf, ok := f.Enjin.Features().Get(f.kvcTag); !ok {
-		err = fmt.Errorf("%v feature not found", f.kvcTag)
-		return
-	} else if kvcs, ok := kvcf.(kvs.KeyValueCaches); !ok {
-		err = fmt.Errorf("%v feature is not a kvs.KeyValueCaches", f.kvcTag)
-		return
-	} else if kvc, ee := kvcs.Get(f.kvcName); ee != nil {
-		err = fmt.Errorf("%v cache not found: %v", f.kvcTag, f.kvcName)
-		return
-	} else {
-		f.cache = kvc
-	}
-
-	if f.cache == nil {
-		err = fmt.Errorf("%v feature not found", f.kvcTag)
+	} else if err = f.CUsesKVC.StartupUsesKVC(f.Enjin.Features()); err != nil {
 		return
 	}
 
-	if f.allUrlsBucket, err = f.cache.Bucket(gAllUrlsBucketName); err != nil {
+	if f.allUrlsBucket, err = f.KVC().Bucket(gAllUrlsBucketName); err != nil {
 		return
 	}
-	if f.pageUrlsBucket, err = f.cache.Bucket(gPageUrlsBucketName); err != nil {
+	if f.pageUrlsBucket, err = f.KVC().Bucket(gPageUrlsBucketName); err != nil {
 		return
 	}
-	if f.pageStubsBucket, err = f.cache.Bucket(gPageStubsBucketName); err != nil {
+	if f.pageStubsBucket, err = f.KVC().Bucket(gPageStubsBucketName); err != nil {
 		return
 	}
-	if f.permalinksBucket, err = f.cache.Bucket(gPermalinksBucketName); err != nil {
+	if f.permalinksBucket, err = f.KVC().Bucket(gPermalinksBucketName); err != nil {
 		return
 	}
-	if f.translatedByBucket, err = f.cache.Bucket(gPageTranslatedByBucketName); err != nil {
+	if f.translatedByBucket, err = f.KVC().Bucket(gPageTranslatedByBucketName); err != nil {
 		return
 	}
-	if f.redirectionsBucket, err = f.cache.Bucket(gPageRedirectionsBucketName); err != nil {
+	if f.redirectionsBucket, err = f.KVC().Bucket(gPageRedirectionsBucketName); err != nil {
 		return
 	}
-	if f.contextValueKeyedBucket, err = f.cache.Bucket(gPageContextValuesBucketName); err != nil {
+	if f.contextValueKeyedBucket, err = f.KVC().Bucket(gPageContextValuesBucketName); err != nil {
 		return
 	}
 	return
@@ -223,7 +201,7 @@ func (f *CFeature) PageContextValueCounts(key string) (counts map[interface{}]ui
 
 	counts = make(map[interface{}]uint64)
 	ctxKeyedValueBucketName := f.makeCtxValBucketName(key)
-	ctxKeyedValueBucket := f.cache.MustBucket(ctxKeyedValueBucketName)
+	ctxKeyedValueBucket := f.KVC().MustBucket(ctxKeyedValueBucketName)
 
 	for value := range kvs.YieldFlatList[string](f.contextValueKeyedBucket, key) {
 
@@ -247,7 +225,7 @@ func (f *CFeature) YieldPageContextValueStubs(key string) (pairs chan *feature.V
 		defer close(pairs)
 
 		ctxKeyedValueBucketName := f.makeCtxValBucketName(key)
-		ctxKeyedValueBucket := f.cache.MustBucket(ctxKeyedValueBucketName)
+		ctxKeyedValueBucket := f.KVC().MustBucket(ctxKeyedValueBucketName)
 
 		found := make(map[string]struct{})
 
@@ -285,7 +263,7 @@ func (f *CFeature) YieldPageContextValueStubs(key string) (pairs chan *feature.V
 func (f *CFeature) YieldFilterPageContextValueStubs(include bool, key string, value interface{}) (pairs chan *feature.ValueStubPair) {
 
 	ctxKeyedValueBucketName := f.makeCtxValBucketName(key)
-	ctxKeyedValueBucket := f.cache.MustBucket(ctxKeyedValueBucketName)
+	ctxKeyedValueBucket := f.KVC().MustBucket(ctxKeyedValueBucketName)
 	var searchKey string
 	if valueKey, err := kvs.EncodeKeyValue(value); err != nil {
 		log.ErrorF("error encoding %v key value: %T - %v", key, value, err)
@@ -334,7 +312,7 @@ func (f *CFeature) YieldFilterPageContextValueStubs(include bool, key string, va
 func (f *CFeature) FilterPageContextValueStubs(include bool, key string, value interface{}) (stubs feature.PageStubs) {
 
 	ctxKeyedValueBucketName := f.makeCtxValBucketName(key)
-	ctxKeyedValueBucket := f.cache.MustBucket(ctxKeyedValueBucketName)
+	ctxKeyedValueBucket := f.KVC().MustBucket(ctxKeyedValueBucketName)
 	var searchKey string
 	if valueKey, err := kvs.EncodeKeyValue(value); err != nil {
 		log.ErrorF("error encoding %v key value: %T - %v", key, value, err)

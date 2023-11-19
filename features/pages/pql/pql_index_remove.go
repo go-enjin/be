@@ -23,11 +23,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/iancoleman/strcase"
 
-	"github.com/go-enjin/be/pkg/values"
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/kvs"
+	"github.com/go-enjin/be/pkg/values"
 )
 
 func (f *CFeature) RemoveFromIndex(stub *feature.PageStub, p feature.Page) (err error) {
@@ -204,7 +204,7 @@ func (f *CFeature) removeIndexForPageContextValue(key, shasum string, value inte
 
 	// get the specific bucket for the given key
 	ctxKeyedValueBucketName := f.makeCtxValBucketName(key)
-	ctxKeyedValueBucket := f.cache.MustBucket(ctxKeyedValueBucketName)
+	ctxKeyedValueBucket := f.KVC().MustBucket(ctxKeyedValueBucketName)
 
 	// TODO: remove valueKey from f.contextValueKeyedBucket, must check if there are no shasums for the valueKey first,
 	//       otherwise this drops valueKey for all other pages with the same key and value
@@ -214,7 +214,7 @@ func (f *CFeature) removeIndexForPageContextValue(key, shasum string, value inte
 	//}
 
 	if e := kvs.RemoveFromFlatList[string](ctxKeyedValueBucket, valueKey, shasum); e != nil {
-		err = fmt.Errorf("error removing from bucket flat list: %v/%v[%v]=\"%v\" - %v", f.kvcTag, f.kvcName, ctxKeyedValueBucketName, value, err)
+		err = fmt.Errorf("error removing from bucket flat list: [%v]=\"%v\" - %v", ctxKeyedValueBucketName, value, err)
 	}
 
 	return

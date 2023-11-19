@@ -188,7 +188,7 @@ func (f *CFeature) addIndexForTranslatedBy(url, shasum string) (err error) {
 
 func (f *CFeature) addIndexForTranslations(lang language.Tag, shasum, translates string) (err error) {
 	if _, found := f.translationsBucket[lang]; !found {
-		if f.translationsBucket[lang], err = f.cache.Bucket(f.makeLangBucketName(lang)); err != nil {
+		if f.translationsBucket[lang], err = f.KVC().Bucket(f.makeLangBucketName(lang)); err != nil {
 			return
 		}
 	}
@@ -210,7 +210,7 @@ func (f *CFeature) addIndexForPageContextValue(key, shasum string, value interfa
 
 	// get the specific bucket for the given key
 	ctxKeyedValueBucketName := f.makeCtxValBucketName(key)
-	ctxKeyedValueBucket := f.cache.MustBucket(ctxKeyedValueBucketName)
+	ctxKeyedValueBucket := f.KVC().MustBucket(ctxKeyedValueBucketName)
 
 	// check if this value has been added to the list before
 	if kvs.FlatListEmpty(ctxKeyedValueBucket, valueKey) == true {
@@ -222,7 +222,7 @@ func (f *CFeature) addIndexForPageContextValue(key, shasum string, value interfa
 	}
 
 	if e := kvs.AppendToFlatList[string](ctxKeyedValueBucket, valueKey, shasum); e != nil {
-		err = fmt.Errorf("error appending to bucket flat list: %v/%v[%v]=\"%v\" - %v", f.kvcTag, f.kvcName, ctxKeyedValueBucketName, value, err)
+		err = fmt.Errorf("error appending to bucket flat list: [%v]=\"%v\" - %v", ctxKeyedValueBucketName, value, err)
 	}
 	return
 }
