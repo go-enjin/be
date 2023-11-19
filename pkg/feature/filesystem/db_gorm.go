@@ -83,8 +83,13 @@ func (s CGormDBPathSupport[MakeTypedFeature]) startupGormDBPathSupport(f *CFeatu
 	for _, mgdb := range s._gormSupportBuild {
 		var ok bool
 		var db *gorm.DB
-		if db, ok = f.Enjin.MustDB(mgdb.connection).(*gorm.DB); !ok {
-			err = fmt.Errorf("enjin db connection not found: %v", mgdb.connection)
+		if v := f.Enjin.MustDB(mgdb.connection); v != nil {
+			if db, ok = v.(*gorm.DB); !ok {
+				err = fmt.Errorf("connection error: %v; expected *gorm.DB, found %T", mgdb.connection)
+				return
+			}
+		} else {
+			err = fmt.Errorf("database connection not found: %v", mgdb.connection)
 			return
 		}
 		table := f.Tag().Snake()
