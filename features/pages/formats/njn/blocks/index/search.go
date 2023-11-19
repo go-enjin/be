@@ -22,7 +22,6 @@ import (
 	"net/url"
 
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/forms/nonce"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request/argv"
@@ -45,7 +44,7 @@ func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []stri
 			} else {
 				value = forms.StrictSanitize(vv)
 			}
-			if nonce.Validate(nonceKey, value) {
+			if f.Enjin.VerifyNonce(nonceKey, value) {
 				foundNonce = true
 			} else {
 				err = fmt.Errorf(printer.Sprintf("search form expired"))

@@ -30,7 +30,6 @@ import (
 	"github.com/go-enjin/golang-org-x-text/cases"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/forms/nonce"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/pageql"
@@ -232,7 +231,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	block["SearchEnabled"] = searchEnabled
 	if searchEnabled {
 		block["SearchQuery"] = argvSearch
-		block["SearchNonce"] = nonce.Make(searchNonceKey)
+		block["SearchNonce"] = f.Enjin.CreateNonce(searchNonceKey)
 		if argvBlockPresent {
 			if searchRedirect, searchError := f.handleSearchRedirect(tag, searchNonceKey, indexViews, reqArgv); searchError != nil {
 				block["SearchError"] = searchError.Error()
