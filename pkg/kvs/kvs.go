@@ -20,20 +20,13 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/gob"
+	"github.com/go-enjin/be/pkg/maths"
 )
 
-type Numbers interface {
-	uint | uint8 | uint16 | uint32 | uint64 |
-		int | int8 | int16 | int32 | int64 |
-		float32 | float64
-}
 
-type Contents interface {
-	byte | string
-}
 
 type Variables interface {
-	Numbers | Contents
+	maths.Number | byte | string
 }
 
 func GetSlice[T Variables](store feature.KeyValueStore, key interface{}) (values []T, err error) {
