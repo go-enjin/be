@@ -26,18 +26,27 @@ type Site interface {
 	signaling.Signaling
 
 	SitePath() (path string)
-	SiteMenu() (siteMenu beContext.Context)
+	SiteMenu(r *http.Request) (siteMenu beContext.Context)
 	SiteTheme() (t Theme)
+	SiteUsers() (sup SiteUsersProvider)
+	SiteAuth() (sup SiteAuthFeature)
 
-	PushInfoNotice(eid, message string, dismiss bool, actions ...UserNoticeLink)
-	PushWarnNotice(eid, message string, dismiss bool, actions ...UserNoticeLink)
-	PushErrorNotice(eid, message string, dismiss bool, actions ...UserNoticeLink)
+	SiteFeatures() (list SiteFeatures)
+
+	PushImportantNotice(eid string, dismiss bool, message string, argv ...interface{})
+	PushInfoNotice(eid string, dismiss bool, message string, argv ...interface{})
+	PushWarnNotice(eid string, dismiss bool, message string, argv ...interface{})
+	PushErrorNotice(eid string, dismiss bool, message string, argv ...interface{})
 	PushNotices(eid string, notices ...*UserNotice)
 	PullNotices(eid string) (notices UserNotices)
 
 	GetContext(eid string) (ctx beContext.Context)
 	SetContext(eid string, ctx beContext.Context)
 
-	PreparePage(layout, pageType, pagePath string, t Theme) (pg Page, ctx beContext.Context, err error)
+	PreparePage(layout, pageType, pagePath string, t Theme, r *http.Request) (pg Page, ctx beContext.Context, err error)
 	ServePreparedPage(pg Page, ctx beContext.Context, t Theme, w http.ResponseWriter, r *http.Request)
+	PrepareAndServePage(layout, pageType, pagePath string, t Theme, w http.ResponseWriter, r *http.Request, ctx beContext.Context) (err error)
+
+	RequireVerification(path string, w http.ResponseWriter, r *http.Request) (allowed bool)
+	MustRequireVerification(path string, w http.ResponseWriter, r *http.Request) (allowed bool)
 }
