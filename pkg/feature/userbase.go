@@ -19,11 +19,15 @@ import (
 )
 
 type UsersManager interface {
+	Feature
+
 	UserProvider
 	UserManager
 }
 
 type UserProvider interface {
+	Feature
+
 	// GetUser returns the user by enjin ID
 	GetUser(eid string) (user User, err error)
 
@@ -32,6 +36,8 @@ type UserProvider interface {
 }
 
 type UserManager interface {
+	Feature
+
 	// NewUser constructs a new User instance and adds it to the userbase
 	NewUser(au AuthUser) (user User, err error)
 
@@ -43,19 +49,27 @@ type UserManager interface {
 }
 
 type UserActionsProvider interface {
+	Feature
+
 	UserActions() (list Actions)
 }
 
 type AuthProvider interface {
+	Feature
+
 	AuthenticateRequest(w http.ResponseWriter, r *http.Request) (handled bool, modified *http.Request)
 }
 
 type AuthUserApi interface {
+	Feature
+
 	RequireApiUser(next http.Handler) http.Handler
 	RequireUserCan(action Action) func(next http.Handler) http.Handler
 }
 
 type GroupsProvider interface {
+	Feature
+
 	// IsUserInGroup returns true if the user is in the given group
 	IsUserInGroup(eid string, group Group) (present bool)
 
@@ -64,6 +78,8 @@ type GroupsProvider interface {
 }
 
 type GroupsManager interface {
+	Feature
+
 	// GetGroupActions returns the list of actions associated with group
 	GetGroupActions(group Group) (actions Actions)
 
@@ -83,6 +99,8 @@ type GroupsManager interface {
 }
 
 type AuthUserProvider interface {
+	Feature
+
 	// AuthUserPresent returns true if a user with the EID given is present
 	AuthUserPresent(eid string) (present bool)
 
@@ -91,6 +109,8 @@ type AuthUserProvider interface {
 }
 
 type AuthUserManager interface {
+	Feature
+
 	// NewAuthUser constructs a new AuthUser instance and saves it to the
 	// userbase
 	NewAuthUser(rid, name, email, picture, audience string, attributes map[string]interface{}) (user AuthUser, err error)
@@ -103,6 +123,8 @@ type AuthUserManager interface {
 }
 
 type SecretsProvider interface {
+	Feature
+
 	// GetUserSecret returns the user's password hash, returns "" if the user
 	// secret is not found
 	GetUserSecret(id string) (hash string)
