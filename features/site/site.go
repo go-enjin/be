@@ -15,23 +15,21 @@
 package site
 
 import (
+	"fmt"
 	"net/http"
-	"sync"
-	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/signaling"
+	"github.com/go-enjin/be/pkg/feature/site-including"
+	uses_actions "github.com/go-enjin/be/pkg/feature/uses-actions"
+	uses_kvc "github.com/go-enjin/be/pkg/feature/uses-kvc"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/menu"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/userbase"
-	"github.com/go-enjin/be/types/page"
 )
 
 var (
@@ -51,14 +49,22 @@ type Feature interface {
 	feature.Site
 	feature.ApplyMiddleware
 	feature.UserActionsProvider
-	feature.HotReloadableFeature
+	feature.FinalizeServeRequestFeature
 }
 
 type MakeFeature interface {
-	feature.SiteIncludingMakeFeature[MakeFeature]
+	uses_kvc.MakeFeature[MakeFeature]
 
 	SetSitePath(path string) MakeFeature
 	SetSiteTheme(name string) MakeFeature
+	SetSiteUsers(tag feature.Tag) MakeFeature
+	SetSiteAuth(tag feature.Tag) MakeFeature
+
+	IncludeSiteFeatures(features ...feature.Feature) MakeFeature
+	IncludingSiteFeatures(tags ...feature.Tag) MakeFeature
+
+	UseSiteRootFeature(srf feature.Feature) MakeFeature
+	UsingSiteRootFeature(tag feature.Tag) MakeFeature
 
 	Make() Feature
 }
@@ -66,17 +72,28 @@ type MakeFeature interface {
 type CFeature struct {
 	feature.CFeature
 	signaling.CSignaling
-	feature.CSiteIncluding[feature.SiteFeature, MakeFeature]
+	uses_actions.CUsesActions
+	uses_kvc.CUsesKVC[MakeFeature]
 
 	themeName string
 	theme     feature.Theme
 
 	sitePath string
 
-	// TODO: make these kvs based
-	userMutex   *sync.RWMutex
-	userCache   map[string]beContext.Context
-	userNotices map[string]feature.UserNotices
+	siteUsersProviderTag feature.Tag
+	siteUsersProvider    feature.SiteUsersProvider
+
+	authFeatureTag feature.Tag
+	authFeature    feature.SiteAuthFeature
+	siteFeatures   *site_including.CSiteIncluding[feature.SiteFeature, MakeFeature]
+
+	siteRootFeatureTag feature.Tag
+	siteRootFeature    feature.SiteRootFeature
+
+	userNoticeLocker  feature.SyncLocker
+	userNoticeBucket  feature.KeyValueStore
+	userContextLocker feature.SyncLocker
+	userContextBucket feature.KeyValueStore
 }
 
 func New() MakeFeature {
@@ -88,17 +105,16 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	f.Init(f)
 	f.PackageTag = Tag
 	f.FeatureTag = tag
+	f.CUsesActions.ConstructUsesActions(f)
 	return f
 }
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+	f.CUsesKVC.InitUsesKVC(this)
 	f.CSignaling.InitSignaling()
-	f.CSiteIncluding.InitSiteIncluding(this)
+	f.siteFeatures = site_including.New[feature.SiteFeature, MakeFeature](this)
 	f.sitePath = DefaultSitePath
-	f.userMutex = &sync.RWMutex{}
-	f.userCache = make(map[string]beContext.Context)
-	f.userNotices = make(map[string]feature.UserNotices)
 	return
 }
 
@@ -112,6 +128,40 @@ func (f *CFeature) SetSiteTheme(name string) MakeFeature {
 	return f
 }
 
+func (f *CFeature) SetSiteUsers(tag feature.Tag) MakeFeature {
+	f.siteUsersProviderTag = tag
+	return f
+}
+
+func (f *CFeature) SetSiteAuth(tag feature.Tag) MakeFeature {
+	f.authFeatureTag = tag
+	return f
+}
+
+func (f *CFeature) IncludeSiteFeatures(features ...feature.Feature) MakeFeature {
+	f.siteFeatures.Include(features...)
+	return f
+}
+
+func (f *CFeature) IncludingSiteFeatures(tags ...feature.Tag) MakeFeature {
+	f.siteFeatures.Including(tags...)
+	return f
+}
+
+func (f *CFeature) UseSiteRootFeature(feat feature.Feature) MakeFeature {
+	if srf, ok := feat.This().(feature.SiteRootFeature); ok {
+		f.siteRootFeature = srf
+	} else {
+		log.FatalDF(1, "%q is not a feature.SiteRootFeature", feat.Tag().String())
+	}
+	return f
+}
+
+func (f *CFeature) UsingSiteRootFeature(tag feature.Tag) MakeFeature {
+	f.siteRootFeatureTag = tag
+	return f
+}
+
 func (f *CFeature) Make() (feat Feature) {
 	return f
 }
@@ -119,8 +169,13 @@ func (f *CFeature) Make() (feat Feature) {
 func (f *CFeature) Build(b feature.Buildable) (err error) {
 	if err = f.CFeature.Build(b); err != nil {
 		return
+	} else if err = f.CUsesKVC.BuildUsesKVC(); err != nil {
+		return
 	}
-	f.BuildSiteIncluding(b)
+	f.siteFeatures.BuildSiteIncluding(b)
+	if f.siteRootFeature != nil {
+		b.AddFeature(f.siteRootFeature)
+	}
 	category := f.FeatureTag.String()
 	prefix := f.FeatureTag.Kebab()
 	b.AddFlags(&cli.StringFlag{
@@ -135,6 +190,66 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CFeature.Startup(ctx); err != nil {
 		return
+	} else if err = f.CUsesKVC.StartupUsesKVC(f.Enjin.Features()); err != nil {
+		return
+	}
+	f.siteFeatures.StartupSiteIncluding(f.Enjin)
+
+	f.userNoticeBucket = f.KVC().MustBucket("user-notices")
+	noticeLockerBucket := f.KVC().MustBucket("user-notice-locker")
+	f.userNoticeLocker = f.Enjin.NewSyncLocker(f.Tag(), "user-notice-locker", noticeLockerBucket)
+
+	f.userContextBucket = f.KVC().MustBucket("user-context")
+	contextLockerBucket := f.KVC().MustBucket("user-context-locker")
+	f.userContextLocker = f.Enjin.NewSyncLocker(f.Tag(), "user-context-locker", contextLockerBucket)
+
+	if f.siteRootFeature == nil {
+		if !f.siteRootFeatureTag.IsNil() {
+			if srf, ok := f.siteFeatures.Features.Get(f.siteRootFeatureTag).(feature.SiteRootFeature); ok {
+				f.siteRootFeature = srf
+			} else {
+				err = fmt.Errorf("site root feature not found within this site: %v", f.siteRootFeatureTag)
+				return
+			}
+		}
+	}
+
+	if f.siteRootFeature != nil {
+		if f.sitePath == "/" {
+			err = fmt.Errorf("domain root sites does not support having an internal site root feature, use %v.SetSitePath with something other than \"/\"", f.Tag())
+			return
+		}
+	}
+
+	if f.authFeatureTag.IsNil() {
+		for _, sf := range f.siteFeatures.Features {
+			if saf, ok := sf.This().(feature.SiteAuthFeature); ok {
+				f.authFeature = saf
+				break
+			}
+		}
+	} else if saf, ok := f.siteFeatures.Features.Get(f.authFeatureTag).(feature.SiteAuthFeature); ok {
+		f.authFeature = saf
+	} else {
+		err = fmt.Errorf("auth feature not found: %q", f.authFeatureTag)
+		return
+	}
+
+	if f.authFeature == nil {
+
+		log.DebugF("feature.SiteAuthFeature not found, site users are unrestricted")
+
+	} else if tag := f.siteUsersProviderTag; !tag.IsNil() {
+
+		enjinFeatures := f.Enjin.Features().List()
+		if f.siteUsersProvider, err = feature.GetTyped[feature.SiteUsersProvider](tag, enjinFeatures); err != nil {
+			return
+		}
+
+		if f.siteUsersProvider == nil {
+			err = fmt.Errorf("%q SiteAuthFeature needs an enjin SiteUsersProvider feature", f.authFeature.Tag())
+			return
+		}
 	}
 
 	prefix := f.FeatureTag.Kebab()
@@ -157,10 +272,19 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 	log.DebugF("using site theme: %v", f.theme.Name())
 
-	f.CSiteIncluding.StartupSiteIncluding(f.Enjin)
+	return
+}
 
-	for _, ef := range f.Features {
-		ef.SetupSiteFeature(f)
+func (f *CFeature) PostStartup(ctx *cli.Context) (err error) {
+	if f.siteRootFeature != nil {
+		if err = f.siteRootFeature.SetupSiteFeature(f); err != nil {
+			return
+		}
+	}
+	for _, ef := range f.siteFeatures.Features {
+		if err = ef.SetupSiteFeature(f); err != nil {
+			return
+		}
 	}
 	return
 }
@@ -169,20 +293,18 @@ func (f *CFeature) Shutdown() {
 	f.CFeature.Shutdown()
 }
 
-func (f *CFeature) HotReload() (err error) {
-	return
-}
-
 func (f *CFeature) UserActions() (list feature.Actions) {
 	list = feature.Actions{
-		feature.NewAction(f.Tag().String(), "access", "site"),
+		f.Action("access", "site"),
 	}
 	return
 }
 
 func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 	if f.sitePath == "/" {
-		s.Router().Use(userbase.RequireUserCan(f.Enjin, feature.NewAction(f.Tag().String(), "access", "site")))
+		s.Router().Use(f.requireUserMiddleware())
+		s.Router().Use(f.homePathMiddleware)
+		s.Router().Use(f.authEnjinProviderMiddleware)
 	}
 	if s.MustGetTheme().Name() != f.theme.Name() {
 		return f.theme.Middleware
@@ -193,19 +315,37 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 func (f *CFeature) Apply(s feature.System) (err error) {
 
 	route := func(r chi.Router) {
+
 		if f.sitePath != "/" {
-			r.Use(userbase.RequireUserCan(f.Enjin, feature.NewAction(f.Tag().String(), "access", "site")))
-			if len(f.Features) > 0 {
+			r.Use(f.requireUserMiddleware())
+			r.Use(f.homePathMiddleware)
+			r.Use(f.authEnjinProviderMiddleware)
+
+			if f.siteRootFeature != nil {
+				r.Handle("/", f.siteRootFeature.SiteRootHandler())
+			} else if len(f.siteFeatures.Features) > 0 {
 				r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-					f.Enjin.ServeRedirect(f.Features[0].SiteFeaturePath(), w, r)
+					if userbase.CurrentUserCan(r, f.siteFeatures.Features[0].Action("access", "feature")) {
+						f.Enjin.ServeRedirect(f.siteFeatures.Features[0].SiteFeaturePath(), w, r)
+					} else {
+						f.Enjin.ServeNotFound(w, r)
+					}
 				})
 			}
 		}
-		for _, ef := range f.Features {
-			r.Route("/"+ef.SiteFeatureName(), func(r chi.Router) {
+
+		for _, ef := range f.siteFeatures.Features {
+			if usrf, ok := ef.This().(feature.UpdateSiteRoutesFeature); ok {
+				usrf.UpdateSiteRoutes(r)
+				continue
+			}
+			r.Route("/"+ef.SiteFeatureKey(), func(r chi.Router) {
+				r.Use(userbase.RequireUserCan(f.Enjin, ef.Action("access", "feature")))
+				r.Use(f.homePathMiddleware)
 				ef.RouteSiteFeature(r)
 			})
 		}
+
 	}
 
 	if f.sitePath == "/" {
@@ -215,98 +355,4 @@ func (f *CFeature) Apply(s feature.System) (err error) {
 
 	s.Router().Route(f.sitePath, route)
 	return
-}
-
-func (f *CFeature) SitePath() (path string) {
-	path = f.sitePath
-	return
-}
-
-func (f *CFeature) SiteTheme() (t feature.Theme) {
-	return f.theme
-}
-
-func (f *CFeature) SiteMenu() (siteMenu beContext.Context) {
-	mainMenu := menu.Menu{}
-	for _, ef := range f.Features {
-		mainMenu = append(mainMenu, ef.SiteFeatureMenu()...)
-	}
-	return beContext.Context{
-		"MainMenu": mainMenu,
-	}
-}
-
-func (f *CFeature) PushInfoNotice(eid, message string, dismiss bool, actions ...feature.UserNoticeLink) {
-	f.PushNotices(eid, feature.MakeInfoNotice(message, dismiss, actions...))
-}
-
-func (f *CFeature) PushWarnNotice(eid, message string, dismiss bool, actions ...feature.UserNoticeLink) {
-	f.PushNotices(eid, feature.MakeWarnNotice(message, dismiss, actions...))
-}
-
-func (f *CFeature) PushErrorNotice(eid, message string, dismiss bool, actions ...feature.UserNoticeLink) {
-	f.PushNotices(eid, feature.MakeErrorNotice(message, dismiss, actions...))
-}
-
-func (f *CFeature) PushNotices(eid string, notices ...*feature.UserNotice) {
-	f.userMutex.Lock()
-	defer f.userMutex.Unlock()
-	f.userNotices[eid] = append(f.userNotices[eid], notices...)
-	return
-}
-
-func (f *CFeature) PullNotices(eid string) (notices feature.UserNotices) {
-	f.userMutex.Lock()
-	defer f.userMutex.Unlock()
-	notices = append(notices, f.userNotices[eid]...)
-	delete(f.userNotices, eid)
-	return
-}
-
-func (f *CFeature) GetContext(eid string) (ctx beContext.Context) {
-	f.userMutex.Lock()
-	defer f.userMutex.Unlock()
-	var ok bool
-	if ctx, ok = f.userCache[eid]; !ok {
-		ctx = beContext.New()
-		f.userCache[eid] = ctx
-	}
-	return
-}
-
-func (f *CFeature) SetContext(eid string, ctx beContext.Context) {
-	f.userMutex.Lock()
-	defer f.userMutex.Unlock()
-	if v, ok := f.userCache[eid]; ok && v != nil {
-		f.userCache[eid].ApplySpecific(ctx)
-	} else {
-		f.userCache[eid] = ctx
-	}
-	return
-}
-
-func (f *CFeature) PreparePage(layout, pageType, pagePath string, t feature.Theme) (pg feature.Page, ctx beContext.Context, err error) {
-	content := feature.MakeRawPage(beContext.Context{
-		"type":   pageType,
-		"layout": layout,
-	}, "")
-
-	ctx = f.Enjin.Context()
-	now := time.Now().Unix()
-
-	if pg, err = page.New(f.Tag().String(), pagePath, content, now, now, t, ctx); err != nil {
-		err = errors.Wrap(err, "error making new page instance")
-		return
-	}
-
-	ctx.SetSpecific("SiteMenu", f.SiteMenu())
-	return
-}
-
-func (f *CFeature) ServePreparedPage(pg feature.Page, ctx beContext.Context, t feature.Theme, w http.ResponseWriter, r *http.Request) {
-	handler := f.Enjin.GetServePagesHandler()
-	if err := handler.ServePage(pg, t, ctx, w, r); err != nil {
-		log.ErrorRF(r, "error serving %v prepared page: %v", f.Tag(), err)
-		f.Enjin.ServeInternalServerError(w, r)
-	}
 }
