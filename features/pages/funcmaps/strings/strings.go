@@ -110,6 +110,8 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		"rplString":        ReplaceString,
 		"hasPrefix":        strings.HasPrefix,
 		"hasSuffix":        strings.HasSuffix,
+		"repeatString":     strings.Repeat,
+		"centerString":     CenterString,
 	}
 	return
 }
@@ -290,5 +292,19 @@ func ReplaceString(input string, argv ...string) (output string, err error) {
 	for k, v := range rpl {
 		output = strings.ReplaceAll(output, k, v)
 	}
+	return
+}
+
+func CenterString(input string, width int) (centered string) {
+	var size int
+	if size = len(input); size >= width {
+		return input
+	}
+	delta := width - size
+	half := delta / 2
+	remainder := delta % 2
+	centered = strings.Repeat(" ", half)
+	centered += input
+	centered += strings.Repeat(" ", half+remainder)
 	return
 }
