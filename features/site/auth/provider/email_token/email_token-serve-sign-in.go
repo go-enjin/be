@@ -123,7 +123,7 @@ func (f *CFeature) SiteAuthSignInHandler(w http.ResponseWriter, r *http.Request,
 			"Email":      email,
 			"Link":       link,
 			"Token":      emailLinkToken,
-			"Duration":   duration,
+			"Duration":   strings.TrimSuffix(duration.Round(time.Minute).String(), "0s"),
 			"Expiration": time.Now().Add(duration),
 		}
 
