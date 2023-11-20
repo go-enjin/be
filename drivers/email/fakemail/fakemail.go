@@ -18,6 +18,7 @@ package fakemail
 
 import (
 	"fmt"
+	"net/http"
 	"sync"
 
 	"github.com/Shopify/gomail"
@@ -104,7 +105,7 @@ func (f *CFeature) HasEmailAccount(account string) (present bool) {
 	return
 }
 
-func (f *CFeature) SendEmail(account string, message *gomail.Message) (err error) {
+func (f *CFeature) SendEmail(r *http.Request, account string, message *gomail.Message) (err error) {
 	f.RLock()
 	defer f.RUnlock()
 	if _, ok := f.accounts[account]; ok {
@@ -114,7 +115,7 @@ func (f *CFeature) SendEmail(account string, message *gomail.Message) (err error
 		}
 		buf := strings.NewByteBuffer()
 		_, _ = message.WriteTo(buf)
-		log.WarnF("fakemail should have sent the following email:\n# BEGIN EMAIL\n%v\n# END EMAIL", buf.String())
+		log.WarnRF(r, "fakemail should have sent the following email:\n# BEGIN EMAIL\n%v\n# END EMAIL", buf.String())
 	} else {
 		err = fmt.Errorf("account not found")
 	}
