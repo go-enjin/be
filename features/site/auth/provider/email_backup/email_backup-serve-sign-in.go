@@ -152,7 +152,7 @@ func (f *CFeature) SiteAuthSignInHandler(w http.ResponseWriter, r *http.Request,
 	} else {
 		msg.SetHeader("To", backupEmail)
 		msg.SetHeader("Subject", printer.Sprintf("%[1]s Backup Sign-In Token", f.Enjin.SiteName()))
-		if err = f.emailSender.SendEmail(f.emailAccount, msg); err != nil {
+		if err = f.emailSender.SendEmail(r, f.emailAccount, msg); err != nil {
 			log.ErrorRF(r, "error sending backup sign-in email: %q - %v", email, err)
 			r = feature.AddErrorNotice(r, true, unexpectedError)
 		} else {

@@ -127,7 +127,7 @@ func (f *CFeature) SiteAuthSignInHandler(w http.ResponseWriter, r *http.Request,
 			"Expiration": time.Now().Add(duration),
 		}
 
-		if err = f.sendUserEmail(email, subject, "sign-in--email-token", bodyCtx); err != nil {
+		if err = f.sendUserEmail(r, email, subject, "sign-in--email-token", bodyCtx); err != nil {
 			log.ErrorRF(r, "error sending sign-in email: %q - %v", email, err)
 			r = feature.AddErrorNotice(r, true, berrs.UnexpectedError(printer))
 		} else {

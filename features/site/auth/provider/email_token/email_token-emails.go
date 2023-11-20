@@ -15,18 +15,20 @@
 package email_token
 
 import (
+	"net/http"
+
 	"github.com/Shopify/gomail"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 )
 
-func (f *CFeature) sendUserEmail(to, subject, template string, body beContext.Context) (err error) {
+func (f *CFeature) sendUserEmail(r *http.Request, to, subject, template string, body beContext.Context) (err error) {
 	var msg *gomail.Message
 	if msg, err = f.emailProvider.NewEmail(template, body); err != nil {
 		return
 	}
 	msg.SetHeader("To", to)
 	msg.SetHeader("Subject", subject)
-	err = f.emailSender.SendEmail(f.emailAccount, msg)
+	err = f.emailSender.SendEmail(r, f.emailAccount, msg)
 	return
 }

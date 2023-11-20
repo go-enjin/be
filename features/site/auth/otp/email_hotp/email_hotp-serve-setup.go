@@ -153,7 +153,7 @@ func (f *CFeature) sendNewToken(email, challenge string, r *http.Request) (m *ht
 	} else {
 		msg.SetHeader("To", email)
 		msg.SetHeader("Subject", printer.Sprintf("%[1]s Email Passcode", f.Enjin.SiteName()))
-		if err = f.emailSender.SendEmail(f.emailAccount, msg); err != nil {
+		if err = f.emailSender.SendEmail(r, f.emailAccount, msg); err != nil {
 			log.ErrorRF(r, "error sending email-hotp--passcode email: %q - %v", email, err)
 			//m = feature.AddErrorNotice(r, true, errors.UnexpectedError(printer))
 			f.Site().PushErrorNotice(userbase.GetCurrentEID(r), true, errors.UnexpectedError(printer))
