@@ -15,6 +15,8 @@
 package feature
 
 import (
+	"net/http"
+
 	"github.com/Shopify/gomail"
 
 	beContext "github.com/go-enjin/be/pkg/context"
@@ -24,7 +26,7 @@ type EmailSender interface {
 	Feature
 
 	HasEmailAccount(account string) (present bool)
-	SendEmail(account string, message *gomail.Message) (err error)
+	SendEmail(r *http.Request, account string, message *gomail.Message) (err error)
 }
 
 type EmailProvider interface {

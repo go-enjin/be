@@ -21,7 +21,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/message"
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
@@ -29,6 +28,7 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/fs"
+	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
@@ -127,7 +127,7 @@ type Service interface {
 	FindFile(path string) (data []byte, mime string, err error)
 
 	FindEmailAccount(account string) (emailSender EmailSender)
-	SendEmail(account string, message *gomail.Message) (err error)
+	SendEmail(r *http.Request, account string, message *gomail.Message) (err error)
 
 	GetPublicAccess() (actions Actions)
 	FindAllUserActions() (list Actions)
