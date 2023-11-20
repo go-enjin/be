@@ -86,14 +86,12 @@ func (f *CFeature) ServeSetupPage(settingsPath string, saf feature.SiteAuthFeatu
 			// hmm
 		}
 	} else {
-		//denied = printer.Sprintf("bad request")
 		f.ServeSetupConfirmationPage(provision, email, "", saf, w, r)
 		return
 	}
 
 	if denied != "" {
 		r = feature.AddErrorNotice(r, true, denied)
-		//saf.ServeSignInPage(w, r)
 		f.ServeSetupConfirmationPage(provision, email, "", saf, w, r)
 		return
 	}
@@ -107,14 +105,17 @@ func (f *CFeature) ServeSetupPage(settingsPath string, saf feature.SiteAuthFeatu
 		return
 
 	} else {
-		/* how to lookup users by email, then check user context for backup email secrets... */
 
 		checkEmailMessage := printer.Sprintf("check your email for the confirmation token")
 
 		if su.UserPresent(eid) {
 
 			if _, present := f.getProvisionByEmail(eid, backupEmail, r); present {
-				r = feature.AddWarnNotice(r, true, printer.Sprintf("%[1]s is already provisioned as \"%[2]s\"", backupEmail, provision))
+				r = feature.AddErrorNotice(r, true, printer.Sprintf("%[1]s is already provisioned as \"%[2]s\"", backupEmail, provision))
+				f.ServeSetupConfirmationPage(provision, email, "", saf, w, r)
+				return
+			} else if email == backupEmail {
+				r = feature.AddErrorNotice(r, true, printer.Sprintf("A backup email address that is not your primary account is required"))
 				f.ServeSetupConfirmationPage(provision, email, "", saf, w, r)
 				return
 			}
