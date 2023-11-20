@@ -30,7 +30,7 @@ import (
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request"
-	strings2 "github.com/go-enjin/be/pkg/strings"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 func (f *CFeature) SiteAuthSignInHandler(w http.ResponseWriter, r *http.Request, saf feature.SiteAuthFeature) (claims *feature.CSiteAuthClaims, redirect string, err error) {
@@ -119,7 +119,7 @@ func (f *CFeature) SiteAuthSignInHandler(w http.ResponseWriter, r *http.Request,
 
 		subject := printer.Sprintf("%[1]s Sign-In Token", f.Enjin.SiteName())
 		bodyCtx := context.Context{
-			"Name":       strings2.NameFromEmail(email),
+			"Name":       beStrings.NameFromEmail(email),
 			"Email":      email,
 			"Link":       link,
 			"Token":      emailLinkToken,
