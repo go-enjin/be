@@ -125,6 +125,7 @@ func (f *CFeature) SiteAuthSignInHandler(w http.ResponseWriter, r *http.Request,
 			"Token":      emailLinkToken,
 			"Duration":   strings.TrimSuffix(duration.Round(time.Minute).String(), "0s"),
 			"Expiration": time.Now().Add(duration),
+			"SiteName":   f.Enjin.SiteName(),
 		}
 
 		if err = f.sendUserEmail(r, email, subject, "sign-in--email-token", bodyCtx); err != nil {
