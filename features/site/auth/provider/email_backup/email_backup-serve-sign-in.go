@@ -17,6 +17,7 @@ package email_backup
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/Shopify/gomail"
@@ -29,7 +30,7 @@ import (
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request"
-	"github.com/go-enjin/be/pkg/strings"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 func (f *CFeature) SiteAuthSignInHandler(w http.ResponseWriter, r *http.Request, saf feature.SiteAuthFeature) (claims *feature.CSiteAuthClaims, redirect string, err error) {
@@ -135,11 +136,11 @@ func (f *CFeature) SiteAuthSignInHandler(w http.ResponseWriter, r *http.Request,
 	)
 
 	bodyCtx := context.Context{
-		"Name":       strings.NameFromEmail(email),
+		"Name":       beStrings.NameFromEmail(email),
 		"Email":      email,
 		"Link":       link,
 		"Token":      emailLinkToken,
-		"Duration":   duration,
+		"Duration":   strings.TrimSuffix(duration.Round(time.Minute).String(), "0s"),
 		"Expiration": time.Now().Add(duration),
 	}
 
