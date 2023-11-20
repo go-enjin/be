@@ -24,14 +24,14 @@ import (
 
 	"github.com/Shopify/gomail"
 
-	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/github-com-go-pkgz-auth/provider"
 	"github.com/go-enjin/github-com-go-pkgz-auth/token"
 
 	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/userbase"
 )
@@ -70,7 +70,7 @@ func (f *CFeature) authAddVerifyEmailProviderFunc(providerName string) {
 			}
 			msg.SetHeader("To", address)
 			// msg.SetHeader("Subject", "Verify new account")
-			if err = f.Enjin.SendEmail(f.verifyEmailAccount, msg); err != nil {
+			if err = f.Enjin.SendEmail(nil, f.verifyEmailAccount, msg); err != nil {
 				log.DebugF("error sending user auth email: %v", err)
 			}
 			return
