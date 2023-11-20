@@ -18,10 +18,12 @@ package gomail
 
 import (
 	"fmt"
+	"net/http"
 	"sync"
 
 	"github.com/Shopify/gomail"
 	"github.com/asaskevich/govalidator"
+	"github.com/mrz1836/go-sanitize"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
@@ -29,9 +31,6 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 )
-
-// TODO: implement email sending queues to batch up and disconnect the actual sending process from the request pipeline,
-//       keeping the existing options in-tact
 
 const Tag feature.Tag = "drivers-email-gomail"
 
@@ -167,10 +166,31 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 			message.SetHeader("To", recipient)
 			message.SetHeader("Subject", "Test message")
 			message.SetBody("text/plain", "This is a test of sending emails from the "+account+" account.")
-			err = f.SendEmail(account, message)
+			err = f.SendEmail(nil, account, message)
 			return
 		},
 	})
+	return
+}
+
+func startupCheck[T string | int](ctx *cli.Context, tag, key string) (value T, err error) {
+	var flagName string
+	if flagName = globals.MakeFlagName(tag, key); ctx.IsSet(flagName) {
+		v := ctx.Value(flagName)
+		switch t := v.(type) {
+		case string:
+			if t != "" {
+				value, _ = v.(T)
+				return
+			}
+		case int:
+			if t > 0 {
+				value, _ = v.(T)
+				return
+			}
+		}
+	}
+	err = fmt.Errorf("missing --" + flagName)
 	return
 }
 
@@ -179,57 +199,25 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
-	tag := f.Tag().String()
-	check := func(key string) (v interface{}, err error) {
-		if flagName := globals.MakeFlagName(tag, key); ctx.IsSet(flagName) {
-			v = ctx.Value(flagName)
-			switch t := v.(type) {
-			case string:
-				if t != "" {
-					return
-				}
-			case int:
-				if t > 0 {
-					return
-				}
-			}
-			err = fmt.Errorf("missing --" + flagName)
-		}
-		return
-	}
+	tag := f.Tag().Kebab()
 
 	for _, key := range maps.SortedKeys(f.accounts) {
 		account := f.accounts[key]
-		var v interface{}
 
-		if v, err = check(key + "-host"); err != nil {
+		if account.Host, err = startupCheck[string](ctx, tag, key+"-host"); err != nil {
 			return
-		} else if s, ok := v.(string); ok {
-			account.Host = s
-		}
-
-		if v, err = check(key + "-port"); err != nil {
+		} else if account.Port, err = startupCheck[int](ctx, tag, key+"-port"); err != nil {
 			return
-		} else if i, ok := v.(int); ok {
-			account.Port = i
-		}
-
-		if v, err = check(key + "-username"); err != nil {
+		} else if account.Username, err = startupCheck[string](ctx, tag, key+"-username"); err != nil {
 			return
-		} else if s, ok := v.(string); ok {
-			account.Username = s
-		}
-
-		if v, err = check(key + "-password"); err != nil {
+		} else if account.Password, err = startupCheck[string](ctx, tag, key+"-password"); err != nil {
 			return
-		} else if s, ok := v.(string); ok {
-			account.Password = s
-		}
-
-		if v, err = check(key + "-email"); err != nil {
+		} else if account.Email, err = startupCheck[string](ctx, tag, key+"-email"); err != nil {
 			return
-		} else if s, ok := v.(string); ok {
-			account.Email = s
+		} else if account.Email = sanitize.Email(account.Email, false); account.Email == "" {
+			flagName := globals.MakeFlagName(tag, key+"-email")
+			err = fmt.Errorf("invalid --" + flagName + " value")
+			return
 		}
 
 		f.accounts[key] = account
@@ -248,20 +236,27 @@ func (f *CFeature) HasEmailAccount(account string) (present bool) {
 	return
 }
 
-func (f *CFeature) SendEmail(account string, message *gomail.Message) (err error) {
+func (f *CFeature) SendEmail(r *http.Request, account string, message *gomail.Message) (err error) {
+	var ok bool
+	var cfg SmtpConfig
 	f.RLock()
-	defer f.RUnlock()
-	if cfg, ok := f.accounts[account]; ok {
-		if v := message.GetHeader("To"); len(v) == 0 {
-			err = fmt.Errorf("gomail.Message missing recipient, please set the \"To\" header before calling SendEmail")
-			return
-		}
+	if cfg, ok = f.accounts[account]; !ok {
+		f.RUnlock()
+		err = fmt.Errorf("account not found")
+		return
+	}
+	f.RUnlock()
+	if v := message.GetHeader("To"); len(v) == 0 {
+		err = fmt.Errorf("message is missing the recipient, please set the \"To\" header before calling .SendEmail")
+		return
+	}
+	go func() {
 		message.SetHeader("From", cfg.Email)
 		dialer := gomail.NewDialer(cfg.Host, cfg.Port, cfg.Username, cfg.Password)
-		log.DebugF("dialing and sending message from: %v, to: %v", cfg.Email, message.GetHeader("To"))
-		err = dialer.DialAndSend(message)
-	} else {
-		err = fmt.Errorf("account not found")
-	}
+		log.DebugRF(r, "dialing and sending message from: %v, to: %v", cfg.Email, message.GetHeader("To"))
+		if ee := dialer.DialAndSend(message); ee != nil {
+			log.ErrorRF(r, "error dialing and sending message from: %v, to: %v - %v", cfg.Email, message.GetHeader("To"), ee)
+		}
+	}()
 	return
 }
