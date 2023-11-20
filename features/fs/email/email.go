@@ -127,7 +127,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		} else {
 			message.SetHeader("To", emailRecipient)
 			message.SetHeader("Subject", f.Enjin.SiteName()+" test message")
-			if err = p.SendEmail(emailAccount, message); err != nil {
+			if err = p.SendEmail(nil, emailAccount, message); err != nil {
 				err = fmt.Errorf("error sending email: %v", err)
 			} else {
 				err = fmt.Errorf("test email sent to: %v", emailRecipient)
