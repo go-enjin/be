@@ -16,6 +16,7 @@ package be
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/Shopify/gomail"
 
@@ -32,9 +33,9 @@ func (e *Enjin) FindEmailAccount(account string) (emailSender feature.EmailSende
 	return
 }
 
-func (e *Enjin) SendEmail(account string, message *gomail.Message) (err error) {
+func (e *Enjin) SendEmail(r *http.Request, account string, message *gomail.Message) (err error) {
 	if es := e.FindEmailAccount(account); es != nil {
-		err = es.SendEmail(account, message)
+		err = es.SendEmail(r, account, message)
 		return
 	}
 	err = fmt.Errorf("account not found")
