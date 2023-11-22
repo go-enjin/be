@@ -26,6 +26,9 @@ type RegistryLookup interface {
 	// FileExists returns true if any of the known filesystems have a file matching the given path
 	FileExists(path string) (exists bool)
 
+	// ReadFile returns the file data
+	ReadFile(path string) (data []byte, err error)
+
 	// FindFileShasum returns the shasum of the given path, if not found err is set to os.ErrNotExist
 	FindFileShasum(path string) (shasum string, err error)
 
@@ -103,6 +106,21 @@ func (r *fsRegistry) GetFileSystem(id string) (f FileSystem, ok bool) {
 		for _, system := range systems {
 			if ok = system.ID() == id; ok {
 				f = system
+				return
+			}
+		}
+	}
+	return
+}
+
+func (r *fsRegistry) ReadFile(path string) (data []byte, err error) {
+	r.RLock()
+	defer r.RUnlock()
+	for mount, systems := range r.known {
+		p := bePath.TrimPrefix(path, mount)
+		for _, f := range systems {
+			if f.Exists(p) {
+				data, err = f.ReadFile(p)
 				return
 			}
 		}
