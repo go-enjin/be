@@ -125,7 +125,7 @@ func (e *Enjin) Context() (ctx context.Context) {
 	ctx.SetSpecific("Prefix", e.prefix)
 	if e.production {
 		ctx.SetSpecific("PrefixLabel", "")
-	} else {
+	} else if e.prefix != "" {
 		ctx.SetSpecific("PrefixLabel", "["+strings.ToUpper(e.prefix)+"] ")
 	}
 	tName := ctx.String("Theme", e.eb.theme)
