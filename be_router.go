@@ -124,6 +124,10 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 		log.DebugF("including %v modify content security policy middleware", cspm.Tag())
 		router.Use(e.contentSecurityPolicy.ModifyPolicyMiddleware(cspm.ModifyContentSecurityPolicy))
 	}
+	for _, cspFnTag := range e.eb.cspModifierFnOrder {
+		log.DebugF("including %v modify content security policy func", cspFnTag)
+		router.Use(e.contentSecurityPolicy.ModifyPolicyMiddleware(e.eb.cspModifierFns[cspFnTag]))
+	}
 
 	// theme static files [blocking middleware]
 	if t, ee := e.GetTheme(); ee != nil {

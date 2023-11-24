@@ -83,6 +83,9 @@ type EnjinBuilder struct {
 
 	presets []feature.Preset
 
+	cspModifierFnOrder []string
+	cspModifierFns     map[string]feature.CspModifierFn
+
 	fFormatProviders                []feature.PageFormatProvider
 	fRequestFilters                 []feature.RequestFilter
 	fPageContextUpdaters            []feature.PageContextUpdater
@@ -163,6 +166,7 @@ func New() (be *EnjinBuilder) {
 	be.defaultLang = language.Und
 	be.publicUser = make(feature.Actions, 0)
 	be.buildPages = make(map[string]string)
+	be.cspModifierFns = make(map[string]feature.CspModifierFn)
 	return be
 }
 

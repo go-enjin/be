@@ -204,6 +204,12 @@ func (eb *EnjinBuilder) AddModifyHeadersFn(fn headers.ModifyHeadersFn) feature.B
 	return eb
 }
 
+func (eb *EnjinBuilder) AddCspModifierFn(tag string, fn feature.CspModifierFn) feature.Builder {
+	eb.cspModifierFnOrder = append(eb.cspModifierFnOrder, tag)
+	eb.cspModifierFns[tag] = fn
+	return eb
+}
+
 func (eb *EnjinBuilder) AddNotifyHook(name string, hook feature.NotifyHook) feature.Builder {
 	_notifyHooks[name] = hook
 	return eb
