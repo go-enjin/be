@@ -110,6 +110,11 @@ func (w WrapFileSystem) Shasum(path string) (shasum string, err error) {
 	return
 }
 
+func (w WrapFileSystem) Sha256(path string) (shasum string, err error) {
+	shasum, err = w.fs.Sha256(w.realpath(path))
+	return
+}
+
 func (w WrapFileSystem) FileCreated(path string) (created int64, err error) {
 	created, err = w.fs.FileCreated(w.realpath(path))
 	return

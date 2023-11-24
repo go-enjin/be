@@ -22,8 +22,11 @@ import (
 )
 
 type FileSystem interface {
+	// ID is the filesystem identifier (kebab-cased feature tag)
 	ID() (id string)
+	// CloneROFS clones the existing filesystem as a new Read-Only instance
 	CloneROFS() (cloned FileSystem)
+	// Name is the underlying root path of the filesystem (not the mount-point)
 	Name() (name string)
 	Open(path string) (fh fs.File, err error)
 	ListDirs(path string) (paths []string, err error)
@@ -33,7 +36,10 @@ type FileSystem interface {
 	ReadDir(path string) (paths []fs.DirEntry, err error)
 	ReadFile(path string) (content []byte, err error)
 	MimeType(path string) (mime string, err error)
+	// Shasum returns the 10-character, lower-cased hex encoded shasum of the file
 	Shasum(path string) (shasum string, err error)
+	// Sha256 returns the complete sha256 (base64 encoded) hash of the file
+	Sha256(path string) (shasum string, err error)
 	FileCreated(path string) (created int64, err error)
 	LastModified(path string) (dateTime int64, err error)
 	Exists(path string) (exists bool)
