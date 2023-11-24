@@ -81,17 +81,17 @@ func (f *CFeature) ProcessSetupPage(saf feature.SiteAuthFeature, w http.Response
 					} else {
 
 						totp := gotp.NewDefaultTOTP(secret)
+						epoch := time.Now().Unix()
 						challenge := r.FormValue("challenge")
-						if !totp.Verify(challenge, time.Now().Unix()) {
+
+						if !totp.Verify(challenge, epoch) {
 							r = feature.AddErrorNotice(r, true, errors.OtpChallengeFailed(printer))
 						} else {
-
 							errors.Must(f.removeNewSecretKey(r))
 							errors.Must(f.setSecureProvision(provision, secret, r))
-
-							// finalize and reload same page
+							claim := feature.NewSiteAuthClaimsFactor(f.Tag().Kebab(), provision, -1, epoch, challenge)
+							saf.SetUserFactor(r, claim)
 							return
-
 						}
 
 					}
