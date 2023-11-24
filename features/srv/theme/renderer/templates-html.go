@@ -29,6 +29,7 @@ import (
 )
 
 func (f *CFeature) NewHtmlTemplateWith(t feature.Theme, name string, ctx context.Context) (tmpl *htmlTemplate.Template, err error) {
+
 	var makeTemplate func(t feature.Theme, name string, ctx context.Context) (tmpl *htmlTemplate.Template, err error)
 	makeTemplate = func(t feature.Theme, name string, ctx context.Context) (tmpl *htmlTemplate.Template, err error) {
 		if parent := t.GetParent(); parent != nil {
@@ -48,7 +49,7 @@ func (f *CFeature) NewHtmlTemplateWith(t feature.Theme, name string, ctx context
 		return
 	}
 
-	fm := f.Enjin.MakeFuncMap(ctx).AsTEXT()
+	fm := f.Enjin.MakeFuncMap(ctx).AsHTML()
 	tmpl = tmpl.Funcs(fm)
 
 	err = templates.AddHtmlParseTree(layoutsTmpl, tmpl)
