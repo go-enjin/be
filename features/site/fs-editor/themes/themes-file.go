@@ -56,7 +56,7 @@ func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Reques
 		handled = true
 		return
 	} else if file == "" {
-		if r.Method != "POST" {
+		if r.Method != http.MethodPost {
 			f.RenderFileBrowser(w, r)
 			handled = true
 			return
@@ -83,7 +83,7 @@ func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Reques
 		handled = true
 		return
 	} else if info.Code = code; !f.FileExists(info) {
-		if r.Method != "POST" {
+		if r.Method != http.MethodPost {
 			f.RenderFileBrowser(w, r)
 			handled = true
 			return
