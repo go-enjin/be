@@ -20,13 +20,9 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 )
 
-func (f *CFeature) GetContext(eid string) (ctx context.Context) {
-	f.userContextLocker.Lock(eid)
-	defer f.userContextLocker.Unlock(eid)
+func (f *CFeature) GetContextUnsafe(eid string) (ctx context.Context) {
 	var ok bool
-	if v, err := f.userContextBucket.Get(eid); err != nil {
-		panic(err)
-	} else if v == nil {
+	if v, err := f.userContextBucket.Get(eid); err != nil || v == nil {
 		ctx = context.Context{}
 	} else if ctx, ok = v.(context.Context); ok {
 	} else if ctx, ok = v.(map[string]interface{}); ok {
@@ -36,11 +32,41 @@ func (f *CFeature) GetContext(eid string) (ctx context.Context) {
 	return
 }
 
-func (f *CFeature) SetContext(eid string, ctx context.Context) {
+func (f *CFeature) GetContext(eid string) (ctx context.Context) {
 	f.userContextLocker.Lock(eid)
 	defer f.userContextLocker.Unlock(eid)
+	ctx = f.GetContextUnsafe(eid)
+	return
+}
+
+func (f *CFeature) SetContextUnsafe(eid string, ctx context.Context) {
 	if err := f.userContextBucket.Set(eid, ctx); err != nil {
 		panic(err)
 	}
+	return
+}
+
+func (f *CFeature) SetContext(eid string, ctx context.Context) {
+	f.userContextLocker.Lock(eid)
+	defer f.userContextLocker.Unlock(eid)
+	f.SetContextUnsafe(eid, ctx)
+	return
+}
+
+func (f *CFeature) ApplyContext(eid string, changes context.Context) {
+	f.userContextLocker.Lock(eid)
+	defer f.userContextLocker.Unlock(eid)
+	ctx := f.GetContextUnsafe(eid)
+	ctx.ApplySpecific(changes)
+	f.SetContextUnsafe(eid, ctx)
+	return
+}
+
+func (f *CFeature) DeleteContextKeys(eid string, keys ...string) {
+	f.userContextLocker.Lock(eid)
+	defer f.userContextLocker.Unlock(eid)
+	ctx := f.GetContextUnsafe(eid)
+	ctx.DeleteKeys(keys...)
+	f.SetContextUnsafe(eid, ctx)
 	return
 }
