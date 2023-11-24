@@ -18,7 +18,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/message"
 
@@ -26,6 +25,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/lang"
+	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
@@ -86,13 +86,13 @@ func (e *Enjin) Slugsums() (enabled bool) {
 	return
 }
 
-func (e *Enjin) ContentSecurityPolicy() (handler *csp.PolicyHandler) {
-	handler = e.contentSecurityPolicy
+func (e *Enjin) PermissionsPolicy() (handler *permissions.PolicyHandler) {
+	handler = e.permissionsPolicy
 	return
 }
 
-func (e *Enjin) PermissionsPolicy() (handler *permissions.PolicyHandler) {
-	handler = e.permissionsPolicy
+func (e *Enjin) ContentSecurityPolicy() (handler *csp.PolicyHandler) {
+	handler = e.contentSecurityPolicy
 	return
 }
 
