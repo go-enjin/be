@@ -22,6 +22,8 @@ import (
 
 	"github.com/iancoleman/strcase"
 
+	"github.com/go-enjin/golang-org-x-text/message"
+
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
@@ -30,7 +32,6 @@ import (
 	"github.com/go-enjin/be/pkg/maps"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/types/page/matter"
-	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 // TODO: restrict front-matter changes for fields with .LockNonEmpty set to true
