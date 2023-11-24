@@ -111,6 +111,7 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		"hasPrefix":        strings.HasPrefix,
 		"hasSuffix":        strings.HasSuffix,
 		"repeatString":     strings.Repeat,
+		"centreString":     CenterString,
 		"centerString":     CenterString,
 	}
 	return
