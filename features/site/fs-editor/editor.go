@@ -70,7 +70,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	f.PackageTag = Tag
 	f.FeatureTag = tag
 	f.SetSiteFeatureKey("fs-editor")
-	f.SetSiteFeatureIcon("fa-solid fa-box-archive")
+	f.SetSiteFeatureIcon("fa-solid fa-pen-ruler")
 	f.SetSiteFeatureLabel(func(printer *message.Printer) (label string) {
 		label = printer.Sprintf("FS Editor")
 		return
