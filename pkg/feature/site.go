@@ -42,6 +42,8 @@ type Site interface {
 
 	GetContext(eid string) (ctx beContext.Context)
 	SetContext(eid string, ctx beContext.Context)
+	ApplyContext(eid string, changes beContext.Context)
+	DeleteContextKeys(eid string, keys ...string)
 
 	PreparePage(layout, pageType, pagePath string, t Theme, r *http.Request) (pg Page, ctx beContext.Context, err error)
 	ServePreparedPage(pg Page, ctx beContext.Context, t Theme, w http.ResponseWriter, r *http.Request)
