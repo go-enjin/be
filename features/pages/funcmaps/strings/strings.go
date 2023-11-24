@@ -302,9 +302,9 @@ func CenterString(input string, width int) (centered string) {
 	}
 	delta := width - size
 	half := delta / 2
-	remainder := delta % 2
+	//remainder := delta % 2
 	centered = strings.Repeat(" ", half)
 	centered += input
-	centered += strings.Repeat(" ", half+remainder)
+	//centered += strings.Repeat(" ", half+remainder)
 	return
 }
