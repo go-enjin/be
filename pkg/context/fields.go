@@ -20,9 +20,10 @@ import (
 
 	"github.com/maruel/natural"
 
+	"github.com/go-enjin/golang-org-x-text/message"
+
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
-	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 type Fields map[string]*Field
@@ -66,6 +67,14 @@ func (f Fields) Len() (count int) {
 func (f Fields) Keys() (keys []string) {
 	for k, _ := range f {
 		keys = append(keys, k)
+	}
+	return
+}
+
+func (f Fields) Copy() (copied Fields) {
+	copied = make(Fields)
+	for k, v := range f {
+		copied[k] = v.Copy()
 	}
 	return
 }

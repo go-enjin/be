@@ -63,3 +63,9 @@ func ParseField(data map[string]interface{}) (field *Field) {
 	field.NoResetValue, _ = data["no-reset-value"].(bool)
 	return
 }
+
+func (f *Field) Copy() (copied *Field) {
+	clone := *f
+	copied = &clone
+	return
+}
