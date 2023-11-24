@@ -21,6 +21,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-enjin/golang-org-x-text/message"
+
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
@@ -29,8 +32,6 @@ import (
 	beMime "github.com/go-enjin/be/pkg/mime"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/userbase"
-	"github.com/go-enjin/golang-org-x-text/language"
-	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 func (f *CEditorFeature[MakeTypedFeature]) FileExists(info *editor.File) (exists bool) {
@@ -40,7 +41,7 @@ func (f *CEditorFeature[MakeTypedFeature]) FileExists(info *editor.File) (exists
 		if mpfTag == info.FSID {
 			for _, mountPoints := range mpf.GetMountedPoints() {
 				for _, mountPoint := range mountPoints {
-					if !strings.HasPrefix("/"+filePath, mountPoint.Mount) {
+					if mountPoint.Mount != "/" && !strings.HasPrefix("/"+filePath, mountPoint.Mount) {
 						continue
 					} else if mountPoint.ROFS.Exists(filePath) {
 						if mimeType, err := mountPoint.ROFS.MimeType(filePath); err == nil {
@@ -63,7 +64,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ReadFile(info *editor.File) (data []b
 		if mpfTag == info.FSID {
 			for _, mountPoints := range mpf.GetMountedPoints() {
 				for _, mountPoint := range mountPoints {
-					if !strings.HasPrefix("/"+filePath, mountPoint.Mount) {
+					if mountPoint.Mount != "/" && !strings.HasPrefix("/"+filePath, mountPoint.Mount) {
 						continue
 					} else if mountPoint.ROFS.Exists(filePath) {
 						if data, err = mountPoint.ROFS.ReadFile(filePath); err == nil {
@@ -89,7 +90,7 @@ func (f *CEditorFeature[MakeTypedFeature]) WriteFile(info *editor.File, data []b
 		if mpfTag == info.FSID {
 			for _, mountPoints := range mpf.GetMountedPoints() {
 				for _, mountPoint := range mountPoints {
-					if !strings.HasPrefix("/"+filePath, mountPoint.Mount) {
+					if mountPoint.Mount != "/" && !strings.HasPrefix("/"+filePath, mountPoint.Mount) {
 						continue
 					} else if mountPoint.RWFS != nil {
 						err = mountPoint.RWFS.WriteFile(filePath, data, 0664)
@@ -114,7 +115,7 @@ func (f *CEditorFeature[MakeTypedFeature]) RemoveFile(info *editor.File) (err er
 		if mpfTag == info.FSID {
 			for _, mountPoints := range mpf.GetMountedPoints() {
 				for _, mountPoint := range mountPoints {
-					if !strings.HasPrefix("/"+filePath, mountPoint.Mount) {
+					if mountPoint.Mount != "/" && !strings.HasPrefix("/"+filePath, mountPoint.Mount) {
 						continue
 					} else if mountPoint.ROFS.Exists(filePath) && mountPoint.RWFS != nil {
 						err = mountPoint.RWFS.Remove(filePath)
@@ -165,7 +166,7 @@ func (f *CEditorFeature[MakeTypedFeature]) PrepareEditableFile(r *http.Request, 
 		mountedPoints := mpf.GetMountedPoints()
 		for _, point := range maps.SortedKeys(mountedPoints) {
 			for _, mountPoint := range mountedPoints[point] {
-				if !strings.HasPrefix("/"+info.FilePath(), mountPoint.Mount) {
+				if mountPoint.Mount != "/" && !strings.HasPrefix("/"+info.FilePath(), mountPoint.Mount) {
 					continue
 				} else if mountPoint.ROFS.Exists(info.FilePath()) {
 					if ef, ignored := f.SelfEditor().ProcessMountPointFile(r, printer, eid, mpf.BaseTag().String(), mpfTag, info.Code, info.Path, info.FilePath(), mountPoint, true); ignored {
