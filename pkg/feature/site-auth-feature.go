@@ -45,6 +45,7 @@ type SiteAuthFeature interface {
 	GenerateJWT(claims *CSiteAuthClaims) (token string, err error)
 	VerifyJWT(r *http.Request) (claims *CSiteAuthClaims, err error)
 	ResetUserFactors(r *http.Request, eid string) (err error)
+	SetUserFactor(r *http.Request, claim *CSiteAuthClaimsFactor)
 
 	AuthorizeUserSignIn(w http.ResponseWriter, r *http.Request, claims *CSiteAuthClaims) (handled bool, modified *http.Request)
 
