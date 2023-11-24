@@ -92,13 +92,11 @@ func (f *CFeature) ProcessSetupPage(saf feature.SiteAuthFeature, w http.Response
 							if !hotp.Verify(challenge, 0) {
 								r = feature.AddErrorNotice(r, true, errors.OtpChallengeFailed(printer))
 							} else {
-
 								errors.Must(f.removeNewSecretKey(r))
 								errors.Must(f.setSecureProvision(provision, email, secret, 1, r))
-
-								// finalize and reload same page
+								claim := feature.NewSiteAuthClaimsFactor(f.Tag().Kebab(), provision, -1, 0, challenge)
+								saf.SetUserFactor(r, claim)
 								return
-
 							}
 						}
 
