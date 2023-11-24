@@ -20,6 +20,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/golang-org-x-text/message"
+
 	beContext "github.com/go-enjin/be/pkg/context"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
@@ -30,7 +32,6 @@ import (
 	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/site"
-	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 const (
@@ -65,14 +66,22 @@ type Feature interface {
 type MakeFeature interface {
 	feature.SiteMakeFeature[MakeFeature]
 
-	// SetProfileImagePath specifies the public filesystem path prefix for named profile images
-	SetProfileImagePath(path string) MakeFeature
+	// EnableSelfProfilePage enables (or disables) the site menu item and request handler for the (read-only) profile
+	// pages
+	EnableSelfProfilePage(enabled bool) MakeFeature
 
-	// DefaultProfileImageNames adds the default image URLs to the media profiles list
+	// EnableOtherProfilePages enables (or disables) the (read-only) other user profile pages
+	EnableOtherProfilePages(enabled bool) MakeFeature
+
+	// EnableProfileImages enables the profile image aspects of this feature
+	EnableProfileImages(enabled bool) MakeFeature
+	// SetProfileImagePath enables profile images and specifies the public filesystem path prefix to use
+	SetProfileImagePath(path string) MakeFeature
+	// DefaultProfileImageNames enables profile images and adds the default image URLs to the media profiles list
 	DefaultProfileImageNames() MakeFeature
-	// AddProfileImageNames adds the given image URLs to the media profiles list
+	// AddProfileImageNames enables profile images and adds the given image URLs to the media profiles list
 	AddProfileImageNames(names ...string) MakeFeature
-	// SetProfileImageNames replaces the media profiles list with the given image URLs
+	// SetProfileImageNames enables profile images and replaces the media profiles list with the given image names
 	SetProfileImageNames(names ...string) MakeFeature
 
 	Make() Feature
@@ -81,8 +90,12 @@ type MakeFeature interface {
 type CFeature struct {
 	site.CSiteFeature[MakeFeature]
 
-	profileImageNames []string
-	profileImagePath  string
+	selfProfilePageEnabled   bool
+	otherProfilePagesEnabled bool
+
+	profileImagesEnabled bool
+	profileImageNames    []string
+	profileImagePath     string
 
 	viewOwnProfile   feature.Action
 	viewOtherProfile feature.Action
@@ -121,22 +134,41 @@ func (f *CFeature) Init(this interface{}) {
 	return
 }
 
+func (f *CFeature) EnableSelfProfilePage(enabled bool) MakeFeature {
+	f.selfProfilePageEnabled = enabled
+	return f
+}
+
+func (f *CFeature) EnableOtherProfilePages(enabled bool) MakeFeature {
+	f.otherProfilePagesEnabled = enabled
+	return f
+}
+
+func (f *CFeature) EnableProfileImages(enabled bool) MakeFeature {
+	f.profileImagesEnabled = enabled
+	return f
+}
+
 func (f *CFeature) SetProfileImagePath(path string) MakeFeature {
+	f.EnableProfileImages(true)
 	f.profileImagePath = path
 	return f
 }
 
 func (f *CFeature) DefaultProfileImageNames() MakeFeature {
+	f.EnableProfileImages(true)
 	f.profileImageNames = slices.Merge(f.profileImageNames, DefaultProfileImageNames)
 	return f
 }
 
 func (f *CFeature) AddProfileImageNames(images ...string) MakeFeature {
+	f.EnableProfileImages(true)
 	f.profileImageNames = slices.Merge(f.profileImageNames, images)
 	return f
 }
 
 func (f *CFeature) SetProfileImageNames(images ...string) MakeFeature {
+	f.EnableProfileImages(true)
 	f.profileImageNames = images
 	return f
 }
@@ -174,30 +206,21 @@ func (f *CFeature) UserActions() (list feature.Actions) {
 }
 
 func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
-	info := f.SiteFeatureInfo(r)
-	m = menu.Menu{
-		{
-			Text: info.Label,
-			Href: f.SiteFeaturePath(),
-			Icon: info.Icon,
-		},
+	if f.selfProfilePageEnabled {
+		info := f.SiteFeatureInfo(r)
+		m = menu.Menu{
+			{
+				Text: info.Label,
+				Href: f.SiteFeaturePath(),
+				Icon: info.Icon,
+			},
+		}
 	}
 	return
 }
 
 func (f *CFeature) SiteSettingsFields(r *http.Request) (fields beContext.Fields) {
 	printer := lang.GetPrinterFromRequest(r)
-
-	var availableImages []string
-	for _, name := range f.profileImageNames {
-		imagePath := f.profileImagePath + "/" + name
-		for _, extn := range []string{"png", "jpg", "gif", "webp"} {
-			foundPath := imagePath + "." + extn
-			if f.Enjin.PublicFileSystems().Lookup().FileExists(foundPath) {
-				availableImages = append(availableImages, foundPath)
-			}
-		}
-	}
 
 	fields = beContext.Fields{
 		"display-name": {
@@ -211,7 +234,21 @@ func (f *CFeature) SiteSettingsFields(r *http.Request) (fields beContext.Fields)
 			Placeholder:  printer.Sprintf("Full Name"),
 			NoResetValue: true,
 		},
-		"profile-image": {
+	}
+
+	if f.profileImagesEnabled {
+		var availableImages []string
+		for _, name := range f.profileImageNames {
+			imagePath := f.profileImagePath + "/" + name
+			for _, extn := range []string{"png", "jpg", "gif", "webp"} {
+				foundPath := imagePath + "." + extn
+				if f.Enjin.PublicFileSystems().Lookup().FileExists(foundPath) {
+					availableImages = append(availableImages, foundPath)
+				}
+			}
+		}
+
+		fields["profile-image"] = &beContext.Field{
 			Key:          "profile-image",
 			Tab:          "user",
 			Label:        printer.Sprintf("Profile Image"),
@@ -222,14 +259,19 @@ func (f *CFeature) SiteSettingsFields(r *http.Request) (fields beContext.Fields)
 			DefaultValue: "",
 			NoResetValue: true,
 			ValueOptions: append([]string{""}, availableImages...),
-		},
+		}
 	}
+
 	return
 }
 
 func (f *CFeature) RouteSiteFeature(r chi.Router) {
-	r.Get("/", f.ServeProfilePage)
-	r.Get("/{eid:[a-f0-9]{10}}", f.ServeProfilePage)
+	if f.selfProfilePageEnabled {
+		r.Get("/", f.ServeProfilePage)
+	}
+	if f.otherProfilePagesEnabled {
+		r.Get("/{eid:[a-f0-9]{10}}", f.ServeProfilePage)
+	}
 }
 
 func (f *CFeature) ServeProfilePage(w http.ResponseWriter, r *http.Request) {
@@ -262,7 +304,7 @@ func (f *CFeature) ServeProfilePage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	t := f.SiteFeatureTheme()
-	if err = f.Site().PrepareAndServePage("site", "user-profile", f.SiteFeaturePath(), t, w, r, ctx); err != nil {
+	if err = f.Site().PrepareAndServePage("site", "profile", f.SiteFeaturePath(), t, w, r, ctx); err != nil {
 		log.ErrorRF(r, "error preparing %v feature page: %v", f.Tag(), err)
 		f.Enjin.ServeInternalServerError(w, r)
 		return
@@ -326,7 +368,7 @@ func (f *CFeature) SiteUserSetupStageHandler(saf feature.SiteAuthFeature, w http
 	}
 
 	t := f.SiteFeatureTheme()
-	if err = f.Site().PrepareAndServePage("site", "user-profile--setup", f.SiteFeaturePath(), t, w, r, ctx); err != nil {
+	if err = f.Site().PrepareAndServePage("site", "profile--setup", f.SiteFeaturePath(), t, w, r, ctx); err != nil {
 		log.ErrorRF(r, "error preparing %v feature page: %v", f.Tag(), err)
 		f.Enjin.ServeInternalServerError(w, r)
 		return
