@@ -105,6 +105,12 @@ func (f *CFeature) VerifyJWT(r *http.Request) (claims *feature.CSiteAuthClaims, 
 	return
 }
 
+func (f *CFeature) SetUserFactor(r *http.Request, claim *feature.CSiteAuthClaimsFactor) {
+	claims := f.getPrivateClaims(r)
+	claims.SetFactor(claim)
+	return
+}
+
 func (f *CFeature) deleteCookie(w http.ResponseWriter, name string) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     name,
