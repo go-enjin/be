@@ -17,17 +17,21 @@ package theme
 import (
 	"fmt"
 	"html/template"
+	"sort"
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/maruel/natural"
+
+	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
+	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/types/theme/layouts"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 func (t *CTheme) init() (err error) {
@@ -36,9 +40,11 @@ func (t *CTheme) init() (err error) {
 	if ctx, err = t.readToml(); err != nil {
 		return
 	}
+	t.tomlCache = ctx.Copy()
 
-	t.layouts, err = layouts.NewLayouts(t)
 	t.config = t.makeConfig(ctx)
+	t.parent = t.config.Parent
+	t.layouts, err = layouts.NewLayouts(t)
 
 	return
 }
@@ -121,15 +127,16 @@ func (t *CTheme) makeConfig(ctx context.Context) (config *feature.ThemeConfig) {
 		}
 	}
 
-	config.Authors = make([]feature.Author, 0)
+	config.Authors = make([]feature.ThemeAuthor, 0)
 	if ctx.Has("author") {
 		v := ctx.Get("author")
 		switch value := v.(type) {
 		case map[string]interface{}:
-			actx := context.NewFromMap(value)
-			author := feature.Author{}
-			author.Name = actx.String("name", "")
-			author.Homepage = actx.String("homepage", "")
+			authorCtx := context.Context(value)
+			author := feature.ThemeAuthor{
+				Name:     authorCtx.String("name", ""),
+				Homepage: authorCtx.String("homepage", ""),
+			}
 			config.Authors = append(config.Authors, author)
 		}
 	}
@@ -143,7 +150,7 @@ func (t *CTheme) makeConfig(ctx context.Context) (config *feature.ThemeConfig) {
 	}
 
 	if ctx.Has("permissions-policy") {
-		log.DebugF("permissions-policy theme config unimplemented")
+		log.ErrorF("permissions-policy theme config unimplemented")
 	}
 
 	if ctx.Has("content-security-policy") {
@@ -189,120 +196,40 @@ func (t *CTheme) makeConfig(ctx context.Context) (config *feature.ThemeConfig) {
 
 	if v := ctx.Get("semantic"); v != nil {
 		if semantic, ok := v.(map[string]interface{}); ok {
-			// log.DebugF("semantic configuration: %T %+v", v, maps.DebugWalk(semantic))
 
 			if siteInfo, ok := semantic["site"].(map[string]interface{}); ok {
 				if siteMenu, ok := siteInfo["menu"].(map[string]interface{}); ok {
 					if siteMenuMobile, ok := siteMenu["mobile"].(map[string]interface{}); ok {
 						if siteMenuMobileStyle, ok := siteMenuMobile["style"].(string); ok {
 							config.Context.SetSpecific("SiteMenuMobileStyle", siteMenuMobileStyle)
-							//log.DebugF("site menu mobile style: %v", siteMenuMobileStyle)
 						}
 					}
 					if siteMenuDesktop, ok := siteMenu["desktop"].(map[string]interface{}); ok {
 						if siteMenuDesktopStyle, ok := siteMenuDesktop["style"].(string); ok {
 							config.Context.SetSpecific("SiteMenuDesktopStyle", siteMenuDesktopStyle)
-							//log.DebugF("site menu desktop style: %v", siteMenuDesktopStyle)
 						}
 					}
 				}
 
 				if sitePage, ok := siteInfo["page"].(map[string]interface{}); ok {
 
-					if stylesheets, ok := sitePage["early-stylesheets"].([]interface{}); ok {
-						var found []string
-						for _, stylesheet := range stylesheets {
-							if href, ok := stylesheet.(string); ok {
-								found = append(found, href)
-							}
-						}
+					if found := t.parseListOfStrings(sitePage["early-stylesheets"]); len(found) > 0 {
 						config.Context.SetSpecific("PageEarlyStyleSheets", found)
 					}
 
-					if stylesheets, ok := sitePage["stylesheets"].([]interface{}); ok {
-						var found []string
-						for _, stylesheet := range stylesheets {
-							if href, ok := stylesheet.(string); ok {
-								found = append(found, href)
-							}
-						}
+					if found := t.parseListOfStrings(sitePage["stylesheets"]); len(found) > 0 {
 						config.Context.SetSpecific("PageStyleSheets", found)
 					}
 
-					if stylesheets, ok := sitePage["font-stylesheets"].([]interface{}); ok {
-						var found []string
-						for _, stylesheet := range stylesheets {
-							if href, ok := stylesheet.(string); ok {
-								found = append(found, href)
-							}
-						}
+					if found := t.parseListOfStrings(sitePage["font-stylesheets"]); len(found) > 0 {
 						config.Context.SetSpecific("PageFontStyleSheets", found)
 					}
 
 				}
 			}
 
-			var walkStyles func(keys []string, src map[string]interface{}) (styles []string)
-			walkStyles = func(keys []string, src map[string]interface{}) (styles []string) {
-				sk := maps.SortedKeys(src)
-				for _, k := range sk {
-					s, _ := src[k]
-					switch typedStyle := s.(type) {
-					case map[string]interface{}:
-						r := walkStyles(append(keys, k), typedStyle)
-						styles = append(styles, r...)
-					default:
-						joined := strings.Join(append(keys, k), "--")
-						styles = append(
-							styles,
-							fmt.Sprintf(
-								"--%v: %v;",
-								joined,
-								typedStyle,
-							),
-						)
-					}
-				}
-				return
-			}
-
-			if style, ok := semantic["style"].(map[string]interface{}); ok {
-				// log.DebugF("found semantic styles: %+v", maps.DebugWalk(style))
-
-				keyOrder := []string{
-					"color",
-					"overlay",
-					"primary",
-					"secondary",
-					"accent",
-					"highlight",
-					"alternate",
-					"style",
-					"desktop",
-					"mobile",
-					"page",
-					"z",
-					"fa",
-					"fa-solid",
-					"fa-regular",
-					"fa-brands",
-					"icon",
-					"theme",
-				}
-
-				var rootStyles []string
-				for _, key := range keyOrder {
-					if keyVal, ok := style[key].(map[string]interface{}); ok {
-						results := walkStyles([]string{key}, keyVal)
-						if len(results) > 0 {
-							rootStyles = append(rootStyles, results...)
-						}
-					}
-				}
-				config.RootStyles = make([]template.CSS, len(rootStyles))
-				for idx, rootStyle := range rootStyles {
-					config.RootStyles[idx] = template.CSS(rootStyle)
-				}
+			if rootStyles, ok := semantic["style"].(map[string]interface{}); ok {
+				config.RootStyles = t.parseSemanticStyles(nil, rootStyles)
 			}
 
 			if block, ok := semantic["block"].(map[string]interface{}); ok {
@@ -312,13 +239,9 @@ func (t *CTheme) makeConfig(ctx context.Context) (config *feature.ThemeConfig) {
 				if blockThemes, ok := block["theme"].(map[string]interface{}); ok {
 					for k, vv := range blockThemes {
 						if blockTheme, ok := vv.(map[string]interface{}); ok {
-							results := walkStyles([]string{"style"}, blockTheme)
-							resultStyles := make([]template.CSS, len(results))
-							for idx, result := range results {
-								resultStyles[idx] = template.CSS(result)
-							}
+							parsedStyles := t.parseSemanticStyles([]string{"style"}, blockTheme)
 							config.BlockThemes[k] = blockTheme
-							config.BlockStyles[k] = resultStyles
+							config.BlockStyles[k] = parsedStyles
 						}
 					}
 				}
@@ -328,8 +251,6 @@ func (t *CTheme) makeConfig(ctx context.Context) (config *feature.ThemeConfig) {
 		} else {
 			log.ErrorF("semantic structure is not a map[string]interface{}: %T", v)
 		}
-	} else {
-		// log.DebugF("no semantic enjin configuration found")
 	}
 
 	for k, v := range ctx {
@@ -337,10 +258,103 @@ func (t *CTheme) makeConfig(ctx context.Context) (config *feature.ThemeConfig) {
 		case "author", "styles", "semantic":
 		default:
 			config.Context[k] = v
-			// log.DebugF("%v theme: adding context: %v => %+v", t.ThemeConfig.Name, k, v)
 		}
 	}
 
 	config.Context.CamelizeKeys()
+	return
+}
+
+func (t *CTheme) parseListOfStrings(input interface{}) (found []string) {
+	if stylesheets, ok := input.([]interface{}); ok {
+		for _, stylesheet := range stylesheets {
+			if value, ok := stylesheet.(string); ok {
+				found = append(found, value)
+			}
+		}
+	}
+	return
+}
+
+var (
+	SemanticStylesOrder = []string{
+		"color",
+		"overlay",
+		"primary",
+		"secondary",
+		"accent",
+		"highlight",
+		"alternate",
+		"style",
+		"desktop",
+		"mobile",
+		"page",
+		"z",
+		"fa",
+		"fa-solid",
+		"fa-regular",
+		"fa-brands",
+		"icon",
+		"theme",
+	}
+)
+
+func (t *CTheme) parseSemanticStyles(keys []string, src map[string]interface{}) (parsed []template.CSS) {
+	for _, styleKey := range t.sortedSemanticStyleKeys(len(keys), src) {
+		switch styleValue := src[styleKey].(type) {
+		case context.Context:
+			more := t.parseSemanticStyles(append(keys, styleKey), styleValue)
+			parsed = append(parsed, more...)
+		case map[string]interface{}:
+			more := t.parseSemanticStyles(append(keys, styleKey), styleValue)
+			parsed = append(parsed, more...)
+		default:
+			joined := strings.Join(append(keys, styleKey), "--")
+			parsed = append(parsed, template.CSS(fmt.Sprintf("--%v: %v;", joined, styleValue)))
+		}
+	}
+	return
+}
+
+func (t *CTheme) sortedSemanticStyleKeys(depth int, src map[string]interface{}) (sorted []string) {
+	sorted = maps.Keys(src)
+
+	/*
+
+		Depth of Zero means that the keys in the map are actually the semantic style prefixes, which are to be sorted
+		specially:
+
+			An,Bn: natural.Less
+			An,By: less = true
+			Ay,Bn: less = false
+			Ay,By: named order
+
+		Depth greater than zero means that the keys are building up the actual CSS root style name and are sorted naturally.
+	*/
+
+	sort.Slice(sorted, func(i, j int) (less bool) {
+		a, b := sorted[i], sorted[j]
+		if depth > 0 {
+			less = natural.Less(a, b)
+			return
+		}
+
+		aIsNamed, bIsNamed := slices.Within(a, SemanticStylesOrder), slices.Within(b, SemanticStylesOrder)
+
+		if !aIsNamed && !bIsNamed {
+			less = natural.Less(a, b)
+			return
+		} else if !aIsNamed && bIsNamed {
+			less = true
+			return
+		} else if aIsNamed && !bIsNamed {
+			less = false
+			return
+		}
+
+		idx, jdx := slices.IndexOf(SemanticStylesOrder, a), slices.IndexOf(SemanticStylesOrder, b)
+		less = idx < jdx
+		return
+	})
 	return
 }

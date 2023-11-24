@@ -15,13 +15,13 @@
 package theme
 
 import (
-	"html/template"
 	"net/http"
 	"sort"
 	"sync"
 
 	"github.com/maruel/natural"
 
+	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
@@ -57,6 +57,8 @@ type CTheme struct {
 
 	formatProviders []feature.PageFormatProvider
 
+	tomlCache beContext.Context
+
 	sync.RWMutex
 }
 
@@ -71,7 +73,9 @@ func newTheme(origin, path string, themeFs, staticFs fs.FileSystem, autoload boo
 	t.name = bePath.Base(path)
 	t.path = path
 	t.fs = themeFs
-	t.staticFS = staticFs
+	if staticFs != nil {
+		t.staticFS = staticFs
+	}
 	t.autoload = autoload
 	if err = t.init(); err != nil {
 		return
@@ -112,91 +116,75 @@ func (t *CTheme) Layouts() feature.ThemeLayouts {
 }
 
 func (t *CTheme) GetConfig() (config *feature.ThemeConfig) {
+
 	if t.autoload {
 		if ctx, err := t.readToml(); err != nil {
 			log.ErrorF("error autoloading theme.toml: %v", err)
 			return
 		} else {
 			config = t.makeConfig(ctx)
-			t.Lock()
-			t.parent = config.Parent
-			t.Unlock()
 		}
 	} else {
-		config = &feature.ThemeConfig{
-			Name:                  t.config.Name,
-			Parent:                t.config.Parent,
-			License:               t.config.License,
-			LicenseLink:           t.config.LicenseLink,
-			Description:           t.config.Description,
-			Homepage:              t.config.Homepage,
-			Authors:               t.config.Authors,
-			Extends:               t.config.Extends,
-			FontawesomeLinks:      make(map[string]string),
-			PermissionsPolicy:     t.config.PermissionsPolicy,
-			ContentSecurityPolicy: t.config.ContentSecurityPolicy,
-		}
+		config = t.makeConfig(t.tomlCache.Copy())
+	}
+	if t.parent != config.Parent {
+		t.Lock()
+		t.parent = config.Parent
+		t.Unlock()
 	}
 
 	//t.RLock()
 	//defer t.RUnlock()
 
-	config.BlockStyles = make(map[string][]template.CSS)
-	config.BlockThemes = make(map[string]map[string]interface{})
-
 	if parent := t.GetParent(); parent != nil {
 
 		parentConfig := parent.GetConfig()
 
-		config.RootStyles = append(
-			parentConfig.RootStyles,
-			config.RootStyles...,
-		)
+		config.RootStyles = slices.Merge(config.RootStyles, parentConfig.RootStyles)
 
 		for k, v := range parentConfig.BlockStyles {
-			config.BlockStyles[k] = append([]template.CSS{}, v...)
+			config.BlockStyles[k] = slices.Merge(config.BlockStyles[k], v)
 		}
 
 		for k, v := range parentConfig.BlockThemes {
-			config.BlockThemes[k] = make(map[string]interface{})
-			for j, vv := range v {
-				config.BlockThemes[k][j] = vv
+			if _, present := config.BlockThemes[k]; !present {
+				// don't clobber the child theme
+				config.BlockThemes[k] = make(map[string]interface{})
+				for j, vv := range v {
+					config.BlockThemes[k][j] = vv
+				}
 			}
 		}
 
-		for _, v := range parentConfig.FontawesomeClasses {
-			config.FontawesomeClasses = append(config.FontawesomeClasses, v)
-		}
+		config.FontawesomeClasses = slices.Merge(config.FontawesomeClasses, parentConfig.FontawesomeClasses)
 		for k, v := range parentConfig.FontawesomeLinks {
-			config.FontawesomeLinks[k] = v
+			if _, present := config.FontawesomeLinks[k]; !present {
+				config.FontawesomeLinks[k] = v
+			}
 		}
 
-		//config.Context = parentConfig.Context.Copy()
-
-		mergeContext := parentConfig.Context.Copy()
 		for _, key := range []string{"SiteMenuMobileStyle", "SiteMenuDesktopStyle"} {
-			if v := config.Context.String(key, ""); v != "" {
-				mergeContext.SetSpecific(key, v)
+			if v := config.Context.String(key, ""); v == "" {
+				if v = parentConfig.Context.String(key, ""); v != "" {
+					config.Context.SetSpecific(key, v)
+				}
 			}
 		}
 		for _, key := range []string{"PageEarlyStyleSheets", "PageStyleSheets", "PageFontStyleSheets"} {
-			if v := config.Context.Strings(key); len(v) > 0 {
-				if pv := mergeContext.Strings(key); len(v) > 0 {
-					for _, pvv := range pv {
-						if !slices.Within(pvv, v) {
-							v = append(v, pvv)
-						}
+			list := config.Context.Strings(key)
+			if pv := parentConfig.Context.Strings(key); len(pv) > 0 {
+				for _, pvv := range pv {
+					if !slices.Within(pvv, list) {
+						list = append(list, pvv)
 					}
 				}
-				mergeContext.SetSpecific(key, v)
 			}
+			config.Context.SetSpecific(key, list)
 		}
-		mergeContext.ApplySpecific(config.Context)
-		config.Context = mergeContext // don't clobber this theme's stuff with the parent's
 
 		config.Supports.Menus = parentConfig.Supports.Menus.Append(config.Supports.Menus)
-		config.Supports.Locales = parentConfig.Supports.Locales
-		config.Supports.Layouts = parentConfig.Supports.Layouts
+		config.Supports.Locales = slices.Merge(config.Supports.Locales, parentConfig.Supports.Locales)
+		config.Supports.Layouts = slices.Merge(config.Supports.Layouts, parentConfig.Supports.Layouts)
 
 		for pk, pv := range parentConfig.Supports.Archetypes {
 			if kv, ok := config.Supports.Archetypes[pk]; ok {
@@ -209,26 +197,12 @@ func (t *CTheme) GetConfig() (config *feature.ThemeConfig) {
 				config.Supports.Archetypes[pk] = pv
 			}
 		}
+
+		config.ContentSecurityPolicy = config.ContentSecurityPolicy.Merge(parentConfig.ContentSecurityPolicy)
 	}
 
 	if l := t.Layouts(); l != nil {
 		config.Supports.Layouts = l.ListLayouts()
-	}
-
-	for _, locale := range config.Supports.Locales {
-		if !slices.Within(locale, config.Supports.Locales) {
-			config.Supports.Locales = append(config.Supports.Locales, locale)
-		}
-	}
-
-	for k, v := range config.BlockStyles {
-		config.BlockStyles[k] = append([]template.CSS{}, v...)
-	}
-	for k, v := range config.BlockThemes {
-		config.BlockThemes[k] = make(map[string]interface{})
-		for j, vv := range v {
-			config.BlockThemes[k][j] = vv
-		}
 	}
 
 	config.Context.CamelizeKeys()
@@ -322,8 +296,10 @@ func (t *CTheme) Middleware(next http.Handler) http.Handler {
 	log.DebugF("including %v theme static middleware", t.Name())
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if t.staticFS == nil {
-			next.ServeHTTP(w, r)
-			return
+			if parent := t.GetParent(); parent == nil {
+				next.ServeHTTP(w, r)
+				return
+			}
 		}
 		path := bePath.TrimSlashes(r.URL.Path)
 		var err error
