@@ -6,7 +6,6 @@ package csp
 
 import (
 	"fmt"
-	"strings"
 )
 
 type ContentSecurityPolicyConfig struct {
@@ -32,22 +31,6 @@ type ContentSecurityPolicyConfig struct {
 	FrameAncestors         Sources
 }
 
-type ConfigError []string
-
-func (c ConfigError) Error() (msg string) {
-	msg = strings.Join(c, "\n")
-	return
-}
-
-func (c ConfigError) addError(msg string) (modified ConfigError) {
-	modified = append(c, msg)
-	return
-}
-
-func (c ConfigError) isEmpty() (empty bool) {
-	empty = len(c) == 0
-	return
-}
 
 func (c ContentSecurityPolicyConfig) Apply(policy Policy) (modified Policy) {
 	apply := func(key string, s Sources, p Policy) (m Policy) {
