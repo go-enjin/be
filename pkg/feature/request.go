@@ -43,6 +43,8 @@ type HeadersModifier interface {
 	ModifyHeaders(w http.ResponseWriter, r *http.Request)
 }
 
+type CspModifierFn func(policy csp.Policy, r *http.Request) (modified csp.Policy)
+
 type ContentSecurityPolicyModifier interface {
 	Feature
 	ModifyContentSecurityPolicy(policy csp.Policy, r *http.Request) (modified csp.Policy)
