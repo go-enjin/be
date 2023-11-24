@@ -58,7 +58,7 @@ func (f *CEditorFeature[MakeTypedFeature]) PrepareRenderFileEditor(w http.Respon
 		handled = true
 		return
 	} else if file == "" {
-		if r.Method != "POST" {
+		if r.Method != http.MethodPost {
 			f.RenderFileBrowser(w, r)
 			handled = true
 			return
@@ -92,7 +92,7 @@ func (f *CEditorFeature[MakeTypedFeature]) PrepareRenderFileEditor(w http.Respon
 		handled = true
 		return
 	} else if info.Code = code; !f.SelfEditor().FileExists(info) {
-		if r.Method != "POST" {
+		if r.Method != http.MethodPost {
 			f.RenderFileBrowser(w, r)
 			handled = true
 			return
