@@ -185,6 +185,14 @@ func (f *FileSystem) Shasum(path string) (shasum string, err error) {
 	return
 }
 
+func (f *FileSystem) Sha256(path string) (shasum string, err error) {
+	f.RLock()
+	defer f.RUnlock()
+
+	shasum, err = sha.FileHash256(f.realpath(path))
+	return
+}
+
 func (f *FileSystem) FileCreated(path string) (created int64, err error) {
 	f.RLock()
 	defer f.RUnlock()

@@ -144,6 +144,11 @@ func (f FileSystem) Shasum(path string) (shasum string, err error) {
 	return
 }
 
+func (f FileSystem) Sha256(path string) (shasum string, err error) {
+	shasum, err = bePathEmbed.Sha256(f.realpath(path), f.embed)
+	return
+}
+
 func (f FileSystem) FileCreated(_ string) (created int64, err error) {
 	var info times.Timespec
 	if info, err = globals.BuildFileInfo(); err == nil && info.HasBirthTime() {

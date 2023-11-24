@@ -34,6 +34,7 @@ import (
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/gob"
+	"github.com/go-enjin/be/pkg/hash/sha"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/types/page/matter"
 )
@@ -291,6 +292,20 @@ func (f *DBFileSystem) Shasum(path string) (shasum string, err error) {
 		return
 	} else if stub.Mime != "" && stub.Mime != InodeDirectoryMimeType {
 		shasum = stub.Shasum
+	} else {
+		err = fs.ErrNotExist
+	}
+	return
+}
+
+func (f *DBFileSystem) Sha256(path string) (shasum string, err error) {
+	f.RLock()
+	defer f.RUnlock()
+	var file *File
+	if file, err = f.getEntryUnsafe(path); err != nil {
+		return
+	} else if file.Mime != "" && file.Mime != InodeDirectoryMimeType {
+		shasum, err = sha.Hash256(file.Content)
 	} else {
 		err = fs.ErrNotExist
 	}
