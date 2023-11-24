@@ -21,49 +21,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/fs"
-	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
-	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
-
-type Author struct {
-	Name     string
-	Homepage string
-}
-
-type ThemeSupports struct {
-	Menus      MenuSupports              `json:"menus,omitempty"`
-	Layouts    []string                  `json:"layouts,omitempty"`
-	Locales    []language.Tag            `json:"locales,omitempty"`
-	Archetypes map[string]context.Fields `json:"archetypes,omitempty"`
-}
-
-type ThemeConfig struct {
-	Name        string
-	Parent      string
-	License     string
-	LicenseLink string
-	Description string
-	Homepage    string
-	Authors     []Author
-	Extends     string
-
-	RootStyles  []htmlTemplate.CSS
-	BlockStyles map[string][]htmlTemplate.CSS
-	BlockThemes map[string]map[string]interface{}
-
-	FontawesomeLinks   map[string]string
-	FontawesomeClasses []string
-
-	CacheControl string
-
-	PermissionsPolicy     []permissions.Directive
-	ContentSecurityPolicy csp.ContentSecurityPolicyConfig
-
-	Supports ThemeSupports
-
-	Context context.Context
-}
 
 type Theme interface {
 	Name() (name string)
