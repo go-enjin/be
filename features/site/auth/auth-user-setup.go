@@ -70,7 +70,7 @@ func (f *CFeature) enforceUserSetupStages(claims *feature.CSiteAuthClaims, w htt
 	totalStages += f.numFactorsRequired       // configured number of standard factors are required
 	totalStages += len(allUserSetupStages)    // all site features are required
 
-	currentStage += 1 // starts at one
+	currentStage += 0 // starts at one
 
 	// provider backups...
 	var numProviderBackupsReady int
@@ -124,7 +124,7 @@ func (f *CFeature) enforceUserSetupStages(claims *feature.CSiteAuthClaims, w htt
 		return
 	}
 
-	makeSummaryNotice := func() (text string, argv []interface{}) {
+	makeSummaryNotice := func() (text string, argv []interface{}, dismiss bool) {
 
 		text = printer.Sprintf(`Account Setup (Stage %[1]d of %[2]d)`, currentStage, totalStages)
 
@@ -141,12 +141,15 @@ func (f *CFeature) enforceUserSetupStages(claims *feature.CSiteAuthClaims, w htt
 			argv = append(argv, printer.Sprintf("%[1]d other site features", count-numUserSetupStagesReady))
 		}
 
+		if dismiss = len(argv) == 0; dismiss {
+			argv = append(argv, printer.Sprintf("Your account setup is complete!"))
+		}
+
 		return
 	}
 
-	summaryText, argv := makeSummaryNotice()
-	//f.Site().PushImportantNotice(claims.EID, false, summaryText, argv...)
-	r = feature.AddImportantNotice(r, false, summaryText, argv...)
+	summaryText, argv, dismissNotice := makeSummaryNotice()
+	r = feature.AddImportantNotice(r, dismissNotice, summaryText, argv...)
 
 	siteAuthUrl := f.SiteAuthSignInPath()
 
@@ -208,8 +211,7 @@ func (f *CFeature) enforceUserSetupStages(claims *feature.CSiteAuthClaims, w htt
 	if f.numFactorsRequired > numFactorsRequiredReady {
 		if handled = f.NumFactorsPresent() != f.numFactorsRequired; handled {
 			// display the mfa setup selector page
-			//f.ServeSettingsPanelSelectorPage(r.URL.Path, w, addSummaryNotice(r))
-			f.ServeSettingsPanelSelectorPage(r.URL.Path, w, r)
+			f.ServeSettingsPanelSetupSelectorPage(r.URL.Path, w, r)
 			return
 		}
 		// the number of required factors is the same as the total number of multifactor features, no need to
