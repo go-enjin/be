@@ -29,10 +29,13 @@ type RegistryLookup interface {
 	// ReadFile returns the file data
 	ReadFile(path string) (data []byte, err error)
 
-	// FindFileShasum returns the shasum of the given path, if not found err is set to os.ErrNotExist
+	// FindFileShasum returns the 10-character, hex encoded, shasum of the given path
 	FindFileShasum(path string) (shasum string, err error)
 
-	// FindFileMime returns the mime type of the given path, if not found err is set to os.ErrNotExist
+	// FindFileSha256 returns the given path's sha256 byte hash, base64 encoded
+	FindFileSha256(path string) (shasum string, err error)
+
+	// FindFileMime returns the mime type of the given path
 	FindFileMime(path string) (mime string, err error)
 
 	// ListFiles returns the list of files in the specified directory path
@@ -149,6 +152,21 @@ func (r *fsRegistry) FindFileShasum(path string) (shasum string, err error) {
 		p := bePath.TrimPrefix(path, mount)
 		for _, f := range systems {
 			if shasum, err = f.Shasum(p); err == nil {
+				return
+			}
+		}
+	}
+	err = os.ErrNotExist
+	return
+}
+
+func (r *fsRegistry) FindFileSha256(path string) (shasum string, err error) {
+	r.RLock()
+	defer r.RUnlock()
+	for mount, systems := range r.known {
+		p := bePath.TrimPrefix(path, mount)
+		for _, f := range systems {
+			if shasum, err = f.Sha256(p); err == nil {
 				return
 			}
 		}
