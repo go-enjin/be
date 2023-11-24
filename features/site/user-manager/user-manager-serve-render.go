@@ -89,7 +89,7 @@ func (f *CFeature) RenderUserManager(w http.ResponseWriter, r *http.Request) {
 	}
 
 	t := f.SiteFeatureTheme()
-	if err := f.Site().PrepareAndServePage("site", "usermgr", f.SiteFeaturePath(), t, w, r, ctx); err != nil {
+	if err := f.Site().PrepareAndServePage("site", "user-manager", f.SiteFeaturePath(), t, w, r, ctx); err != nil {
 		log.ErrorRF(r, "error preparing and serving %v site feature page: %v", f.Tag(), err)
 		f.Enjin.ServeInternalServerError(w, r)
 		return
