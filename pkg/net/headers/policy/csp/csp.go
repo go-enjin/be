@@ -152,7 +152,7 @@ func (h *PolicyHandler) PrepareRequestMiddleware(next http.Handler) http.Handler
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h.PruneReportNonces()
 		if strings.HasPrefix(r.URL.Path, "/_/csp-violation-") {
-			if r.Method == "POST" {
+			if r.Method == http.MethodPost {
 				body, _ := io.ReadAll(r.Body)
 				pathLen := len(r.URL.Path)
 				nonce := r.URL.Path[pathLen-10:]
