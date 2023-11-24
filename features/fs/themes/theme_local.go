@@ -39,23 +39,26 @@ func (f *CFeature) loadLocalTheme(path string) (err error) {
 		err = fmt.Errorf("directory not found: %v", path)
 		return
 	}
-	var themeFs, staticFs *local.FileSystem
-	if themeFs, err = local.New(f.Tag().String(), path); err != nil {
+
+	stub := &loadTheme{
+		support: "local",
+		path:    path,
+	}
+
+	if stub.rwfs, err = local.New(f.Tag().String(), path); err != nil {
 		err = fmt.Errorf("error mounting local filesystem: %v - %v", path, err)
 		return
 	}
-	if staticFs, err = local.New(f.Tag().String(), path+"/static"); err != nil {
-		staticFs = nil
-		err = nil
+	stub.themeFs = stub.rwfs
+
+	if staticPath := path + "/static"; bePath.IsDir(staticPath) {
+		if stub.staticFs, err = local.New(f.Tag().String(), staticPath); err != nil {
+			stub.staticFs = nil
+			err = nil
+		}
 	}
 
-	f.loading = append(f.loading, &loadTheme{
-		support:  "local",
-		path:     path,
-		themeFs:  themeFs,
-		staticFs: staticFs,
-		rwfs:     themeFs,
-	})
+	f.loading = append(f.loading, stub)
 
 	return
 }

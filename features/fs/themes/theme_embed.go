@@ -22,7 +22,6 @@ import (
 	"os"
 
 	beFsEmbed "github.com/go-enjin/be/drivers/fs/embed"
-	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -37,22 +36,28 @@ type ThemeEmbedSupport interface {
 }
 
 func (f *CFeature) loadEmbedTheme(path string, efs embed.FS) (err error) {
-	var themeFs, staticFs fs.FileSystem
-	if themeFs, err = beFsEmbed.New(f.Tag().String(), path, efs); err != nil {
+	load := &loadTheme{
+		support: "embed",
+		path:    path,
+	}
+
+	if load.themeFs, err = beFsEmbed.New(f.Tag().String(), path, efs); err != nil {
 		err = fmt.Errorf("error mounting local filesystem: %v - %v", path, err)
 		return
 	}
-	if staticFs, err = beFsEmbed.New(f.Tag().String(), path+"/static", efs); err != nil {
-		staticFs = nil
-		err = nil
+
+	staticPath := path + "/static"
+	if fh, ee := efs.Open(staticPath); ee == nil {
+		defer fh.Close()
+		if stat, eee := fh.Stat(); eee == nil && stat.IsDir() {
+			if load.staticFs, err = beFsEmbed.New(f.Tag().String(), path+"/static", efs); err != nil {
+				load.staticFs = nil
+				err = nil
+			}
+		}
 	}
 
-	f.loading = append(f.loading, &loadTheme{
-		support:  "embed",
-		path:     path,
-		themeFs:  themeFs,
-		staticFs: staticFs,
-	})
+	f.loading = append(f.loading, load)
 
 	return
 }
@@ -73,8 +78,10 @@ func (f *CFeature) EmbedThemes(path string, tfs embed.FS) MakeFeature {
 		log.FatalF("error reading path: %v", err)
 	}
 	for _, info := range entries {
-		if e := f.loadEmbedTheme(path+"/"+info.Name(), tfs); e != nil {
-			log.FatalDF(1, "%s", err)
+		if info.IsDir() {
+			if e := f.loadEmbedTheme(path+"/"+info.Name(), tfs); e != nil {
+				log.FatalDF(1, "%s", err)
+			}
 		}
 	}
 	return f
