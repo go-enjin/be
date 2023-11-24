@@ -52,12 +52,16 @@ type MakeFeature interface {
 	feature.SiteMakeFeature[MakeFeature]
 	site_including.MakeFeature[MakeFeature]
 
+	SetWithoutSubMenus(without bool) MakeFeature
+
 	Make() Feature
 }
 
 type CFeature struct {
 	site.CSiteFeature[MakeFeature]
 	site_including.CSiteIncluding[feature.EditorFeature, MakeFeature]
+
+	withoutSubMenus bool
 }
 
 func New() MakeFeature {
@@ -83,6 +87,11 @@ func (f *CFeature) Init(this interface{}) {
 	f.CSiteFeature.Init(this)
 	f.CSiteIncluding.InitSiteIncluding(this)
 	return
+}
+
+func (f *CFeature) SetWithoutSubMenus(without bool) MakeFeature {
+	f.withoutSubMenus = without
+	return f
 }
 
 func (f *CFeature) Make() (feat Feature) {
@@ -175,6 +184,10 @@ func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
 		if userbase.CurrentUserCan(r, ef.Action("access", "feature")) {
 			item.SubMenu = append(item.SubMenu, ef.EditorMenu(r)...)
 		}
+	}
+	if f.withoutSubMenus && len(item.SubMenu) > 0 {
+		m = item.SubMenu
+		return
 	}
 	m = menu.Menu{item}
 	return
