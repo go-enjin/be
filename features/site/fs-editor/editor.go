@@ -175,10 +175,11 @@ func (f *CFeature) RouteSiteFeature(r chi.Router) {
 }
 
 func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
+	info := f.SiteFeatureInfo(r)
 	item := &menu.Item{
-		Text: f.SiteFeatureKey(),
+		Text: info.Label,
 		Href: f.SiteFeaturePath(),
-		Icon: f.SiteFeatureIcon(),
+		Icon: info.Icon,
 	}
 	for _, ef := range f.Features {
 		if userbase.CurrentUserCan(r, ef.Action("access", "feature")) {
