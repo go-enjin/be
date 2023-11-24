@@ -15,6 +15,7 @@
 package sha
 
 import (
+	"encoding/base64"
 	"fmt"
 	"hash"
 	"regexp"
@@ -25,6 +26,14 @@ var (
 	RxShasum10 = regexp.MustCompile(`^([a-f0-9]{10})$`)
 )
 
+func makeHash(h hash.Hash, data []byte) (shasum string, err error) {
+	if _, err = h.Write(data); err != nil {
+		return
+	}
+	shasum = base64.StdEncoding.EncodeToString(h.Sum(nil))
+	return
+}
+
 func makeShasum(h hash.Hash, data []byte) (shasum string, err error) {
 	if _, err = h.Write(data); err != nil {
 		return
@@ -33,7 +42,7 @@ func makeShasum(h hash.Hash, data []byte) (shasum string, err error) {
 	return
 }
 
-func mustShasum[V []byte | string](data V, fn func(data V) (shasum string, err error)) (shasum string) {
+func mustFn[V []byte | string](data V, fn func(data V) (shasum string, err error)) (shasum string) {
 	var err error
 	if shasum, err = fn(data); err != nil {
 		panic(err)

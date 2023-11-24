@@ -15,7 +15,7 @@
 package sha
 
 func MustDataHash64[V []byte | string](data V) (shasum string) {
-	shasum = mustShasum(data, DataHash64[V])
+	shasum = mustFn(data, DataHash64[V])
 	return
 }
 
@@ -25,7 +25,7 @@ func DataHash64[V []byte | string](data V) (shasum string, err error) {
 }
 
 func MustDataHash10[V []byte | string](data V) (shasum string) {
-	shasum = mustShasum(data, DataHash10[V])
+	shasum = mustFn(data, DataHash10[V])
 	return
 }
 
