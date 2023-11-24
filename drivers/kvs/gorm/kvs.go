@@ -21,6 +21,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
+
 	"gorm.io/gorm"
 
 	"github.com/go-enjin/be/pkg/feature"

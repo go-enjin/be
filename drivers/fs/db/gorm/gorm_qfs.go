@@ -18,13 +18,14 @@ package gorm
 
 import (
 	"fmt"
-	"github.com/go-enjin/be/pkg/maps"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"os"
 	"strings"
 
 	"gorm.io/datatypes"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+
+	"github.com/go-enjin/be/pkg/maps"
 )
 
 func (f *DBFileSystem) GormTx() (tx *gorm.DB) {

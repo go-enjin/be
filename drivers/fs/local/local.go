@@ -26,13 +26,13 @@ import (
 	"sync"
 	"time"
 
-	beMime "github.com/go-enjin/be/pkg/mime"
-	"github.com/go-enjin/github-com-djherbis-times"
+	times "github.com/go-enjin/github-com-djherbis-times"
 
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/gob"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
+	beMime "github.com/go-enjin/be/pkg/mime"
 	bePath "github.com/go-enjin/be/pkg/path"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/types/page/matter"

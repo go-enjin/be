@@ -27,7 +27,7 @@ import (
 
 	"github.com/spkg/zipfs"
 
-	"github.com/go-enjin/github-com-djherbis-times"
+	times "github.com/go-enjin/github-com-djherbis-times"
 
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
