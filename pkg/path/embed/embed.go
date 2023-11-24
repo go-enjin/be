@@ -21,13 +21,22 @@ import (
 	"os"
 	"sort"
 
-	"github.com/maruel/natural"
 	"github.com/gabriel-vasile/mimetype"
+	"github.com/maruel/natural"
 
 	"github.com/go-enjin/be/pkg/hash/sha"
 	beMime "github.com/go-enjin/be/pkg/mime"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
+
+func Sha256(path string, efs embed.FS) (shasum string, err error) {
+	var data []byte
+	if data, err = efs.ReadFile(path); err != nil {
+		return
+	}
+	shasum, err = sha.Hash256(data)
+	return
+}
 
 func Shasum(path string, efs embed.FS) (shasum string, err error) {
 	var data []byte

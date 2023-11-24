@@ -73,6 +73,15 @@ func Shasum(path string, zfs *zipfs.FileSystem) (shasum string, err error) {
 	return
 }
 
+func Sha256(path string, zfs *zipfs.FileSystem) (shasum string, err error) {
+	var data []byte
+	if data, err = ReadFile(path, zfs); err != nil {
+		return
+	}
+	shasum, err = sha.Hash256(data)
+	return
+}
+
 func Mime(path string, zfs *zipfs.FileSystem) (mime string, err error) {
 	var data []byte
 	if data, err = ReadFile(path, zfs); err != nil {
