@@ -79,6 +79,9 @@ type Builder interface {
 	// default headers enjin middleware layer
 	AddModifyHeadersFn(fn headers.ModifyHeadersFn) Builder
 
+	// AddModifyContentSecurityPolicyFn includes the given CSP modifier function with each request
+	AddCspModifierFn(tag string, fn CspModifierFn) Builder
+
 	AddNotifyHook(name string, hook NotifyHook) Builder
 
 	// AddPageFromString is a convenience wrapper around AddPage
