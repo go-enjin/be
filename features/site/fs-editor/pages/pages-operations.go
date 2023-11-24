@@ -57,7 +57,7 @@ func AreVariablesAllowed(key, format string, fields context.Fields) (allowed boo
 }
 
 func (f *CFeature) NotifyErrors(eid string, printer *message.Printer, errs map[string]error) {
-	f.Editor.Site().GetContext(eid).SetSpecific("FieldErrors", errs)
+	f.Editor.Site().ApplyContext(eid, context.Context{"FieldErrors": errs})
 	for _, key := range maps.SortedKeys(errs) {
 		ee := errs[key]
 		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("%[1]s error: %[2]s", key, ee.Error()))

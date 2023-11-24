@@ -70,7 +70,7 @@ func (f *CFeature) FinalizeRenderFileEditor(r *http.Request, eid string, pg feat
 	ctx.SetSpecific("TranslatedLocales", f.GetTranslatedLocales(info))
 	ctx.SetSpecific("UntranslatedLocales", f.GetUntranslatedLocales(info))
 	if errs := f.Editor.Site().GetContext(eid).Get("FieldErrors"); errs != nil {
-		f.Editor.Site().GetContext(eid).Delete("FieldErrors")
+		f.Editor.Site().DeleteContextKeys(eid, "FieldErrors")
 		ctx.SetSpecific("FieldErrors", errs)
 	}
 	pg.SetTitle(printer.Sprintf("Edit: %[1]s", info.Name))
