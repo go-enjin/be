@@ -6,6 +6,8 @@ package csp
 
 import (
 	"fmt"
+
+	"github.com/go-enjin/be/pkg/slices"
 )
 
 type ContentSecurityPolicyConfig struct {
@@ -31,6 +33,31 @@ type ContentSecurityPolicyConfig struct {
 	FrameAncestors         Sources
 }
 
+func (c ContentSecurityPolicyConfig) Merge(other ContentSecurityPolicyConfig) (merged ContentSecurityPolicyConfig) {
+	merged = ContentSecurityPolicyConfig{
+		GenericSourceDirective: slices.Merge(c.GenericSourceDirective, other.GenericSourceDirective),
+		DefaultSrc:             slices.Merge(c.DefaultSrc, other.DefaultSrc),
+		ConnectSrc:             slices.Merge(c.ConnectSrc, other.ConnectSrc),
+		FontSrc:                slices.Merge(c.FontSrc, other.FontSrc),
+		FrameSrc:               slices.Merge(c.FrameSrc, other.FrameSrc),
+		ImgSrc:                 slices.Merge(c.ImgSrc, other.ImgSrc),
+		ManifestSrc:            slices.Merge(c.ManifestSrc, other.ManifestSrc),
+		MediaSrc:               slices.Merge(c.MediaSrc, other.MediaSrc),
+		ObjectSrc:              slices.Merge(c.ObjectSrc, other.ObjectSrc),
+		PrefetchSrc:            slices.Merge(c.PrefetchSrc, other.PrefetchSrc),
+		ScriptSrc:              slices.Merge(c.ScriptSrc, other.ScriptSrc),
+		ScriptSrcElem:          slices.Merge(c.ScriptSrcElem, other.ScriptSrcElem),
+		ScriptSrcAttr:          slices.Merge(c.ScriptSrcAttr, other.ScriptSrcAttr),
+		StyleSrc:               slices.Merge(c.StyleSrc, other.StyleSrc),
+		StyleSrcElem:           slices.Merge(c.StyleSrcElem, other.StyleSrcElem),
+		StyleSrcAttr:           slices.Merge(c.StyleSrcAttr, other.StyleSrcAttr),
+		WorkerSrc:              slices.Merge(c.WorkerSrc, other.WorkerSrc),
+		BaseUri:                slices.Merge(c.BaseUri, other.BaseUri),
+		FormAction:             slices.Merge(c.FormAction, other.FormAction),
+		FrameAncestors:         slices.Merge(c.FrameAncestors, other.FrameAncestors),
+	}
+	return
+}
 
 func (c ContentSecurityPolicyConfig) Apply(policy Policy) (modified Policy) {
 	apply := func(key string, s Sources, p Policy) (m Policy) {
