@@ -86,8 +86,8 @@ type Service interface {
 	ServerName() (name string)
 	ServiceInfo() (scheme, listen string, port int)
 
-	ContentSecurityPolicy() (handler *csp.PolicyHandler)
 	PermissionsPolicy() (handler *permissions.PolicyHandler)
+	ContentSecurityPolicy() (handler *csp.PolicyHandler)
 
 	FinalizeServeRequest(w http.ResponseWriter, r *http.Request)
 
