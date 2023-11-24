@@ -52,8 +52,6 @@ type CFeature struct {
 
 	ctx    context.Context
 	custom []cli.Flag
-
-	cli *cli.Context
 }
 
 func New() MakeFeature {
@@ -104,8 +102,8 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	for _, custom := range f.custom {
 		for _, name := range custom.Names() {
 			camel := strcase.ToCamel(name)
-			f.ctx.SetSpecific(camel, f.cli.Generic(name))
-			log.DebugF("applying CLI context: %v => %#+v", camel, f.cli.Generic(name))
+			f.ctx.SetSpecific(camel, ctx.Generic(name))
+			log.DebugF("applying CLI context: .%v => %q", camel, ctx.Generic(name))
 		}
 	}
 	return
