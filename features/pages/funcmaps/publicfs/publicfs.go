@@ -17,12 +17,14 @@
 package publicfs
 
 import (
+	"encoding/base64"
 	"strings"
 
 	"github.com/urfave/cli/v2"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	beMime "github.com/go-enjin/be/pkg/mime"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -87,6 +89,10 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 				shasum, _ = pfs.FindFileShasum(path)
 				return
 			},
+			"fsHash256": func(path string) (shasum string) {
+				shasum, _ = pfs.FindFileSha256(path)
+				return
+			},
 			"fsUrl": func(path string) (url string) {
 				url = path
 				if shasum, err := pfs.FindFileShasum(path); err == nil {
@@ -94,6 +100,7 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 				}
 				return
 			},
+			"fsDataUri":      f.DataUri,
 			"fsMime":         pfs.FindFileMime,
 			"fsExists":       pfs.FileExists,
 			"fsListFiles":    pfs.ListFiles,
@@ -107,6 +114,36 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 			"basepath":       bePath.BasePath,
 			"ext":            bePath.Ext,
 		}
+	}
+	return
+}
+
+func (f *CFeature) DataUri(path string) (dataUri string) {
+	pfs := f.Enjin.PublicFileSystems().Lookup()
+	var err error
+	var mime string
+	var data []byte
+	var encoded string
+	if mime, err = pfs.FindFileMime(path); err != nil {
+		return
+	} else if data, err = pfs.ReadFile(path); err != nil || len(data) == 0 {
+		return
+	} else if encoded = base64.StdEncoding.EncodeToString(data); encoded == "" {
+		return
+	}
+	switch beMime.PruneCharset(mime) {
+	case "image/png":
+		dataUri = "data:image/png;base64," + encoded
+	case "image/jpg":
+		dataUri = "data:image/jpg;base64," + encoded
+	case "image/gif":
+		dataUri = "data:image/gif;base64," + encoded
+	case "image/apng":
+		dataUri = "data:image/apng;base64," + encoded
+	case "image/avif":
+		dataUri = "data:image/avif;base64," + encoded
+	case "image/webp":
+		dataUri = "data:image/webp;base64," + encoded
 	}
 	return
 }
