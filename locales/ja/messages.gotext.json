@@ -1,239 +1,4239 @@
 {
-    "language": "ja",
-    "messages": [
-        {
-            "id": "Bad Request",
-            "key": "Bad Request",
-            "message": "Bad Request",
-            "translation": "Bad Request",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Unauthorized",
-            "key": "Unauthorized",
-            "message": "Unauthorized",
-            "translation": "未認証",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Forbidden",
-            "key": "Forbidden",
-            "message": "Forbidden",
-            "translation": "アクセス権がない",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Not Found",
-            "key": "Not Found",
-            "message": "Not Found",
-            "translation": "存在しない",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Method Not Allowed",
-            "key": "Method Not Allowed",
-            "message": "Method Not Allowed",
-            "translation": "そのメソッドは不可",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Internal Server Error",
-            "key": "Internal Server Error",
-            "message": "Internal Server Error",
-            "translation": "サーバ内部のエラー",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Bad Gateway",
-            "key": "Bad Gateway",
-            "message": "Bad Gateway",
-            "translation": "Bad Gateway",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Service Unavailable",
-            "key": "Service Unavailable",
-            "message": "Service Unavailable",
-            "translation": "Service Unavailable",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "search form expired",
-            "key": "search form expired",
-            "message": "search form expired",
-            "translation": "検索フォームの時間切れ",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "{FastMinutes}-{SlowMinutes} minutes",
-            "key": "%[1]d-%[2]d minutes",
-            "message": "{FastMinutes}-{SlowMinutes} minutes",
-            "translation": {
-                "select": {
-                    "feature": "plural",
-                    "arg": "SlowMinutes",
-                    "cases": {
-                        "=0": {
-                            "msg": "less than a minute"
-                        },
-                        "=1": {
-                            "msg": "about a minute"
-                        },
-                        "other": {
-                            "msg": "%[1]d-%[2]d minutes"
-                        }
-                    }
-                }
-            },
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "FastMinutes",
-                    "string": "%[1]d",
-                    "type": "int",
-                    "underlyingType": "int",
-                    "argNum": 1,
-                    "expr": "fastMinutes"
-                },
-                {
-                    "id": "SlowMinutes",
-                    "string": "%[2]d",
-                    "type": "int",
-                    "underlyingType": "int",
-                    "argNum": 2,
-                    "expr": "slowMinutes"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "No results found",
-            "key": "No results found",
-            "message": "No results found",
-            "translation": "一致する結果はありません",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "1 result found",
-            "key": "1 result found",
-            "message": "1 result found",
-            "translation": "1 件の検索結果が見つかりました",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "{Total} results found",
-            "key": "%d results found",
-            "message": "{Total} results found",
-            "translation": "検索該当件数{Total}件",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Total",
-                    "string": "%[1]d",
-                    "type": "uint64",
-                    "underlyingType": "uint64",
-                    "argNum": 1,
-                    "expr": "results.Total"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Page {PageNumber} of {NumPages}",
-            "key": "Page %d of %d",
-            "message": "Page {PageNumber} of {NumPages}",
-            "translation": "{NumPages}ページ中の{PageNumber}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "PageNumber",
-                    "string": "%[1]d",
-                    "type": "int",
-                    "underlyingType": "int",
-                    "argNum": 1,
-                    "expr": "pageNumber"
-                },
-                {
-                    "id": "NumPages",
-                    "string": "%[2]d",
-                    "type": "int",
-                    "underlyingType": "int",
-                    "argNum": 2,
-                    "expr": "numPages"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Showing #{IdStart} of {Total}",
-            "key": "Showing #%d of %d",
-            "message": "Showing #{IdStart} of {Total}",
-            "translation": "{Total}件中の{IdStart} を表示",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "IdStart",
-                    "string": "%[1]d",
-                    "type": "int",
-                    "underlyingType": "int",
-                    "argNum": 1,
-                    "expr": "idStart"
-                },
-                {
-                    "id": "Total",
-                    "string": "%[2]d",
-                    "type": "uint64",
-                    "underlyingType": "uint64",
-                    "argNum": 2,
-                    "expr": "results.Total"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Showing {IdStart}-{IdEnd} of {Total}",
-            "key": "Showing %d-%d of %d",
-            "message": "Showing {IdStart}-{IdEnd} of {Total}",
-            "translation": "{Total}件中の{IdStart}-{IdEnd} を表示",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "IdStart",
-                    "string": "%[1]d",
-                    "type": "int",
-                    "underlyingType": "int",
-                    "argNum": 1,
-                    "expr": "idStart"
-                },
-                {
-                    "id": "IdEnd",
-                    "string": "%[2]d",
-                    "type": "int",
-                    "underlyingType": "int",
-                    "argNum": 2,
-                    "expr": "idEnd"
-                },
-                {
-                    "id": "Total",
-                    "string": "%[3]d",
-                    "type": "uint64",
-                    "underlyingType": "uint64",
-                    "argNum": 3,
-                    "expr": "results.Total"
-                }
-            ],
-            "fuzzy": true
-        }
-    ]
+	"language": "ja",
+	"messages": [
+		{
+			"id": "unsupported type: {TypeOfinput}",
+			"key": "unsupported type: %[1]s",
+			"message": "unsupported type: {TypeOfinput}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "TypeOfinput",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "values.TypeOf(input)"
+				}
+			],
+			"translation": "サポートされていないタイプ: %[1]s "
+		},
+		{
+			"id": "not a time value",
+			"key": "not a time value",
+			"message": "not a time value",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "時刻形式ではない"
+		},
+		{
+			"id": "not a date value",
+			"key": "not a date value",
+			"message": "not a date value",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "日形式ではない "
+		},
+		{
+			"id": "not a datetime value",
+			"key": "not a datetime value",
+			"message": "not a datetime value",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "日時形式ではない"
+		},
+		{
+			"id": "not a boolean string value",
+			"key": "not a boolean string value",
+			"message": "not a boolean string value",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "boolean string 形式ではない"
+		},
+		{
+			"id": "View error",
+			"key": "View error",
+			"message": "View error",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ビューエラー"
+		},
+		{
+			"id": "Delete path",
+			"key": "Delete path",
+			"message": "Delete path",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "パスの削除 "
+		},
+		{
+			"id": "Really delete the directory \"{DirPath}\"?",
+			"key": "Really delete the directory \"%[1]s\"?",
+			"message": "Really delete the directory \"{DirPath}\"?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "DirPath",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "dirPath"
+				}
+			],
+			"translation": "本当にディレクトリーを削除しますか \"%[1]s\"　"
+		},
+		{
+			"id": "Create page",
+			"key": "Create page",
+			"message": "Create page",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ページを作成"
+		},
+		{
+			"id": "Create a new page?",
+			"key": "Create a new page?",
+			"message": "Create a new page?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "新しいページっを作成しますか? "
+		},
+		{
+			"id": "Create menu",
+			"key": "Create menu",
+			"message": "Create menu",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "メニューを作成する"
+		},
+		{
+			"id": "Create a new menu?",
+			"key": "Create a new menu?",
+			"message": "Create a new menu?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "メニューを作成しますか？"
+		},
+		{
+			"id": "View (read-only)",
+			"key": "View (read-only)",
+			"message": "View (read-only)",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ビュー(読み取り専用) "
+		},
+		{
+			"id": "Edit draft",
+			"key": "Edit draft",
+			"message": "Edit draft",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ドラフトの編集"
+		},
+		{
+			"id": "Save draft",
+			"key": "Save draft",
+			"message": "Save draft",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ドラフトの保存"
+		},
+		{
+			"id": "Preview draft",
+			"key": "Preview draft",
+			"message": "Preview draft",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ドラフトのプレビュー "
+		},
+		{
+			"id": "Publish draft",
+			"key": "Publish draft",
+			"message": "Publish draft",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ドラフトのパブリッシュ"
+		},
+		{
+			"id": "Publish the draft of \"{Filename}\"?",
+			"key": "Publish the draft of \"%[1]s\"?",
+			"message": "Publish the draft of \"{Filename}\"?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Filename",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "filename"
+				}
+			],
+			"translation": "Publish the \"%[1]s\"のドラフトをパブリッシュしますか? "
+		},
+		{
+			"id": "Cancel editing",
+			"key": "Cancel editing",
+			"message": "Cancel editing",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "編集のキャンセル"
+		},
+		{
+			"id": "Take over",
+			"key": "Take over",
+			"message": "Take over",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "引き継ぐ"
+		},
+		{
+			"id": "Take over editing of \"{Filename}\"?",
+			"key": "Take over editing of \"%[1]s\"?",
+			"message": "Take over editing of \"{Filename}\"?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Filename",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "filename"
+				}
+			],
+			"translation": "\"%[1]s\"の編集を引き継ぎますか? (JA)"
+		},
+		{
+			"id": "Unlock editing",
+			"key": "Unlock editing",
+			"message": "Unlock editing",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "編集のロックを解除する "
+		},
+		{
+			"id": "Unlock \"{Filename}\" for editing by others?",
+			"key": "Unlock \"%[1]s\" for editing by others?",
+			"message": "Unlock \"{Filename}\" for editing by others?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Filename",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "filename"
+				}
+			],
+			"translation": "\"%[1]s\" を他の人が編集できるよう解除しますか? "
+		},
+		{
+			"id": "Move/rename",
+			"key": "Move/rename",
+			"message": "Move/rename",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "移動/名前変更 "
+		},
+		{
+			"id": "Move/rename \"{Filename}\"?",
+			"key": "Move/rename \"%[1]s\"?",
+			"message": "Move/rename \"{Filename}\"?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Filename",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "filename"
+				}
+			],
+			"translation": "\"%[1]sの移動/名前変更をしますか \"? "
+		},
+		{
+			"id": "Copy",
+			"key": "Copy",
+			"message": "Copy",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "コピー"
+		},
+		{
+			"id": "Copy \"{Filename}\" to another location?",
+			"key": "Copy \"%[1]s\" to another location?",
+			"message": "Copy \"{Filename}\" to another location?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Filename",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "filename"
+				}
+			],
+			"translation": " \"%[1]s\" を他の場所にコピーしますか? "
+		},
+		{
+			"id": "Delete draft",
+			"key": "Delete draft",
+			"message": "Delete draft",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ドラフトの削除"
+		},
+		{
+			"id": "Really delete the draft of \"{Filename}\"?",
+			"key": "Really delete the draft of \"%[1]s\"?",
+			"message": "Really delete the draft of \"{Filename}\"?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Filename",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "filename"
+				}
+			],
+			"translation": " \"%[1]s\"のドラフトを本当に削除しますか? "
+		},
+		{
+			"id": "Delete",
+			"key": "Delete",
+			"message": "Delete",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "削除"
+		},
+		{
+			"id": "Really delete \"{Filename}\"?",
+			"key": "Really delete \"%[1]s\"?",
+			"message": "Really delete \"{Filename}\"?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Filename",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "filename"
+				}
+			],
+			"translation": "Really\"%[1]s\"のファイルを本当に削除しますか? "
+		},
+		{
+			"id": "Translate",
+			"key": "Translate",
+			"message": "Translate",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "翻訳する"
+		},
+		{
+			"id": "Start a new translation of \"{Filename}\"?",
+			"key": "Start a new translation of \"%[1]s\"?",
+			"message": "Start a new translation of \"{Filename}\"?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Filename",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "filename"
+				}
+			],
+			"translation": "\"%[1]s\" ​ の新しい翻訳を開始する? "
+		},
+		{
+			"id": "Add indexing",
+			"key": "Add indexing",
+			"message": "Add indexing",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "インデックスの追加"
+		},
+		{
+			"id": "Add page indexing on \"{Filename}\"?",
+			"key": "Add page indexing on \"%[1]s\"?",
+			"message": "Add page indexing on \"{Filename}\"?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Filename",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "filename"
+				}
+			],
+			"translation": " \"%[1]s\"にページインデックスを追加しますか? "
+		},
+		{
+			"id": "Remove indexing",
+			"key": "Remove indexing",
+			"message": "Remove indexing",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "インデクスを削除"
+		},
+		{
+			"id": "Remove page indexing on \"{Filename}\"?",
+			"key": "Remove page indexing on \"%[1]s\"?",
+			"message": "Remove page indexing on \"{Filename}\"?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Filename",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "filename"
+				}
+			],
+			"translation": " \"%[1]s\"ページのインデックスを削除します? "
+		},
+		{
+			"id": "Create User",
+			"key": "Create User",
+			"message": "Create User",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ユーザーの作成"
+		},
+		{
+			"id": "Create a new user?",
+			"key": "Create a new user?",
+			"message": "Create a new user?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "新しいユーザーを作成しますか? (JA)"
+		},
+		{
+			"id": "Delete User",
+			"key": "Delete User",
+			"message": "Delete User",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ユーザの削除"
+		},
+		{
+			"id": "Delete user \"{Eid}\"? (there is no recovery from this action)",
+			"key": "Delete user \"%[1]s\"? (there is no recovery from this action)",
+			"message": "Delete user \"{Eid}\"? (there is no recovery from this action)",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Eid",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "eid"
+				}
+			],
+			"translation": "ユーザー \"%[1]s\"を削除しますか? (このアクションからは回復できません) "
+		},
+		{
+			"id": "Reactivate User",
+			"key": "Reactivate User",
+			"message": "Reactivate User",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ユーザーの再アクティブ化 "
+		},
+		{
+			"id": "Reactivate primary sign-in for \"{Eid}\"?",
+			"key": "Reactivate primary sign-in for \"%[1]s\"?",
+			"message": "Reactivate primary sign-in for \"{Eid}\"?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Eid",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "eid"
+				}
+			],
+			"translation": " \"%[1]s\"のプライマリ サインインを再度アクティブにしますか? "
+		},
+		{
+			"id": "Deactivate User",
+			"key": "Deactivate User",
+			"message": "Deactivate User",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ユーザーの非アクティブ化"
+		},
+		{
+			"id": "Deactivate primary sign-in for \"{Eid}\"?",
+			"key": "Deactivate primary sign-in for \"%[1]s\"?",
+			"message": "Deactivate primary sign-in for \"{Eid}\"?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Eid",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "eid"
+				}
+			],
+			"translation": " \"%[1]s\"のプライマリ サインインを無効にする"
+		},
+		{
+			"id": "Block User",
+			"key": "Block User",
+			"message": "Block User",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ユーザーのブロック"
+		},
+		{
+			"id": "Block user \"{Eid}\"?",
+			"key": "Block user \"%[1]s\"?",
+			"message": "Block user \"{Eid}\"?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Eid",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "eid"
+				}
+			],
+			"translation": "ユーザー\"%[1]s\"をブロックしますか? "
+		},
+		{
+			"id": "Unblock User",
+			"key": "Unblock User",
+			"message": "Unblock User",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ユーザーのブロック解除 "
+		},
+		{
+			"id": "Unblock user \"{Eid}\"?",
+			"key": "Unblock user \"%[1]s\"?",
+			"message": "Unblock user \"{Eid}\"?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Eid",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "eid"
+				}
+			],
+			"translation": " ユーザー\"%[1]s\"のブロックを解除しますか? "
+		},
+		{
+			"id": "Reset User Multi-Factor Authentication?",
+			"key": "Reset User Multi-Factor Authentication?",
+			"message": "Reset User Multi-Factor Authentication?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ユーザーの多要素認証をリセットしますか? "
+		},
+		{
+			"id": "Reset multi-factor settings for \"{Eid}\"?",
+			"key": "Reset multi-factor settings for \"%[1]s\"?",
+			"message": "Reset multi-factor settings for \"{Eid}\"?",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Eid",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "eid"
+				}
+			],
+			"translation": "\"%[1]s\"の多要素設定をリセットしますか?"
+		},
+		{
+			"id": "Bad Request",
+			"key": "Bad Request",
+			"message": "Bad Request",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "不正なリクエスト "
+		},
+		{
+			"id": "Unauthorized",
+			"key": "Unauthorized",
+			"message": "Unauthorized",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "許可がありません"
+		},
+		{
+			"id": "Forbidden",
+			"key": "Forbidden",
+			"message": "Forbidden",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "禁止"
+		},
+		{
+			"id": "Not Found",
+			"key": "Not Found",
+			"message": "Not Found",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "見つかりません"
+		},
+		{
+			"id": "Method Not Allowed",
+			"key": "Method Not Allowed",
+			"message": "Method Not Allowed",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "許可されていないメソッド "
+		},
+		{
+			"id": "Internal Server Error",
+			"key": "Internal Server Error",
+			"message": "Internal Server Error",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "内部サーバーエラー "
+		},
+		{
+			"id": "Bad Gateway",
+			"key": "Bad Gateway",
+			"message": "Bad Gateway",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "不正なゲートウェイ "
+		},
+		{
+			"id": "Service Unavailable",
+			"key": "Service Unavailable",
+			"message": "Service Unavailable",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "サービス利用不可"
+		},
+		{
+			"id": "Bad request",
+			"key": "Bad request",
+			"message": "Bad request",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "不正なリクエスト "
+		},
+		{
+			"id": "Form submission expired, please try again",
+			"key": "Form submission expired, please try again",
+			"message": "Form submission expired, please try again",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "フォームの送信期限が切れました。もう一度お試しください。"
+		},
+		{
+			"id": "Incomplete form submitted, please try again",
+			"key": "Incomplete form submitted, please try again",
+			"message": "Incomplete form submitted, please try again",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "送信されたフォームが不完全です。もう一度お試しください "
+		},
+		{
+			"id": "Incomplete link submitted, please try again",
+			"key": "Incomplete link submitted, please try again",
+			"message": "Incomplete link submitted, please try again",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "不完全なリンクが送信されました。もう一度お試しください "
+		},
+		{
+			"id": "An unexpected error occurred",
+			"key": "An unexpected error occurred",
+			"message": "An unexpected error occurred",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "予期しないエラーが発生しました "
+		},
+		{
+			"id": "Permission denied",
+			"key": "Permission denied",
+			"message": "Permission denied",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "許可が拒否されました "
+		},
+		{
+			"id": "OTP (one-time passcode) verification failed",
+			"key": "OTP (one-time passcode) verification failed",
+			"message": "OTP (one-time passcode) verification failed",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "OTP（ワンタイムパスコード）検証に失敗しました"
+		},
+		{
+			"id": "User not found",
+			"key": "User not found",
+			"message": "User not found",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ユーザーが見つかりません "
+		},
+		{
+			"id": "search form expired",
+			"key": "search form expired",
+			"message": "search form expired",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "検索フォームの有効期限が切れました "
+		},
+		{
+			"id": "{WordCount} words",
+			"key": "%[1]d words",
+			"message": "{WordCount} words",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "WordCount",
+					"string": "%[1]d",
+					"type": "int",
+					"underlyingType": "int",
+					"argNum": 1,
+					"expr": "wordCount"
+				}
+			],
+			"translation": "%[1]d 語"
+		},
+		{
+			"id": "{FastMinutes}-{SlowMinutes} minutes",
+			"key": "%[1]d-%[2]d minutes",
+			"message": "{FastMinutes}-{SlowMinutes} minutes",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "FastMinutes",
+					"string": "%[1]d",
+					"type": "int",
+					"underlyingType": "int",
+					"argNum": 1,
+					"expr": "fastMinutes"
+				},
+				{
+					"id": "SlowMinutes",
+					"string": "%[2]d",
+					"type": "int",
+					"underlyingType": "int",
+					"argNum": 2,
+					"expr": "slowMinutes"
+				}
+			],
+			"translation": "%[1]d-%[2]d分"
+		},
+		{
+			"id": "Set this page's permalink",
+			"key": "Set this page's permalink",
+			"message": "Set this page's permalink",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "このページのパーマリンクを設定する "
+		},
+		{
+			"id": "{Total} results found",
+			"key": "%[1]d results found",
+			"message": "{Total} results found",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Total",
+					"string": "%[1]d",
+					"type": "uint64",
+					"underlyingType": "uint64",
+					"argNum": 1,
+					"expr": "results.Total"
+				}
+			],
+			"translation": "%[1]d 件の結果が見つかりました "
+		},
+		{
+			"id": "Page {PageNumber} of {NumPages}",
+			"key": "Page %[1]d of %[2]d",
+			"message": "Page {PageNumber} of {NumPages}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "PageNumber",
+					"string": "%[1]d",
+					"type": "int",
+					"underlyingType": "int",
+					"argNum": 1,
+					"expr": "pageNumber"
+				},
+				{
+					"id": "NumPages",
+					"string": "%[2]d",
+					"type": "int",
+					"underlyingType": "int",
+					"argNum": 2,
+					"expr": "numPages"
+				}
+			],
+			"translation": " %[1]d of %[2]d ページ"
+		},
+		{
+			"id": "Showing #{IdStart} of {Total}",
+			"key": "Showing #%[1]d of %[2]d",
+			"message": "Showing #{IdStart} of {Total}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "IdStart",
+					"string": "%[1]d",
+					"type": "int",
+					"underlyingType": "int",
+					"argNum": 1,
+					"expr": "idStart"
+				},
+				{
+					"id": "Total",
+					"string": "%[2]d",
+					"type": "uint64",
+					"underlyingType": "uint64",
+					"argNum": 2,
+					"expr": "results.Total"
+				}
+			],
+			"translation": "Showing #%[1]d of %[2]d (JA)"
+		},
+		{
+			"id": "Showing {IdStart}-{IdEnd} of {Total}",
+			"key": "Showing %[1]d-%[2]d of %[3]d",
+			"message": "Showing {IdStart}-{IdEnd} of {Total}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "IdStart",
+					"string": "%[1]d",
+					"type": "int",
+					"underlyingType": "int",
+					"argNum": 1,
+					"expr": "idStart"
+				},
+				{
+					"id": "IdEnd",
+					"string": "%[2]d",
+					"type": "int",
+					"underlyingType": "int",
+					"argNum": 2,
+					"expr": "idEnd"
+				},
+				{
+					"id": "Total",
+					"string": "%[3]d",
+					"type": "uint64",
+					"underlyingType": "uint64",
+					"argNum": 3,
+					"expr": "results.Total"
+				}
+			],
+			"translation": "Showing %[1]d-%[2]d of %[3]d (JA)"
+		},
+		{
+			"id": "Enable to have this page omitted from the sitemap",
+			"key": "Enable to have this page omitted from the sitemap",
+			"message": "Enable to have this page omitted from the sitemap",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "このページをサイトマップから除外できるようにします"
+		},
+		{
+			"id": "Specify the priority for this page in the sitemap",
+			"key": "Specify the priority for this page in the sitemap",
+			"message": "Specify the priority for this page in the sitemap",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "Sサイトマップでこのページの優先度を指定します"
+		},
+		{
+			"id": "Specify the change frequency for this page in the sitemap",
+			"key": "Specify the change frequency for this page in the sitemap",
+			"message": "Specify the change frequency for this page in the sitemap",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "サイトマップでこのページの変更頻度を指定します (JA)"
+		},
+		{
+			"id": "{SiteFeatureKey}",
+			"key": "%s",
+			"message": "{SiteFeatureKey}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SiteFeatureKey",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "beStrings.ToSpaced(f.SelfFeature().SiteFeatureKey())"
+				}
+			],
+			"translation": "%[1]s (JA)"
+		},
+		{
+			"id": "an unknown error occurred",
+			"key": "an unknown error occurred",
+			"message": "an unknown error occurred",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "不明なエラーが発生しました "
+		},
+		{
+			"id": "This site does not allow public sign-ups.",
+			"key": "This site does not allow public sign-ups.",
+			"message": "This site does not allow public sign-ups.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "このサイトでは一般のサインアップは許可されていません。 "
+		},
+		{
+			"id": "Your account is locked by site management, sign-in request denied.",
+			"key": "Your account is locked by site management, sign-in request denied.",
+			"message": "Your account is locked by site management, sign-in request denied.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "あなたのアカウントはサイト管理によってロックされており、サインイン要求は拒否されました。 "
+		},
+		{
+			"id": "Account Verification ({Count__1} of {NumFactorsRequired})",
+			"key": "Account Verification (%[1]d of %[2]d)",
+			"message": "Account Verification ({Count__1} of {NumFactorsRequired})",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Count__1",
+					"string": "%[1]d",
+					"type": "int",
+					"underlyingType": "int",
+					"argNum": 1,
+					"expr": "count + 1"
+				},
+				{
+					"id": "NumFactorsRequired",
+					"string": "%[2]d",
+					"type": "int",
+					"underlyingType": "int",
+					"argNum": 2,
+					"expr": "f.numFactorsRequired"
+				}
+			],
+			"translation": "アカウント認証   %[2]d)中(%[1]d "
+		},
+		{
+			"id": "Account Verification",
+			"key": "Account Verification",
+			"message": "Account Verification",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "アカウント認証 "
+		},
+		{
+			"id": "Your primary sign-in method has been reactivated.",
+			"key": "Your primary sign-in method has been reactivated.",
+			"message": "Your primary sign-in method has been reactivated.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "プライマリ サインイン方法が再度アクティブ化されました。 "
+		},
+		{
+			"id": "Your primary sign-in method has been deactivated. You can still sign-in with a backup method.",
+			"key": "Your primary sign-in method has been deactivated. You can still sign-in with a backup method.",
+			"message": "Your primary sign-in method has been deactivated. You can still sign-in with a backup method.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "プライマリのサインイン方法が無効化されました。 バックアップ方法を使用してサインインすることもできます。 "
+		},
+		{
+			"id": "Your account was not deleted because you did not enter the correct confirmation phrase!",
+			"key": "Your account was not deleted because you did not enter the correct confirmation phrase!",
+			"message": "Your account was not deleted because you did not enter the correct confirmation phrase!",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "正しい確認フレーズを入力しなかったため、アカウントは削除されませんでした。 "
+		},
+		{
+			"id": "Account Setup (Stage {CurrentStage} of {TotalStages})",
+			"key": "Account Setup (Stage %[1]d of %[2]d)",
+			"message": "Account Setup (Stage {CurrentStage} of {TotalStages})",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "CurrentStage",
+					"string": "%[1]d",
+					"type": "int",
+					"underlyingType": "int",
+					"argNum": 1,
+					"expr": "currentStage"
+				},
+				{
+					"id": "TotalStages",
+					"string": "%[2]d",
+					"type": "int",
+					"underlyingType": "int",
+					"argNum": 2,
+					"expr": "totalStages"
+				}
+			],
+			"translation": "アカウントの設定%[2]d) 中(Stage %[1]d "
+		},
+		{
+			"id": "{NumProviderBackups___numProviderBackupsReady} backup accounts",
+			"key": "%[1]d backup accounts",
+			"message": "{NumProviderBackups___numProviderBackupsReady} backup accounts",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "NumProviderBackups___numProviderBackupsReady",
+					"string": "%[1]d",
+					"type": "int",
+					"underlyingType": "int",
+					"argNum": 1,
+					"expr": "numProviderBackups - numProviderBackupsReady"
+				}
+			],
+			"translation": "%[1]d 個のバックアップ アカウント "
+		},
+		{
+			"id": "{NumMultiFactorBackups___numMultiFactorBackupsReady} backup multi-factors",
+			"key": "%[1]d backup multi-factors",
+			"message": "{NumMultiFactorBackups___numMultiFactorBackupsReady} backup multi-factors",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "NumMultiFactorBackups___numMultiFactorBackupsReady",
+					"string": "%[1]d",
+					"type": "int",
+					"underlyingType": "int",
+					"argNum": 1,
+					"expr": "numMultiFactorBackups - numMultiFactorBackupsReady"
+				}
+			],
+			"translation": "%[1]d 個のバックアップ多要素 "
+		},
+		{
+			"id": "{NumFactorsRequired___numFactorsRequiredReady} normal multi-factors",
+			"key": "%[1]d normal multi-factors",
+			"message": "{NumFactorsRequired___numFactorsRequiredReady} normal multi-factors",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "NumFactorsRequired___numFactorsRequiredReady",
+					"string": "%[1]d",
+					"type": "int",
+					"underlyingType": "int",
+					"argNum": 1,
+					"expr": "f.numFactorsRequired - numFactorsRequiredReady"
+				}
+			],
+			"translation": "%[1]d 個の通常の多要素 "
+		},
+		{
+			"id": "{Count___numUserSetupStagesReady} other site features",
+			"key": "%[1]d other site features",
+			"message": "{Count___numUserSetupStagesReady} other site features",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Count___numUserSetupStagesReady",
+					"string": "%[1]d",
+					"type": "int",
+					"underlyingType": "int",
+					"argNum": 1,
+					"expr": "count - numUserSetupStagesReady"
+				}
+			],
+			"translation": "%[1]d %[1]d 個のその他のサイト機能 "
+		},
+		{
+			"id": "Your account setup is complete!",
+			"key": "Your account setup is complete!",
+			"message": "Your account setup is complete!",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "アカウントの設定が完了しました "
+		},
+		{
+			"id": "Authentication",
+			"key": "Authentication",
+			"message": "Authentication",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "認証"
+		},
+		{
+			"id": "Sign-in",
+			"key": "Sign-in",
+			"message": "Sign-in",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "サインイン"
+		},
+		{
+			"id": "Sign-out",
+			"key": "Sign-out",
+			"message": "Sign-out",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "サインアウト"
+		},
+		{
+			"id": "Authenticator App",
+			"key": "Authenticator App",
+			"message": "Authenticator App",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "認証アプリ "
+		},
+		{
+			"id": "Authenticator app passcodes are one-time-use tokens that change every thirty (30) seconds.",
+			"key": "Authenticator app passcodes are one-time-use tokens that change every thirty (30) seconds.",
+			"message": "Authenticator app passcodes are one-time-use tokens that change every thirty (30) seconds.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "認証アプリのパスコードは、30 秒ごとに変更される 1 回限りのトークンです"
+		},
+		{
+			"id": "app passcode",
+			"key": "app passcode",
+			"message": "app passcode",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "アプリのパスコード "
+		},
+		{
+			"id": "There are {Count} backup codes remaining with {Name}",
+			"key": "There are %[1]d backup codes remaining with %[2]s",
+			"message": "There are {Count} backup codes remaining with {Name}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Count",
+					"string": "%[1]d",
+					"type": "int",
+					"underlyingType": "int",
+					"argNum": 1,
+					"expr": "count"
+				},
+				{
+					"id": "Name",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "name"
+				}
+			],
+			"translation": " %[2]s には %[1]d 個のバックアップ コードが残っています "
+		},
+		{
+			"id": "There are no backup codes remaining with {Name}",
+			"key": "There are no backup codes remaining with %[1]s",
+			"message": "There are no backup codes remaining with {Name}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Name",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "name"
+				}
+			],
+			"translation": " %[1]s にはバックアップ コードが残っていません"
+		},
+		{
+			"id": "Backup Codes",
+			"key": "Backup Codes",
+			"message": "Backup Codes",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "バックアップ コード"
+		},
+		{
+			"id": "Backup codes are one-time-use tokens created during the provisioning process.",
+			"key": "Backup codes are one-time-use tokens created during the provisioning process.",
+			"message": "Backup codes are one-time-use tokens created during the provisioning process.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "バックアップ コードは、プロビジョニング プロセス中に作成される 1 回限りの使用トークンです。 "
+		},
+		{
+			"id": "backup code",
+			"key": "backup code",
+			"message": "backup code",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "バックアップ コード"
+		},
+		{
+			"id": "{SiteName} Email Passcode",
+			"key": "%[1]s Email Passcode",
+			"message": "{SiteName} Email Passcode",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SiteName",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "f.Enjin.SiteName()"
+				}
+			],
+			"translation": "%[1]s Eメール パスコード "
+		},
+		{
+			"id": "Email passcode sent",
+			"key": "Email passcode sent",
+			"message": "Email passcode sent",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "Eメール・パスコードが送信されました "
+		},
+		{
+			"id": "Email Passcode",
+			"key": "Email Passcode",
+			"message": "Email Passcode",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "Eメール・パスコード"
+		},
+		{
+			"id": "Request passcode email",
+			"key": "Request passcode email",
+			"message": "Request passcode email",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "Eメール・パスコードをリクエスト"
+		},
+		{
+			"id": "Email passcodes are similar to normal authenticator app passcodes except that these passcodes are sent to your email address.",
+			"key": "Email passcodes are similar to normal authenticator app passcodes except that these passcodes are sent to your email address.",
+			"message": "Email passcodes are similar to normal authenticator app passcodes except that these passcodes are sent to your email address.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "Eメール パスコードは、Eメール アドレスに送信される点を除けば、通常の認証アプリのパスコードと似ています。"
+		},
+		{
+			"id": "email passcode",
+			"key": "email passcode",
+			"message": "email passcode",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "Eメール・パスコード"
+		},
+		{
+			"id": "Please select a factor to remove.",
+			"key": "Please select a factor to remove.",
+			"message": "Please select a factor to remove.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "削除するファクターを選択してください。 (JA)"
+		},
+		{
+			"id": "Backup Email",
+			"key": "Backup Email",
+			"message": "Backup Email",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "バックアップEメール"
+		},
+		{
+			"id": "check your email for the confirmation token",
+			"key": "check your email for the confirmation token",
+			"message": "check your email for the confirmation token",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "Eメールで確認トークンを確認してください"
+		},
+		{
+			"id": "{BackupEmail} is already provisioned as \"{Provision}\"",
+			"key": "%[1]s is already provisioned as \"%[2]s\"",
+			"message": "{BackupEmail} is already provisioned as \"{Provision}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "BackupEmail",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "backupEmail"
+				},
+				{
+					"id": "Provision",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "provision"
+				}
+			],
+			"translation": "確認トークン %[1]s はすでに\"%[2]s\" としてプロビジョニングされています"
+		},
+		{
+			"id": "A backup email address that is not your primary account is required",
+			"key": "A backup email address that is not your primary account is required",
+			"message": "A backup email address that is not your primary account is required",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "プライマリ アカウントではないバックアップ メール アドレスが必要です "
+		},
+		{
+			"id": "sign-in backup token expired or invalid",
+			"key": "sign-in backup token expired or invalid",
+			"message": "sign-in backup token expired or invalid",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "サインイン バックアップ トークンの有効期限が切れているか、無効です"
+		},
+		{
+			"id": "{SiteName} Backup Sign-In Token",
+			"key": "%[1]s Backup Sign-In Token",
+			"message": "{SiteName} Backup Sign-In Token",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SiteName",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "f.Enjin.SiteName()"
+				}
+			],
+			"translation": "%[1]s バックアップ サインイン トークン"
+		},
+		{
+			"id": "New sign-in backup token email sent",
+			"key": "New sign-in backup token email sent",
+			"message": "New sign-in backup token email sent",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "新しいサインイン バックアップ トークンのEメールが送信されました"
+		},
+		{
+			"id": "bad request",
+			"key": "bad request",
+			"message": "bad request",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "要求の形式が正しくありません"
+		},
+		{
+			"id": "If both the email addresses are correct, an email with the confirmation token has been sent.",
+			"key": "If both the email addresses are correct, an email with the confirmation token has been sent.",
+			"message": "If both the email addresses are correct, an email with the confirmation token has been sent.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "両方のEメール アドレスが正しい場合は、確認トークンを含むEメールが送信されています。"
+		},
+		{
+			"id": "an unexpected error occurred",
+			"key": "an unexpected error occurred",
+			"message": "an unexpected error occurred",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "予期しないエラーが発生しました"
+		},
+		{
+			"id": "Email backup sign-ins require your primary and backup email addresses, with no passwords for you to keep track of and protect. Instead, upon sign-in, a secure one-time-use token is sent and that is used to confirm your user account.",
+			"key": "Email backup sign-ins require your primary and backup email addresses, with no passwords for you to keep track of and protect. Instead, upon sign-in, a secure one-time-use token is sent and that is used to confirm your user account.",
+			"message": "Email backup sign-ins require your primary and backup email addresses, with no passwords for you to keep track of and protect. Instead, upon sign-in, a secure one-time-use token is sent and that is used to confirm your user account.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "Eメール バックアップ サインインにはプライマリEメール アドレスとバックアップEメール アドレスが必要ですが、追跡して保護するためのパスワードは必要ありません。 代わりに、サインイン時に安全な 1 回限りのトークンが送信され、ユーザー アカウントの確認に使用されます。"
+		},
+		{
+			"id": "Request backup email token",
+			"key": "Request backup email token",
+			"message": "Request backup email token",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "バックアップEメールトークンをリクエストする"
+		},
+		{
+			"id": "a0b1c2d3e4",
+			"key": "a0b1c2d3e4",
+			"message": "a0b1c2d3e4",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "a0b1c2d3e4 (JA)"
+		},
+		{
+			"id": "New sign-in token email sent",
+			"key": "New sign-in token email sent",
+			"message": "New sign-in token email sent",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "新しいサインイン トークンのEメールが送信されました "
+		},
+		{
+			"id": "{SiteName} Sign-In Token",
+			"key": "%[1]s Sign-In Token",
+			"message": "{SiteName} Sign-In Token",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SiteName",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "f.Enjin.SiteName()"
+				}
+			],
+			"translation": "%[1]s サインイン トークン"
+		},
+		{
+			"id": "sign-in token expired or invalid",
+			"key": "sign-in token expired or invalid",
+			"message": "sign-in token expired or invalid",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "サインイントークンの有効期限が切れているか無効です"
+		},
+		{
+			"id": "Email",
+			"key": "Email",
+			"message": "Email",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "Eメール"
+		},
+		{
+			"id": "Email sign-ins require just an email address with no passwords for you to keep track of and protect. Instead, upon sign-in, a secure one-time-use token is sent and that is used to confirm your user account.",
+			"key": "Email sign-ins require just an email address with no passwords for you to keep track of and protect. Instead, upon sign-in, a secure one-time-use token is sent and that is used to confirm your user account.",
+			"message": "Email sign-ins require just an email address with no passwords for you to keep track of and protect. Instead, upon sign-in, a secure one-time-use token is sent and that is used to confirm your user account.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "Eメール サインインにはEメール アドレスのみが必要で、追跡および保護するためのパスワードは必要ありません。 代わりに、サインイン時に安全な 1 回限りのトークンが送信され、ユーザー アカウントの確認に使用されます"
+		},
+		{
+			"id": "Request email token",
+			"key": "Request email token",
+			"message": "Request email token",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "Eメールトークンをリクエストする"
+		},
+		{
+			"id": "Dashboard",
+			"key": "Dashboard",
+			"message": "Dashboard",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ダッシュボード"
+		},
+		{
+			"id": "FS Editor",
+			"key": "FS Editor",
+			"message": "FS Editor",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "FSエディター"
+		},
+		{
+			"id": "The page's title, used in the browser tab name and other places",
+			"key": "The page's title, used in the browser tab name and other places",
+			"message": "The page's title, used in the browser tab name and other places",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ページのタイトル。ブラウザのタブ名やその他の場所で使用されます"
+		},
+		{
+			"id": "A brief description of the page, used for SEO headers and page excerpts",
+			"key": "A brief description of the page, used for SEO headers and page excerpts",
+			"message": "A brief description of the page, used for SEO headers and page excerpts",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ページの簡単な説明。SEO ヘッダーとページの抜粋に使用されます。"
+		},
+		{
+			"id": "The type of page this is",
+			"key": "The type of page this is",
+			"message": "The type of page this is",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "このページの種類"
+		},
+		{
+			"id": "The date the page file was created",
+			"key": "The date the page file was created",
+			"message": "The date the page file was created",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ページファイルが作成された日付"
+		},
+		{
+			"id": "The date the page file was last updated",
+			"key": "The date the page file was last updated",
+			"message": "The date the page file was last updated",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ページファイルが最後に更新された日付"
+		},
+		{
+			"id": "Specify the theme layout to use",
+			"key": "Specify the theme layout to use",
+			"message": "Specify the theme layout to use",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "使用するテーマのレイアウトを指定する"
+		},
+		{
+			"id": "Specify an image URL to use for this page's thumbnail",
+			"key": "Specify an image URL to use for this page's thumbnail",
+			"message": "Specify an image URL to use for this page's thumbnail",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "このページのサムネイルに使用する画像 URL を指定します"
+		},
+		{
+			"id": "Specify the alt attribute text to use for this page's thumbnail",
+			"key": "Specify the alt attribute text to use for this page's thumbnail",
+			"message": "Specify the alt attribute text to use for this page's thumbnail",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "このページのサムネイルに使用する alt 属性テキストを指定します "
+		},
+		{
+			"id": "Omit this page from any indexing",
+			"key": "Omit this page from any indexing",
+			"message": "Omit this page from any indexing",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "このページをインデックスから除外します"
+		},
+		{
+			"id": "Omit this page from search indexing",
+			"key": "Omit this page from search indexing",
+			"message": "Omit this page from search indexing",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "このページを検索インデックスから除外します"
+		},
+		{
+			"id": "Specify the original page on this site that this page translates",
+			"key": "Specify the original page on this site that this page translates",
+			"message": "Specify the original page on this site that this page translates",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "このページが翻訳されるこのサイトの元のページを指定します"
+		},
+		{
+			"id": "Browsing: {TitlePath}",
+			"key": "Browsing: %[1]s",
+			"message": "Browsing: {TitlePath}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "TitlePath",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "titlePath"
+				}
+			],
+			"translation": "ブラウジング: %[1]s "
+		},
+		{
+			"id": "Unsupported file type.",
+			"key": "Unsupported file type.",
+			"message": "Unsupported file type.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "サポートされていないファイル形式です"
+		},
+		{
+			"id": "Permission denied.",
+			"key": "Permission denied.",
+			"message": "Permission denied.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "許可が拒否されました。"
+		},
+		{
+			"id": "error reading file: \"{Error}\"",
+			"key": "error reading file: \"%[1]s\"",
+			"message": "error reading file: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "ee.Error()"
+				}
+			],
+			"translation": "ファイル読み取りエラー:  \"%[1]s\" "
+		},
+		{
+			"id": "error reading draft: \"{Error}\"",
+			"key": "error reading draft: \"%[1]s\"",
+			"message": "error reading draft: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "ee.Error()"
+				}
+			],
+			"translation": "下書きの読み取りエラーt: \"%[1]s\" "
+		},
+		{
+			"id": "Edit: {Name}",
+			"key": "Edit: %[1]s",
+			"message": "Edit: {Name}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Name",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.Name"
+				}
+			],
+			"translation": "編集: %[1]s "
+		},
+		{
+			"id": "Form expired before submitting, please try again.",
+			"key": "Form expired before submitting, please try again.",
+			"message": "Form expired before submitting, please try again.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "送信する前にフォームの有効期限が切れました。もう一度お試しください"
+		},
+		{
+			"id": "Permission to perform the operation has been denied.",
+			"key": "Permission to perform the operation has been denied.",
+			"message": "Permission to perform the operation has been denied.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "操作を実行する許可が拒否されました"
+		},
+		{
+			"id": "Unconfirmed operation, please confirm before submitting changes.",
+			"key": "Unconfirmed operation, please confirm before submitting changes.",
+			"message": "Unconfirmed operation, please confirm before submitting changes.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "動作未確認のため、変更を送信する前に確認してください"
+		},
+		{
+			"id": "Unknown operation, please try again.",
+			"key": "Unknown operation, please try again.",
+			"message": "Unknown operation, please try again.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "不明な操作です。もう一度お試しください。"
+		},
+		{
+			"id": "Cannot unlock another user's file lock",
+			"key": "Cannot unlock another user's file lock",
+			"message": "Cannot unlock another user's file lock",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "別のユーザーのファイル ロックを解除できません"
+		},
+		{
+			"id": "{File} unlocked for others to edit.",
+			"key": "%[1]s unlocked for others to edit.",
+			"message": "{File} unlocked for others to edit.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "File",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.File"
+				}
+			],
+			"translation": "%[1]sのロックが解除され、他の人が編集できるようになりました。"
+		},
+		{
+			"id": "error locking file for editing: \"{Error}\"",
+			"key": "error locking file for editing: \"%[1]s\"",
+			"message": "error locking file for editing: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "編集用ファイルのロック中にエラーが発生しました: \"%[1]s\" "
+		},
+		{
+			"id": "{File} editing taken over.",
+			"key": "%[1]s editing taken over.",
+			"message": "{File} editing taken over.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "File",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.File"
+				}
+			],
+			"translation": "%[1]s の編集が引き継がれました。"
+		},
+		{
+			"id": "{Name} is locked by another user, cannot delete",
+			"key": "%[1]s is locked by another user, cannot delete",
+			"message": "{Name} is locked by another user, cannot delete",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Name",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.Name"
+				}
+			],
+			"translation": "%[1]s は別のユーザーによってロックされているため、削除できません"
+		},
+		{
+			"id": "Cannot delete, file is locked by another user",
+			"key": "Cannot delete, file is locked by another user",
+			"message": "Cannot delete, file is locked by another user",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ファイルは別のユーザーによってロックされているため、削除できません"
+		},
+		{
+			"id": "{File} draft deleted.",
+			"key": "%[1]s draft deleted.",
+			"message": "{File} draft deleted.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "File",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.File"
+				}
+			],
+			"translation": "%[1]s の下書きが削除されました。 "
+		},
+		{
+			"id": "{File} file deleted.",
+			"key": "%[1]s file deleted.",
+			"message": "{File} file deleted.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "File",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.File"
+				}
+			],
+			"translation": "%[1]s ファイルが削除されました。"
+		},
+		{
+			"id": "cannot delete \"{Name}\": directory not empty",
+			"key": "cannot delete \"%[1]s\": directory not empty",
+			"message": "cannot delete \"{Name}\": directory not empty",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Name",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.Name"
+				}
+			],
+			"translation": " \"%[1]s\": を削除できません: ディレクトリが空ではありません"
+		},
+		{
+			"id": "{Name} directory deleted.",
+			"key": "%[1]s directory deleted.",
+			"message": "{Name} directory deleted.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Name",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.Name"
+				}
+			],
+			"translation": "%[1]s directory deleted. (JA)"
+		},
+		{
+			"id": "{Name} is locked by another user, cannot make changes",
+			"key": "%[1]s is locked by another user, cannot make changes",
+			"message": "{Name} is locked by another user, cannot make changes",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Name",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.Name"
+				}
+			],
+			"translation": "%[1]s は別のユーザーによってロックされているため、変更できません"
+		},
+		{
+			"id": "incomplete form submitted",
+			"key": "incomplete form submitted",
+			"message": "incomplete form submitted",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "不完全なフォームが送信されました"
+		},
+		{
+			"id": "error saving to draft file: \"{Error}\"",
+			"key": "error saving to draft file: \"%[1]s\"",
+			"message": "error saving to draft file: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ドラフトファイルへの保存エラー: \"%[1]s\" "
+		},
+		{
+			"id": "{File} draft changes saved.",
+			"key": "%[1]s draft changes saved.",
+			"message": "{File} draft changes saved.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "File",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.File"
+				}
+			],
+			"translation": "%[1]s  の下書き変更が保存されました。"
+		},
+		{
+			"id": "{Name} is locked by another user, cannot publish changes",
+			"key": "%[1]s is locked by another user, cannot publish changes",
+			"message": "{Name} is locked by another user, cannot publish changes",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Name",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.Name"
+				}
+			],
+			"translation": "%[1]s は別のユーザーによってロックされているため、変更を公開できません"
+		},
+		{
+			"id": "error saving final changes to draft: \"{Error}\"",
+			"key": "error saving final changes to draft: \"%[1]s\"",
+			"message": "error saving final changes to draft: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ドラフト\"%[1]s\" の最終変更保存中にエラーが発生しました"
+		},
+		{
+			"id": "error reading final draft: \"{Error}\"",
+			"key": "error reading final draft: \"%[1]s\"",
+			"message": "error reading final draft: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "最終ドラフトの読み取りエラー:「%[1]s」"
+		},
+		{
+			"id": "error writing file: \"{Error}\"",
+			"key": "error writing file: \"%[1]s\"",
+			"message": "error writing file: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ファイルの書き込みエラー: \"%[1]s\" "
+		},
+		{
+			"id": "error removing final draft: \"{Error}\"",
+			"key": "error removing final draft: \"%[1]s\"",
+			"message": "error removing final draft: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "最終ドラフトの削除中にエラーが発生しました: \"%[1]s\" "
+		},
+		{
+			"id": "error unlocking file: \"{Error}\"",
+			"key": "error unlocking file: \"%[1]s\"",
+			"message": "error unlocking file: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ファイルのロック解除エラー: \"%[1]s\" "
+		},
+		{
+			"id": "{File} draft changes published.",
+			"key": "%[1]s draft changes published.",
+			"message": "{File} draft changes published.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "File",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.File"
+				}
+			],
+			"translation": "%[1]s のドラフト変更が公開されました"
+		},
+		{
+			"id": "file is locked by another user, cannot move",
+			"key": "file is locked by another user, cannot move",
+			"message": "file is locked by another user, cannot move",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ファイルは別のユーザーによってロックされているため、移動できません"
+		},
+		{
+			"id": "\"{SrcUri}\" not found",
+			"key": "\"%[1]s\" not found",
+			"message": "\"{SrcUri}\" not found",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SrcUri",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "srcUri"
+				}
+			],
+			"translation": "\"%[1]s\" は見つかりません"
+		},
+		{
+			"id": "destination \"{Dst}\" exists already",
+			"key": "destination \"%[1]s\" exists already",
+			"message": "destination \"{Dst}\" exists already",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Dst",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "dst"
+				}
+			],
+			"translation": "宛先\"%[1]s\" はすでに存在します"
+		},
+		{
+			"id": "cannot move \"{SrcUri}\" to \"{FSID}\": filesystem not found",
+			"key": "cannot move \"%[2]s\" to \"%[1]s\": filesystem not found",
+			"message": "cannot move \"{SrcUri}\" to \"{FSID}\": filesystem not found",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SrcUri",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "srcUri"
+				},
+				{
+					"id": "FSID",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "dstInfo.FSID"
+				}
+			],
+			"translation": "%[1]s\"を\"%[2]s\" に移動できません: ファイルシステムが見つかりません"
+		},
+		{
+			"id": "cannot move \"{SrcUri}\" to \"{FSID}\": filesystem is read-only",
+			"key": "cannot move \"%[2]s\" to \"%[1]s\": filesystem is read-only",
+			"message": "cannot move \"{SrcUri}\" to \"{FSID}\": filesystem is read-only",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SrcUri",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "srcUri"
+				},
+				{
+					"id": "FSID",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "dstInfo.FSID"
+				}
+			],
+			"translation": "\"%[2]s\" は \"%[1]s\"に移動できません: ファイルシステムは読み取り専用です"
+		},
+		{
+			"id": "cannot move \"{SrcUri}\" from \"{FSID}\": filesystem not found",
+			"key": "cannot move \"%[2]s\" from \"%[1]s\": filesystem not found",
+			"message": "cannot move \"{SrcUri}\" from \"{FSID}\": filesystem not found",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SrcUri",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "srcUri"
+				},
+				{
+					"id": "FSID",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.FSID"
+				}
+			],
+			"translation": "\"%[2]s\" は \"%[1]s\"に移動できません: ファイルシステムが見つかりません"
+		},
+		{
+			"id": "cannot move \"{SrcUri}\" from \"{FSID}\": filesystem is read-only",
+			"key": "cannot move \"%[2]s\" from \"%[1]s\": filesystem is read-only",
+			"message": "cannot move \"{SrcUri}\" from \"{FSID}\": filesystem is read-only",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SrcUri",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "srcUri"
+				},
+				{
+					"id": "FSID",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.FSID"
+				}
+			],
+			"translation": " \"%[2]s\" は \"%[1]s\"に移動できません: ファイルシステムは読み取り専用です"
+		},
+		{
+			"id": "error reading \"{SrcUri}\" file stats: {Error}",
+			"key": "error reading \"%[1]s\" file stats: %[2]s",
+			"message": "error reading \"{SrcUri}\" file stats: {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SrcUri",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "srcUri"
+				},
+				{
+					"id": "Error",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "「%[1]s」ファイル統計の読み取りエラー: %[2]s "
+		},
+		{
+			"id": "error reading \"{SrcUri}\": {Error}",
+			"key": "error reading \"%[1]s\": %[2]s",
+			"message": "error reading \"{SrcUri}\": {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SrcUri",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "srcUri"
+				},
+				{
+					"id": "Error",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": " \"%[1]s\":の読み取り中にエラーが発生しました: %[2]s "
+		},
+		{
+			"id": "error writing \"{DstUri}\": {Error}",
+			"key": "error writing \"%[1]s\": %[2]s",
+			"message": "error writing \"{DstUri}\": {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "DstUri",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "dstUri"
+				},
+				{
+					"id": "Error",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": " \"%[1]s\"の書き込みエラー: %[2]s"
+		},
+		{
+			"id": "error preserving file timestamps \"{DstUri}\": {Error}",
+			"key": "error preserving file timestamps \"%[1]s\": %[2]s",
+			"message": "error preserving file timestamps \"{DstUri}\": {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "DstUri",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "dstUri"
+				},
+				{
+					"id": "Error",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "error preserving  \"%[1]s\"ァイルのタイムスタンプの保存中にエラーが発生しました: %[2]s"
+		},
+		{
+			"id": "error reading \"{DstUri}\" shasum: {Error}",
+			"key": "error reading \"%[1]s\" shasum: %[2]s",
+			"message": "error reading \"{DstUri}\" shasum: {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "DstUri",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "dstUri"
+				},
+				{
+					"id": "Error",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "erro \"%[1]s\"  シャサムの読み取り中にエラーが発生しました: %[2]s"
+		},
+		{
+			"id": "source and destination file shasums differ",
+			"key": "source and destination file shasums differ",
+			"message": "source and destination file shasums differ",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ソースファイルと宛先ファイルのシャサムが異なります "
+		},
+		{
+			"id": "error unlocking source file \"{SrcUri}\" before deleting during move: {Error}",
+			"key": "error unlocking source file \"%[1]s\" before deleting during move: %[2]s",
+			"message": "error unlocking source file \"{SrcUri}\" before deleting during move: {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SrcUri",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "srcUri"
+				},
+				{
+					"id": "Error",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "移動中に削除する前のソース ファイル \"%[1]s\" のロックを解除中にエラーが発生しました: %[2]s　　　　　　　"
+		},
+		{
+			"id": "error removing \"{SrcUri}\": {Error}",
+			"key": "error removing \"%[1]s\": %[2]s",
+			"message": "error removing \"{SrcUri}\": {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SrcUri",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "srcUri"
+				},
+				{
+					"id": "Error",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": " \"%[1]s\"の削除中にエラーが発生しました: %[2]s"
+		},
+		{
+			"id": "moved \"{SrcUri}\" to \"{DstUri}\"",
+			"key": "moved \"%[1]s\" to \"%[2]s\"",
+			"message": "moved \"{SrcUri}\" to \"{DstUri}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SrcUri",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "srcUri"
+				},
+				{
+					"id": "DstUri",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "dstUri"
+				}
+			],
+			"translation": "\"%[1]s\" を \"%[2]s\" 移動しました"
+		},
+		{
+			"id": "cannot copy \"{SrcUri}\" to \"{FSID}\": filesystem not found",
+			"key": "cannot copy \"%[2]s\" to \"%[1]s\": filesystem not found",
+			"message": "cannot copy \"{SrcUri}\" to \"{FSID}\": filesystem not found",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SrcUri",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "srcUri"
+				},
+				{
+					"id": "FSID",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "dstInfo.FSID"
+				}
+			],
+			"translation": " \"%[2]s\" を\"%[1]s\"にコピーできません: ファイルシステムが見つかりません"
+		},
+		{
+			"id": "cannot copy \"{SrcUri}\" to \"{FSID}\": filesystem is read-only",
+			"key": "cannot copy \"%[2]s\" to \"%[1]s\": filesystem is read-only",
+			"message": "cannot copy \"{SrcUri}\" to \"{FSID}\": filesystem is read-only",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SrcUri",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "srcUri"
+				},
+				{
+					"id": "FSID",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "dstInfo.FSID"
+				}
+			],
+			"translation": " \"%[2]s\" を\"%[1]s\"にコピーできません: ファイルシステムは読み取り専用です"
+		},
+		{
+			"id": "cannot copy \"{SrcUri}\" from \"{FSID}\": filesystem not found",
+			"key": "cannot copy \"%[2]s\" from \"%[1]s\": filesystem not found",
+			"message": "cannot copy \"{SrcUri}\" from \"{FSID}\": filesystem not found",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SrcUri",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "srcUri"
+				},
+				{
+					"id": "FSID",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.FSID"
+				}
+			],
+			"translation": " \"%[2]s\" を\"%[1]s\"にコピーできません:  ファイルシステムが見つかりません"
+		},
+		{
+			"id": "copied \"{SrcUri}\" to \"{DstUri}\"",
+			"key": "copied \"%[1]s\" to \"%[2]s\"",
+			"message": "copied \"{SrcUri}\" to \"{DstUri}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SrcUri",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "srcUri"
+				},
+				{
+					"id": "DstUri",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "dstUri"
+				}
+			],
+			"translation": " \"%[2]s\" を\"%[1]s\"にコピーしました"
+		},
+		{
+			"id": "\"{Name}\" {String} translation started",
+			"key": "\"%[1]s\" %[2]s translation started",
+			"message": "\"{Name}\" {String} translation started",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Name",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.Name"
+				},
+				{
+					"id": "String",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "dstInfo.Locale.String()"
+				}
+			],
+			"translation": "\"%[1]s\" %[2]s translation started (JA)"
+		},
+		{
+			"id": "inconsistent operation requested",
+			"key": "inconsistent operation requested",
+			"message": "inconsistent operation requested",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "一貫性のない操作が要求されました "
+		},
+		{
+			"id": "a file name is required",
+			"key": "a file name is required",
+			"message": "a file name is required",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ファイル名は必須です "
+		},
+		{
+			"id": "invalid language code given",
+			"key": "invalid language code given",
+			"message": "invalid language code given",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "無効な言語コードが指定されました"
+		},
+		{
+			"id": "\"{SrcUri}\" and destination are the same, nothing to do!",
+			"key": "\"%[1]s\" and destination are the same, nothing to do!",
+			"message": "\"{SrcUri}\" and destination are the same, nothing to do!",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SrcUri",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "srcUri"
+				}
+			],
+			"translation": "\"%[1]s\" と宛先は同じです。何もする必要はありません！"
+		},
+		{
+			"id": "Enjin Info",
+			"key": "Enjin Info",
+			"message": "Enjin Info",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "Enjin 情報"
+		},
+		{
+			"id": "error locking {FsidCode} locale for editing: {Error}",
+			"key": "error locking %[1]s locale for editing: %[2]s",
+			"message": "error locking {FsidCode} locale for editing: {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "FsidCode",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "fsidCode"
+				},
+				{
+					"id": "Error",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "e 編集用の %[1]sロケールをロック中にエラーが発生しました: %[2]s %[2]s (JA)"
+		},
+		{
+			"id": "error taking over editing: {Error}",
+			"key": "error taking over editing: %[1]s",
+			"message": "error taking over editing: {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "編集引き継ぎエラー: %[1]s"
+		},
+		{
+			"id": "Cannot unlock, locale is locked by another user",
+			"key": "Cannot unlock, locale is locked by another user",
+			"message": "Cannot unlock, locale is locked by another user",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ロックを解除できません。ロケールは別のユーザーによってロックされています"
+		},
+		{
+			"id": "error unlocking locale for editing by others: {Error}",
+			"key": "error unlocking locale for editing by others: %[1]s",
+			"message": "error unlocking locale for editing by others: {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "他の人が編集できるロケールのロックを解除中にエラーが発生しました: %[1]s "
+		},
+		{
+			"id": "Cannot cancel, locale is locked by another user",
+			"key": "Cannot cancel, locale is locked by another user",
+			"message": "Cannot cancel, locale is locked by another user",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "キャンセルできません。ロケールは別のユーザーによってロックされています"
+		},
+		{
+			"id": "Cannot save changes, locale is locked by another user",
+			"key": "Cannot save changes, locale is locked by another user",
+			"message": "Cannot save changes, locale is locked by another user",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "変更を保存できません。ロケールは別のユーザーによってロックされています"
+		},
+		{
+			"id": "error reading locales data: {Error}",
+			"key": "error reading locales data: %[1]s",
+			"message": "error reading locales data: {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ロケールデータの読み取りエラー: %[1]s "
+		},
+		{
+			"id": "error performing draft changes: {Error}",
+			"key": "error performing draft changes: %[1]s",
+			"message": "error performing draft changes: {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ドラフト変更の実行中にエラーが発生しました: %[1]s "
+		},
+		{
+			"id": "error writing draft changes: {Error}",
+			"key": "error writing draft changes: %[1]s",
+			"message": "error writing draft changes: {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ドラフト変更の書き込みエラー: %[1]s"
+		},
+		{
+			"id": "draft locale changes saved",
+			"key": "draft locale changes saved",
+			"message": "draft locale changes saved",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ドラフトロケール変更が保存されました"
+		},
+		{
+			"id": "Cannot publish, locale is locked by another user",
+			"key": "Cannot publish, locale is locked by another user",
+			"message": "Cannot publish, locale is locked by another user",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "パブリッシュできません。ロケールは別のユーザーによってロックされています "
+		},
+		{
+			"id": "draft locale changes published",
+			"key": "draft locale changes published",
+			"message": "draft locale changes published",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ロケール変更のドラフトがパブリッシュされました"
+		},
+		{
+			"id": "Cannot delete draft changes, locale is locked by another user",
+			"key": "Cannot delete draft changes, locale is locked by another user",
+			"message": "Cannot delete draft changes, locale is locked by another user",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "下書きの変更を削除できません。ロケールは別のユーザーによってロックされています"
+		},
+		{
+			"id": "Cannot change, locale is locked by another user",
+			"key": "Cannot change, locale is locked by another user",
+			"message": "Cannot change, locale is locked by another user",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "変更できません。ロケールは他のユーザによってロックされています。"
+		},
+		{
+			"id": "incomplete form submission",
+			"key": "incomplete form submission",
+			"message": "incomplete form submission",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "不完全なフォームの送信"
+		},
+		{
+			"id": "incorrect form submission",
+			"key": "incorrect form submission",
+			"message": "incorrect form submission",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "間違ったフォームの送信"
+		},
+		{
+			"id": "destination not found, cannot copy",
+			"key": "destination not found, cannot copy",
+			"message": "destination not found, cannot copy",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "宛先が見つからないためコピーできません"
+		},
+		{
+			"id": "message not found, cannot copy",
+			"key": "message not found, cannot copy",
+			"message": "message not found, cannot copy",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "メッセージが見つからないためコピーできません"
+		},
+		{
+			"id": "translation copied to: {DstPath}",
+			"key": "translation copied to: %[1]s",
+			"message": "translation copied to: {DstPath}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "DstPath",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "dstPath"
+				}
+			],
+			"translation": "翻訳をコピーしました: %[1]s "
+		},
+		{
+			"id": "translation key is required to create a new entry",
+			"key": "translation key is required to create a new entry",
+			"message": "translation key is required to create a new entry",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "新しいエントリを作成するには翻訳キーが必要です "
+		},
+		{
+			"id": "translation comment is required to create a new entry",
+			"key": "translation comment is required to create a new entry",
+			"message": "translation comment is required to create a new entry",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "新しいエントリを作成するには翻訳コメントが必要です"
+		},
+		{
+			"id": "translation key exists already",
+			"key": "translation key exists already",
+			"message": "translation key exists already",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "翻訳キーはすでに存在します"
+		},
+		{
+			"id": "translation not found, nothing to delete",
+			"key": "translation not found, nothing to delete",
+			"message": "translation not found, nothing to delete",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "翻訳が見つかりません。削除するものはありません"
+		},
+		{
+			"id": "invalid plural translation case key",
+			"key": "invalid plural translation case key",
+			"message": "invalid plural translation case key",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "無効な複数形翻訳大文字小文字キー"
+		},
+		{
+			"id": "translation case \"{Key}\" exists already",
+			"key": "translation case \"%[1]s\" exists already",
+			"message": "translation case \"{Key}\" exists already",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Key",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "key"
+				}
+			],
+			"translation": "翻訳ケース\"%[1]s\" はすでに存在します"
+		},
+		{
+			"id": "\"other\" translation case is required, cannot delete",
+			"key": "\"other\" translation case is required, cannot delete",
+			"message": "\"other\" translation case is required, cannot delete",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "「その他」の翻訳ケースが必要です。削除できません"
+		},
+		{
+			"id": "translation cannot be converted to plural form",
+			"key": "translation cannot be converted to plural form",
+			"message": "translation cannot be converted to plural form",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "翻訳を複数形に変換することはできません"
+		},
+		{
+			"id": "unknown operation",
+			"key": "unknown operation",
+			"message": "unknown operation",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "不明な操作"
+		},
+		{
+			"id": "Locales",
+			"key": "Locales",
+			"message": "Locales",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ロケール"
+		},
+		{
+			"id": "error reading draft: \"{Err}\"",
+			"key": "error reading draft: \"%v\"",
+			"message": "error reading draft: \"{Err}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Err",
+					"string": "%[1]v",
+					"type": "error",
+					"underlyingType": "interface{Error() string}",
+					"argNum": 1,
+					"expr": "err"
+				}
+			],
+			"translation": "ドラフトの読み取りエラー: \"%[1]v\" "
+		},
+		{
+			"id": "error reading file: \"{Err}\"",
+			"key": "error reading file: \"%v\"",
+			"message": "error reading file: \"{Err}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Err",
+					"string": "%[1]v",
+					"type": "error",
+					"underlyingType": "interface{Error() string}",
+					"argNum": 1,
+					"expr": "err"
+				}
+			],
+			"translation": "ファイルの読み取りエラー: \"%[1]v\" "
+		},
+		{
+			"id": "error encoding menu: \"{Err}\"",
+			"key": "error encoding menu: \"%v\"",
+			"message": "error encoding menu: \"{Err}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Err",
+					"string": "%[1]v",
+					"type": "error",
+					"underlyingType": "interface{Error() string}",
+					"argNum": 1,
+					"expr": "err"
+				}
+			],
+			"translation": "メニューの符号化エラー: \"%[1]v\" "
+		},
+		{
+			"id": "Menu Preview",
+			"key": "Menu Preview",
+			"message": "Menu Preview",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "メニューのプレビュー"
+		},
+		{
+			"id": "click here to return to the file-browser",
+			"key": "click here to return to the file-browser",
+			"message": "click here to return to the file-browser",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ここをクリックしてファイルブラウザに戻ります"
+		},
+		{
+			"id": "click here to continue editing",
+			"key": "click here to continue editing",
+			"message": "click here to continue editing",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "編集を続けるにはここをクリックしてください"
+		},
+		{
+			"id": "a locale is required to create a new page",
+			"key": "a locale is required to create a new page",
+			"message": "a locale is required to create a new page",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "新しいページを作成するにはロケールが必要です"
+		},
+		{
+			"id": "a valid locale is required to create a new page",
+			"key": "a valid locale is required to create a new page",
+			"message": "a valid locale is required to create a new page",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "新しいページを作成するには有効なロケールが必要です"
+		},
+		{
+			"id": "{Name} ignores all menus in sub-directories",
+			"key": "%[1]s ignores all menus in sub-directories",
+			"message": "{Name} ignores all menus in sub-directories",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Name",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "t.Name()"
+				}
+			],
+			"translation": "%[1]s  はサブディレクトリ内のすべてのメニューを無視します"
+		},
+		{
+			"id": "{Name} renders this menu",
+			"key": "%[1]s renders this menu",
+			"message": "{Name} renders this menu",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Name",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "t.Name()"
+				}
+			],
+			"translation": "%[1]s はこのメニューをレンダリングします"
+		},
+		{
+			"id": "{Name} ignores this menu",
+			"key": "%[1]s ignores this menu",
+			"message": "{Name} ignores this menu",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Name",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "t.Name()"
+				}
+			],
+			"translation": "%[1]s はこのメニューを無視します"
+		},
+		{
+			"id": "error encoding form context: \"{Error}\"",
+			"key": "error encoding form context: \"%[1]s\"",
+			"message": "error encoding form context: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "ee.Error()"
+				}
+			],
+			"translation": "フォームコンテキストのエンコードエラー: \"%[1]s\" "
+		},
+		{
+			"id": "error decoding form context: \"{Error}\"",
+			"key": "error decoding form context: \"%[1]s\"",
+			"message": "error decoding form context: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "ee.Error()"
+				}
+			],
+			"translation": "フォームコンテキストのデコードエラー: \"%[1]s\" "
+		},
+		{
+			"id": "error encoding cleaned menu: \"{Error}\"",
+			"key": "error encoding cleaned menu: \"%v\"",
+			"message": "error encoding cleaned menu: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]v",
+					"type": "error",
+					"underlyingType": "interface{Error() string}",
+					"argNum": 1,
+					"expr": "ee"
+				}
+			],
+			"translation": "エンコクリーンアップされたメニューのエンコードエラー: \"%[1]v\" "
+		},
+		{
+			"id": "error decoding cleaned menu: \"{Error}\"",
+			"key": "error decoding cleaned menu: \"%v\"",
+			"message": "error decoding cleaned menu: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]v",
+					"type": "error",
+					"underlyingType": "interface{Error() string}",
+					"argNum": 1,
+					"expr": "ee"
+				}
+			],
+			"translation": "エンコクリーンアップされたメニューのデコードエラー: \"%[1]v\" "
+		},
+		{
+			"id": "error saving draft changes: \"{Error}\"",
+			"key": "error saving draft changes: \"%[1]s\"",
+			"message": "error saving draft changes: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ドラフト変更の保存エラー: \"%[1]s\" "
+		},
+		{
+			"id": "error saving final draft changes: \"{Error}\"",
+			"key": "error saving final draft changes: \"%[1]s\"",
+			"message": "error saving final draft changes: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ドラフトの変更を最終保存するときにエラーが発生しました: \"%[1]s\" "
+		},
+		{
+			"id": "error decoding draft data: \"{Error}\"",
+			"key": "error decoding draft data: \"%[1]s\"",
+			"message": "error decoding draft data: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ドラフトデータのデコードエラー: \"%[1]s\" "
+		},
+		{
+			"id": "error encoding draft menu: \"{Error}\"",
+			"key": "error encoding draft menu: \"%[1]s\"",
+			"message": "error encoding draft menu: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ドラフトメニューのエンコードエラー: \"%[1]s\" "
+		},
+		{
+			"id": "cannot create \"{File}\" on \"{FSID}\": filesystem not found",
+			"key": "cannot create \"%[2]s\" on \"%[1]s\": filesystem not found",
+			"message": "cannot create \"{File}\" on \"{FSID}\": filesystem not found",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "File",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "dstInfo.File"
+				},
+				{
+					"id": "FSID",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "dstInfo.FSID"
+				}
+			],
+			"translation": " \"%[2]s\" に \"%[1]s\":を作成できません: ファイルシステムが見つかりません"
+		},
+		{
+			"id": "cannot create \"{File}\" on \"{FSID}\": filesystem is read-only",
+			"key": "cannot create \"%[2]s\" on \"%[1]s\": filesystem is read-only",
+			"message": "cannot create \"{File}\" on \"{FSID}\": filesystem is read-only",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "File",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "dstInfo.File"
+				},
+				{
+					"id": "FSID",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "dstInfo.FSID"
+				}
+			],
+			"translation": " \"%[2]s\" に \"%[1]s\":を作成できません: ファイルシステムは読み取り専用です"
+		},
+		{
+			"id": "create new page \"{DstUri}\"",
+			"key": "create new page \"%[1]s\"",
+			"message": "create new page \"{DstUri}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "DstUri",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "dstUri"
+				}
+			],
+			"translation": "新しいページを作成する \"%[1]s\" "
+		},
+		{
+			"id": "Menus",
+			"key": "Menus",
+			"message": "Menus",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "メニュー"
+		},
+		{
+			"id": "a file name is required; {Name} supports the following menu files: {Filenames}",
+			"key": "a file name is required; %[1]s supports the following menu files: %[2]s",
+			"message": "a file name is required; {Name} supports the following menu files: {Filenames}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Name",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "t.Name()"
+				},
+				{
+					"id": "Filenames",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "filenames"
+				}
+			],
+			"translation": "ファイル名は必須です。 %[1]s は次のメニュー ファイルをサポートしています: %[2]s: %[2]s (JA)"
+		},
+		{
+			"id": "error reading draft page matter: \"{Error}\"",
+			"key": "error reading draft page matter: \"%[1]s\"",
+			"message": "error reading draft page matter: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ドラフトページ問題の読み取りエラー: \"%[1]s\" "
+		},
+		{
+			"id": "error preparing draft page preview: \"{Error}\"",
+			"key": "error preparing draft page preview: \"%[1]s\"",
+			"message": "error preparing draft page preview: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ドラフト ページ プレビューの準備中にエラーが発生しました: \"%[1]s\" "
+		},
+		{
+			"id": "Draft Preview",
+			"key": "Draft Preview",
+			"message": "Draft Preview",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ドラフトプレビュー "
+		},
+		{
+			"id": "error parsing page-matter: \"{Err}\"",
+			"key": "error parsing page-matter: \"%v\"",
+			"message": "error parsing page-matter: \"{Err}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Err",
+					"string": "%[1]v",
+					"type": "error",
+					"underlyingType": "interface{Error() string}",
+					"argNum": 1,
+					"expr": "err"
+				}
+			],
+			"translation": "ページ事項の解析エラー: \"%[1]v\" "
+		},
+		{
+			"id": "error finalizing edit page: \"{Err}\"",
+			"key": "error finalizing edit page: \"%v\"",
+			"message": "error finalizing edit page: \"{Err}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Err",
+					"string": "%[1]v",
+					"type": "error",
+					"underlyingType": "interface{Error() string}",
+					"argNum": 1,
+					"expr": "err"
+				}
+			],
+			"translation": "編集ページの終了中にエラーが発生しました: \"%[1]v\" "
+		},
+		{
+			"id": "error decoding form body: \"{Err}\"",
+			"key": "error decoding form body: \"%v\"",
+			"message": "error decoding form body: \"{Err}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Err",
+					"string": "%[1]v",
+					"type": "error",
+					"underlyingType": "interface{Error() string}",
+					"argNum": 1,
+					"expr": "err"
+				}
+			],
+			"translation": "フォーム本文のデコードエラー: \"%[1]v\" "
+		},
+		{
+			"id": "a file format is required to create a new page",
+			"key": "a file format is required to create a new page",
+			"message": "a file format is required to create a new page",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "新しいページを作成するにはファイル形式が必要です "
+		},
+		{
+			"id": "a valid file format is required to create a new page",
+			"key": "a valid file format is required to create a new page",
+			"message": "a valid file format is required to create a new page",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "新しいページを作成するには有効なファイル形式が必要です"
+		},
+		{
+			"id": "a supported archetype is required to create a new page, supported archetypes are: {ArchetypeNames}",
+			"key": "a supported archetype is required to create a new page, supported archetypes are: %[1]s",
+			"message": "a supported archetype is required to create a new page, supported archetypes are: {ArchetypeNames}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "ArchetypeNames",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "archetypeNames"
+				}
+			],
+			"translation": "新しいページを作成するにはサポートされているアーキタイプが必要です。サポートされているアーキタイプは次のとおりです。: %[1]s "
+		},
+		{
+			"id": "archetype page format not supported",
+			"key": "archetype page format not supported",
+			"message": "archetype page format not supported",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "アーキタイプ ページ形式はサポートされていません"
+		},
+		{
+			"id": "{Key} error: {Error}",
+			"key": "%[1]s error: %[2]s",
+			"message": "{Key} error: {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Key",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "key"
+				},
+				{
+					"id": "Error",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "ee.Error()"
+				}
+			],
+			"translation": "%[1]s エラー: %[2]s "
+		},
+		{
+			"id": "Cannot make changes, file is locked by another user",
+			"key": "Cannot make changes, file is locked by another user",
+			"message": "Cannot make changes, file is locked by another user",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "変更できません。ファイルは別のユーザーによってロックされています"
+		},
+		{
+			"id": "kebab-cased key name is required",
+			"key": "kebab-cased key name is required",
+			"message": "kebab-cased key name is required",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ケバブケースのキー名は必須です"
+		},
+		{
+			"id": "{Format} page format does not support variables",
+			"key": "%[1]s page format does not support variables",
+			"message": "{Format} page format does not support variables",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Format",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "format"
+				}
+			],
+			"translation": "%[1]s ページ形式は変数をサポートしていません"
+		},
+		{
+			"id": "cannot add key named \"{Key}\": is a reserved reserved name",
+			"key": "cannot add key named \"%[1]s\": is a reserved reserved name",
+			"message": "cannot add key named \"{Key}\": is a reserved reserved name",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Key",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "field.Key"
+				}
+			],
+			"translation": "\"%[1]s\"という名前のキーを追加できません: 予約済みの名前です"
+		},
+		{
+			"id": "cannot add key named \"{AddNewKeyName}\": contains one or more invalid characters (only lower-case letters, numbers and dashes allowed)",
+			"key": "cannot add key named \"%[1]s\": contains one or more invalid characters (only lower-case letters, numbers and dashes allowed)",
+			"message": "cannot add key named \"{AddNewKeyName}\": contains one or more invalid characters (only lower-case letters, numbers and dashes allowed)",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "AddNewKeyName",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "addNewKeyName"
+				}
+			],
+			"translation": "\"%[1]s\"という名前のキーを追加できません: 1 つ以上の無効な文字が含まれています (小文字、数字、ダッシュのみが許可されます)"
+		},
+		{
+			"id": "error saving draft page changes: \"{Error}\"",
+			"key": "error saving draft page changes: \"%[1]s\"",
+			"message": "error saving draft page changes: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ドラフトページの変更を保存するときにエラーが発生しました: \"%[1]s\" "
+		},
+		{
+			"id": "Editing {EditorName}: {FilePath}",
+			"key": "Editing %[1]s: %[2]s",
+			"message": "Editing {EditorName}: {FilePath}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "EditorName",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "editorName"
+				},
+				{
+					"id": "FilePath",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "filePath"
+				}
+			],
+			"translation": "編集 %[1]s: %[2]s "
+		},
+		{
+			"id": "{File} draft page changes saved.",
+			"key": "%[1]s draft page changes saved.",
+			"message": "{File} draft page changes saved.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "File",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.File"
+				}
+			],
+			"translation": "%[1]s の下書きページの変更が保存されました。"
+		},
+		{
+			"id": "error writing draft page: \"{Error}\"",
+			"key": "error writing draft page: \"%[1]s\"",
+			"message": "error writing draft page: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ドラフトページの書き込みエラー: \"%[1]s\" "
+		},
+		{
+			"id": "error publishing draft page: \"{Error}\"",
+			"key": "error publishing draft page: \"%[1]s\"",
+			"message": "error publishing draft page: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ドラフトページのパブリッシュエラー: \"%[1]s\" "
+		},
+		{
+			"id": "error removing final draft page: \"{Error}\"",
+			"key": "error removing final draft page: \"%[1]s\"",
+			"message": "error removing final draft page: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "最終ドラフトページの削除中にエラーが発生しました: \"%[1]s\" "
+		},
+		{
+			"id": "error unlocking page file: \"{Error}\"",
+			"key": "error unlocking page file: \"%[1]s\"",
+			"message": "error unlocking page file: \"{Error}\"",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ページファイルのロック解除エラー: \"%[1]s\" "
+		},
+		{
+			"id": "{File} draft page changes published.",
+			"key": "%[1]s draft page changes published.",
+			"message": "{File} draft page changes published.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "File",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.File"
+				}
+			],
+			"translation": "%[1]s  のドラフトページの変更がパブリッシュされました。"
+		},
+		{
+			"id": "error removing file: {Name} - {Error}",
+			"key": "error removing file: %[1]s - %[2]s",
+			"message": "error removing file: {Name} - {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Name",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.Name"
+				},
+				{
+					"id": "Error",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ファイル削除エラー: %[1]s - %[2]s "
+		},
+		{
+			"id": "Cannot index, file is locked by another user",
+			"key": "Cannot index, file is locked by another user",
+			"message": "Cannot index, file is locked by another user",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "インデックスを作成できません。ファイルは別のユーザーによってロックされています"
+		},
+		{
+			"id": "cannot re-index broken pages",
+			"key": "cannot re-index broken pages",
+			"message": "cannot re-index broken pages",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "壊れたページのインデックスを再作成できません"
+		},
+		{
+			"id": "page format render error: {Error}",
+			"key": "page format render error: %[1]s",
+			"message": "page format render error: {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "ページフォーマットのレンダリングエラー: %[1]s "
+		},
+		{
+			"id": "\"{Name}\" has been added to page indexing",
+			"key": "\"%[1]s\" has been added to page indexing",
+			"message": "\"{Name}\" has been added to page indexing",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Name",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.Name"
+				}
+			],
+			"translation": "\"%[1]s\"がページのインデックス作成に追加されました"
+		},
+		{
+			"id": "Cannot remove index, file is locked by another user",
+			"key": "Cannot remove index, file is locked by another user",
+			"message": "Cannot remove index, file is locked by another user",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "インデックスを削除できません。ファイルは別のユーザーによってロックされています"
+		},
+		{
+			"id": "\"{Name}\" has been removed from page indexing",
+			"key": "\"%[1]s\" has been removed from page indexing",
+			"message": "\"{Name}\" has been removed from page indexing",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Name",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.Name"
+				}
+			],
+			"translation": "\"%[1]s\" はページのインデックス作成から削除されました"
+		},
+		{
+			"id": "cannot translate broken pages",
+			"key": "cannot translate broken pages",
+			"message": "cannot translate broken pages",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "壊れたページを翻訳できません"
+		},
+		{
+			"id": "error reading \"{SrcUri}\" page matter: {Error}",
+			"key": "error reading \"%[1]s\" page matter: %[2]s",
+			"message": "error reading \"{SrcUri}\" page matter: {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SrcUri",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "srcUri"
+				},
+				{
+					"id": "Error",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "\"%[1]s\" ページマットの読み取りエラーr: %[2]s "
+		},
+		{
+			"id": "error preparing \"{SrcUri}\" page matter: {Error}",
+			"key": "error preparing \"%[1]s\" page matter: %[2]s",
+			"message": "error preparing \"{SrcUri}\" page matter: {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "SrcUri",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "srcUri"
+				},
+				{
+					"id": "Error",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": " \"%[1]s\" ページの準備中にエラーが発生しました: %[2]s "
+		},
+		{
+			"id": "source and destination file shasums are the same",
+			"key": "source and destination file shasums are the same",
+			"message": "source and destination file shasums are the same",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ソースファイルと宛先ファイルのシャサムが同じである"
+		},
+		{
+			"id": "\"{Name}\" {String} page started, please translate and publish",
+			"key": "\"%[1]s\" %[2]s page started, please translate and publish",
+			"message": "\"{Name}\" {String} page started, please translate and publish",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Name",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "info.Name"
+				},
+				{
+					"id": "String",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "dstInfo.Locale.String()"
+				}
+			],
+			"translation": "\"%[1]s\" %[2]s ページが開始されました。翻訳して公開してください"
+		},
+		{
+			"id": "error making archetype \"{DstArchetype}\": {Error}",
+			"key": "error making archetype \"%[1]s\": %[2]s",
+			"message": "error making archetype \"{DstArchetype}\": {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "DstArchetype",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "dstArchetype"
+				},
+				{
+					"id": "Error",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "err.Error()"
+				}
+			],
+			"translation": "\"%[1]s\"アーキタイプ作成エラー : %[2]s "
+		},
+		{
+			"id": "page format error: {Title} - {Summary}",
+			"key": "page format error: %[1]s - %[2]s",
+			"message": "page format error: {Title} - {Summary}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Title",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "enjErr.Title"
+				},
+				{
+					"id": "Summary",
+					"string": "%[2]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 2,
+					"expr": "forms.StrictSanitize(enjErr.Summary)"
+				}
+			],
+			"translation": "ページフォーマットエラー: %[1]s - %[2]s "
+		},
+		{
+			"id": "page render error: {Error}",
+			"key": "page render error: %[1]s",
+			"message": "page render error: {Error}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Error",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "forms.StrictSanitize(ee.Error())"
+				}
+			],
+			"translation": "ページレンダリングエラー: %[1]s "
+		},
+		{
+			"id": "(this page failed to render)",
+			"key": "(this page failed to render)",
+			"message": "(this page failed to render)",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "(このページはレンダリングに失敗しました) "
+		},
+		{
+			"id": "Pages",
+			"key": "Pages",
+			"message": "Pages",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ページ "
+		},
+		{
+			"id": "a file name is required; use \"~index\" for a directory landing page",
+			"key": "a file name is required; use \"~index\" for a directory landing page",
+			"message": "a file name is required; use \"~index\" for a directory landing page",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "a file name isファイル名は必須です。 ディレクトリのランディング ページには \"~index\" を使用します"
+		},
+		{
+			"id": "Themes",
+			"key": "Themes",
+			"message": "Themes",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "主題 "
+		},
+		{
+			"id": "Unsafe",
+			"key": "Unsafe",
+			"message": "Unsafe",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "安全ではない"
+		},
+		{
+			"id": "Profile",
+			"key": "Profile",
+			"message": "Profile",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "プロファイル"
+		},
+		{
+			"id": "Display Name",
+			"key": "Display Name",
+			"message": "Display Name",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "表示名"
+		},
+		{
+			"id": "Full Name",
+			"key": "Full Name",
+			"message": "Full Name",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "フルネーム"
+		},
+		{
+			"id": "(empty)",
+			"key": "(empty)",
+			"message": "(empty)",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "(空) "
+		},
+		{
+			"id": "Profile Image",
+			"key": "Profile Image",
+			"message": "Profile Image",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "プロファイル画像"
+		},
+		{
+			"id": "{Name} (default)",
+			"key": "%[1]s (default)",
+			"message": "{Name} (default)",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "Name",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "name"
+				}
+			],
+			"translation": "%[1]s (デフォルト） "
+		},
+		{
+			"id": "Locale",
+			"key": "Locale",
+			"message": "Locale",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ロケール"
+		},
+		{
+			"id": "A display name is required",
+			"key": "A display name is required",
+			"message": "A display name is required",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ディスプレイ名は必須です"
+		},
+		{
+			"id": "Settings",
+			"key": "Settings",
+			"message": "Settings",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "設定"
+		},
+		{
+			"id": "Site Settings",
+			"key": "Site Settings",
+			"message": "Site Settings",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "サイト設定"
+		},
+		{
+			"id": "Changes discarded.",
+			"key": "Changes discarded.",
+			"message": "Changes discarded.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "破棄された変更。"
+		},
+		{
+			"id": "The has been blocked from accessing the site.",
+			"key": "The has been blocked from accessing the site.",
+			"message": "The has been blocked from accessing the site.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "はサイトへのアクセスがブロックされました。"
+		},
+		{
+			"id": "The has been unblocked from accessing the site.",
+			"key": "The has been unblocked from accessing the site.",
+			"message": "The has been unblocked from accessing the site.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "によるサイトへのアクセスのブロックが解除されました。"
+		},
+		{
+			"id": "An email address is required to create a new user.",
+			"key": "An email address is required to create a new user.",
+			"message": "An email address is required to create a new user.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "新しいユーザーを作成するにはEメール アドレスが必要です。"
+		},
+		{
+			"id": "A user with the email {UserEmail} exists already",
+			"key": "A user with the email %[1]s exists already",
+			"message": "A user with the email {UserEmail} exists already",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "UserEmail",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "userEmail"
+				}
+			],
+			"translation": "このEメール %[1]s を持つユーザーはすでに存在します。"
+		},
+		{
+			"id": "New user created with email: {UserEmail}",
+			"key": "New user created with email: %[1]s",
+			"message": "New user created with email: {UserEmail}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "UserEmail",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "userEmail"
+				}
+			],
+			"translation": "このEメールで作成された新しいユーザー: %[1]s "
+		},
+		{
+			"id": "The user's primary sign-in has been deactivated.",
+			"key": "The user's primary sign-in has been deactivated.",
+			"message": "The user's primary sign-in has been deactivated.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ユーザーのプライマリ サインインが非アクティブ化されました。"
+		},
+		{
+			"id": "The user's email address is required to confirm the deletion of that user.",
+			"key": "The user's email address is required to confirm the deletion of that user.",
+			"message": "The user's email address is required to confirm the deletion of that user.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ユーザーの削除を確認するには、ユーザーのEメール アドレスが必要です。"
+		},
+		{
+			"id": "Deleted user: {UserEmail}",
+			"key": "Deleted user: %[1]s",
+			"message": "Deleted user: {UserEmail}",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"placeholders": [
+				{
+					"id": "UserEmail",
+					"string": "%[1]s",
+					"type": "string",
+					"underlyingType": "string",
+					"argNum": 1,
+					"expr": "userEmail"
+				}
+			],
+			"translation": "デフォルトのユーザー %[1]s "
+		},
+		{
+			"id": "The user's primary sign-in has been reactivated.",
+			"key": "The user's primary sign-in has been reactivated.",
+			"message": "The user's primary sign-in has been reactivated.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ユーザーのプライマリ サインインが再度アクティブ化されました。 "
+		},
+		{
+			"id": "The user's email address is required to confirm the resetting of a user's multi-factor settings.",
+			"key": "The user's email address is required to confirm the resetting of a user's multi-factor settings.",
+			"message": "The user's email address is required to confirm the resetting of a user's multi-factor settings.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ユーザーの多要素設定のリセットを確認するには、ユーザーのEメール アドレスが必要です。"
+		},
+		{
+			"id": "The user's multi-factor authentication settings have been purged.",
+			"key": "The user's multi-factor authentication settings have been purged.",
+			"message": "The user's multi-factor authentication settings have been purged.",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ユーザーの多要素認証設定が消去されました。"
+		},
+		{
+			"id": "User Manager",
+			"key": "User Manager",
+			"message": "User Manager",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "ユーザーマネージャー"
+		}
+	]
 }
