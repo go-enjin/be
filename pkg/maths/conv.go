@@ -14,6 +14,11 @@
 
 package maths
 
+import (
+	"fmt"
+	"strconv"
+)
+
 func AsInt[V Number](v V) int {
 	return int(v)
 }
@@ -28,6 +33,12 @@ func AsInt64[V Number](v V) int64 {
 
 func AsUint64[V Number](v V) uint64 {
 	return uint64(v)
+}
+
+func Atoi(v interface{}) (number int) {
+	s := fmt.Sprintf("%v", v)
+	number, _ = strconv.Atoi(s)
+	return
 }
 
 func ToInt(v interface{}, d int) int {
