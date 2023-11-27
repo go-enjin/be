@@ -89,10 +89,12 @@ func parseTmplStatements(input string) (list []string) {
 
 		if token == "{" {
 			if foundOpen {
+				// found second opening curly-brace
 				isOpen = true
-			} else {
-				foundOpen = true
+				continue
 			}
+			// found first opening curly-brace
+			foundOpen = true
 			continue
 		} else if foundOpen {
 			foundOpen = false
@@ -100,7 +102,8 @@ func parseTmplStatements(input string) (list []string) {
 
 		if token == "}" {
 			if foundClose {
-				list = append(list, strings.TrimSpace(current))
+				// found second closing curly-brace
+				list = append(list, strings.TrimSpace(strings.Trim(current, "-")))
 				if extras := parseTmplSubStatements(current); len(extras) > 0 {
 					list = append(list, extras...)
 				}
@@ -108,6 +111,7 @@ func parseTmplStatements(input string) (list []string) {
 				foundOpen, isOpen, foundClose = false, false, false
 				continue
 			}
+			// found first closing curly-brace
 			foundClose = true
 			continue
 		} else if foundClose {
