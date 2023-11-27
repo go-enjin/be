@@ -91,6 +91,7 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 	if f.Enjin != nil {
 		fm["_"] = f.makeUnderscore(ctx)
 		fm["__"] = f.makeUnderscoreUnderscore(ctx)
+		fm["___"] = f.makeUnderscoreUnderscoreUnderscore(ctx)
 		fm["_tag"] = f.makeUnderscoreTag(ctx)
 		fm["__tag"] = f.makeUnderscoreUnderscoreTag(ctx)
 		fm["_txs"] = f.makeTranslations(ctx)
@@ -115,6 +116,7 @@ func (f *CFeature) makeUnderscore(ctx beContext.Context) interface{} {
 		var ok bool
 		untranslated := fmt.Sprintf(format, argv...)
 		if translated, ok = cache[untranslated]; ok {
+			log.DebugF("template underscore cached hit: \"%v\" -> \"%v\"", format, translated)
 			return
 		}
 		if printer, ok := ctx.Get(lang.PrinterKey).(*message.Printer); ok && printer != nil {
@@ -122,6 +124,8 @@ func (f *CFeature) makeUnderscore(ctx beContext.Context) interface{} {
 			cache[untranslated] = translated
 			if untranslated != translated {
 				log.DebugF("template underscore translated: \"%v\" -> \"%v\"", format, translated)
+			} else {
+				log.DebugF("template underscore defaulting: \"%v\" -> \"%v\"", format, translated)
 			}
 		} else {
 			log.TraceF("template underscore language printer not found, using fmt.Sprintf")
@@ -207,6 +211,45 @@ func (f *CFeature) makeUnderscoreUnderscore(ctx beContext.Context) interface{} {
 
 		if targetPath != targetPage.Url() {
 			targetPath = targetPage.Url()
+		}
+
+		// log.WarnF("__: [%v] tp=%v ([%v] %v) - %#v", targetLang, targetPath, targetPage.LanguageTag, targetPage.Url, argv)
+		translated = f.Enjin.SiteLanguageMode().ToUrl(f.Enjin.SiteDefaultLanguage(), targetLang, targetPath)
+		// log.WarnF("__: [%v] tx=%v ([%v] %v) - %#v", targetLang, translated, targetPage.LanguageTag, targetPage.Url, argv)
+		return
+	}
+}
+
+func (f *CFeature) makeUnderscoreUnderscoreUnderscore(ctx beContext.Context) interface{} {
+	return func(argv ...string) (translated string, err error) {
+		targetLang, _ := ctx.Get("ReqLangTag").(language.Tag)
+		var targetPath string
+
+		switch len(argv) {
+		case 0:
+			err = fmt.Errorf("called with no arguments")
+			return
+		case 1:
+			targetPath = argv[0]
+		case 2:
+			if targetLang, err = language.Parse(argv[0]); err != nil {
+				err = fmt.Errorf("called with invalid language: %v", argv[0])
+				return
+			}
+			targetPath = argv[1]
+		default:
+			err = fmt.Errorf("called with too many arguments")
+			return
+		}
+
+		if targetPath == "" || targetPath[0] != '/' {
+			translated = targetPath
+			return
+		}
+
+		if !f.Enjin.SiteSupportsLanguage(targetLang) {
+			log.DebugF("unsupported site language requested: %v, reverting to default", targetLang)
+			targetLang = f.Enjin.SiteDefaultLanguage()
 		}
 
 		// log.WarnF("__: [%v] tp=%v ([%v] %v) - %#v", targetLang, targetPath, targetPage.LanguageTag, targetPage.Url, argv)
