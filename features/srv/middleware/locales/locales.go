@@ -120,6 +120,11 @@ func (f *CFeature) LocaleHandler(next http.Handler) (this http.Handler) {
 		// 	}
 		// }
 
+		if v, ok := r.Context().Value(lang.LanguageTag).(language.Tag); ok {
+			// a request modifier feature is specifying the user's language
+			requested = v
+		}
+
 		tag, printer := f.Enjin.MakeLanguagePrinter(requested.String())
 		ctx := context.WithValue(r.Context(), lang.LanguageTag, tag)
 		ctx = context.WithValue(ctx, lang.LanguagePrinter, printer)
