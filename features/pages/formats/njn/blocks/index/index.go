@@ -27,15 +27,15 @@ import (
 
 	"github.com/iancoleman/strcase"
 
-	"github.com/go-enjin/golang-org-x-text/cases"
-
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/pages"
 	"github.com/go-enjin/be/pkg/request/argv"
 	"github.com/go-enjin/be/pkg/slices"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 // TODO: SearchWithin is way too heavy for quoted.fyi, does not use kws
@@ -115,9 +115,17 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	blockNumPerPage := numPerPage
 
 	var indexViews []string
+	var indexViewTitles []string
 	if views, ok := data["index-views"].(string); ok {
-		for _, view := range strings.Split(views, ",") {
-			indexViews = append(indexViews, strcase.ToKebab(strings.TrimSpace(view)))
+		for _, view := range strings.Split(views, ";") {
+			before, after, _ := strings.Cut(view, "=")
+			kebab := strcase.ToKebab(strings.TrimSpace(before))
+			indexViews = append(indexViews, kebab)
+			if after == "" {
+				indexViewTitles = append(indexViewTitles, beStrings.ToSpacedCamel(before))
+			} else {
+				indexViewTitles = append(indexViewTitles, strings.TrimSpace(after))
+			}
 		}
 	} else {
 		err = fmt.Errorf("index blocks require an index-view property set")
@@ -366,9 +374,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			viewFilters.UpdateUrls(tag, reqArgv.Path, viewKey)
 		}
 
-		titleCase := cases.Title(reqArgv.Language)
-		viewTitle := titleCase.String(strcase.ToDelimited(viewKey, ' '))
-		view := makeView(idx, viewKey, viewTitle, viewFilters)
+		view := makeView(idx, viewKey, indexViewTitles[idx], viewFilters)
 		if argvView == viewKey {
 			view.Present = true
 		}
