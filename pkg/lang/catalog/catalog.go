@@ -80,8 +80,6 @@ func (c *CCatalog) AddLocalesFromJsonBytes(tag language.Tag, src string, content
 	}
 
 	for _, msg := range gt.Messages {
-		//var messages []catalog.Message
-
 		if msg.Translation.Select != nil {
 			var argNum int = -1
 			for _, p := range msg.Placeholders {
@@ -98,19 +96,12 @@ func (c *CCatalog) AddLocalesFromJsonBytes(tag language.Tag, src string, content
 			for k, v := range msg.Translation.Select.Cases {
 				cases = append(cases, k, v.Msg)
 			}
-			//messages = append(messages, plural.Selectf(argNum, "", cases...))
 			if err = c.catalog.Set(parsed, msg.Key, plural.Selectf(argNum, "", cases...)); err != nil {
 				log.ErrorF("error setting gotext.json select: [%v] %v - %q - %v", tag, src, msg.Translation.Select, err)
 			}
-		} else {
-			//messages = append(messages, catalog.String(msg.Translation.String))
-			if err = c.catalog.Set(parsed, msg.ID, catalog.String(msg.Translation.String)); err != nil {
-				log.ErrorF("error setting gotext.json string: [%v] %v - %q - %v", tag, src, msg.Translation.String, err)
-			}
+		} else if err = c.catalog.Set(parsed, msg.Key, catalog.String(msg.Translation.String)); err != nil {
+			log.ErrorF("error setting gotext.json string: [%v] %v - %q - %v", tag, src, msg.Translation.String, err)
 		}
-		//if err = c.catalog.Set(parsed, msg.ID, messages...); err != nil {
-		//	log.ErrorF("error setting gotext.json messages: [%v] %v - %#+v - %v", tag, src, messages, err)
-		//}
 	}
 
 }
