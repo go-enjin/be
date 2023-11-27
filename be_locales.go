@@ -80,8 +80,8 @@ func (e *Enjin) SiteDefaultLanguage() (tag language.Tag) {
 }
 
 func (e *Enjin) SiteSupportsLanguage(tag language.Tag) (supported bool) {
-	//e.mutex.RLock()
-	//defer e.mutex.RUnlock()
+	e.mutex.RLock()
+	defer e.mutex.RUnlock()
 	for _, known := range e.SiteLocales() {
 		if supported = language.Compare(tag, known); supported {
 			break
