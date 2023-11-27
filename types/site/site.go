@@ -23,6 +23,8 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/golang-org-x-text/message"
+
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/signaling"
@@ -32,8 +34,6 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
 	bePath "github.com/go-enjin/be/pkg/path"
-	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 const (
@@ -223,7 +223,7 @@ func (f *CSiteFeature[M]) SiteFeatureLabel(printer *message.Printer) (label stri
 		label = f.featureLabel(printer)
 		return
 	}
-	label = printer.Sprintf("%s", beStrings.ToSpaced(f.SelfFeature().SiteFeatureKey()))
+	label = "Unimplemented"
 	return
 }
 
