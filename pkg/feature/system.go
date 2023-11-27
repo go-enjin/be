@@ -38,7 +38,7 @@ type EnjinBase interface {
 	SiteTag() (key string)
 	SiteName() (name string)
 	SiteTagLine() (tagLine string)
-	SiteLocales() (locales []language.Tag)
+	SiteLocales() (locales lang.Tags)
 	SiteLanguageMode() (mode lang.Mode)
 	SiteLanguageCatalog() (c catalog.Catalog)
 	SiteDefaultLanguage() (tag language.Tag)

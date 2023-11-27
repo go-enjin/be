@@ -42,7 +42,7 @@ func (e *Enjin) ReloadLocales() {
 	e.Emit(signals.PostEnjinReloadLocales, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 }
 
-func (e *Enjin) SiteLocales() (locales []language.Tag) {
+func (e *Enjin) SiteLocales() (locales lang.Tags) {
 	if len(e.eb.localeTags) == 0 {
 		e.mutex.RLock()
 		defer e.mutex.RUnlock()
