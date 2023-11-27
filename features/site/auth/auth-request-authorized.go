@@ -79,6 +79,14 @@ func (f *CFeature) AuthorizeUserSignIn(w http.ResponseWriter, r *http.Request, c
 
 	r = userbase.SetCurrentAuthUser(au, f.setPrivateClaims(r, claims))
 
+	for _, sf := range f.Site().SiteFeatures() {
+		if uu, ok := sf.This().(feature.SiteUserRequestModifier); ok {
+			if mm := uu.ModifyUserRequest(au, r); mm != nil {
+				r = mm
+			}
+		}
+	}
+
 	// user is authenticated with the primary account factor
 
 	/*
