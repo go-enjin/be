@@ -15,9 +15,12 @@
 package profile
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-enjin/golang-org-x-text/language/display"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/golang-org-x-text/message"
@@ -61,20 +64,23 @@ const Tag feature.Tag = "site-profile"
 type Feature interface {
 	feature.SiteFeature
 	feature.SiteUserSetupStage
+	feature.SiteUserRequestModifier
 }
 
 type MakeFeature interface {
 	feature.SiteMakeFeature[MakeFeature]
 
-	// EnableSelfProfilePage enables (or disables) the site menu item and request handler for the (read-only) profile
+	SetSiteLocaleEnabled(enabled bool) MakeFeature
+
+	// SetSelfProfilePageEnabled enables (or disables) the site menu item and request handler for the (read-only) profile
 	// pages
-	EnableSelfProfilePage(enabled bool) MakeFeature
+	SetSelfProfilePageEnabled(enabled bool) MakeFeature
 
-	// EnableOtherProfilePages enables (or disables) the (read-only) other user profile pages
-	EnableOtherProfilePages(enabled bool) MakeFeature
+	// SetOtherProfilePagesEnabled enables (or disables) the (read-only) other user profile pages
+	SetOtherProfilePagesEnabled(enabled bool) MakeFeature
 
-	// EnableProfileImages enables the profile image aspects of this feature
-	EnableProfileImages(enabled bool) MakeFeature
+	// SetProfileImagesEnabled enables the profile image aspects of this feature
+	SetProfileImagesEnabled(enabled bool) MakeFeature
 	// SetProfileImagePath enables profile images and specifies the public filesystem path prefix to use
 	SetProfileImagePath(path string) MakeFeature
 	// DefaultProfileImageNames enables profile images and adds the default image URLs to the media profiles list
@@ -89,6 +95,8 @@ type MakeFeature interface {
 
 type CFeature struct {
 	site.CSiteFeature[MakeFeature]
+
+	siteLocaleEnabled bool
 
 	selfProfilePageEnabled   bool
 	otherProfilePagesEnabled bool
@@ -134,41 +142,46 @@ func (f *CFeature) Init(this interface{}) {
 	return
 }
 
-func (f *CFeature) EnableSelfProfilePage(enabled bool) MakeFeature {
+func (f *CFeature) SetSiteLocaleEnabled(enabled bool) MakeFeature {
+	f.siteLocaleEnabled = enabled
+	return f
+}
+
+func (f *CFeature) SetSelfProfilePageEnabled(enabled bool) MakeFeature {
 	f.selfProfilePageEnabled = enabled
 	return f
 }
 
-func (f *CFeature) EnableOtherProfilePages(enabled bool) MakeFeature {
+func (f *CFeature) SetOtherProfilePagesEnabled(enabled bool) MakeFeature {
 	f.otherProfilePagesEnabled = enabled
 	return f
 }
 
-func (f *CFeature) EnableProfileImages(enabled bool) MakeFeature {
+func (f *CFeature) SetProfileImagesEnabled(enabled bool) MakeFeature {
 	f.profileImagesEnabled = enabled
 	return f
 }
 
 func (f *CFeature) SetProfileImagePath(path string) MakeFeature {
-	f.EnableProfileImages(true)
+	f.SetProfileImagesEnabled(true)
 	f.profileImagePath = path
 	return f
 }
 
 func (f *CFeature) DefaultProfileImageNames() MakeFeature {
-	f.EnableProfileImages(true)
+	f.SetProfileImagesEnabled(true)
 	f.profileImageNames = slices.Merge(f.profileImageNames, DefaultProfileImageNames)
 	return f
 }
 
 func (f *CFeature) AddProfileImageNames(images ...string) MakeFeature {
-	f.EnableProfileImages(true)
+	f.SetProfileImagesEnabled(true)
 	f.profileImageNames = slices.Merge(f.profileImageNames, images)
 	return f
 }
 
 func (f *CFeature) SetProfileImageNames(images ...string) MakeFeature {
-	f.EnableProfileImages(true)
+	f.SetProfileImagesEnabled(true)
 	f.profileImageNames = images
 	return f
 }
@@ -237,6 +250,7 @@ func (f *CFeature) SiteSettingsFields(r *http.Request) (fields beContext.Fields)
 	}
 
 	if f.profileImagesEnabled {
+		imageLabels := map[string]string{"": printer.Sprintf("(empty)")}
 		var availableImages []string
 		for _, name := range f.profileImageNames {
 			imagePath := f.profileImagePath + "/" + name
@@ -244,6 +258,7 @@ func (f *CFeature) SiteSettingsFields(r *http.Request) (fields beContext.Fields)
 				foundPath := imagePath + "." + extn
 				if f.Enjin.PublicFileSystems().Lookup().FileExists(foundPath) {
 					availableImages = append(availableImages, foundPath)
+					imageLabels[foundPath] = name
 				}
 			}
 		}
@@ -258,7 +273,36 @@ func (f *CFeature) SiteSettingsFields(r *http.Request) (fields beContext.Fields)
 			Weight:       8,
 			DefaultValue: "",
 			NoResetValue: true,
+			ValueLabels:  imageLabels,
 			ValueOptions: append([]string{""}, availableImages...),
+		}
+	}
+
+	if f.siteLocaleEnabled {
+		//reqTag := lang.GetTag(r)
+		//displayTag := display.Tags(reqTag)
+		defTag := f.Enjin.SiteDefaultLanguage()
+		locales := f.Enjin.SiteLocales()
+		labels := make(map[string]string)
+		for _, tag := range locales {
+			if name := display.Self.Name(tag); defTag == tag {
+				labels[tag.String()] = printer.Sprintf("%[1]s (default)", name)
+			} else {
+				labels[tag.String()] = name
+			}
+		}
+		fields["locale"] = &beContext.Field{
+			Key:          "locale",
+			Tab:          "user",
+			Label:        printer.Sprintf("Locale"),
+			Format:       "string",
+			Category:     "profile",
+			Input:        "select",
+			Weight:       9,
+			DefaultValue: defTag.String(),
+			NoResetValue: false,
+			ValueLabels:  labels,
+			ValueOptions: locales.Strings(),
 		}
 	}
 
@@ -272,6 +316,27 @@ func (f *CFeature) RouteSiteFeature(r chi.Router) {
 	if f.otherProfilePagesEnabled {
 		r.Get("/{eid:[a-f0-9]{10}}", f.ServeProfilePage)
 	}
+}
+
+func (f *CFeature) ModifyUserRequest(au feature.AuthUser, r *http.Request) (modified *http.Request) {
+	if f.siteLocaleEnabled {
+		if locale, ok := au.GetSetting("locale").(string); ok && locale != "" {
+			if parsed, err := language.Parse(locale); err == nil {
+				locales := f.Enjin.SiteLocales()
+				if locales.Has(parsed) {
+					tag, printer := f.Enjin.MakeLanguagePrinter(parsed.String())
+					ctx := context.WithValue(r.Context(), lang.LanguageTag, tag)
+					ctx = context.WithValue(ctx, lang.LanguagePrinter, printer)
+					modified = r.Clone(ctx)
+				} else {
+					//log.ErrorRF(r, "user has locale not supported by enjin: %v - %v", parsed, locales)
+				}
+			} else {
+				//log.ErrorRF(r, "user has invalid locale setting value: %q", locale)
+			}
+		}
+	}
+	return
 }
 
 func (f *CFeature) ServeProfilePage(w http.ResponseWriter, r *http.Request) {
