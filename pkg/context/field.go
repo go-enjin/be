@@ -15,6 +15,8 @@
 package context
 
 import (
+	"fmt"
+
 	"github.com/go-enjin/golang-org-x-text/message"
 )
 
@@ -29,12 +31,13 @@ type Field struct {
 	Weight   int    `json:"weight"`
 	Required bool   `json:"required,omitempty"`
 
-	Step         float64     `json:"step"`
-	Minimum      float64     `json:"minimum"`
-	Maximum      float64     `json:"maximum"`
-	Placeholder  string      `json:"placeholder"`
-	DefaultValue interface{} `json:"default-value"`
-	ValueOptions []string    `json:"value-options"`
+	Step         float64           `json:"step"`
+	Minimum      float64           `json:"minimum"`
+	Maximum      float64           `json:"maximum"`
+	Placeholder  string            `json:"placeholder"`
+	DefaultValue interface{}       `json:"default-value"`
+	ValueLabels  map[string]string `json:"value-labels"`
+	ValueOptions []string          `json:"value-options"`
 
 	LockNonEmpty bool `json:"lock-non-empty"`
 	NoResetValue bool `json:"no-reset-value"`
@@ -61,6 +64,18 @@ func ParseField(data map[string]interface{}) (field *Field) {
 	field.ValueOptions, _ = data["value-options"].([]string)
 	field.LockNonEmpty, _ = data["lock-non-empty"].(bool)
 	field.NoResetValue, _ = data["no-reset-value"].(bool)
+
+	field.ValueLabels = make(map[string]string)
+	if v, ok := data["value-labels"]; ok {
+		switch t := v.(type) {
+		case map[string]string:
+			field.ValueLabels = t
+		case map[string]interface{}:
+			for k, vv := range t {
+				field.ValueLabels[k] = fmt.Sprintf("%v", vv)
+			}
+		}
+	}
 	return
 }
 
