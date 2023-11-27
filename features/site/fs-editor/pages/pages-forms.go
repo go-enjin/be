@@ -88,12 +88,12 @@ func (f *CFeature) ParseFormToDraft(pm *matter.PageMatter, fields context.Fields
 					errs[field.Key] = ee
 				} else {
 					//field.Value = vi
-					_ = maps.Set(k, vi, pm.Matter)
+					_ = maps.Set(pm.Matter, k, vi)
 				}
 			}
 		} else {
 			log.WarnRF(r, "strict policy for custom field: %q", k)
-			_ = maps.Set(k, parseCustom(v), pm.Matter)
+			_ = maps.Set(pm.Matter, k, parseCustom(v))
 		}
 	}
 
@@ -101,7 +101,7 @@ func (f *CFeature) ParseFormToDraft(pm *matter.PageMatter, fields context.Fields
 		if field.Input == "checkbox" {
 			var fv string
 			fv = r.FormValue(".matter." + field.Key)
-			_ = maps.Set("."+field.Key, fv != "", pm.Matter)
+			_ = maps.Set(pm.Matter, "."+field.Key, fv != "")
 		}
 	}
 

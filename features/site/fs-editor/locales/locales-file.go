@@ -326,15 +326,15 @@ func (f *CFeature) ReceiveFileEditorChanges(w http.ResponseWriter, r *http.Reque
 		switch len(v) {
 		case 0: // nop
 		case 1:
-			_ = maps.Set(k, v[0], formCtx)
+			_ = maps.Set(formCtx, k, v[0])
 		case 2:
 			if v[0] == v[1] {
-				_ = maps.Set(k, v[0], formCtx)
+				_ = maps.Set(formCtx, k, v[0])
 			} else {
-				_ = maps.Set(k, v, formCtx)
+				_ = maps.Set(formCtx, k, v)
 			}
 		default:
-			_ = maps.Set(k, v, formCtx)
+			_ = maps.Set(formCtx, k, v)
 		}
 	}
 

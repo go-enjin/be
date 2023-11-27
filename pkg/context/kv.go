@@ -25,7 +25,7 @@ import (
 func GetKV(c map[string]interface{}, key string) (k string, v interface{}) {
 	if key != "" && key[0] == '.' {
 		k = key
-		v = maps.Get(key, c)
+		v = maps.Get(c, key)
 		return
 	}
 
@@ -52,7 +52,7 @@ func GetKV(c map[string]interface{}, key string) (k string, v interface{}) {
 // SetKV allows for .Deep.Variable.Names
 func SetKV(c map[string]interface{}, key string, value interface{}) (err error) {
 	if key != "" && key[0] == '.' {
-		err = maps.Set(key, value, c)
+		err = maps.Set(c, key, value)
 		return
 	}
 	k := strcase.ToCamel(key)
@@ -63,7 +63,7 @@ func SetKV(c map[string]interface{}, key string, value interface{}) (err error) 
 // DeleteKV deletes the key allowing for .Deep.Variable.Names
 func DeleteKV(c map[string]interface{}, key string) (deleted bool) {
 	if key != "" && key[0] == '.' {
-		maps.Delete(key, c)
+		maps.Delete(c, key)
 		return
 	}
 	if k, v := GetKV(c, key); v != nil {

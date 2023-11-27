@@ -44,7 +44,7 @@ func Has(m map[string]interface{}, key string) (present bool) {
 	return
 }
 
-func Set(key string, value interface{}, m map[string]interface{}) (err error) {
+func Set(m map[string]interface{}, key string, value interface{}) (err error) {
 	if key == "" {
 		return
 	} else if key != "" && key[0] != '.' {
@@ -57,7 +57,7 @@ func Set(key string, value interface{}, m map[string]interface{}) (err error) {
 	case 0: // nop
 	case 1:
 		if name, idx, ok := ParseKeySlice(keys[0]); ok {
-			if vs := Get(name, m); vs != nil {
+			if vs := Get(m, name); vs != nil {
 				if slice, ok := vs.([]interface{}); ok {
 					count := len(slice)
 					if idx == -1 || idx == count {
@@ -72,7 +72,7 @@ func Set(key string, value interface{}, m map[string]interface{}) (err error) {
 						// overwrite
 						slice[idx] = value
 					}
-					err = Set(name, slice, m)
+					err = Set(m, name, slice)
 				} else {
 					// hmm
 				}
@@ -86,10 +86,10 @@ func Set(key string, value interface{}, m map[string]interface{}) (err error) {
 					}
 					slice = append(slice, value)
 				}
-				err = Set(name, slice, m)
+				err = Set(m, name, slice)
 			}
 		} else {
-			err = Set(keys[0], value, m)
+			err = Set(m, keys[0], value)
 		}
 		return
 	default:
@@ -104,7 +104,7 @@ func Set(key string, value interface{}, m map[string]interface{}) (err error) {
 				}
 			} else {
 				list = make([]interface{}, 0)
-				if err = Set(name, list, m); err != nil {
+				if err = Set(m, name, list); err != nil {
 					return
 				}
 			}
@@ -120,7 +120,7 @@ func Set(key string, value interface{}, m map[string]interface{}) (err error) {
 					}
 				}
 				mm, _ = list[idx].(map[string]interface{})
-				if err = Set(name, list, m); err != nil {
+				if err = Set(m, name, list); err != nil {
 					return
 				}
 			} else {
@@ -133,7 +133,7 @@ func Set(key string, value interface{}, m map[string]interface{}) (err error) {
 				}
 			}
 
-			err = Set("."+strings.Join(keys[1:], "."), value, mm)
+			err = Set(mm, "."+strings.Join(keys[1:], "."), value)
 			return
 		}
 
@@ -147,16 +147,16 @@ func Set(key string, value interface{}, m map[string]interface{}) (err error) {
 			}
 		} else {
 			mm = make(map[string]interface{})
-			if err = Set(keys[0], mm, m); err != nil {
+			if err = Set(m, keys[0], mm); err != nil {
 				return
 			}
 		}
-		err = Set("."+strings.Join(keys[1:], "."), value, mm)
+		err = Set(mm, "."+strings.Join(keys[1:], "."), value)
 	}
 	return
 }
 
-func Get(key string, m map[string]interface{}) (value interface{}) {
+func Get(m map[string]interface{}, key string) (value interface{}) {
 	if key == "" {
 		return
 	} else if key != "" && key[0] != '.' {
@@ -170,7 +170,7 @@ func Get(key string, m map[string]interface{}) (value interface{}) {
 	case 0: // nop
 	case 1:
 		if name, idx, ok := ParseKeySlice(keys[0]); ok {
-			if vs := Get(name, m); vs != nil {
+			if vs := Get(m, name); vs != nil {
 				if slice, ok := vs.([]interface{}); ok {
 					if len(slice) < idx {
 						return
@@ -179,21 +179,21 @@ func Get(key string, m map[string]interface{}) (value interface{}) {
 				}
 			}
 		} else {
-			value = Get(keys[0], m)
+			value = Get(m, keys[0])
 		}
 	default:
 		if v, ok := m[keys[0]]; ok {
 			if ms, ok := v.(map[string]string); ok {
 				value, _ = ms[keys[1]]
 			} else if mm, ok := v.(map[string]interface{}); ok {
-				value = Get("."+strings.Join(keys[1:], "."), mm)
+				value = Get(mm, "."+strings.Join(keys[1:], "."))
 			}
 		}
 	}
 	return
 }
 
-func Delete(key string, m map[string]interface{}) {
+func Delete(m map[string]interface{}, key string) {
 	if key == "" {
 		return
 	} else if key != "" && key[0] != '.' {
@@ -207,7 +207,7 @@ func Delete(key string, m map[string]interface{}) {
 	case 0: // nop
 	case 1:
 		if name, idx, ok := ParseKeySlice(keys[0]); ok {
-			if vs := Get(name, m); vs != nil {
+			if vs := Get(m, name); vs != nil {
 				if slice, ok := vs.([]interface{}); ok {
 					count := len(slice)
 					if idx > -1 && idx < count {
@@ -216,19 +216,19 @@ func Delete(key string, m map[string]interface{}) {
 						if idx < count-1 {
 							newSlice = append(newSlice, slice[idx+1:]...)
 						}
-						_ = Set(name, newSlice, m)
+						_ = Set(m, name, newSlice)
 					}
 				}
 			}
 		} else {
-			Delete(keys[0], m)
+			Delete(m, keys[0])
 		}
 	default:
 		if v, ok := m[keys[0]]; ok {
 			if ms, ok := v.(map[string]string); ok {
 				delete(ms, keys[1])
 			} else if mm, ok := v.(map[string]interface{}); ok {
-				Delete("."+strings.Join(keys[1:], "."), mm)
+				Delete(mm, "."+strings.Join(keys[1:], "."))
 			}
 		}
 	}

@@ -264,15 +264,15 @@ func (f *CFeature) ReceiveSettingsChanges(w http.ResponseWriter, r *http.Request
 		switch len(v) {
 		case 0: // nop
 		case 1:
-			_ = maps.Set(k, v[0], form)
+			_ = maps.Set(form, k, v[0])
 		case 2:
 			if v[0] == v[1] {
-				_ = maps.Set(k, v[0], form)
+				_ = maps.Set(form, k, v[0])
 			} else {
-				_ = maps.Set(k, v, form)
+				_ = maps.Set(form, k, v)
 			}
 		default:
-			_ = maps.Set(k, v, form)
+			_ = maps.Set(form, k, v)
 		}
 	}
 
@@ -328,12 +328,12 @@ func (f *CFeature) ReceiveSettingsChanges(w http.ResponseWriter, r *http.Request
 					errs[field.Key] = ee
 				} else {
 					//field.Value = vi
-					_ = maps.Set(k, vi, matter)
+					_ = maps.Set(matter, k, vi)
 				}
 			}
 		} else {
 			log.WarnRF(r, "strict policy for custom field: %q", k)
-			_ = maps.Set(k, parseCustom(v), matter)
+			_ = maps.Set(matter, k, parseCustom(v))
 		}
 	}
 
@@ -341,7 +341,7 @@ func (f *CFeature) ReceiveSettingsChanges(w http.ResponseWriter, r *http.Request
 		for _, field := range settings[group] {
 			if field.Input == "checkbox" {
 				fv := r.FormValue(".matter." + field.Key)
-				_ = maps.Set("."+field.Key, fv != "", matter)
+				_ = maps.Set(matter, "."+field.Key, fv != "")
 			}
 		}
 	}
