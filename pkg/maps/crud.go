@@ -20,6 +20,30 @@ import (
 	"strings"
 )
 
+func Has(m map[string]interface{}, key string) (present bool) {
+	if key == "" {
+		return
+	} else if key != "" && key[0] != '.' {
+		_, present = m[key]
+		return
+	}
+	keys := strings.Split(key[1:], ".")
+	switch len(keys) {
+	case 0: // nop
+	case 1:
+		present = Has(m, keys[0])
+	default:
+		if v, ok := m[keys[0]]; ok {
+			if ms, ok := v.(map[string]string); ok {
+				_, present = ms[keys[1]]
+			} else if mm, ok := v.(map[string]interface{}); ok {
+				present = Has(mm, "."+strings.Join(keys[1:], "."))
+			}
+		}
+	}
+	return
+}
+
 func Set(key string, value interface{}, m map[string]interface{}) (err error) {
 	if key == "" {
 		return
