@@ -21,12 +21,13 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request/argv"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 var (
@@ -96,22 +97,16 @@ func (f *CFeature) LocaleHandler(next http.Handler) (this http.Handler) {
 
 		var reqPath string
 		var requested language.Tag
-		if lang.NonPageRequested(r) {
+
+		var reqOk bool
+		if requested, reqPath, reqOk = langMode.FromRequest(defaultTag, r); !reqOk {
+			log.WarnRF(r, "language mode rejecting request: %#v", r)
+			f.Enjin.Serve404(w, r) // specifically not ServeNotFound()
+			return
+		} else if !f.Enjin.SiteSupportsLanguage(requested) {
+			log.DebugRF(r, "%v language not supported, using default: %v", requested, defaultTag)
 			requested = defaultTag
 			reqPath = urlPath
-			// log.DebugF("non page requested: %v", reqPath)
-		} else {
-			var reqOk bool
-			if requested, reqPath, reqOk = langMode.FromRequest(defaultTag, r); !reqOk {
-				log.WarnRF(r, "language mode rejecting request: %#v", r)
-				f.Enjin.Serve404(w, r) // specifically not ServeNotFound()
-				return
-			} else if !f.Enjin.SiteSupportsLanguage(requested) {
-				log.DebugRF(r, "%v language not supported, using default: %v", requested, defaultTag)
-				requested = defaultTag
-				reqPath = urlPath
-			}
-			// log.DebugF("page requested: %v", reqPath)
 		}
 
 		// TODO: determine what to do with Accept-Language request headers
