@@ -27,7 +27,7 @@ type GoText struct {
 
 func ParseGoText(data []byte) (gt *GoText, tag language.Tag, err error) {
 	gt = &GoText{}
-	if err = json.Unmarshal(data, &gt); err != nil {
+	if err = json.Unmarshal(data, gt); err != nil {
 	} else if tag, err = language.Parse(gt.Language); err != nil {
 	}
 	return
