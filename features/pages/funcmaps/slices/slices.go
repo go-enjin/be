@@ -18,6 +18,7 @@ package slices
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"regexp"
 	"sort"
@@ -30,6 +31,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/maths"
 	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
@@ -212,24 +214,32 @@ func SortedLastNameFirstLetters(values []interface{}) (firsts []string) {
 	return
 }
 
-func Iterate(argv ...int) (ch chan int) {
-	ch = make(chan int)
+func Iterate(argv ...interface{}) (ch chan int) {
+	var argvInt []int
 	var from, inc, to int
-	switch len(argv) {
+
+	for _, arg := range argv {
+		if v := maths.ToInt(arg, math.MinInt); v > math.MinInt {
+			argvInt = append(argvInt, v)
+		} else {
+			panic(fmt.Sprintf("expected any number type, received: %q (%T)", arg, arg))
+		}
+	}
+
+	ch = make(chan int)
+	switch len(argvInt) {
 	case 0:
 		log.ErrorF("template is trying to iterate over nothing")
 	case 1:
-		from, inc, to = 0, 1, argv[0]
+		from, inc, to = 0, 1, argvInt[0]
 	case 2:
-		from, inc, to = argv[0], 1, argv[1]
+		from, inc, to = argvInt[0], 1, argvInt[1]
 	default:
-		from, inc, to = argv[0], argv[1], argv[2]
+		from, inc, to = argvInt[0], argvInt[1], argvInt[2]
 	}
 	go func() {
-		if to > 0 {
-			for i := from; i < to; i += inc {
-				ch <- i
-			}
+		for i := from; i < to; i += inc {
+			ch <- i
 		}
 		close(ch)
 	}()
