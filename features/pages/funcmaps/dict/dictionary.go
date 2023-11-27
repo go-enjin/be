@@ -111,3 +111,17 @@ func (d Dictionary) KEYS() (keys []string) {
 	keys = maps.SortedKeys(d)
 	return
 }
+
+func (d Dictionary) HAS(key string) (present bool) {
+	present = maps.Has(d, key)
+	return
+}
+
+func (d Dictionary) PICK(keys ...string) (value interface{}) {
+	for _, key := range keys {
+		if value = maps.Get(d, key); value != nil {
+			return
+		}
+	}
+	return
+}
