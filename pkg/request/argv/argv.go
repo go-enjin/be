@@ -115,6 +115,10 @@ func Get(r *http.Request) (reqArgv *Argv) {
 }
 
 func DecomposeHttpRequest(r *http.Request) (reqArgv *Argv) {
+	if r == nil {
+		reqArgv = &Argv{}
+		return
+	}
 	path := forms.TrimQueryParams(r.RequestURI)
 	var argv [][]string
 	numPerPage, pageNumber := -1, -1
