@@ -19,12 +19,14 @@ package casting
 import (
 	"fmt"
 	"html/template"
+	"math"
 	"strings"
 
 	"github.com/urfave/cli/v2"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/maths"
 	"github.com/go-enjin/be/pkg/values"
 )
 
@@ -91,6 +93,28 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		"safeHTML":    AsHTML,
 		"typeOf":      values.TypeOf,
 		"typeOfSlice": TypeOfSlice,
+		"toString": func(v interface{}) (s string) {
+			s = fmt.Sprintf("%v", v)
+			return
+		},
+		"toInt": func(v interface{}) (i int) {
+			if c := maths.ToInt(v, math.MinInt); c != math.MinInt {
+				i = c
+			}
+			return
+		},
+		"toInt64": func(v interface{}) (i int64) {
+			if c := maths.ToInt64(v, math.MinInt64); c != math.MinInt64 {
+				i = c
+			}
+			return
+		},
+		"toFloat64": func(v interface{}) (f float64) {
+			if c := maths.ToFloat64(v, math.SmallestNonzeroFloat64); c != math.SmallestNonzeroFloat64 {
+				f = c
+			}
+			return
+		},
 	}
 	return
 }
