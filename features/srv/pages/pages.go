@@ -30,6 +30,7 @@ import (
 	"github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/net/serve"
 	"github.com/go-enjin/be/pkg/request"
+	"github.com/go-enjin/be/pkg/request/argv"
 )
 
 var (
@@ -152,6 +153,9 @@ func (f *CFeature) ServePage(p feature.Page, t feature.Theme, ctx beContext.Cont
 	ctx.SetSpecific("BaseUrl", net.BaseURL(r))
 	ctx.SetSpecific("HomePath", request.GetHomePath(r))
 	ctx.SetSpecific("UserNotices", feature.GetUserNotices(r))
+
+	ctx.SetSpecific("R", r)
+	ctx.SetSpecific(argv.RequestKey.String(), argv.Get(r))
 
 	for _, pspf := range f.Enjin.GetPrepareServePagesFeatures() {
 		if out, modified, handled := pspf.PrepareServePage(ctx, t, p, w, r); handled {
