@@ -30,12 +30,13 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/be/pkg/slices"
-	"github.com/go-enjin/github-com-go-pkgz-auth"
+	auth "github.com/go-enjin/github-com-go-pkgz-auth"
 	"github.com/go-enjin/github-com-go-pkgz-auth/avatar"
 	"github.com/go-enjin/github-com-go-pkgz-auth/middleware"
 	"github.com/go-enjin/github-com-go-pkgz-auth/provider"
 	"github.com/go-enjin/github-com-go-pkgz-auth/token"
+
+	"github.com/go-enjin/be/pkg/slices"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/signaling"

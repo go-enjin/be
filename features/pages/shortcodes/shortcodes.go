@@ -19,7 +19,7 @@ package shortcodes
 import (
 	"bytes"
 
-	"github.com/go-enjin/go-stdlib-text-scanner"
+	scanner "github.com/go-enjin/go-stdlib-text-scanner"
 	"github.com/urfave/cli/v2"
 
 	beContext "github.com/go-enjin/be/pkg/context"

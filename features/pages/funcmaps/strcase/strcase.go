@@ -20,11 +20,12 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/golang-org-x-text/cases"
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	beStrings "github.com/go-enjin/be/pkg/strings"
-	"github.com/go-enjin/golang-org-x-text/cases"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 var (

@@ -20,6 +20,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
@@ -31,7 +33,6 @@ import (
 	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/pkg/strings/words"
 	"github.com/go-enjin/be/pkg/userbase"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Request) (pg feature.Page, ctx context.Context, info *editor.File, eid string, mountPoints feature.MountPoints, handled bool) {

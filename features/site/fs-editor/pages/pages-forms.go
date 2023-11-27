@@ -21,6 +21,8 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"golang.org/x/net/html"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
@@ -31,7 +33,6 @@ import (
 	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/page/matter"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 func (f *CFeature) ParseFormToDraft(pm *matter.PageMatter, fields context.Fields, form context.Context, info *editor.File, r *http.Request) (modified *matter.PageMatter, redirect string, errs map[string]error) {

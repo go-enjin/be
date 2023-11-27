@@ -26,6 +26,8 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/golang-org-x-text/message"
+
 	beContext "github.com/go-enjin/be/pkg/context"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
@@ -36,7 +38,6 @@ import (
 	"github.com/go-enjin/be/pkg/request"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/site"
-	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 const (

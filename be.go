@@ -29,6 +29,8 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/factories/nonces"
 	"github.com/go-enjin/be/pkg/factories/tokens"
 	"github.com/go-enjin/be/pkg/feature"
@@ -39,7 +41,6 @@ import (
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
 	"github.com/go-enjin/be/pkg/signals"
 	"github.com/go-enjin/be/pkg/slices"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 var (

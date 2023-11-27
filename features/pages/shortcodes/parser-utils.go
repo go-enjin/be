@@ -19,7 +19,7 @@ package shortcodes
 import (
 	"strings"
 
-	"github.com/go-enjin/go-stdlib-text-scanner"
+	scanner "github.com/go-enjin/go-stdlib-text-scanner"
 
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )

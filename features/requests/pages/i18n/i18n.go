@@ -19,12 +19,13 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request/argv"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 var (

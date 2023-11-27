@@ -23,10 +23,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/iancoleman/strcase"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/values"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 func (f *CFeature) AddToIndex(stub *feature.PageStub, p feature.Page) (err error) {

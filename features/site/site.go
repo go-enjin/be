@@ -23,7 +23,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/signaling"
-	"github.com/go-enjin/be/pkg/feature/site-including"
+	site_including "github.com/go-enjin/be/pkg/feature/site-including"
 	uses_actions "github.com/go-enjin/be/pkg/feature/uses-actions"
 	uses_kvc "github.com/go-enjin/be/pkg/feature/uses-kvc"
 	"github.com/go-enjin/be/pkg/forms"

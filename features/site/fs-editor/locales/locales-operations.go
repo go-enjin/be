@@ -20,6 +20,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
@@ -27,7 +29,6 @@ import (
 	"github.com/go-enjin/be/pkg/lang/catalog"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/slices"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 func (f *CFeature) OpRetakeValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {

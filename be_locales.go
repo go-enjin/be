@@ -15,11 +15,12 @@
 package be
 
 import (
-	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/signals"
 	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/go-enjin/golang-org-x-text/language/display"
 	"github.com/go-enjin/golang-org-x-text/message/catalog"
+
+	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/signals"
 
 	"github.com/go-enjin/be/pkg/lang"
 	pkgLangCatalog "github.com/go-enjin/be/pkg/lang/catalog"

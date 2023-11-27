@@ -17,8 +17,9 @@
 package api
 
 import (
-	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/github-com-go-pkgz-auth/token"
+
+	"github.com/go-enjin/be/pkg/feature"
 )
 
 func (f *CFeature) createOrUpdateAuthUser(tu *token.User) (user feature.AuthUser, err error) {

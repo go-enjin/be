@@ -19,10 +19,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/mime"
 	bePath "github.com/go-enjin/be/pkg/path"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 type File struct {

@@ -41,17 +41,17 @@ func (f *CFeature) ServeManagePage(settingsPath string, saf feature.SiteAuthFeat
 				r = feature.AddErrorNotice(r, true, errors.FormExpiredError(printer))
 			} else {
 
-		switch r.FormValue("submit") {
-		case "create", "setup":
-			f.SiteUserSetupStageHandler(saf, w, r)
-			handled = true
-			return
-		case "revoke", "revoke--confirmation", "revoke--confirmed":
-			handled, redirect = f.ServeRevokePage(settingsPath, saf, w, r)
-			return
-		}
+				switch r.FormValue("submit") {
+				case "create", "setup":
+					f.SiteUserSetupStageHandler(saf, w, r)
+					handled = true
+					return
+				case "revoke", "revoke--confirmation", "revoke--confirmed":
+					handled, redirect = f.ServeRevokePage(settingsPath, saf, w, r)
+					return
+				}
 
-	}
+			}
 		} else if nonce = request.SafeQueryFormValue(r, SetupNonceName); nonce != "" {
 			f.SiteUserSetupStageHandler(saf, w, r)
 			return

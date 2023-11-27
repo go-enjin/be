@@ -22,7 +22,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/feature/site-environ"
+	site_environ "github.com/go-enjin/be/pkg/feature/site-environ"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	beNet "github.com/go-enjin/be/pkg/net"

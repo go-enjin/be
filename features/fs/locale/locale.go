@@ -19,11 +19,12 @@ package locale
 import (
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/golang-org-x-text/message/catalog"
+
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
 	pkgLangCatalog "github.com/go-enjin/be/pkg/lang/catalog"
 	"github.com/go-enjin/be/pkg/maps"
-	"github.com/go-enjin/golang-org-x-text/message/catalog"
 )
 
 const Tag feature.Tag = "fs-locale"

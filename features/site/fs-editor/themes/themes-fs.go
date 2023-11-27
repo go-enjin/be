@@ -24,6 +24,9 @@ import (
 
 	"github.com/maruel/natural"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-enjin/golang-org-x-text/message"
+
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
@@ -32,8 +35,6 @@ import (
 	beMime "github.com/go-enjin/be/pkg/mime"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/userbase"
-	"github.com/go-enjin/golang-org-x-text/language"
-	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 func (f *CFeature) FileExists(info *editor.File) (exists bool) {

@@ -29,8 +29,8 @@ import (
 
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/feature/site-environ"
-	"github.com/go-enjin/be/pkg/feature/site-including"
+	site_environ "github.com/go-enjin/be/pkg/feature/site-environ"
+	site_including "github.com/go-enjin/be/pkg/feature/site-including"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"

@@ -27,7 +27,7 @@ import (
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/feature/site-including"
+	site_including "github.com/go-enjin/be/pkg/feature/site-including"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"

@@ -17,11 +17,12 @@ package menus
 import (
 	"net/http"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 func (f *CFeature) UpdatePathInfo(info *editor.File, r *http.Request) {

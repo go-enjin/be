@@ -20,11 +20,12 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/golang-org-x-text/message"
+
 	"github.com/go-enjin/be/pkg/feature"
 	uses_kvc "github.com/go-enjin/be/pkg/feature/uses-kvc"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/types/site"
-	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 const (

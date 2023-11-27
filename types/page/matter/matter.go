@@ -20,8 +20,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/golang-org-x-text/language"
+
+	"github.com/go-enjin/be/pkg/editor"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/hash/sha"

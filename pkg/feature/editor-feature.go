@@ -19,13 +19,14 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-enjin/golang-org-x-text/message"
+
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/types/page/matter"
-	"github.com/go-enjin/golang-org-x-text/language"
-	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 type EditorFeature interface {

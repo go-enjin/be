@@ -19,11 +19,12 @@ import (
 	"os"
 	"strings"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/types/page/matter"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 func (f *CFeature) ReadDraftPage(info *editor.File) (pm *matter.PageMatter, err error) {

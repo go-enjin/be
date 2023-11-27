@@ -20,6 +20,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
@@ -30,7 +32,6 @@ import (
 	beMime "github.com/go-enjin/be/pkg/mime"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/userbase"
-	"github.com/go-enjin/golang-org-x-text/language"
 )
 
 func (f *CFeature) FindFS(fsid string) (found feature.FileSystemFeature) {

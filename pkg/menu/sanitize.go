@@ -19,8 +19,9 @@ import (
 
 	"github.com/mrz1836/go-sanitize"
 
-	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/golang-org-x-text/language"
+
+	"github.com/go-enjin/be/pkg/forms"
 )
 
 func cleanInPlace(text, href, lang, icon, image, imgAlt, target *string) {

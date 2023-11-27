@@ -20,7 +20,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/go-enjin/github-com-djherbis-times"
+	times "github.com/go-enjin/github-com-djherbis-times"
 )
 
 var (

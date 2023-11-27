@@ -19,13 +19,14 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/go-enjin/golang-org-x-text/message"
+
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
-	"github.com/go-enjin/be/types/site/fs-editor"
-	"github.com/go-enjin/golang-org-x-text/message"
+	fs_editor "github.com/go-enjin/be/types/site/fs-editor"
 )
 
 var (
