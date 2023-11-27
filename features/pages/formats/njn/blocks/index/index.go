@@ -135,9 +135,12 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	filters := makeFilters(data)
 
 	reqArgv := re.RequestArgv()
+	defTag := f.Enjin.SiteDefaultLanguage()
+	langMode := f.Enjin.SiteLanguageMode()
 
 	var csqp bool // correct search query paths
 	decArgv := argv.DecomposeHttpRequest(reqArgv.Request)
+	decArgv.Language = reqArgv.Language
 	for idx, args := range decArgv.Argv {
 		for jdx, arg := range args {
 			if escCheck := strings.HasPrefix(arg, "%28") && strings.HasSuffix(arg, "%29"); escCheck {
@@ -206,8 +209,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			fixArgs = append(viewArgs, fixArgs...)
 			if len(fixArgs) != len(pieces[1:]) {
 				reqArgv.Argv[idx] = append([]string{pieces[0]}, fixArgs...)
-				// re.RequestContext().SetSpecific(site.RequestRedirectKey, reqArgv.String())
-				redirect = reqArgv.String()
+				redirect = langMode.ToUrl(defTag, reqArgv.Language, reqArgv.String())
 				return
 			}
 		}
@@ -215,8 +217,16 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 
 	if argvBlockPresent {
 		if len(decArgv.Argv) > 0 && len(decArgv.Argv[0]) > 0 {
-			if csqp || reqArgv.String() != decArgv.String() {
-				redirect = decArgv.String()
+			reqUrl := reqArgv.String()
+			decUrl := decArgv.String()
+			if _, untranslated, ok := lang.ParseLangPath(reqUrl); ok {
+				reqUrl = untranslated
+			}
+			if _, untranslated, ok := lang.ParseLangPath(decUrl); ok {
+				decUrl = untranslated
+			}
+			if csqp || reqUrl != decUrl /*reqArgv.String() != decArgv.String()*/ {
+				redirect = langMode.ToUrl(defTag, reqArgv.Language, decArgv.String())
 				return
 			}
 		}
@@ -244,7 +254,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			if searchRedirect, searchError := f.handleSearchRedirect(tag, searchNonceKey, indexViews, reqArgv); searchError != nil {
 				block["SearchError"] = searchError.Error()
 			} else if searchRedirect != "" {
-				redirect = searchRedirect
+				redirect = searchRedirect // already correct lang mode
 				return
 			}
 		}
@@ -328,14 +338,14 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		if reqArgv.PageNumber >= 0 || reqArgv.NumPerPage >= 0 {
 			reqArgv.NumPerPage = -1
 			reqArgv.PageNumber = -1
-			redirect = reqArgv.String() + "#" + tag
+			redirect = langMode.ToUrl(defTag, reqArgv.Language, reqArgv.String()) + "#" + tag
 			return
 		}
 	}
 
 	if pageIndex > totalPages {
 		reqArgv.PageNumber = totalPages - 1
-		redirect = reqArgv.String()
+		redirect = langMode.ToUrl(defTag, reqArgv.Language, reqArgv.String())
 		return
 	}
 

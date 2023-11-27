@@ -30,6 +30,9 @@ import (
 
 func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []string, reqArgv *argv.Argv) (redirect string, err error) {
 
+	langMode := f.Enjin.SiteLanguageMode()
+	defTag := f.Enjin.SiteDefaultLanguage()
+
 	// tag := lang.GetTag(r)
 	printer := lang.GetPrinterFromRequest(reqArgv.Request)
 	var query string
@@ -83,7 +86,7 @@ func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []stri
 			argvs = append(argvs, args)
 		}
 		reqArgv.Argv = argvs
-		redirect = reqArgv.String() + "#" + target
+		redirect = langMode.ToUrl(defTag, reqArgv.Language, reqArgv.String()) + "#" + target
 		return
 	}
 
@@ -104,7 +107,7 @@ func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []stri
 				if query != "" {
 					reqArgv.Argv[idx] = append(reqArgv.Argv[idx], "("+query+")")
 				}
-				redirect = reqArgv.String() + "#" + target
+				redirect = langMode.ToUrl(defTag, reqArgv.Language, reqArgv.String()) + "#" + target
 				return
 			}
 		}
