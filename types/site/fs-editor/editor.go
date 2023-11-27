@@ -19,6 +19,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/go-enjin/golang-org-x-text/language"
+
 	beContext "github.com/go-enjin/be/pkg/context"
 	bePkgEditor "github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
@@ -26,10 +28,7 @@ import (
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
-	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/types/site"
-	"github.com/go-enjin/golang-org-x-text/language"
-	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 var (
@@ -121,11 +120,6 @@ func (f *CEditorFeature[MakeTypedFeature]) SiteFeatureInfo(r *http.Request) (inf
 
 func (f *CEditorFeature[MakeTypedFeature]) SiteFeatureKey() (key string) {
 	key = f.GetEditorKey()
-	return
-}
-
-func (f *CEditorFeature[MakeTypedFeature]) SiteFeatureLabel(printer *message.Printer) (label string) {
-	label = beStrings.ToSpacedCamel(f.GetEditorKey())
 	return
 }
 
