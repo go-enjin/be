@@ -181,7 +181,7 @@ func (f *CFeature) ReadDraftLocales(fsid, code string, mountPoints feature.Mount
 			if msg.Translation.Select != nil {
 				cases := map[string]string{}
 				for k, v := range msg.Translation.Select.Cases {
-					cases[k] = v.Msg
+					cases[k] = ConvertToPlaceholders(v.Msg, msg.Placeholders)
 				}
 				txSelect = &Select{
 					Arg:     msg.Translation.Select.Arg,
@@ -196,7 +196,7 @@ func (f *CFeature) ReadDraftLocales(fsid, code string, mountPoints feature.Mount
 			ld.Data[shasum][tag] = &LocaleMessage{
 				BaseMessage: msg.BaseMessage,
 				Translation: &LocaleTranslation{
-					String: msg.Translation.String,
+					String: ConvertToPlaceholders(msg.Translation.String, msg.Placeholders),
 					Select: txSelect,
 				},
 				Shasum: shasum,

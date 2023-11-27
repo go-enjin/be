@@ -82,5 +82,6 @@ func (f *CFeature) performDraftChanges(r *http.Request, translations map[string]
 		}
 	}
 
+	ld.ConvertAllPlaceholders()
 	return
 }

@@ -18,8 +18,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-enjin/be/pkg/lang/catalog"
 	"github.com/go-enjin/golang-org-x-text/language"
+
+	"github.com/go-enjin/be/pkg/lang/catalog"
 )
 
 type LocaleData struct {
@@ -29,7 +30,15 @@ type LocaleData struct {
 	Order []string                                   `json:"order"`
 }
 
-func ConvertPlaceholders(translation string, placeholders []*catalog.Placeholder) (modified string) {
+func ConvertToPlaceholders(translation string, placeholders []*catalog.Placeholder) (modified string) {
+	modified = translation
+	for _, placeholder := range placeholders {
+		modified = strings.ReplaceAll(modified, placeholder.String, "{"+placeholder.ID+"}")
+	}
+	return
+}
+
+func ConvertFromPlaceholders(translation string, placeholders []*catalog.Placeholder) (modified string) {
 	modified = translation
 	for _, placeholder := range placeholders {
 		modified = strings.ReplaceAll(modified, "{"+placeholder.ID+"}", placeholder.String)
@@ -37,11 +46,25 @@ func ConvertPlaceholders(translation string, placeholders []*catalog.Placeholder
 	return
 }
 
+func (l *LocaleData) ConvertAllPlaceholders() {
+	for _, txs := range l.Data {
+		for _, tx := range txs {
+			if tx.Translation.Select != nil {
+				for k, v := range tx.Translation.Select.Cases {
+					tx.Translation.Select.Cases[k] = ConvertFromPlaceholders(strings.TrimSpace(v), tx.Placeholders)
+				}
+			} else {
+				tx.Translation.String = ConvertFromPlaceholders(strings.TrimSpace(tx.Translation.String), tx.Placeholders)
+			}
+		}
+	}
+}
+
 func (l *LocaleData) SetStringTranslation(tag language.Tag, shasum, translation string) (err error) {
 	var found bool
 	if txs, ok := l.Data[shasum]; ok {
 		if _, found = txs[tag]; found {
-			l.Data[shasum][tag].Translation.String = ConvertPlaceholders(translation, l.Data[shasum][tag].Placeholders)
+			l.Data[shasum][tag].Translation.String = ConvertFromPlaceholders(translation, l.Data[shasum][tag].Placeholders)
 		}
 	}
 	if !found {
@@ -73,7 +96,7 @@ func (l *LocaleData) SetPluralTranslation(tag language.Tag, shasum, arg string, 
 			l.Data[shasum][tag].Translation.Select.Arg = arg
 			l.Data[shasum][tag].Translation.Select.Cases = make(map[string]string)
 			for i := 0; i < len(cases); i += 2 {
-				l.Data[shasum][tag].Translation.Select.Cases[cases[i]] = ConvertPlaceholders(cases[i+1], l.Data[shasum][tag].Placeholders)
+				l.Data[shasum][tag].Translation.Select.Cases[cases[i]] = ConvertFromPlaceholders(cases[i+1], l.Data[shasum][tag].Placeholders)
 			}
 		}
 	}
