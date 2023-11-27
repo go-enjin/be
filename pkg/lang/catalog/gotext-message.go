@@ -75,3 +75,33 @@ func (m *Message) MarshalJSON() (data []byte, err error) {
 	}, "", "\t")
 	return
 }
+
+func (m *Message) Copy() (copied *Message) {
+	copied = &Message{
+		BaseMessage: BaseMessage{
+			ID:                m.ID,
+			Key:               m.Key,
+			Message:           m.Message,
+			TranslatorComment: m.TranslatorComment,
+			Fuzzy:             m.Fuzzy,
+			Placeholders:      m.Placeholders.Copy(),
+		},
+	}
+	if m.Translation.Select != nil {
+		copied.Translation.Select = &Select{
+			Arg:     m.Translation.Select.Arg,
+			Feature: m.Translation.Select.Feature,
+			Cases:   make(map[string]SelectCase),
+		}
+		for k, sc := range m.Translation.Select.Cases {
+			copied.Translation.Select.Cases[k] = SelectCase{
+				Msg: sc.Msg,
+			}
+		}
+	} else {
+		copied.Translation = &Translation{
+			String: m.Translation.String,
+		}
+	}
+	return
+}

@@ -37,3 +37,10 @@ func (p Placeholders) Numeric() (found Placeholders) {
 	}
 	return
 }
+
+func (p Placeholders) Copy() (copied Placeholders) {
+	for _, ph := range p {
+		copied = append(copied, &(*ph))
+	}
+	return
+}
