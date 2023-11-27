@@ -72,7 +72,12 @@ func renderNjnData(f *CFeature, ctx context.Context, data interface{}) (html tem
 }
 
 func (re *RenderEnjin) RequestArgv() (reqArgv *argv.Argv) {
-	reqArgv, _ = re.ctx.Get(argv.RequestKey.String()).(*argv.Argv)
+	var ok bool
+	if reqArgv, ok = re.ctx.Get(argv.RequestKey.String()).(*argv.Argv); ok {
+		//reqArgv.Request, _ = re.ctx.Get("R").(*http.Request)
+	} else {
+		reqArgv = &argv.Argv{}
+	}
 	return
 }
 
