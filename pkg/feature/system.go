@@ -38,6 +38,11 @@ type EnjinBase interface {
 	SiteTag() (key string)
 	SiteName() (name string)
 	SiteTagLine() (tagLine string)
+
+	SiteCopyrightName() (name string)
+	SiteCopyrightYear() (year string)
+	SiteCopyrightNotice() (notice string)
+
 	SiteLocales() (locales lang.Tags)
 	SiteLanguageMode() (mode lang.Mode)
 	SiteLanguageCatalog() (c catalog.Catalog)
