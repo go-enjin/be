@@ -31,6 +31,10 @@ type Builder interface {
 	SiteCopyrightName(name string) Builder
 	SiteCopyrightNotice(notice string) Builder
 
+	// SetEnjinTextFn is the means for translating the site name, tag line and copyright components at runtime using a
+	// language printer for every request to the site
+	SetEnjinTextFn(fn EnjinTextFn) Builder
+
 	SiteLanguageMode(mode lang.Mode) Builder
 	SiteDefaultLanguage(tag language.Tag) Builder
 	SiteSupportedLanguages(tags ...language.Tag) Builder
