@@ -36,7 +36,7 @@ type PageContextUpdater interface {
 
 type EnjinContextProvider interface {
 	Feature
-	EnjinContext() (ctx context.Context)
+	EnjinContext(r *http.Request) (ctx context.Context)
 }
 
 type PageRestrictionHandler interface {

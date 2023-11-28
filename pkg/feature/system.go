@@ -58,7 +58,7 @@ type EnjinBase interface {
 
 type Service interface {
 	Prefix() (prefix string)
-	Context() (ctx context.Context)
+	Context(r *http.Request) (ctx context.Context)
 
 	GetTheme() (t Theme, err error)
 	MustGetTheme() (t Theme)
