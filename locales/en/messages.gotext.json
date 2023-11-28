@@ -906,24 +906,6 @@
 			"translation": "Specify the change frequency for this page in the sitemap"
 		},
 		{
-			"id": "{SiteFeatureKey}",
-			"key": "%s",
-			"message": "{SiteFeatureKey}",
-			"translatorComment": "Copied from source.",
-			"fuzzy": true,
-			"placeholders": [
-				{
-					"id": "SiteFeatureKey",
-					"string": "%[1]s",
-					"type": "string",
-					"underlyingType": "string",
-					"argNum": 1,
-					"expr": "beStrings.ToSpaced(f.SelfFeature().SiteFeatureKey())"
-				}
-			],
-			"translation": "%[1]s"
-		},
-		{
 			"id": "an unknown error occurred",
 			"key": "an unknown error occurred",
 			"message": "an unknown error occurred",
@@ -4234,6 +4216,14 @@
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
 			"translation": "User Manager"
+		},
+		{
+			"id": "Go-Enjin",
+			"key": "Go-Enjin",
+			"message": "Go-Enjin",
+			"translatorComment": "Copied from source.",
+			"fuzzy": true,
+			"translation": "Go-Enjin"
 		}
 	]
 }

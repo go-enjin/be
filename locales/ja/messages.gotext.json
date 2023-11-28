@@ -17,7 +17,7 @@
 					"expr": "values.TypeOf(input)"
 				}
 			],
-			"translation": "サポートされていないタイプ: %[1]s "
+			"translation": "サポートされていないタイプ: %[1]s"
 		},
 		{
 			"id": "not a time value",
@@ -33,7 +33,7 @@
 			"message": "not a date value",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "日形式ではない "
+			"translation": "日形式ではない"
 		},
 		{
 			"id": "not a datetime value",
@@ -49,7 +49,7 @@
 			"message": "not a boolean string value",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "boolean string 形式ではない"
+			"translation": "ブーリアンストリング形式ではない"
 		},
 		{
 			"id": "View error",
@@ -57,7 +57,7 @@
 			"message": "View error",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "ビューエラー"
+			"translation": "閲覧エラー"
 		},
 		{
 			"id": "Delete path",
@@ -65,7 +65,7 @@
 			"message": "Delete path",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "パスの削除 "
+			"translation": "パスの削除"
 		},
 		{
 			"id": "Really delete the directory \"{DirPath}\"?",
@@ -83,7 +83,7 @@
 					"expr": "dirPath"
 				}
 			],
-			"translation": "本当にディレクトリーを削除しますか \"%[1]s\"　"
+			"translation": "本当にディレクトリーを削除しますか \"%[1]s\""
 		},
 		{
 			"id": "Create page",
@@ -99,7 +99,7 @@
 			"message": "Create a new page?",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "新しいページっを作成しますか? "
+			"translation": "新しいページを作成しますか?"
 		},
 		{
 			"id": "Create menu",
@@ -115,7 +115,7 @@
 			"message": "Create a new menu?",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "メニューを作成しますか？"
+			"translation": "新しいメニューを作成しますか？"
 		},
 		{
 			"id": "View (read-only)",
@@ -123,7 +123,7 @@
 			"message": "View (read-only)",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "ビュー(読み取り専用) "
+			"translation": "ビュー(読み取り専用)"
 		},
 		{
 			"id": "Edit draft",
@@ -147,7 +147,7 @@
 			"message": "Preview draft",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "ドラフトのプレビュー "
+			"translation": "ドラフトのプレビュー"
 		},
 		{
 			"id": "Publish draft",
@@ -173,7 +173,7 @@
 					"expr": "filename"
 				}
 			],
-			"translation": "Publish the \"%[1]s\"のドラフトをパブリッシュしますか? "
+			"translation": "\"%[1]s\"のドラフトをパブリッシュしますか?"
 		},
 		{
 			"id": "Cancel editing",
@@ -207,7 +207,7 @@
 					"expr": "filename"
 				}
 			],
-			"translation": "\"%[1]s\"の編集を引き継ぎますか? (JA)"
+			"translation": "\"%[1]s\"の編集を引き継ぎますか?"
 		},
 		{
 			"id": "Unlock editing",
@@ -215,7 +215,7 @@
 			"message": "Unlock editing",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "編集のロックを解除する "
+			"translation": "編集のロックを解除する"
 		},
 		{
 			"id": "Unlock \"{Filename}\" for editing by others?",
@@ -233,7 +233,7 @@
 					"expr": "filename"
 				}
 			],
-			"translation": "\"%[1]s\" を他の人が編集できるよう解除しますか? "
+			"translation": "\"%[1]s\" を他の人が編集できるよう解除しますか?"
 		},
 		{
 			"id": "Move/rename",
@@ -241,7 +241,7 @@
 			"message": "Move/rename",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "移動/名前変更 "
+			"translation": "移動/名前変更"
 		},
 		{
 			"id": "Move/rename \"{Filename}\"?",
@@ -259,7 +259,7 @@
 					"expr": "filename"
 				}
 			],
-			"translation": "\"%[1]sの移動/名前変更をしますか \"? "
+			"translation": "\"%[1]sの移動/名前変更をしますか \"?"
 		},
 		{
 			"id": "Copy",
@@ -285,7 +285,7 @@
 					"expr": "filename"
 				}
 			],
-			"translation": " \"%[1]s\" を他の場所にコピーしますか? "
+			"translation": "\"%[1]s\" を他の場所にコピーしますか?"
 		},
 		{
 			"id": "Delete draft",
@@ -311,7 +311,7 @@
 					"expr": "filename"
 				}
 			],
-			"translation": " \"%[1]s\"のドラフトを本当に削除しますか? "
+			"translation": "\"%[1]s\"のドラフトを本当に削除しますか?"
 		},
 		{
 			"id": "Delete",
@@ -337,7 +337,7 @@
 					"expr": "filename"
 				}
 			],
-			"translation": "Really\"%[1]s\"のファイルを本当に削除しますか? "
+			"translation": "\"%[1]s\"のファイルを本当に削除しますか?"
 		},
 		{
 			"id": "Translate",
@@ -363,7 +363,7 @@
 					"expr": "filename"
 				}
 			],
-			"translation": "\"%[1]s\" ​ の新しい翻訳を開始する? "
+			"translation": "\"%[1]s\" ​ の新しい翻訳を作成しますか？"
 		},
 		{
 			"id": "Add indexing",
@@ -389,7 +389,7 @@
 					"expr": "filename"
 				}
 			],
-			"translation": " \"%[1]s\"にページインデックスを追加しますか? "
+			"translation": "\"%[1]s\"にページインデックスを追加しますか?"
 		},
 		{
 			"id": "Remove indexing",
@@ -397,7 +397,7 @@
 			"message": "Remove indexing",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "インデクスを削除"
+			"translation": "インデックスを削除"
 		},
 		{
 			"id": "Remove page indexing on \"{Filename}\"?",
@@ -415,7 +415,7 @@
 					"expr": "filename"
 				}
 			],
-			"translation": " \"%[1]s\"ページのインデックスを削除します? "
+			"translation": "\"%[1]s\"ページのインデックスを削除します?"
 		},
 		{
 			"id": "Create User",
@@ -431,7 +431,7 @@
 			"message": "Create a new user?",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "新しいユーザーを作成しますか? (JA)"
+			"translation": "新しいユーザーを作成しますか?"
 		},
 		{
 			"id": "Delete User",
@@ -457,7 +457,7 @@
 					"expr": "eid"
 				}
 			],
-			"translation": "ユーザー \"%[1]s\"を削除しますか? (このアクションからは回復できません) "
+			"translation": "ユーザー \"%[1]s\"を削除しますか? (このアクションからは回復できません)"
 		},
 		{
 			"id": "Reactivate User",
@@ -465,7 +465,7 @@
 			"message": "Reactivate User",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "ユーザーの再アクティブ化 "
+			"translation": "ユーザーの再アクティブ化"
 		},
 		{
 			"id": "Reactivate primary sign-in for \"{Eid}\"?",
@@ -483,7 +483,7 @@
 					"expr": "eid"
 				}
 			],
-			"translation": " \"%[1]s\"のプライマリ サインインを再度アクティブにしますか? "
+			"translation": "\"%[1]s\"のプライマリ サインインを再度アクティブにしますか?"
 		},
 		{
 			"id": "Deactivate User",
@@ -509,7 +509,7 @@
 					"expr": "eid"
 				}
 			],
-			"translation": " \"%[1]s\"のプライマリ サインインを無効にする"
+			"translation": "\"%[1]s\"のプライマリ サインインを無効にする"
 		},
 		{
 			"id": "Block User",
@@ -535,7 +535,7 @@
 					"expr": "eid"
 				}
 			],
-			"translation": "ユーザー\"%[1]s\"をブロックしますか? "
+			"translation": "ユーザー\"%[1]s\"をブロックしますか?"
 		},
 		{
 			"id": "Unblock User",
@@ -543,7 +543,7 @@
 			"message": "Unblock User",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "ユーザーのブロック解除 "
+			"translation": "ユーザーのブロック解除"
 		},
 		{
 			"id": "Unblock user \"{Eid}\"?",
@@ -561,7 +561,7 @@
 					"expr": "eid"
 				}
 			],
-			"translation": " ユーザー\"%[1]s\"のブロックを解除しますか? "
+			"translation": "ユーザー\"%[1]s\"のブロックを解除しますか?"
 		},
 		{
 			"id": "Reset User Multi-Factor Authentication?",
@@ -569,7 +569,7 @@
 			"message": "Reset User Multi-Factor Authentication?",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "ユーザーの多要素認証をリセットしますか? "
+			"translation": "ユーザーの多要素認証をリセットしますか?"
 		},
 		{
 			"id": "Reset multi-factor settings for \"{Eid}\"?",
@@ -595,7 +595,7 @@
 			"message": "Bad Request",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "不正なリクエスト "
+			"translation": "不正なリクエスト"
 		},
 		{
 			"id": "Unauthorized",
@@ -627,7 +627,7 @@
 			"message": "Method Not Allowed",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "許可されていないメソッド "
+			"translation": "許可されていないメソッド"
 		},
 		{
 			"id": "Internal Server Error",
@@ -635,7 +635,7 @@
 			"message": "Internal Server Error",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "内部サーバーエラー "
+			"translation": "内部サーバーエラー"
 		},
 		{
 			"id": "Bad Gateway",
@@ -643,7 +643,7 @@
 			"message": "Bad Gateway",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "不正なゲートウェイ "
+			"translation": "不正なゲートウェイ"
 		},
 		{
 			"id": "Service Unavailable",
@@ -659,7 +659,7 @@
 			"message": "Bad request",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "不正なリクエスト "
+			"translation": "不正なリクエスト"
 		},
 		{
 			"id": "Form submission expired, please try again",
@@ -675,7 +675,7 @@
 			"message": "Incomplete form submitted, please try again",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "送信されたフォームが不完全です。もう一度お試しください "
+			"translation": "送信されたフォームが不完全です。もう一度お試しください"
 		},
 		{
 			"id": "Incomplete link submitted, please try again",
@@ -683,7 +683,7 @@
 			"message": "Incomplete link submitted, please try again",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "不完全なリンクが送信されました。もう一度お試しください "
+			"translation": "不完全なリンクが送信されました。もう一度お試しください"
 		},
 		{
 			"id": "An unexpected error occurred",
@@ -691,7 +691,7 @@
 			"message": "An unexpected error occurred",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "予期しないエラーが発生しました "
+			"translation": "予期しないエラーが発生しました"
 		},
 		{
 			"id": "Permission denied",
@@ -699,7 +699,7 @@
 			"message": "Permission denied",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "許可が拒否されました "
+			"translation": "許可が拒否されました"
 		},
 		{
 			"id": "OTP (one-time passcode) verification failed",
@@ -715,7 +715,7 @@
 			"message": "User not found",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "ユーザーが見つかりません "
+			"translation": "ユーザーが見つかりません"
 		},
 		{
 			"id": "search form expired",
@@ -723,7 +723,7 @@
 			"message": "search form expired",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "検索フォームの有効期限が切れました "
+			"translation": "検索フォームの有効期限が切れました"
 		},
 		{
 			"id": "{WordCount} words",
@@ -775,7 +775,7 @@
 			"message": "Set this page's permalink",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "このページのパーマリンクを設定する "
+			"translation": "このページのパーマリンクを設定する"
 		},
 		{
 			"id": "{Total} results found",
@@ -793,7 +793,7 @@
 					"expr": "results.Total"
 				}
 			],
-			"translation": "%[1]d 件の結果が見つかりました "
+			"translation": "%[1]d 件の結果が見つかりました"
 		},
 		{
 			"id": "Page {PageNumber} of {NumPages}",
@@ -819,7 +819,7 @@
 					"expr": "numPages"
 				}
 			],
-			"translation": " %[1]d of %[2]d ページ"
+			"translation": "%[2]dの%[1]d ページ"
 		},
 		{
 			"id": "Showing #{IdStart} of {Total}",
@@ -845,7 +845,7 @@
 					"expr": "results.Total"
 				}
 			],
-			"translation": "Showing #%[1]d of %[2]d (JA)"
+			"translation": "#%[1]d/%[2]d を表示中"
 		},
 		{
 			"id": "Showing {IdStart}-{IdEnd} of {Total}",
@@ -879,7 +879,7 @@
 					"expr": "results.Total"
 				}
 			],
-			"translation": "Showing %[1]d-%[2]d of %[3]d (JA)"
+			"translation": "%[3]d 中の %[1]d-%[2]d を表示しています"
 		},
 		{
 			"id": "Enable to have this page omitted from the sitemap",
@@ -895,7 +895,7 @@
 			"message": "Specify the priority for this page in the sitemap",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "Sサイトマップでこのページの優先度を指定します"
+			"translation": "サイトマップでこのページの優先度を指定します"
 		},
 		{
 			"id": "Specify the change frequency for this page in the sitemap",
@@ -903,25 +903,7 @@
 			"message": "Specify the change frequency for this page in the sitemap",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "サイトマップでこのページの変更頻度を指定します (JA)"
-		},
-		{
-			"id": "{SiteFeatureKey}",
-			"key": "%s",
-			"message": "{SiteFeatureKey}",
-			"translatorComment": "Copied from source.",
-			"fuzzy": true,
-			"placeholders": [
-				{
-					"id": "SiteFeatureKey",
-					"string": "%[1]s",
-					"type": "string",
-					"underlyingType": "string",
-					"argNum": 1,
-					"expr": "beStrings.ToSpaced(f.SelfFeature().SiteFeatureKey())"
-				}
-			],
-			"translation": "%[1]s (JA)"
+			"translation": "サイトマップでこのページの変更頻度を指定します"
 		},
 		{
 			"id": "an unknown error occurred",
@@ -929,7 +911,7 @@
 			"message": "an unknown error occurred",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "不明なエラーが発生しました "
+			"translation": "不明なエラーが発生しました"
 		},
 		{
 			"id": "This site does not allow public sign-ups.",
@@ -937,7 +919,7 @@
 			"message": "This site does not allow public sign-ups.",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "このサイトでは一般のサインアップは許可されていません。 "
+			"translation": "このサイトでは一般のサインアップは許可されていません。"
 		},
 		{
 			"id": "Your account is locked by site management, sign-in request denied.",
@@ -945,7 +927,7 @@
 			"message": "Your account is locked by site management, sign-in request denied.",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "あなたのアカウントはサイト管理によってロックされており、サインイン要求は拒否されました。 "
+			"translation": "あなたのアカウントはサイト管理によってロックされており、サインイン要求は拒否されました。"
 		},
 		{
 			"id": "Account Verification ({Count__1} of {NumFactorsRequired})",
@@ -971,7 +953,7 @@
 					"expr": "f.numFactorsRequired"
 				}
 			],
-			"translation": "アカウント認証   %[2]d)中(%[1]d "
+			"translation": "アカウント認証   %[2]d)中(%[1]d"
 		},
 		{
 			"id": "Account Verification",
@@ -979,7 +961,7 @@
 			"message": "Account Verification",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "アカウント認証 "
+			"translation": "アカウント認証"
 		},
 		{
 			"id": "Your primary sign-in method has been reactivated.",
@@ -987,7 +969,7 @@
 			"message": "Your primary sign-in method has been reactivated.",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "プライマリ サインイン方法が再度アクティブ化されました。 "
+			"translation": "プライマリ サインイン方法が再度アクティブ化されました。"
 		},
 		{
 			"id": "Your primary sign-in method has been deactivated. You can still sign-in with a backup method.",
@@ -995,7 +977,7 @@
 			"message": "Your primary sign-in method has been deactivated. You can still sign-in with a backup method.",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "プライマリのサインイン方法が無効化されました。 バックアップ方法を使用してサインインすることもできます。 "
+			"translation": "プライマリのサインイン方法が無効化されました。 バックアップ方法を使用してサインインすることもできます。"
 		},
 		{
 			"id": "Your account was not deleted because you did not enter the correct confirmation phrase!",
@@ -1003,7 +985,7 @@
 			"message": "Your account was not deleted because you did not enter the correct confirmation phrase!",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "正しい確認フレーズを入力しなかったため、アカウントは削除されませんでした。 "
+			"translation": "正しい確認フレーズを入力しなかったため、アカウントは削除されませんでした。"
 		},
 		{
 			"id": "Account Setup (Stage {CurrentStage} of {TotalStages})",
@@ -1029,7 +1011,7 @@
 					"expr": "totalStages"
 				}
 			],
-			"translation": "アカウントの設定%[2]d) 中(Stage %[1]d "
+			"translation": "アカウントの設定%[2]d) 中(Stage %[1]d"
 		},
 		{
 			"id": "{NumProviderBackups___numProviderBackupsReady} backup accounts",
@@ -1047,7 +1029,7 @@
 					"expr": "numProviderBackups - numProviderBackupsReady"
 				}
 			],
-			"translation": "%[1]d 個のバックアップ アカウント "
+			"translation": "%[1]d 個のバックアップ アカウント"
 		},
 		{
 			"id": "{NumMultiFactorBackups___numMultiFactorBackupsReady} backup multi-factors",
@@ -1065,7 +1047,7 @@
 					"expr": "numMultiFactorBackups - numMultiFactorBackupsReady"
 				}
 			],
-			"translation": "%[1]d 個のバックアップ多要素 "
+			"translation": "%[1]d 個のバックアップ多要素"
 		},
 		{
 			"id": "{NumFactorsRequired___numFactorsRequiredReady} normal multi-factors",
@@ -1083,7 +1065,7 @@
 					"expr": "f.numFactorsRequired - numFactorsRequiredReady"
 				}
 			],
-			"translation": "%[1]d 個の通常の多要素 "
+			"translation": "%[1]d 個の通常の多要素"
 		},
 		{
 			"id": "{Count___numUserSetupStagesReady} other site features",
@@ -1101,7 +1083,7 @@
 					"expr": "count - numUserSetupStagesReady"
 				}
 			],
-			"translation": "%[1]d %[1]d 個のその他のサイト機能 "
+			"translation": "%[1]d %[1]d 個のその他のサイト機能"
 		},
 		{
 			"id": "Your account setup is complete!",
@@ -1109,7 +1091,7 @@
 			"message": "Your account setup is complete!",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "アカウントの設定が完了しました "
+			"translation": "アカウントの設定が完了しました"
 		},
 		{
 			"id": "Authentication",
@@ -1141,7 +1123,7 @@
 			"message": "Authenticator App",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "認証アプリ "
+			"translation": "認証アプリ"
 		},
 		{
 			"id": "Authenticator app passcodes are one-time-use tokens that change every thirty (30) seconds.",
@@ -1157,7 +1139,7 @@
 			"message": "app passcode",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "アプリのパスコード "
+			"translation": "アプリのパスコード"
 		},
 		{
 			"id": "There are {Count} backup codes remaining with {Name}",
@@ -1183,7 +1165,7 @@
 					"expr": "name"
 				}
 			],
-			"translation": " %[2]s には %[1]d 個のバックアップ コードが残っています "
+			"translation": "%[2]s には %[1]d 個のバックアップ コードが残っています"
 		},
 		{
 			"id": "There are no backup codes remaining with {Name}",
@@ -1201,7 +1183,7 @@
 					"expr": "name"
 				}
 			],
-			"translation": " %[1]s にはバックアップ コードが残っていません"
+			"translation": "%[1]s にはバックアップ コードが残っていません"
 		},
 		{
 			"id": "Backup Codes",
@@ -1217,7 +1199,7 @@
 			"message": "Backup codes are one-time-use tokens created during the provisioning process.",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "バックアップ コードは、プロビジョニング プロセス中に作成される 1 回限りの使用トークンです。 "
+			"translation": "バックアップ コードは、プロビジョニング プロセス中に作成される 1 回限りの使用トークンです。"
 		},
 		{
 			"id": "backup code",
@@ -1243,7 +1225,7 @@
 					"expr": "f.Enjin.SiteName()"
 				}
 			],
-			"translation": "%[1]s Eメール パスコード "
+			"translation": "%[1]s Eメール パスコード"
 		},
 		{
 			"id": "Email passcode sent",
@@ -1251,7 +1233,7 @@
 			"message": "Email passcode sent",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "Eメール・パスコードが送信されました "
+			"translation": "Eメール・パスコードが送信されました"
 		},
 		{
 			"id": "Email Passcode",
@@ -1291,7 +1273,7 @@
 			"message": "Please select a factor to remove.",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "削除するファクターを選択してください。 (JA)"
+			"translation": "削除するファクターを選択してください。"
 		},
 		{
 			"id": "Backup Email",
@@ -1341,7 +1323,7 @@
 			"message": "A backup email address that is not your primary account is required",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "プライマリ アカウントではないバックアップ メール アドレスが必要です "
+			"translation": "プライマリ アカウントではないバックアップ メール アドレスが必要です"
 		},
 		{
 			"id": "sign-in backup token expired or invalid",
@@ -1423,7 +1405,7 @@
 			"message": "a0b1c2d3e4",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "a0b1c2d3e4 (JA)"
+			"translation": "a0b1c2d3e4"
 		},
 		{
 			"id": "New sign-in token email sent",
@@ -1431,7 +1413,7 @@
 			"message": "New sign-in token email sent",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "新しいサインイン トークンのEメールが送信されました "
+			"translation": "新しいサインイン トークンのEメールが送信されました"
 		},
 		{
 			"id": "{SiteName} Sign-In Token",
@@ -1561,7 +1543,7 @@
 			"message": "Specify the alt attribute text to use for this page's thumbnail",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "このページのサムネイルに使用する alt 属性テキストを指定します "
+			"translation": "このページのサムネイルに使用する alt 属性テキストを指定します"
 		},
 		{
 			"id": "Omit this page from any indexing",
@@ -1603,7 +1585,7 @@
 					"expr": "titlePath"
 				}
 			],
-			"translation": "ブラウジング: %[1]s "
+			"translation": "ブラウジング: %[1]s"
 		},
 		{
 			"id": "Unsupported file type.",
@@ -1637,7 +1619,7 @@
 					"expr": "ee.Error()"
 				}
 			],
-			"translation": "ファイル読み取りエラー:  \"%[1]s\" "
+			"translation": "ファイル読み取りエラー:  \"%[1]s\""
 		},
 		{
 			"id": "error reading draft: \"{Error}\"",
@@ -1655,7 +1637,7 @@
 					"expr": "ee.Error()"
 				}
 			],
-			"translation": "下書きの読み取りエラーt: \"%[1]s\" "
+			"translation": "下書きの読み取りエラーt: \"%[1]s\""
 		},
 		{
 			"id": "Edit: {Name}",
@@ -1673,7 +1655,7 @@
 					"expr": "info.Name"
 				}
 			],
-			"translation": "編集: %[1]s "
+			"translation": "編集: %[1]s"
 		},
 		{
 			"id": "Form expired before submitting, please try again.",
@@ -1749,7 +1731,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "編集用ファイルのロック中にエラーが発生しました: \"%[1]s\" "
+			"translation": "編集用ファイルのロック中にエラーが発生しました: \"%[1]s\""
 		},
 		{
 			"id": "{File} editing taken over.",
@@ -1811,7 +1793,7 @@
 					"expr": "info.File"
 				}
 			],
-			"translation": "%[1]s の下書きが削除されました。 "
+			"translation": "%[1]s の下書きが削除されました。"
 		},
 		{
 			"id": "{File} file deleted.",
@@ -1847,7 +1829,7 @@
 					"expr": "info.Name"
 				}
 			],
-			"translation": " \"%[1]s\": を削除できません: ディレクトリが空ではありません"
+			"translation": "\"%[1]s\": を削除できません: ディレクトリが空ではありません"
 		},
 		{
 			"id": "{Name} directory deleted.",
@@ -1865,7 +1847,7 @@
 					"expr": "info.Name"
 				}
 			],
-			"translation": "%[1]s directory deleted. (JA)"
+			"translation": "%[1]s のディレクトリが削除されました"
 		},
 		{
 			"id": "{Name} is locked by another user, cannot make changes",
@@ -1909,7 +1891,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "ドラフトファイルへの保存エラー: \"%[1]s\" "
+			"translation": "ドラフトファイルへの保存エラー: \"%[1]s\""
 		},
 		{
 			"id": "{File} draft changes saved.",
@@ -1999,7 +1981,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "ファイルの書き込みエラー: \"%[1]s\" "
+			"translation": "ファイルの書き込みエラー: \"%[1]s\""
 		},
 		{
 			"id": "error removing final draft: \"{Error}\"",
@@ -2017,7 +1999,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "最終ドラフトの削除中にエラーが発生しました: \"%[1]s\" "
+			"translation": "最終ドラフトの削除中にエラーが発生しました: \"%[1]s\""
 		},
 		{
 			"id": "error unlocking file: \"{Error}\"",
@@ -2035,7 +2017,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "ファイルのロック解除エラー: \"%[1]s\" "
+			"translation": "ファイルのロック解除エラー: \"%[1]s\""
 		},
 		{
 			"id": "{File} draft changes published.",
@@ -2201,7 +2183,7 @@
 					"expr": "info.FSID"
 				}
 			],
-			"translation": " \"%[2]s\" は \"%[1]s\"に移動できません: ファイルシステムは読み取り専用です"
+			"translation": "\"%[2]s\" は \"%[1]s\"に移動できません: ファイルシステムは読み取り専用です"
 		},
 		{
 			"id": "error reading \"{SrcUri}\" file stats: {Error}",
@@ -2227,7 +2209,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "「%[1]s」ファイル統計の読み取りエラー: %[2]s "
+			"translation": "「%[1]s」ファイル統計の読み取りエラー: %[2]s"
 		},
 		{
 			"id": "error reading \"{SrcUri}\": {Error}",
@@ -2253,7 +2235,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": " \"%[1]s\":の読み取り中にエラーが発生しました: %[2]s "
+			"translation": "\"%[1]s\":の読み取り中にエラーが発生しました: %[2]s"
 		},
 		{
 			"id": "error writing \"{DstUri}\": {Error}",
@@ -2279,7 +2261,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": " \"%[1]s\"の書き込みエラー: %[2]s"
+			"translation": "\"%[1]s\"の書き込みエラー: %[2]s"
 		},
 		{
 			"id": "error preserving file timestamps \"{DstUri}\": {Error}",
@@ -2339,7 +2321,7 @@
 			"message": "source and destination file shasums differ",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "ソースファイルと宛先ファイルのシャサムが異なります "
+			"translation": "ソースファイルと宛先ファイルのシャサムが異なります"
 		},
 		{
 			"id": "error unlocking source file \"{SrcUri}\" before deleting during move: {Error}",
@@ -2365,7 +2347,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "移動中に削除する前のソース ファイル \"%[1]s\" のロックを解除中にエラーが発生しました: %[2]s　　　　　　　"
+			"translation": "移動中に削除する前のソース ファイル \"%[1]s\" のロックを解除中にエラーが発生しました: %[2]s"
 		},
 		{
 			"id": "error removing \"{SrcUri}\": {Error}",
@@ -2391,7 +2373,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": " \"%[1]s\"の削除中にエラーが発生しました: %[2]s"
+			"translation": "\"%[1]s\"の削除中にエラーが発生しました: %[2]s"
 		},
 		{
 			"id": "moved \"{SrcUri}\" to \"{DstUri}\"",
@@ -2443,7 +2425,7 @@
 					"expr": "dstInfo.FSID"
 				}
 			],
-			"translation": " \"%[2]s\" を\"%[1]s\"にコピーできません: ファイルシステムが見つかりません"
+			"translation": "\"%[2]s\" を\"%[1]s\"にコピーできません: ファイルシステムが見つかりません"
 		},
 		{
 			"id": "cannot copy \"{SrcUri}\" to \"{FSID}\": filesystem is read-only",
@@ -2469,7 +2451,7 @@
 					"expr": "dstInfo.FSID"
 				}
 			],
-			"translation": " \"%[2]s\" を\"%[1]s\"にコピーできません: ファイルシステムは読み取り専用です"
+			"translation": "\"%[2]s\" を\"%[1]s\"にコピーできません: ファイルシステムは読み取り専用です"
 		},
 		{
 			"id": "cannot copy \"{SrcUri}\" from \"{FSID}\": filesystem not found",
@@ -2495,7 +2477,7 @@
 					"expr": "info.FSID"
 				}
 			],
-			"translation": " \"%[2]s\" を\"%[1]s\"にコピーできません:  ファイルシステムが見つかりません"
+			"translation": "\"%[2]s\" を\"%[1]s\"にコピーできません:  ファイルシステムが見つかりません"
 		},
 		{
 			"id": "copied \"{SrcUri}\" to \"{DstUri}\"",
@@ -2521,7 +2503,7 @@
 					"expr": "dstUri"
 				}
 			],
-			"translation": " \"%[2]s\" を\"%[1]s\"にコピーしました"
+			"translation": "\"%[2]s\" を\"%[1]s\"にコピーしました"
 		},
 		{
 			"id": "\"{Name}\" {String} translation started",
@@ -2547,7 +2529,7 @@
 					"expr": "dstInfo.Locale.String()"
 				}
 			],
-			"translation": "\"%[1]s\" %[2]s translation started (JA)"
+			"translation": "\"%[1]s\" %[2]s の新しい翻訳が作成されました"
 		},
 		{
 			"id": "inconsistent operation requested",
@@ -2555,7 +2537,7 @@
 			"message": "inconsistent operation requested",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "一貫性のない操作が要求されました "
+			"translation": "一貫性のない操作が要求されました"
 		},
 		{
 			"id": "a file name is required",
@@ -2563,7 +2545,7 @@
 			"message": "a file name is required",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "ファイル名は必須です "
+			"translation": "ファイル名は必須です"
 		},
 		{
 			"id": "invalid language code given",
@@ -2667,7 +2649,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "他の人が編集できるロケールのロックを解除中にエラーが発生しました: %[1]s "
+			"translation": "他の人が編集できるロケールのロックを解除中にエラーが発生しました: %[1]s"
 		},
 		{
 			"id": "Cannot cancel, locale is locked by another user",
@@ -2701,7 +2683,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "ロケールデータの読み取りエラー: %[1]s "
+			"translation": "ロケールデータの読み取りエラー: %[1]s"
 		},
 		{
 			"id": "error performing draft changes: {Error}",
@@ -2719,7 +2701,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "ドラフト変更の実行中にエラーが発生しました: %[1]s "
+			"translation": "ドラフト変更の実行中にエラーが発生しました: %[1]s"
 		},
 		{
 			"id": "error writing draft changes: {Error}",
@@ -2753,7 +2735,7 @@
 			"message": "Cannot publish, locale is locked by another user",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "パブリッシュできません。ロケールは別のユーザーによってロックされています "
+			"translation": "パブリッシュできません。ロケールは別のユーザーによってロックされています"
 		},
 		{
 			"id": "draft locale changes published",
@@ -2827,7 +2809,7 @@
 					"expr": "dstPath"
 				}
 			],
-			"translation": "翻訳をコピーしました: %[1]s "
+			"translation": "翻訳をコピーしました: %[1]s"
 		},
 		{
 			"id": "translation key is required to create a new entry",
@@ -2835,7 +2817,7 @@
 			"message": "translation key is required to create a new entry",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "新しいエントリを作成するには翻訳キーが必要です "
+			"translation": "新しいエントリを作成するには翻訳キーが必要です"
 		},
 		{
 			"id": "translation comment is required to create a new entry",
@@ -2935,7 +2917,7 @@
 					"expr": "err"
 				}
 			],
-			"translation": "ドラフトの読み取りエラー: \"%[1]v\" "
+			"translation": "ドラフトの読み取りエラー: \"%[1]v\""
 		},
 		{
 			"id": "error reading file: \"{Err}\"",
@@ -2953,7 +2935,7 @@
 					"expr": "err"
 				}
 			],
-			"translation": "ファイルの読み取りエラー: \"%[1]v\" "
+			"translation": "ファイルの読み取りエラー: \"%[1]v\""
 		},
 		{
 			"id": "error encoding menu: \"{Err}\"",
@@ -2971,7 +2953,7 @@
 					"expr": "err"
 				}
 			],
-			"translation": "メニューの符号化エラー: \"%[1]v\" "
+			"translation": "メニューの符号化エラー: \"%[1]v\""
 		},
 		{
 			"id": "Menu Preview",
@@ -3083,7 +3065,7 @@
 					"expr": "ee.Error()"
 				}
 			],
-			"translation": "フォームコンテキストのエンコードエラー: \"%[1]s\" "
+			"translation": "フォームコンテキストのエンコードエラー: \"%[1]s\""
 		},
 		{
 			"id": "error decoding form context: \"{Error}\"",
@@ -3101,7 +3083,7 @@
 					"expr": "ee.Error()"
 				}
 			],
-			"translation": "フォームコンテキストのデコードエラー: \"%[1]s\" "
+			"translation": "フォームコンテキストのデコードエラー: \"%[1]s\""
 		},
 		{
 			"id": "error encoding cleaned menu: \"{Error}\"",
@@ -3119,7 +3101,7 @@
 					"expr": "ee"
 				}
 			],
-			"translation": "エンコクリーンアップされたメニューのエンコードエラー: \"%[1]v\" "
+			"translation": "エンコクリーンアップされたメニューのエンコードエラー: \"%[1]v\""
 		},
 		{
 			"id": "error decoding cleaned menu: \"{Error}\"",
@@ -3137,7 +3119,7 @@
 					"expr": "ee"
 				}
 			],
-			"translation": "エンコクリーンアップされたメニューのデコードエラー: \"%[1]v\" "
+			"translation": "エンコクリーンアップされたメニューのデコードエラー: \"%[1]v\""
 		},
 		{
 			"id": "error saving draft changes: \"{Error}\"",
@@ -3155,7 +3137,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "ドラフト変更の保存エラー: \"%[1]s\" "
+			"translation": "ドラフト変更の保存エラー: \"%[1]s\""
 		},
 		{
 			"id": "error saving final draft changes: \"{Error}\"",
@@ -3173,7 +3155,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "ドラフトの変更を最終保存するときにエラーが発生しました: \"%[1]s\" "
+			"translation": "ドラフトの変更を最終保存するときにエラーが発生しました: \"%[1]s\""
 		},
 		{
 			"id": "error decoding draft data: \"{Error}\"",
@@ -3191,7 +3173,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "ドラフトデータのデコードエラー: \"%[1]s\" "
+			"translation": "ドラフトデータのデコードエラー: \"%[1]s\""
 		},
 		{
 			"id": "error encoding draft menu: \"{Error}\"",
@@ -3209,7 +3191,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "ドラフトメニューのエンコードエラー: \"%[1]s\" "
+			"translation": "ドラフトメニューのエンコードエラー: \"%[1]s\""
 		},
 		{
 			"id": "cannot create \"{File}\" on \"{FSID}\": filesystem not found",
@@ -3235,7 +3217,7 @@
 					"expr": "dstInfo.FSID"
 				}
 			],
-			"translation": " \"%[2]s\" に \"%[1]s\":を作成できません: ファイルシステムが見つかりません"
+			"translation": "\"%[2]s\" に \"%[1]s\":を作成できません: ファイルシステムが見つかりません"
 		},
 		{
 			"id": "cannot create \"{File}\" on \"{FSID}\": filesystem is read-only",
@@ -3261,7 +3243,7 @@
 					"expr": "dstInfo.FSID"
 				}
 			],
-			"translation": " \"%[2]s\" に \"%[1]s\":を作成できません: ファイルシステムは読み取り専用です"
+			"translation": "\"%[2]s\" に \"%[1]s\":を作成できません: ファイルシステムは読み取り専用です"
 		},
 		{
 			"id": "create new page \"{DstUri}\"",
@@ -3279,7 +3261,7 @@
 					"expr": "dstUri"
 				}
 			],
-			"translation": "新しいページを作成する \"%[1]s\" "
+			"translation": "新しいページを作成する \"%[1]s\""
 		},
 		{
 			"id": "Menus",
@@ -3331,7 +3313,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "ドラフトページ問題の読み取りエラー: \"%[1]s\" "
+			"translation": "ドラフトページ問題の読み取りエラー: \"%[1]s\""
 		},
 		{
 			"id": "error preparing draft page preview: \"{Error}\"",
@@ -3349,7 +3331,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "ドラフト ページ プレビューの準備中にエラーが発生しました: \"%[1]s\" "
+			"translation": "ドラフト ページ プレビューの準備中にエラーが発生しました: \"%[1]s\""
 		},
 		{
 			"id": "Draft Preview",
@@ -3357,7 +3339,7 @@
 			"message": "Draft Preview",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "ドラフトプレビュー "
+			"translation": "ドラフトプレビュー"
 		},
 		{
 			"id": "error parsing page-matter: \"{Err}\"",
@@ -3375,7 +3357,7 @@
 					"expr": "err"
 				}
 			],
-			"translation": "ページ事項の解析エラー: \"%[1]v\" "
+			"translation": "ページ事項の解析エラー: \"%[1]v\""
 		},
 		{
 			"id": "error finalizing edit page: \"{Err}\"",
@@ -3393,7 +3375,7 @@
 					"expr": "err"
 				}
 			],
-			"translation": "編集ページの終了中にエラーが発生しました: \"%[1]v\" "
+			"translation": "編集ページの終了中にエラーが発生しました: \"%[1]v\""
 		},
 		{
 			"id": "error decoding form body: \"{Err}\"",
@@ -3411,7 +3393,7 @@
 					"expr": "err"
 				}
 			],
-			"translation": "フォーム本文のデコードエラー: \"%[1]v\" "
+			"translation": "フォーム本文のデコードエラー: \"%[1]v\""
 		},
 		{
 			"id": "a file format is required to create a new page",
@@ -3419,7 +3401,7 @@
 			"message": "a file format is required to create a new page",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "新しいページを作成するにはファイル形式が必要です "
+			"translation": "新しいページを作成するにはファイル形式が必要です"
 		},
 		{
 			"id": "a valid file format is required to create a new page",
@@ -3445,7 +3427,7 @@
 					"expr": "archetypeNames"
 				}
 			],
-			"translation": "新しいページを作成するにはサポートされているアーキタイプが必要です。サポートされているアーキタイプは次のとおりです。: %[1]s "
+			"translation": "新しいページを作成するにはサポートされているアーキタイプが必要です。サポートされているアーキタイプは次のとおりです。: %[1]s"
 		},
 		{
 			"id": "archetype page format not supported",
@@ -3479,7 +3461,7 @@
 					"expr": "ee.Error()"
 				}
 			],
-			"translation": "%[1]s エラー: %[2]s "
+			"translation": "%[1]s エラー: %[2]s"
 		},
 		{
 			"id": "Cannot make changes, file is locked by another user",
@@ -3567,7 +3549,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "ドラフトページの変更を保存するときにエラーが発生しました: \"%[1]s\" "
+			"translation": "ドラフトページの変更を保存するときにエラーが発生しました: \"%[1]s\""
 		},
 		{
 			"id": "Editing {EditorName}: {FilePath}",
@@ -3593,7 +3575,7 @@
 					"expr": "filePath"
 				}
 			],
-			"translation": "編集 %[1]s: %[2]s "
+			"translation": "編集 %[1]s: %[2]s"
 		},
 		{
 			"id": "{File} draft page changes saved.",
@@ -3629,7 +3611,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "ドラフトページの書き込みエラー: \"%[1]s\" "
+			"translation": "ドラフトページの書き込みエラー: \"%[1]s\""
 		},
 		{
 			"id": "error publishing draft page: \"{Error}\"",
@@ -3647,7 +3629,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "ドラフトページのパブリッシュエラー: \"%[1]s\" "
+			"translation": "ドラフトページのパブリッシュエラー: \"%[1]s\""
 		},
 		{
 			"id": "error removing final draft page: \"{Error}\"",
@@ -3665,7 +3647,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "最終ドラフトページの削除中にエラーが発生しました: \"%[1]s\" "
+			"translation": "最終ドラフトページの削除中にエラーが発生しました: \"%[1]s\""
 		},
 		{
 			"id": "error unlocking page file: \"{Error}\"",
@@ -3683,7 +3665,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "ページファイルのロック解除エラー: \"%[1]s\" "
+			"translation": "ページファイルのロック解除エラー: \"%[1]s\""
 		},
 		{
 			"id": "{File} draft page changes published.",
@@ -3727,7 +3709,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "ファイル削除エラー: %[1]s - %[2]s "
+			"translation": "ファイル削除エラー: %[1]s - %[2]s"
 		},
 		{
 			"id": "Cannot index, file is locked by another user",
@@ -3761,7 +3743,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "ページフォーマットのレンダリングエラー: %[1]s "
+			"translation": "ページフォーマットのレンダリングエラー: %[1]s"
 		},
 		{
 			"id": "\"{Name}\" has been added to page indexing",
@@ -3839,7 +3821,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "\"%[1]s\" ページマットの読み取りエラーr: %[2]s "
+			"translation": "\"%[1]s\" ページマットの読み取りエラーr: %[2]s"
 		},
 		{
 			"id": "error preparing \"{SrcUri}\" page matter: {Error}",
@@ -3865,7 +3847,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": " \"%[1]s\" ページの準備中にエラーが発生しました: %[2]s "
+			"translation": "\"%[1]s\" ページの準備中にエラーが発生しました: %[2]s"
 		},
 		{
 			"id": "source and destination file shasums are the same",
@@ -3925,7 +3907,7 @@
 					"expr": "err.Error()"
 				}
 			],
-			"translation": "\"%[1]s\"アーキタイプ作成エラー : %[2]s "
+			"translation": "\"%[1]s\"アーキタイプ作成エラー : %[2]s"
 		},
 		{
 			"id": "page format error: {Title} - {Summary}",
@@ -3951,7 +3933,7 @@
 					"expr": "forms.StrictSanitize(enjErr.Summary)"
 				}
 			],
-			"translation": "ページフォーマットエラー: %[1]s - %[2]s "
+			"translation": "ページフォーマットエラー: %[1]s - %[2]s"
 		},
 		{
 			"id": "page render error: {Error}",
@@ -3969,7 +3951,7 @@
 					"expr": "forms.StrictSanitize(ee.Error())"
 				}
 			],
-			"translation": "ページレンダリングエラー: %[1]s "
+			"translation": "ページレンダリングエラー: %[1]s"
 		},
 		{
 			"id": "(this page failed to render)",
@@ -3977,7 +3959,7 @@
 			"message": "(this page failed to render)",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "(このページはレンダリングに失敗しました) "
+			"translation": "(このページはレンダリングに失敗しました)"
 		},
 		{
 			"id": "Pages",
@@ -3985,7 +3967,7 @@
 			"message": "Pages",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "ページ "
+			"translation": "ページ"
 		},
 		{
 			"id": "a file name is required; use \"~index\" for a directory landing page",
@@ -3993,7 +3975,7 @@
 			"message": "a file name is required; use \"~index\" for a directory landing page",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "a file name isファイル名は必須です。 ディレクトリのランディング ページには \"~index\" を使用します"
+			"translation": "ファイル名は必須です。 ディレクトリのランディング ページには \"~index\" を使用します"
 		},
 		{
 			"id": "Themes",
@@ -4001,7 +3983,7 @@
 			"message": "Themes",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "主題 "
+			"translation": "テーマ"
 		},
 		{
 			"id": "Unsafe",
@@ -4041,7 +4023,7 @@
 			"message": "(empty)",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "(空) "
+			"translation": "(空)"
 		},
 		{
 			"id": "Profile Image",
@@ -4067,7 +4049,7 @@
 					"expr": "name"
 				}
 			],
-			"translation": "%[1]s (デフォルト） "
+			"translation": "%[1]s (デフォルト）"
 		},
 		{
 			"id": "Locale",
@@ -4115,7 +4097,7 @@
 			"message": "The has been blocked from accessing the site.",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "はサイトへのアクセスがブロックされました。"
+			"translation": "ユーザーはサイトへのアクセスがブロックされました。"
 		},
 		{
 			"id": "The has been unblocked from accessing the site.",
@@ -4123,7 +4105,7 @@
 			"message": "The has been unblocked from accessing the site.",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "によるサイトへのアクセスのブロックが解除されました。"
+			"translation": "ユーザーによるサイトへのアクセスのブロックが解除されました。"
 		},
 		{
 			"id": "An email address is required to create a new user.",
@@ -4167,7 +4149,7 @@
 					"expr": "userEmail"
 				}
 			],
-			"translation": "このEメールで作成された新しいユーザー: %[1]s "
+			"translation": "このEメールで作成された新しいユーザー: %[1]s"
 		},
 		{
 			"id": "The user's primary sign-in has been deactivated.",
@@ -4201,7 +4183,7 @@
 					"expr": "userEmail"
 				}
 			],
-			"translation": "デフォルトのユーザー %[1]s "
+			"translation": "デフォルトのユーザー %[1]s"
 		},
 		{
 			"id": "The user's primary sign-in has been reactivated.",
@@ -4209,7 +4191,7 @@
 			"message": "The user's primary sign-in has been reactivated.",
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
-			"translation": "ユーザーのプライマリ サインインが再度アクティブ化されました。 "
+			"translation": "ユーザーのプライマリ サインインが再度アクティブ化されました。"
 		},
 		{
 			"id": "The user's email address is required to confirm the resetting of a user's multi-factor settings.",
@@ -4234,6 +4216,12 @@
 			"translatorComment": "Copied from source.",
 			"fuzzy": true,
 			"translation": "ユーザーマネージャー"
+		},
+		{
+			"id": "Go-Enjin",
+			"key": "Go-Enjin",
+			"message": "Go-Enjin",
+			"translation": "Go-Enjin"
 		}
 	]
 }
