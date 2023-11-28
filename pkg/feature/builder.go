@@ -29,6 +29,7 @@ type Builder interface {
 	SiteTagLine(title string) Builder
 
 	SiteCopyrightName(name string) Builder
+	SiteCopyrightYear(year string) Builder
 	SiteCopyrightNotice(notice string) Builder
 
 	// SetEnjinTextFn is the means for translating the site name, tag line and copyright components at runtime using a
