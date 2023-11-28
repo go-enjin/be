@@ -51,27 +51,6 @@ type EnjinBase interface {
 	FindPages(prefix string) (pages []Page)
 }
 
-type EnjinInfo struct {
-	Tag         string
-	Name        string
-	TagLine     string
-	Locales     []language.Tag
-	LangMode    lang.Mode
-	DefaultLang language.Tag
-}
-
-func MakeEnjinInfo(e EnjinBase) (info EnjinInfo) {
-	info = EnjinInfo{
-		Tag:         e.SiteTag(),
-		Name:        e.SiteName(),
-		TagLine:     e.SiteTagLine(),
-		Locales:     e.SiteLocales(),
-		LangMode:    e.SiteLanguageMode(),
-		DefaultLang: e.SiteDefaultLanguage(),
-	}
-	return
-}
-
 type Service interface {
 	Prefix() (prefix string)
 	Context() (ctx context.Context)

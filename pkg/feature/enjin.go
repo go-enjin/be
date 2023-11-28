@@ -14,7 +14,49 @@
 
 package feature
 
+import (
+	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-enjin/golang-org-x-text/message"
+
+	"github.com/go-enjin/be/pkg/lang"
+)
+
 const (
 	EnjinTag        Tag = "enjin"
 	EnjinLocalesTag Tag = "enjin-locales"
 )
+
+type EnjinTextFn func(printer *message.Printer) (text EnjinText)
+
+type EnjinText struct {
+	Name            string
+	TagLine         string
+	CopyrightName   string
+	CopyrightYear   string
+	CopyrightNotice string
+}
+
+type EnjinInfo struct {
+	Tag string
+	EnjinText
+	Locales     []language.Tag
+	LangMode    lang.Mode
+	DefaultLang language.Tag
+}
+
+func MakeEnjinInfo(e EnjinBase) (info EnjinInfo) {
+	info = EnjinInfo{
+		Tag: e.SiteTag(),
+		EnjinText: EnjinText{
+			Name:            e.SiteName(),
+			TagLine:         e.SiteTagLine(),
+			CopyrightName:   e.SiteCopyrightName(),
+			CopyrightYear:   e.SiteCopyrightYear(),
+			CopyrightNotice: e.SiteCopyrightNotice(),
+		},
+		Locales:     e.SiteLocales(),
+		LangMode:    e.SiteLanguageMode(),
+		DefaultLang: e.SiteDefaultLanguage(),
+	}
+	return
+}
