@@ -18,6 +18,8 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 )
 
+// TODO: expand upon Table idea and construct a generic type
+
 type Cell struct {
 	Locale language.Tag
 	Src    *LocaleMessage

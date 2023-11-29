@@ -287,7 +287,7 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	pg.SetTitle(printer.Sprintf("Edit: %[1]s", info.EditCodeFilePath()))
+	pg.SetTitle(printer.Sprintf("Edit: %[1]s", info.Name))
 	r = feature.AddUserNotices(r, f.Editor.Site().PullNotices(eid)...)
 	f.SelfEditor().ServePreparedEditPage(pg, ctx, w, r)
 }
