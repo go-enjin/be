@@ -46,7 +46,7 @@ func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var p feature.Page
-	if p, err = page.NewFromPageMatter(pm, f.Editor.SiteFeatureTheme(), f.Enjin.Context()); err != nil {
+	if p, err = page.NewFromPageMatter(pm, f.Editor.SiteFeatureTheme(), f.Enjin.Context(r)); err != nil {
 		f.Editor.Site().PushErrorNotice(eid, false, printer.Sprintf(`error preparing draft page preview: "%[1]s"`, err.Error()))
 		r = feature.AddUserNotices(r, f.Editor.Site().PullNotices(eid)...)
 		f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+info.EditFilePath(), w, r)

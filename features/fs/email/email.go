@@ -257,7 +257,7 @@ func (f *CFeature) MakeEmailBody(path string, ctx beContext.Context) (fm beConte
 	render := beContext.New()
 	render.Apply(pm.Matter)
 	render.Apply(ctx)
-	render.Apply(f.Enjin.Context())
+	render.Apply(f.Enjin.Context(nil))
 
 	if strings.HasSuffix(path, ".html.tmpl") {
 		var t *htmlTemplate.Template

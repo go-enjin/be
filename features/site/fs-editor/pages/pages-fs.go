@@ -81,7 +81,7 @@ func (f *CFeature) ReadPageMatter(info *editor.File) (pm *matter.PageMatter, err
 						continue
 					} else if mountPoint.ROFS.Exists(filePath) {
 						if pm, err = mountPoint.ROFS.ReadPageMatter(filePath); err == nil {
-							pm.Stub = feature.NewPageStub(mpfTag, f.Enjin.Context(), mountPoint.ROFS, mountPoint.Mount, filePath, pm.Shasum, *info.Locale)
+							pm.Stub = feature.NewPageStub(mpfTag, f.Enjin.Context(nil), mountPoint.ROFS, mountPoint.Mount, filePath, pm.Shasum, *info.Locale)
 							pm.Locale = *info.Locale
 							return
 						}

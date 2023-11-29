@@ -70,7 +70,7 @@ func (t *CTheme) MakeArchetype(enjin feature.Internals, name string) (format str
 					parsedMatterType = matter.TomlMatter
 					parsedMatter = `archetype = "` + name + `"`
 				}
-				ctx := enjin.Context()
+				ctx := enjin.Context(nil)
 				if tmpl, ee := t.NewTextTemplate(enjin, name+"-archetype.tmpl", ctx); ee == nil {
 					if tmpl, ee = tmpl.Parse(parsedMatter); ee == nil {
 						var w bytes.Buffer

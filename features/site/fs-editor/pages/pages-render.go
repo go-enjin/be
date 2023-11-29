@@ -33,7 +33,7 @@ func (f *CFeature) FinalizeRenderFileEditor(r *http.Request, eid string, pg feat
 	printer := lang.GetPrinterFromRequest(r)
 
 	var p feature.Page
-	if p, err = page.NewFromPageMatter(pm.Copy(), f.Enjin.MustGetTheme(), f.Enjin.Context()); err != nil {
+	if p, err = page.NewFromPageMatter(pm.Copy(), f.Enjin.MustGetTheme(), f.Enjin.Context(r)); err != nil {
 		return
 	}
 

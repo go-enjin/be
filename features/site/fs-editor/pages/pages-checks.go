@@ -23,7 +23,7 @@ import (
 
 func (f *CFeature) PageRenderCheck(p feature.Page) (err error) {
 	renderer := f.Enjin.GetThemeRenderer(p.Context())
-	_, _, err = renderer.PrepareRenderPage(f.Enjin.MustGetTheme(), f.Enjin.Context(), p)
+	_, _, err = renderer.PrepareRenderPage(f.Enjin.MustGetTheme(), f.Enjin.Context(nil), p)
 	return
 }
 
@@ -37,7 +37,7 @@ func (f *CFeature) InfoRenderCheck(info *editor.File) (p feature.Page, pm *matte
 			return
 		}
 	}
-	if p, err = page.NewFromPageMatter(pm.Copy(), f.Enjin.MustGetTheme(), f.Enjin.Context()); err != nil {
+	if p, err = page.NewFromPageMatter(pm.Copy(), f.Enjin.MustGetTheme(), f.Enjin.Context(nil)); err != nil {
 		return
 	}
 	err = f.PageRenderCheck(p)

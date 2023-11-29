@@ -17,6 +17,8 @@
 package context
 
 import (
+	"net/http"
+
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
@@ -109,7 +111,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) EnjinContext() (ctx context.Context) {
+func (f *CFeature) EnjinContext(r *http.Request) (ctx context.Context) {
 	ctx = f.ctx.Copy()
 	return
 }

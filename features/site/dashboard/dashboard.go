@@ -110,7 +110,7 @@ func (f *CFeature) RenderDashboard(path string, w http.ResponseWriter, r *http.R
 
 	ctx := beContext.Context{
 		"Title":         f.SiteFeatureLabel(printer),
-		"EnjinContext":  f.Enjin.Context().Copy(),
+		"EnjinContext":  f.Enjin.Context(r).Copy(),
 		"EnjinFeatures": f.Enjin.Features(),
 	}
 

@@ -340,7 +340,7 @@ func (f *CFeature[MakeTypedFeature]) FindReadPageMatter(path string) (pm *matter
 	}
 	if pm, err = mp.ROFS.ReadPageMatter(realpath); err == nil {
 		pm.Locale = locale
-		pm.Stub = feature.NewPageStub(f.Tag().String(), f.Enjin.Context(), mp.ROFS, mp.Mount, realpath, pm.Shasum, locale)
+		pm.Stub = feature.NewPageStub(f.Tag().String(), f.Enjin.Context(nil), mp.ROFS, mp.Mount, realpath, pm.Shasum, locale)
 		return
 	}
 	err = os.ErrNotExist
@@ -359,7 +359,7 @@ func (f *CFeature[MakeTypedFeature]) ReadPageMatter(path string) (pm *matter.Pag
 
 func (f *CFeature[MakeTypedFeature]) ReadMountPageMatter(mp *feature.CMountPoint, path string) (pm *matter.PageMatter, err error) {
 	if pm, err = mp.ROFS.ReadPageMatter(path); err == nil {
-		pm.Stub = feature.NewPageStub(f.Tag().String(), f.Enjin.Context(), mp.ROFS, mp.Mount, path, pm.Shasum, pm.Locale)
+		pm.Stub = feature.NewPageStub(f.Tag().String(), f.Enjin.Context(nil), mp.ROFS, mp.Mount, path, pm.Shasum, pm.Locale)
 		return
 	}
 	err = os.ErrNotExist

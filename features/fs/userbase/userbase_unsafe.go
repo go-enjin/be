@@ -101,7 +101,7 @@ func (f *CFeature) getUserUnsafe(eid string) (user *users.User, err error) {
 			return
 		}
 
-		user, err = users.NewUserFromPageMatter(au, pm, f.Enjin.MustGetTheme(), f.Enjin.Context())
+		user, err = users.NewUserFromPageMatter(au, pm, f.Enjin.MustGetTheme(), f.Enjin.Context(nil))
 		return
 	}
 
@@ -198,7 +198,7 @@ func (f *CFeature) makeUserUnsafe(au *users.AuthUser) (user *users.User, created
 	})
 
 	var uu *users.User
-	if uu, err = users.NewUserFromPageMatter(au, pm, f.Enjin.MustGetTheme(), f.Enjin.Context()); err != nil {
+	if uu, err = users.NewUserFromPageMatter(au, pm, f.Enjin.MustGetTheme(), f.Enjin.Context(nil)); err != nil {
 		err = fmt.Errorf("error constructing user from PageMatter: %v - %v", au.EID, err)
 		return
 	}

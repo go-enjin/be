@@ -33,7 +33,7 @@ func (f *CFeature) PreparePage(layout, pageType, pagePath string, t feature.Them
 		"layout": layout,
 	}, "")
 
-	ctx = f.Enjin.Context()
+	ctx = f.Enjin.Context(r)
 	now := time.Now().Unix()
 
 	if pg, err = page.New(f.Tag().String(), pagePath, content, now, now, t, ctx); err != nil {
