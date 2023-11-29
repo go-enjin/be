@@ -49,3 +49,8 @@ func (eb *EnjinBuilder) SiteCopyrightNotice(notice string) feature.Builder {
 	eb.copyrightNotice = notice
 	return eb
 }
+
+func (eb *EnjinBuilder) SetEnjinTextFn(fn feature.EnjinTextFn) feature.Builder {
+	eb.enjinTextFn = fn
+	return eb
+}
