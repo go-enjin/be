@@ -17,7 +17,7 @@
 #: uncomment to echo instead of execute
 #CMD=echo
 
-ENJIN_MK_VERSION := v0.2.13
+ENJIN_MK_VERSION := v0.2.14
 
 #
 #: phony make targets
@@ -92,9 +92,7 @@ MAKE_SOURCE_LOCALES  ?= false
 MAKE_CONTENT_LOCALES ?= false
 endif
 
-CATALOG_GO_FILENAME   ?= /dev/null
-CATALOG_GO_VARIABLE   ?= Catalog
-CATALOG_GO_CONSTRAINT ?=
+CONTENT_LOCALES_PATH  ?= ./locales-content
 
 #
 #: custom go.mod locals and be-update targets
@@ -665,6 +663,17 @@ define _find_pid_tree
 	done; \
 	echo "$${FOUND}" \
 `
+endef
+
+define _prune_null_locales
+if [ -d "$(1)" ]; then \
+		if [ -f "$(1)/en/out.gotext.json" ]; then \
+			if grep -q '"messages": null' "$(1)/en/out.gotext.json"; then \
+				echo "# $(1) translation messages not found, cleaning up"; \
+				rm -rfv "$(1)"; \
+			fi; \
+		fi; \
+	fi
 endef
 
 list-make-targets:
@@ -1287,7 +1296,7 @@ profile.cpu: build dev
 	fi
 
 ifeq (${MAKE_SOURCE_LOCALES},true)
-locales: BE_PKG_LIST=`${CMD} ${ENJENV_EXE} be-pkg-list`
+locales: BE_PKG_LIST=`find * -name "*.go"`
 endif
 locales: LANG_ARG=`(for code in ${LANGUAGES}; do echo $${code}; done) | sort -u | perl -pe 's!\s+!,!msg' | perl -pe 's!,$$!!'`
 locales: export GOFLAGS=-tags=all
@@ -1300,6 +1309,7 @@ ifeq (${MAKE_THEME_LOCALES},true)
 				-lang=${LANG_ARG} \
 				-out=./${THEMES_PATH}/$${theme}/locales \
 				./themes/$${theme}/layouts; \
+			$(call _prune_null_locales,./${THEMES_PATH}/$${theme}/locales); \
 		else \
 			echo "# $${theme} has no layouts, nothing to generate"; \
 		fi; \
@@ -1307,21 +1317,21 @@ ifeq (${MAKE_THEME_LOCALES},true)
 endif
 ifeq (${MAKE_CONTENT_LOCALES},true)
 	@if [ -d ./${CONTENT_PATH} ]; then \
-		echo "# generating ${CONTENT_PATH} locales"; \
+		echo "# generating ./${CONTENT_PATH} locales"; \
 		${CMD} enjenv be-update-locales \
 			-lang=${LANG_ARG} \
-			-out=./locales-content \
+			-out=${CONTENT_LOCALES_PATH} \
 			./${CONTENT_PATH}; \
+		$(call _prune_null_locales,${CONTENT_LOCALES_PATH}); \
 	fi
 endif
 ifeq (${MAKE_SOURCE_LOCALES},true)
 	@echo "# generating go source locales"
 	@${CMD} gotext \
 		-srclang=${SRC_LANG} \
-		-declare-var="${CATALOG_GO_VARIABLE}" \
-		-go-build="${CATALOG_GO_CONSTRAINT}" \
 		update \
 		-lang=${LANG_ARG} \
-		-out=${CATALOG_GO_FILENAME} \
+		-out=/dev/null \
 		${BE_PKG_LIST}
+	@$(call _prune_null_locales,locales)
 endif
