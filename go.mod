@@ -57,9 +57,9 @@ require (
 	github.com/yookoala/gofast v0.7.0
 	github.com/yookoala/realpath v1.0.0
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
-	golang.ngrok.com/ngrok v1.5.1
-	golang.ngrok.com/ngrok/log/logrus v0.0.0-20231116195440-fd2067b7c319
-	golang.org/x/net v0.18.0
+	golang.ngrok.com/ngrok v1.6.0
+	golang.ngrok.com/ngrok/log/logrus v0.0.0-20231128183016-03a24d0b6d57
+	golang.org/x/net v0.19.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/datatypes v1.2.0
 	gorm.io/driver/mysql v1.5.2
@@ -164,13 +164,13 @@ require (
 	go.mongodb.org/mongo-driver v1.11.6 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.ngrok.com/muxado/v2 v2.0.0 // indirect
-	golang.org/x/crypto v0.15.0 // indirect
+	golang.org/x/crypto v0.16.0 // indirect
 	golang.org/x/exp v0.0.0-20230315142452-642cacee5cc0 // indirect
 	golang.org/x/image v0.7.0 // indirect
 	golang.org/x/oauth2 v0.6.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/sys v0.14.0 // indirect
-	golang.org/x/term v0.14.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/term v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
