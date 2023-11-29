@@ -244,7 +244,7 @@ func (e *Enjin) ServePage(p feature.Page, w http.ResponseWriter, r *http.Request
 
 	}
 
-	err = e.eb.fServePagesHandler.ServePage(p, e.MustGetTheme(), e.Context(), w, r)
+	err = e.eb.fServePagesHandler.ServePage(p, e.MustGetTheme(), e.Context(r), w, r)
 	e.Emit(signals.PostServePage, feature.EnjinTag.String(), interface{}(e).(feature.Internals), p, r)
 	return
 }
