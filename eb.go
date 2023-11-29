@@ -18,8 +18,10 @@ import (
 	"fmt"
 	"html/template"
 	"os"
+	"strconv"
 	"time"
 
+	"github.com/go-enjin/golang-org-x-text/message"
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
@@ -73,6 +75,7 @@ type EnjinBuilder struct {
 	copyrightName   string
 	copyrightYear   string
 	copyrightNotice string
+	enjinTextFn     feature.EnjinTextFn
 
 	langMode    lang.Mode
 	localeTags  []language.Tag
@@ -168,6 +171,33 @@ func New() (be *EnjinBuilder) {
 	be.publicUser = make(feature.Actions, 0)
 	be.buildPages = make(map[string]string)
 	be.cspModifierFns = make(map[string]feature.CspModifierFn)
+	be.enjinTextFn = func(printer *message.Printer) (text feature.EnjinText) {
+		var name, tagLine, copyrightName, copyrightYear, copyrightNotice string
+		name = printer.Sprint(be.name)
+		if be.tagLine != "" {
+			tagLine = printer.Sprint(be.tagLine)
+		}
+		if be.copyrightName != "" {
+			copyrightName = printer.Sprint(be.copyrightName)
+		} else {
+			copyrightName = name
+		}
+		if be.copyrightYear == "" {
+			copyrightYear = strconv.Itoa(time.Now().Year())
+		}
+		if be.copyrightNotice != "" {
+			copyrightNotice = printer.Sprint(be.copyrightNotice)
+		} else {
+			copyrightNotice = printer.Sprint("All rights reserved")
+		}
+		return feature.EnjinText{
+			Name:            name,
+			TagLine:         tagLine,
+			CopyrightName:   copyrightName,
+			CopyrightYear:   copyrightYear,
+			CopyrightNotice: copyrightNotice,
+		}
+	}
 	return be
 }
 
