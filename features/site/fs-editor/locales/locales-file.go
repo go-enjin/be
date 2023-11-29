@@ -194,6 +194,9 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 								checking = append(checking, text)
 							}
 						}
+						for _, ph := range msg.Placeholders {
+							checking = append(checking, ph.ID)
+						}
 						for _, check := range checking {
 							score, _ := wc.Search(searchQuery, check)
 							if found = score > 0; found {
