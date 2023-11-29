@@ -14,33 +14,27 @@
 
 package catalog
 
-import (
-	"encoding/json"
-)
-
 type StringMessage struct {
-	BaseMessage
-	Translation string `json:"translation"`
+	ID                string       `json:"id"`
+	Key               string       `json:"key"`
+	Message           string       `json:"message"`
+	Translation       string       `json:"translation"`
+	TranslatorComment string       `json:"translatorComment,omitempty"`
+	Placeholders      Placeholders `json:"placeholders,omitempty"`
+	Fuzzy             bool         `json:"fuzzy,omitempty"`
 }
 
 func (s *StringMessage) Make() (m Message) {
 	m = Message{
-		BaseMessage: s.BaseMessage,
+		ID:      s.ID,
+		Key:     s.Key,
+		Message: s.Message,
 		Translation: &Translation{
 			String: s.Translation,
 		},
+		TranslatorComment: s.TranslatorComment,
+		Placeholders:      s.Placeholders[:],
+		Fuzzy:             s.Fuzzy,
 	}
-	return
-}
-
-func (s *StringMessage) MarshalJSON() (data []byte, err error) {
-	sm := struct {
-		BaseMessage
-		Translation string `json:"translation"`
-	}{
-		BaseMessage: s.BaseMessage,
-		Translation: s.Translation,
-	}
-	data, err = json.Marshal(sm)
 	return
 }

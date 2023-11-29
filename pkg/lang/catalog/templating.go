@@ -145,15 +145,13 @@ func parseMessagePlaceholders(key string, argv ...string) (replaced, labelled st
 func MakeMessageFromKey(key, comment string, argv ...string) (m *Message) {
 	replaced, labelled, placeholders := parseMessagePlaceholders(key, argv...)
 	m = &Message{
-		BaseMessage: BaseMessage{
-			ID:                labelled,
-			Key:               key,
-			Message:           replaced,
-			TranslatorComment: comment,
-			Fuzzy:             true,
-			Placeholders:      placeholders,
-		},
-		Translation: &Translation{String: replaced},
+		ID:                labelled,
+		Key:               key,
+		Message:           replaced,
+		Translation:       &Translation{String: replaced},
+		TranslatorComment: comment,
+		Placeholders:      placeholders,
+		Fuzzy:             true,
 	}
 	return
 }

@@ -15,7 +15,6 @@
 package catalog
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -32,27 +31,25 @@ type SelectCase struct {
 }
 
 type SelectMessage struct {
-	BaseMessage
-	Translation *Translation `json:"translation"`
+	ID                string       `json:"id"`
+	Key               string       `json:"key"`
+	Message           string       `json:"message"`
+	Translation       *Translation `json:"translation"`
+	TranslatorComment string       `json:"translatorComment,omitempty"`
+	Placeholders      Placeholders `json:"placeholders,omitempty"`
+	Fuzzy             bool         `json:"fuzzy,omitempty"`
 }
 
 func (s *SelectMessage) Make() (m Message) {
 	m = Message{
-		BaseMessage: s.BaseMessage,
-		Translation: s.Translation,
+		ID:                s.ID,
+		Key:               s.Key,
+		Message:           s.Message,
+		Translation:       s.Translation,
+		TranslatorComment: s.TranslatorComment,
+		Placeholders:      s.Placeholders[:],
+		Fuzzy:             s.Fuzzy,
 	}
-	return
-}
-
-func (s *SelectMessage) MarshalJSON() (data []byte, err error) {
-	sm := struct {
-		BaseMessage
-		Translation *Select `json:"translation"`
-	}{
-		BaseMessage: s.BaseMessage,
-		Translation: s.Translation.Select,
-	}
-	data, err = json.Marshal(sm)
 	return
 }
 

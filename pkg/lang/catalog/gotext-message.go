@@ -22,9 +22,10 @@ type BaseMessage struct {
 	ID                string       `json:"id"`
 	Key               string       `json:"key"`
 	Message           string       `json:"message"`
+	Translation       interface{}  `json:"translation"`
 	TranslatorComment string       `json:"translatorComment,omitempty"`
-	Fuzzy             bool         `json:"fuzzy,omitempty"`
 	Placeholders      Placeholders `json:"placeholders,omitempty"`
+	Fuzzy             bool         `json:"fuzzy,omitempty"`
 }
 
 type Translation struct {
@@ -33,8 +34,13 @@ type Translation struct {
 }
 
 type Message struct {
-	BaseMessage
-	Translation *Translation `json:"translation"`
+	ID                string       `json:"id"`
+	Key               string       `json:"key"`
+	Message           string       `json:"message"`
+	Translation       *Translation `json:"translation"`
+	TranslatorComment string       `json:"translatorComment,omitempty"`
+	Placeholders      Placeholders `json:"placeholders,omitempty"`
+	Fuzzy             bool         `json:"fuzzy,omitempty"`
 }
 
 func (m *Message) UnmarshalJSON(data []byte) (err error) {
@@ -55,52 +61,53 @@ func (m *Message) UnmarshalJSON(data []byte) (err error) {
 
 func (m *Message) MarshalJSON() (data []byte, err error) {
 	if m.Translation.Select != nil {
-		data, err = json.MarshalIndent(struct {
-			BaseMessage
-			Translation map[string]interface{} `json:"translation"`
-		}{
-			BaseMessage: m.BaseMessage,
+		data, err = json.MarshalIndent(BaseMessage{
+			ID:      m.ID,
+			Key:     m.Key,
+			Message: m.Message,
 			Translation: map[string]interface{}{
 				"select": m.Translation.Select,
 			},
-		}, "", "\t")
+			TranslatorComment: m.TranslatorComment,
+			Placeholders:      m.Placeholders[:],
+			Fuzzy:             m.Fuzzy,
+		}, "", "    ")
 		return
 	}
-	data, err = json.MarshalIndent(struct {
-		BaseMessage
-		Translation string `json:"translation"`
-	}{
-		BaseMessage: m.BaseMessage,
-		Translation: m.Translation.String,
-	}, "", "\t")
+	data, err = json.MarshalIndent(BaseMessage{
+		ID:                m.ID,
+		Key:               m.Key,
+		Message:           m.Message,
+		Translation:       m.Translation.String,
+		TranslatorComment: m.TranslatorComment,
+		Placeholders:      m.Placeholders[:],
+		Fuzzy:             m.Fuzzy,
+	}, "", "    ")
 	return
 }
 
 func (m *Message) Copy() (copied *Message) {
 	copied = &Message{
-		BaseMessage: BaseMessage{
-			ID:                m.ID,
-			Key:               m.Key,
-			Message:           m.Message,
-			TranslatorComment: m.TranslatorComment,
-			Fuzzy:             m.Fuzzy,
-			Placeholders:      m.Placeholders.Copy(),
-		},
+		ID:                m.ID,
+		Key:               m.Key,
+		Message:           m.Message,
+		Translation:       &Translation{},
+		TranslatorComment: m.TranslatorComment,
+		Placeholders:      m.Placeholders.Copy(),
+		Fuzzy:             m.Fuzzy,
 	}
-	if m.Translation.Select != nil {
-		copied.Translation.Select = &Select{
-			Arg:     m.Translation.Select.Arg,
-			Feature: m.Translation.Select.Feature,
-			Cases:   make(map[string]SelectCase),
-		}
-		for k, sc := range m.Translation.Select.Cases {
-			copied.Translation.Select.Cases[k] = SelectCase{
-				Msg: sc.Msg,
-			}
-		}
-	} else {
-		copied.Translation = &Translation{
-			String: m.Translation.String,
+	if m.Translation.Select == nil {
+		copied.Translation.String = m.Translation.String
+		return
+	}
+	copied.Translation.Select = &Select{
+		Arg:     m.Translation.Select.Arg,
+		Feature: m.Translation.Select.Feature,
+		Cases:   make(map[string]SelectCase),
+	}
+	for k, sc := range m.Translation.Select.Cases {
+		copied.Translation.Select.Cases[k] = SelectCase{
+			Msg: sc.Msg,
 		}
 	}
 	return
