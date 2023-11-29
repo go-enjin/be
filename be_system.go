@@ -30,6 +30,7 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
+	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/page"
@@ -113,10 +114,10 @@ func (e *Enjin) Prefix() (prefix string) {
 	return e.prefix
 }
 
-func (e *Enjin) Context() (ctx context.Context) {
+func (e *Enjin) Context(r *http.Request) (ctx context.Context) {
 	ctx = e.eb.context.Copy()
 	for _, ecp := range e.eb.fEnjinContextProvider {
-		ctx.ApplySpecific(ecp.EnjinContext())
+		ctx.ApplySpecific(ecp.EnjinContext(r))
 	}
 	if e.debug {
 		ctx.SetSpecific("Debug", true)
@@ -143,8 +144,14 @@ func (e *Enjin) Context() (ctx context.Context) {
 	ctx.SetSpecific("CurrentYear", now.Year())
 	ctx.SetSpecific("Release", globals.BinHash)
 	ctx.SetSpecific("Version", globals.Version)
-	ctx.SetSpecific("EnjinInfo", feature.MakeEnjinInfo(e))
 	ctx.SetSpecific("EnjinBase", feature.EnjinBase(e))
+
+	baseInfo := feature.MakeEnjinInfo(e)
+	if e.eb.enjinTextFn != nil && r != nil {
+		printer := lang.GetPrinterFromRequest(r)
+		baseInfo.EnjinText = e.eb.enjinTextFn(printer)
+	}
+	ctx.SetSpecific("EnjinInfo", baseInfo)
 	return
 }
 
