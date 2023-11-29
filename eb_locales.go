@@ -45,13 +45,3 @@ func (eb *EnjinBuilder) SiteLanguageDisplayNames(names map[language.Tag]string) 
 	}
 	return eb
 }
-
-func (eb *EnjinBuilder) IncludeEmbedLocales() feature.Builder {
-	eb.AddFeature(MakeEmbedLocales())
-	return eb
-}
-
-func (eb *EnjinBuilder) IncludeLocalLocales() feature.Builder {
-	eb.AddFeature(MakeLocalLocales())
-	return eb
-}
