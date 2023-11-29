@@ -28,3 +28,18 @@ func (e *Enjin) SiteTagLine() (tagLine string) {
 	tagLine = e.eb.tagLine
 	return
 }
+
+func (e *Enjin) SiteCopyrightName() (name string) {
+	name = e.eb.copyrightName
+	return
+}
+
+func (e *Enjin) SiteCopyrightYear() (year string) {
+	year = e.eb.copyrightYear
+	return
+}
+
+func (e *Enjin) SiteCopyrightNotice() (notice string) {
+	notice = e.eb.copyrightNotice
+	return
+}
