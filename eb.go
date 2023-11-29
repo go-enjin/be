@@ -69,9 +69,10 @@ type EnjinBuilder struct {
 
 	tag             string
 	name            string
-	copyrightName   string
-	copyrightNotice string
 	tagLine         string
+	copyrightName   string
+	copyrightYear   string
+	copyrightNotice string
 
 	langMode    lang.Mode
 	localeTags  []language.Tag
@@ -209,19 +210,20 @@ func (eb *EnjinBuilder) prepareBuild() {
 		log.FatalDF(2, "missing .SiteName")
 	}
 	eb.Set("SiteName", eb.name)
+	eb.Set("SiteTagLine", eb.tagLine)
 
-	if eb.copyrightName != "" {
-		eb.Set("CopyrightName", eb.copyrightName)
+	if eb.copyrightName == "" {
+		eb.copyrightName = eb.name
 	}
-	if eb.copyrightNotice == "" && eb.copyrightName != "" {
-		eb.copyrightNotice = fmt.Sprintf("© %v", time.Now().Year())
-		eb.Set("CopyrightNotice", eb.copyrightNotice)
-	} else {
-		eb.Set("CopyrightNotice", eb.copyrightNotice)
+	if eb.copyrightYear == "" {
+		eb.copyrightYear = strconv.Itoa(time.Now().Year())
 	}
-	if eb.tagLine != "" {
-		eb.Set("SiteTagLine", eb.tagLine)
+	if eb.copyrightNotice == "" {
+		eb.copyrightNotice = "All rights reserved"
 	}
+	eb.Set("CopyrightName", eb.copyrightName)
+	eb.Set("CopyrightYear", eb.copyrightYear)
+	eb.Set("CopyrightNotice", eb.copyrightNotice)
 
 	eb.Set("LanguageMode", eb.langMode)
 	eb.Set("DefaultLanguage", eb.defaultLang.String())
