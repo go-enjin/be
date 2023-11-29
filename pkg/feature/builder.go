@@ -24,12 +24,20 @@ import (
 )
 
 type Builder interface {
+	// SiteTag is the programmatic tag for identifying this particular enjin
 	SiteTag(key string) Builder
+	// SiteName is the name of the site, typically used in the branding header and browser tab titles
 	SiteName(name string) Builder
+	// SiteTagLine is an optional bit of text to display under the site name in the branding header
 	SiteTagLine(title string) Builder
 
+	// SiteCopyrightName specifies the first component of a standard copyright declaration for the site
 	SiteCopyrightName(name string) Builder
+	// SiteCopyrightYear specifies the year component of a standard copyright declaration and if left empty, the current
+	// year is used in its place
 	SiteCopyrightYear(year string) Builder
+	// SiteCopyrightNotice specifies the last component of a standard copyright declaration and if left empty, the
+	// phrase "All rights reserved" is used in its place
 	SiteCopyrightNotice(notice string) Builder
 
 	// SetEnjinTextFn is the means for translating the site name, tag line and copyright components at runtime using a
