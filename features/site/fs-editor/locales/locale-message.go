@@ -34,9 +34,14 @@ type LocaleTranslation struct {
 }
 
 type LocaleMessage struct {
-	catalog.BaseMessage
-	Translation *LocaleTranslation `json:"translation"`
-	Shasum      string             `json:"shasum"`
+	ID                string               `json:"id"`
+	Key               string               `json:"key"`
+	Message           string               `json:"message"`
+	Translation       *LocaleTranslation   `json:"translation"`
+	TranslatorComment string               `json:"translatorComment,omitempty"`
+	Placeholders      catalog.Placeholders `json:"placeholders,omitempty"`
+	Fuzzy             bool                 `json:"fuzzy,omitempty"`
+	Shasum            string               `json:"shasum"`
 }
 
 func (l *LocaleMessage) Copy() (cloned *LocaleMessage) {
@@ -50,12 +55,17 @@ func (l *LocaleMessage) Copy() (cloned *LocaleMessage) {
 		maps.Copy(plural.Cases, l.Translation.Select.Cases)
 	}
 	cloned = &LocaleMessage{
-		Shasum:      l.Shasum,
-		BaseMessage: l.BaseMessage,
+		ID:      l.ID,
+		Key:     l.Key,
+		Message: l.Message,
 		Translation: &LocaleTranslation{
 			String: l.Translation.String,
 			Select: plural,
 		},
+		TranslatorComment: l.TranslatorComment,
+		Placeholders:      l.Placeholders[:],
+		Fuzzy:             l.Fuzzy,
+		Shasum:            l.Shasum,
 	}
 	return
 }
@@ -75,16 +85,14 @@ func ParseNewMessage(key, comment string) (m *LocaleMessage) {
 	}
 	shasum, _ := sha.DataHash10(key)
 	m = &LocaleMessage{
-		BaseMessage: catalog.BaseMessage{
-			ID:                labelled,
-			Key:               key,
-			Message:           replaced,
-			TranslatorComment: comment,
-			Fuzzy:             true,
-			Placeholders:      placeholders,
-		},
-		Shasum:      shasum,
-		Translation: &LocaleTranslation{String: replaced},
+		ID:                labelled,
+		Key:               key,
+		Message:           replaced,
+		Translation:       &LocaleTranslation{String: replaced},
+		TranslatorComment: comment,
+		Placeholders:      placeholders,
+		Fuzzy:             true,
+		Shasum:            shasum,
 	}
 	return
 }

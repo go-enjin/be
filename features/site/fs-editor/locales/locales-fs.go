@@ -95,7 +95,7 @@ func (f *CFeature) WriteLocales(ld *LocaleData, mountPoints feature.MountPoints)
 			}
 			for tag, gtd := range lookup {
 				var data []byte
-				if data, err = json.MarshalIndent(gtd, "", "\t"); err != nil {
+				if data, err = json.MarshalIndent(gtd, "", "    "); err != nil {
 					return
 				}
 				msgDst := prefix + tag.String() + "/messages.gotext.json"
@@ -128,7 +128,7 @@ func (f *CFeature) WriteDraftLocales(ld *LocaleData, mountPoints feature.MountPo
 			}
 			for tag, gtd := range lookup {
 				var data []byte
-				if data, err = json.MarshalIndent(gtd, "", "\t"); err != nil {
+				if data, err = json.MarshalIndent(gtd, "", "    "); err != nil {
 					return
 				}
 				destination := prefix + tag.String() + "/messages.gotext.json.~draft"
@@ -195,12 +195,17 @@ func (f *CFeature) ReadDraftLocales(fsid, code string, mountPoints feature.Mount
 				unique[shasum] = struct{}{}
 			}
 			ld.Data[shasum][tag] = &LocaleMessage{
-				BaseMessage: msg.BaseMessage,
+				ID:      msg.ID,
+				Key:     msg.Key,
+				Message: msg.Message,
 				Translation: &LocaleTranslation{
 					String: ConvertToPlaceholders(msg.Translation.String, msg.Placeholders),
 					Select: txSelect,
 				},
-				Shasum: shasum,
+				TranslatorComment: msg.TranslatorComment,
+				Placeholders:      msg.Placeholders[:],
+				Fuzzy:             msg.Fuzzy,
+				Shasum:            shasum,
 			}
 		}
 	}

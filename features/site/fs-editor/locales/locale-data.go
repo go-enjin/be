@@ -132,11 +132,16 @@ func (l *LocaleData) MakeGoTextData() (lookup map[language.Tag]*catalog.GoText) 
 				}
 			}
 			lookup[tag].Messages = append(lookup[tag].Messages, &catalog.Message{
-				BaseMessage: msg.BaseMessage,
+				ID:      msg.ID,
+				Key:     msg.Key,
+				Message: msg.Message,
 				Translation: &catalog.Translation{
 					String: msg.Translation.String,
 					Select: plural,
 				},
+				TranslatorComment: msg.TranslatorComment,
+				Placeholders:      msg.Placeholders[:],
+				Fuzzy:             msg.Fuzzy,
 			})
 		}
 	}
