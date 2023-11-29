@@ -18,6 +18,7 @@ package userbase
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -86,7 +87,7 @@ func (f *CFeature) getAuthUserUnsafe(eid string) (user *users.AuthUser, err erro
 func (f *CFeature) getUserUnsafe(eid string) (user *users.User, err error) {
 	var au *users.AuthUser
 	if au, err = f.getAuthUserUnsafe(eid); err != nil {
-		if err != os.ErrNotExist {
+		if !errors.Is(err, os.ErrNotExist) {
 			err = fmt.Errorf("error looking up auth user: %v - %v", eid, err)
 		}
 		return
@@ -95,7 +96,7 @@ func (f *CFeature) getUserUnsafe(eid string) (user *users.User, err error) {
 	if path, ok := f.getUserExistsUnsafe(eid); ok {
 		var pm *matter.PageMatter
 		if pm, err = f.ReadPageMatter(path); err != nil {
-			if err != os.ErrNotExist {
+			if !errors.Is(err, os.ErrNotExist) {
 				err = fmt.Errorf("error reading user page matter: %v - %v", path, err)
 			}
 			return
