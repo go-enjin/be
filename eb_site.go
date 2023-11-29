@@ -40,6 +40,11 @@ func (eb *EnjinBuilder) SiteCopyrightName(name string) feature.Builder {
 	return eb
 }
 
+func (eb *EnjinBuilder) SiteCopyrightYear(year string) feature.Builder {
+	eb.copyrightYear = year
+	return eb
+}
+
 func (eb *EnjinBuilder) SiteCopyrightNotice(notice string) feature.Builder {
 	eb.copyrightNotice = notice
 	return eb
