@@ -93,7 +93,7 @@ func (f *CFeature) RoutePage(w http.ResponseWriter, r *http.Request) {
 
 	// look for any page provider providing the requested page
 	for _, pp := range feature.FilterTyped[feature.PageProvider](f.Enjin.Features().List()) {
-		if pg := pp.FindPage(tag, path); pg != nil {
+		if pg := pp.FindPage(r, tag, path); pg != nil {
 			if err := f.Enjin.ServePage(pg, w, r); err == nil {
 				log.DebugRF(r, "enjin router served provided page: %v", pg.Url())
 				f.Enjin.Emit(signaling.SignalServePage, pp.Tag().String(), pg)
