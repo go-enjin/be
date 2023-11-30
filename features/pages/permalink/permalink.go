@@ -58,8 +58,12 @@ type CFeature struct {
 }
 
 func (f *CFeature) MakeFuncMap(ctx context.Context) (fm feature.FuncMap) {
+	r, _ := ctx.Get("R").(*http.Request)
 	fm = feature.FuncMap{
-		"_permalink": f._permalink,
+		"_permalink": func(v interface{}) (url string, err error) {
+			url, err = f._permalink(r, v)
+			return
+		},
 		"newPermalink": func() (permalink string) {
 			if id, err := uuid.NewV4(); err == nil {
 				permalink = id.String()
@@ -151,7 +155,7 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 				checkTags = append(checkTags, language.Und)
 
 				for _, checkTag := range checkTags {
-					if p := f.Enjin.FindPage(checkTag, permalinkPath); p != nil {
+					if p := f.Enjin.FindPage(r, checkTag, permalinkPath); p != nil {
 
 						var destination string
 						if p.Url() == "" || p.Url() == "." || p.Url() == "/" {
@@ -192,7 +196,7 @@ func (f *CFeature) _parsePath(path string) (permalink string, ok bool) {
 	return
 }
 
-func (f *CFeature) _permalink(input interface{}) (url string, err error) {
+func (f *CFeature) _permalink(r *http.Request, input interface{}) (url string, err error) {
 	var permalink uuid.UUID
 	if vs, ok := input.(string); ok {
 		if permalink, err = uuid.FromString(vs); err != nil {
@@ -208,7 +212,7 @@ func (f *CFeature) _permalink(input interface{}) (url string, err error) {
 		url = "/" + permalink.String()
 		for _, tag := range f.Enjin.SiteLocales() {
 			if f.Enjin.SiteSupportsLanguage(tag) {
-				if p := f.Enjin.FindPage(tag, url); p != nil {
+				if p := f.Enjin.FindPage(r, tag, url); p != nil {
 					url = p.Url() + "-" + p.PermalinkSha()
 					return
 				}
