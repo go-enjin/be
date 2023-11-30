@@ -25,7 +25,7 @@ require (
 	github.com/go-curses/cdk v0.5.16
 	github.com/go-curses/ctk v0.5.8
 	github.com/go-enjin/github-com-djherbis-times v0.0.0-20221101184323-aeef8854ee8a
-	github.com/go-enjin/github-com-go-pkgz-auth v0.0.0-20230521172445-0ec67c61435f
+	github.com/go-enjin/github-com-go-pkgz-auth v0.0.0-20231130234757-05a123ef82df
 	github.com/go-enjin/go-stdlib-text-scanner v0.0.0-20230802192426-4bb6f8536f19
 	github.com/go-enjin/golang-org-x-text v0.12.1-enjin.2
 	github.com/gofrs/uuid v4.4.0+incompatible
@@ -69,7 +69,7 @@ require (
 )
 
 require (
-	cloud.google.com/go/compute v1.14.0 // indirect
+	cloud.google.com/go/compute v1.20.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	github.com/GehirnInc/crypt v0.0.0-20200316065508-bb7000b8a962 // indirect
 	github.com/RoaringBitmap/roaring v1.2.3 // indirect
@@ -104,7 +104,7 @@ require (
 	github.com/go-curses/terminfo v1.0.0 // indirect
 	github.com/go-oauth2/oauth2/v4 v4.5.2 // indirect
 	github.com/go-pkgz/repeater v1.1.3 // indirect
-	github.com/go-pkgz/rest v1.17.0 // indirect
+	github.com/go-pkgz/rest v1.18.2 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
@@ -112,7 +112,7 @@ require (
 	github.com/golang/geo v0.0.0-20210211234256-740aa86cb551 // indirect
 	github.com/golang/glog v1.0.0 // indirect
 	github.com/golang/mock v1.6.0 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/pprof v0.0.0-20211214055906-6f57359322fd // indirect
 	github.com/google/uuid v1.1.2 // indirect
@@ -154,19 +154,19 @@ require (
 	github.com/stvp/go-udp-testing v0.0.0-20201019212854-469649b16807 // indirect
 	github.com/tdewolff/parse/v2 v2.7.6 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
-	github.com/xdg-go/scram v1.1.1 // indirect
-	github.com/xdg-go/stringprep v1.0.3 // indirect
+	github.com/xdg-go/scram v1.1.2 // indirect
+	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/yeqown/reedsolomon v1.0.0 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
-	go.etcd.io/bbolt v1.3.7 // indirect
-	go.mongodb.org/mongo-driver v1.11.6 // indirect
+	go.etcd.io/bbolt v1.3.8 // indirect
+	go.mongodb.org/mongo-driver v1.13.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.ngrok.com/muxado/v2 v2.0.0 // indirect
 	golang.org/x/crypto v0.16.0 // indirect
 	golang.org/x/exp v0.0.0-20230315142452-642cacee5cc0 // indirect
-	golang.org/x/image v0.7.0 // indirect
-	golang.org/x/oauth2 v0.6.0 // indirect
+	golang.org/x/image v0.14.0 // indirect
+	golang.org/x/oauth2 v0.15.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/term v0.15.0 // indirect
