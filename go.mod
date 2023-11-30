@@ -7,7 +7,7 @@ require (
 	github.com/Pramod-Devireddy/go-exprtk v1.1.0
 	github.com/Shopify/gomail v0.0.0-20220729171026-0784ece65e69
 	github.com/abbot/go-http-auth v0.4.0
-	github.com/alecthomas/participle/v2 v2.1.0
+	github.com/alecthomas/participle/v2 v2.1.1
 	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 	github.com/blevesearch/bleve/v2 v2.3.10
@@ -22,8 +22,8 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.3
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-chi/hostrouter v0.2.0
-	github.com/go-curses/cdk v0.5.15
-	github.com/go-curses/ctk v0.5.7
+	github.com/go-curses/cdk v0.5.16
+	github.com/go-curses/ctk v0.5.8
 	github.com/go-enjin/github-com-djherbis-times v0.0.0-20221101184323-aeef8854ee8a
 	github.com/go-enjin/github-com-go-pkgz-auth v0.0.0-20230521172445-0ec67c61435f
 	github.com/go-enjin/go-stdlib-text-scanner v0.0.0-20230802192426-4bb6f8536f19
@@ -47,7 +47,7 @@ require (
 	github.com/samber/lo v1.38.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spkg/zipfs v0.7.1
-	github.com/tdewolff/minify/v2 v2.20.7
+	github.com/tdewolff/minify/v2 v2.20.8
 	github.com/tg123/go-htpasswd v1.2.1
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
@@ -58,7 +58,7 @@ require (
 	github.com/yookoala/realpath v1.0.0
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
 	golang.ngrok.com/ngrok v1.6.0
-	golang.ngrok.com/ngrok/log/logrus v0.0.0-20231128183016-03a24d0b6d57
+	golang.ngrok.com/ngrok/log/logrus v0.0.0-20231130201155-52d1658aa7d9
 	golang.org/x/net v0.19.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/datatypes v1.2.0
@@ -94,7 +94,7 @@ require (
 	github.com/blevesearch/zapx/v15 v15.3.13 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
-	github.com/creack/pty v1.1.18 // indirect
+	github.com/creack/pty v1.1.21 // indirect
 	github.com/dghubble/oauth1 v0.7.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/felixge/fgprof v0.9.3 // indirect
@@ -123,7 +123,7 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgx/v5 v5.4.3 // indirect
-	github.com/jackdoe/go-gpmctl v0.0.0-20200317085308-34b4a75160c2 // indirect
+	github.com/jackdoe/go-gpmctl v0.0.0-20221007100923-dc00b863cb22 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/jpillora/backoff v1.0.0 // indirect
@@ -133,7 +133,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
-	github.com/mattn/go-runewidth v0.0.13 // indirect
+	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
@@ -151,9 +151,8 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.6.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/smartystreets/assertions v1.13.0 // indirect
 	github.com/stvp/go-udp-testing v0.0.0-20201019212854-469649b16807 // indirect
-	github.com/tdewolff/parse/v2 v2.7.5 // indirect
+	github.com/tdewolff/parse/v2 v2.7.6 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect
