@@ -292,6 +292,13 @@ func (c Context) DefaultStrings(key string, def []string) []string {
 	return def
 }
 
+func (c Context) Slice(key string) (list []interface{}, ok bool) {
+	if v := c.Get(key); v != nil {
+		list, ok = v.([]interface{})
+	}
+	return
+}
+
 func (c Context) Bool(key string, def bool) bool {
 	if v := c.Get(key); v != nil {
 		if b, ok := v.(bool); ok {
