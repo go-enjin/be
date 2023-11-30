@@ -56,6 +56,6 @@ func (f *CFeature) opAdminLockUser(form context.Context, r *http.Request) {
 		return
 	}
 
-	f.Site().PushInfoNotice(eid, true, printer.Sprintf(`The has been blocked from accessing the site.`))
+	f.Site().PushInfoNotice(eid, true, printer.Sprintf(`The user has been blocked from accessing the site.`))
 	return
 }
