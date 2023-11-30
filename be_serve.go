@@ -117,7 +117,7 @@ func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Reque
 	reqLangTag := lang.GetTag(r)
 
 	if path, ok := e.eb.statusPages[status]; ok {
-		if pg := e.FindPage(reqLangTag, path); pg != nil {
+		if pg := e.FindPage(r, reqLangTag, path); pg != nil {
 			pg.Context().SetSpecific(argv.RequestIgnoredKey, true)
 			if err := e.ServePage(pg, w, r); err != nil {
 				log.ErrorRDF(r, 1, "enjin error serving %v (found) page: %v - %v", status, path, err)

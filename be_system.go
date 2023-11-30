@@ -211,9 +211,9 @@ func (e *Enjin) FindFile(path string) (data []byte, mime string, err error) {
 	return
 }
 
-func (e *Enjin) FindPage(tag language.Tag, url string) (p feature.Page) {
+func (e *Enjin) FindPage(r *http.Request, tag language.Tag, url string) (p feature.Page) {
 	for _, provider := range e.eb.fPageProviders {
-		if p = provider.FindPage(tag, url); p != nil {
+		if p = provider.FindPage(r, tag, url); p != nil {
 			return
 		}
 	}
