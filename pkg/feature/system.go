@@ -52,7 +52,7 @@ type EnjinBase interface {
 
 	FindTranslations(url string) (pages Pages)
 	FindTranslationUrls(url string) (pages map[language.Tag]string)
-	FindPage(tag language.Tag, url string) (p Page)
+	FindPage(r *http.Request, tag language.Tag, url string) (p Page)
 	FindPages(prefix string) (pages []Page)
 }
 
@@ -107,7 +107,7 @@ type Service interface {
 	CheckSelectQL(query string) (selected map[string]interface{}, err error)
 
 	FindPageStub(shasum string) (stub *PageStub)
-	FindPage(tag language.Tag, url string) (p Page)
+	FindPage(r *http.Request, tag language.Tag, url string) (p Page)
 	FindFile(path string) (data []byte, mime string, err error)
 
 	FindEmailAccount(account string) (emailSender EmailSender)
