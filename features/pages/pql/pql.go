@@ -18,6 +18,7 @@ package pql
 
 import (
 	"errors"
+	"net/http"
 	"os"
 	"strings"
 
@@ -402,21 +403,19 @@ func (f *CFeature) FindTranslationUrls(url string) (pages map[language.Tag]strin
 	return
 }
 
-func (f *CFeature) FindPage(tag language.Tag, url string) (pg feature.Page) {
+func (f *CFeature) FindPage(r *http.Request, tag language.Tag, url string) (p feature.Page) {
 	//f.RLock()
 	//defer f.RUnlock()
-
+	var err error
 	url = bePath.CleanWithSlash(url)
 
 	if tag == language.Und {
-		if p, e := f.Lookup(f.Enjin.SiteDefaultLanguage(), url); e == nil {
-			pg = p
+		if p, err = f.Lookup(f.Enjin.SiteDefaultLanguage(), url); err == nil {
 			return
 		}
 	}
 
-	if p, e := f.Lookup(tag, url); e == nil {
-		pg = p
+	if p, err = f.Lookup(tag, url); err == nil {
 		return
 	}
 	return
