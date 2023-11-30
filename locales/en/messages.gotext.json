@@ -4092,18 +4092,18 @@
             "fuzzy": true
         },
         {
-            "id": "The has been blocked from accessing the site.",
-            "key": "The has been blocked from accessing the site.",
-            "message": "The has been blocked from accessing the site.",
-            "translation": "The has been blocked from accessing the site.",
+            "id": "The user has been blocked from accessing the site.",
+            "key": "The user has been blocked from accessing the site.",
+            "message": "The user has been blocked from accessing the site.",
+            "translation": "The user has been blocked from accessing the site.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "The has been unblocked from accessing the site.",
-            "key": "The has been unblocked from accessing the site.",
-            "message": "The has been unblocked from accessing the site.",
-            "translation": "The has been unblocked from accessing the site.",
+            "id": "The user has been unblocked from accessing the site.",
+            "key": "The user has been unblocked from accessing the site.",
+            "message": "The user has been unblocked from accessing the site.",
+            "translation": "The user has been unblocked from accessing the site.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
