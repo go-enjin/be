@@ -18,6 +18,7 @@ package lang
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/urfave/cli/v2"
 
@@ -137,6 +138,7 @@ func (f *CFeature) makeUnderscore(ctx beContext.Context) interface{} {
 
 func (f *CFeature) makeUnderscoreUnderscore(ctx beContext.Context) interface{} {
 	return func(argv ...string) (translated string, err error) {
+		r, _ := ctx.Get("R").(*http.Request)
 		targetLang, _ := ctx.Get("ReqLangTag").(language.Tag)
 		var targetPath, fallbackPath string
 
@@ -175,7 +177,7 @@ func (f *CFeature) makeUnderscoreUnderscore(ctx beContext.Context) interface{} {
 		}
 
 		var targetPage feature.Page
-		if targetPage = f.Enjin.FindPage(targetLang, targetPath); targetPage == nil {
+		if targetPage = f.Enjin.FindPage(r, targetLang, targetPath); targetPage == nil {
 			if found := f.Enjin.FindTranslations(targetPath); len(found) > 0 {
 				for _, pg := range found {
 					if pg.IsTranslation(targetPath) {
@@ -184,17 +186,17 @@ func (f *CFeature) makeUnderscoreUnderscore(ctx beContext.Context) interface{} {
 							break
 						}
 					} else {
-						targetPage = f.Enjin.FindPage(targetLang, pg.Translates())
+						targetPage = f.Enjin.FindPage(r, targetLang, pg.Translates())
 						break
 					}
 				}
 			}
 
 			if targetPage == nil {
-				if targetPage = f.Enjin.FindPage(language.Und, targetPath); targetPage == nil {
+				if targetPage = f.Enjin.FindPage(r, language.Und, targetPath); targetPage == nil {
 					if fallbackPath != "" {
-						if targetPage = f.Enjin.FindPage(targetLang, fallbackPath); targetPage == nil {
-							if targetPage = f.Enjin.FindPage(language.Und, fallbackPath); targetPage == nil {
+						if targetPage = f.Enjin.FindPage(r, targetLang, fallbackPath); targetPage == nil {
+							if targetPage = f.Enjin.FindPage(r, language.Und, fallbackPath); targetPage == nil {
 								log.DebugF("__%v error: page not found, fallback not found, returning fallback", argv)
 								translated = fallbackPath
 								return
