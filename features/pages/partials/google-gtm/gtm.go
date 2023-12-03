@@ -179,7 +179,8 @@ func (f *CFeature) ModifyContentSecurityPolicy(policy csp.Policy, r *http.Reques
 	gtmNonce, _ := f.Enjin.ContentSecurityPolicy().GetRequestNonce(DefaultGtmNonceTag, r)
 	modified = policy.
 		Add(csp.NewImgSrc(csp.NewHostSource(DefaultGtmDomain))).
+		Add(csp.NewFrameSrc(csp.NewHostSource("https://" + DefaultGtmDomain))).
 		Add(csp.NewScriptSrc(csp.NewNonceSource(gtmNonce), csp.NewHostSource(DefaultGtmDomain))).
-		Add(csp.NewConnectSrc(csp.NewHostSource("https://www.google-analytics.com")))
+		Add(csp.NewConnectSrc(csp.NewHostSource("https://" + DefaultGaDomain)))
 	return
 }
