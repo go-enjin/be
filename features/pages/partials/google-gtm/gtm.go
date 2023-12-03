@@ -55,6 +55,9 @@ type Feature interface {
 }
 
 type MakeFeature interface {
+	SetGtmId(id string) MakeFeature
+	SetUseGA4(enabled bool) MakeFeature
+
 	Make() Feature
 }
 
@@ -62,6 +65,7 @@ type CFeature struct {
 	feature.CFeature
 
 	googleGtmId string
+	googleIsGA4 bool
 }
 
 func New() MakeFeature {
@@ -81,6 +85,16 @@ func (f *CFeature) Init(this interface{}) {
 }
 
 func (f *CFeature) Make() Feature {
+	return f
+}
+
+func (f *CFeature) SetGtmId(id string) MakeFeature {
+	f.googleGtmId = id
+	return f
+}
+
+func (f *CFeature) SetUseGA4(enabled bool) MakeFeature {
+	f.googleIsGA4 = enabled
 	return f
 }
 
