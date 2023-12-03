@@ -130,6 +130,10 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		f.googleGtmId = v
 		log.DebugF("using google-gtm-id: %v", f.googleGtmId)
 	}
+	if ctx.IsSet("google-gtm-use-gtag-js") {
+		f.googleIsGA4 = ctx.Bool("google-gtm-use-gtag-js")
+		log.DebugF("using google-gtm-use-gtag-js: %v", f.googleIsGA4)
+	}
 	return
 }
 
