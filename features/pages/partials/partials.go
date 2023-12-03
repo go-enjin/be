@@ -158,7 +158,7 @@ func (f *CFeature) GetTemplatePartial(block, position, name string) (tmpl string
 
 func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 	fm = feature.FuncMap{
-		"featurePartials": func(block, position string) (output string) {
+		"featurePartials": func(block, position string) (output htmlTemplate.HTML) {
 			block = strcase.ToKebab(block)
 			position = strcase.ToKebab(position)
 			baseName := block + "-" + position + "_"
@@ -174,7 +174,7 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 					if err = tt.Execute(&buf, ctx); err != nil {
 						log.ErrorF("error executing feature partials template: %v - %v", name, err)
 					} else {
-						output += buf.String()
+						output += htmlTemplate.HTML(buf.String())
 					}
 				}
 
