@@ -117,16 +117,16 @@ func (f *CFeature) makeUnderscore(ctx beContext.Context) interface{} {
 		var ok bool
 		untranslated := fmt.Sprintf(format, argv...)
 		if translated, ok = cache[untranslated]; ok {
-			log.DebugF("template underscore cached hit: \"%v\" -> \"%v\"", format, translated)
+			//log.DebugF("template underscore cached hit: \"%v\" -> \"%v\"", format, translated)
 			return
 		}
 		if printer, ok := ctx.Get(lang.PrinterKey).(*message.Printer); ok && printer != nil {
 			translated = printer.Sprintf(format, argv...)
 			cache[untranslated] = translated
 			if untranslated != translated {
-				log.DebugF("template underscore translated: \"%v\" -> \"%v\"", format, translated)
+				log.TraceF("template underscore translated: \"%v\" -> \"%v\"", format, translated)
 			} else {
-				log.DebugF("template underscore defaulting: \"%v\" -> \"%v\"", format, translated)
+				log.TraceF("template underscore defaulting: \"%v\" -> \"%v\"", format, translated)
 			}
 		} else {
 			log.TraceF("template underscore language printer not found, using fmt.Sprintf")
@@ -197,13 +197,13 @@ func (f *CFeature) makeUnderscoreUnderscore(ctx beContext.Context) interface{} {
 					if fallbackPath != "" {
 						if targetPage = f.Enjin.FindPage(r, targetLang, fallbackPath); targetPage == nil {
 							if targetPage = f.Enjin.FindPage(r, language.Und, fallbackPath); targetPage == nil {
-								log.DebugF("__%v error: page not found, fallback not found, returning fallback", argv)
+								log.TraceF("__%v error: page not found, fallback not found, returning fallback", argv)
 								translated = fallbackPath
 								return
 							}
 						}
 					} else {
-						log.DebugF("__%v error: page not found, fallback not given, returning target", argv)
+						log.TraceF("__%v error: page not found, fallback not given, returning target", argv)
 						translated = targetPath
 						return
 					}
