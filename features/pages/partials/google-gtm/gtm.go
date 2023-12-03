@@ -106,6 +106,12 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 			EnvVars:  b.MakeEnvKeys("GOOGLE_GTM_ID"),
 			Category: f.Tag().String(),
 		},
+		&cli.BoolFlag{
+			Name:     "google-gtm-use-gtag-js",
+			Usage:    "use the gtag.js script instead of the default script+noscript",
+			EnvVars:  b.MakeEnvKeys("GOOGLE_GTM_USE_GTAG_JS"),
+			Category: f.Tag().String(),
+		},
 	)
 	_ = b.RegisterTemplatePartial("head", "tail", "gtm-script", HeadTailTmpl)
 	_ = b.RegisterTemplatePartial("head", "tail", "gtm-noscript", BodyHeadTmpl)
