@@ -146,7 +146,7 @@ func (f *CFeature) GetGoogleGtmId(ctx context.Context) (gtmCode string) {
 	if ctx != nil {
 		ctxGtmCode = ctx.String("GoogleTagManagerId", "")
 	}
-	if gtmCode != "" {
+	if ctxGtmCode != "" {
 		// front-matter override
 		gtmCode = ctxGtmCode
 	} else if f.googleGtmId != "" {
