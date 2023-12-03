@@ -166,11 +166,11 @@ func (f *CFeature) RewriteRequest(w http.ResponseWriter, r *http.Request) (modif
 
 func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.Request) (themeOut context.Context) {
 	themeOut = themeCtx
-	gtmCode := f.GetGoogleGtmId(pageCtx)
-	if gtmCode != "" {
+	if gtmCode := f.GetGoogleGtmId(pageCtx); gtmCode != "" {
 		gtmNonce, _ := f.Enjin.ContentSecurityPolicy().GetRequestNonce(DefaultGtmNonceTag, r)
 		themeOut.SetSpecific("GoogleTagManagerContainerId", gtmCode)
 		themeOut.SetSpecific("GoogleTagManagerScriptNonce", gtmNonce)
+		themeOut.SetSpecific("GoogleTagManagerUseGtagJs", f.googleIsGA4)
 	}
 	return
 }
