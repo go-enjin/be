@@ -29,12 +29,13 @@ import (
 )
 
 var (
+	DefaultGaDomain    = "www.google-analytics.com"
 	DefaultGtmDomain   = "www.googletagmanager.com"
 	DefaultGtmNonceTag = "google-tag-manager"
 )
 
-//go:embed gtm-head-tail.tmpl
-var HeadTailTmpl string
+//go:embed gtm-head-head.tmpl
+var HeadHeadTmpl string
 
 //go:embed gtm-body-head.tmpl
 var BodyHeadTmpl string
