@@ -113,8 +113,8 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 			Category: f.Tag().String(),
 		},
 	)
-	_ = b.RegisterTemplatePartial("head", "tail", "gtm-script", HeadTailTmpl)
-	_ = b.RegisterTemplatePartial("head", "tail", "gtm-noscript", BodyHeadTmpl)
+	_ = b.RegisterTemplatePartial("head", "head", "gtm-head-script", HeadHeadTmpl)
+	_ = b.RegisterTemplatePartial("body", "head", "gtm-body-script", BodyHeadTmpl)
 	return
 }
 
