@@ -18,7 +18,6 @@ package gtm
 
 import (
 	_ "embed"
-	"html/template"
 	"net/http"
 
 	"github.com/urfave/cli/v2"
@@ -49,7 +48,6 @@ var (
 
 type Feature interface {
 	feature.Feature
-	feature.FuncMapProvider
 	feature.RequestRewriter
 	feature.PageContextModifier
 	feature.ContentSecurityPolicyModifier
@@ -118,14 +116,6 @@ func (f *CFeature) Shutdown() {
 
 }
 
-func (f *CFeature) MakeFuncMap(ctx context.Context) (fm feature.FuncMap) {
-	fm = feature.FuncMap{
-		"gtmNoScriptTag":   f.GtmNoScriptTagFn,
-		"gtmHeadScriptTag": f.GtmHeadScriptTagFn,
-	}
-	return
-}
-
 func (f *CFeature) GetGoogleGtmId(ctx context.Context) (gtmCode string) {
 	var ctxGtmCode string
 	if ctx != nil {
@@ -166,27 +156,5 @@ func (f *CFeature) ModifyContentSecurityPolicy(policy csp.Policy, r *http.Reques
 		Add(csp.NewImgSrc(csp.NewHostSource(DefaultGtmDomain))).
 		Add(csp.NewScriptSrc(csp.NewNonceSource(gtmNonce), csp.NewHostSource(DefaultGtmDomain))).
 		Add(csp.NewConnectSrc(csp.NewHostSource("https://www.google-analytics.com")))
-	return
-}
-
-func (f *CFeature) GtmHeadScriptTagFn(gtmCode, gtmNonce string) (embed template.HTML) {
-	if gtmCode != "" {
-		embed = template.HTML(`<!-- Google Tag Manager -->
-<script nonce="` + gtmNonce + `">(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','` + gtmCode + `');</script>
-<!-- End Google Tag Manager -->`)
-		return
-	}
-	return
-}
-
-func (f *CFeature) GtmNoScriptTagFn(gtmCode string) (embed template.HTML) {
-	embed = template.HTML(`<!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=` + gtmCode + `"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->`)
 	return
 }
