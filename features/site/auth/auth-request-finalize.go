@@ -71,6 +71,7 @@ func (f *CFeature) FinalizeSiteRequest(w http.ResponseWriter, r *http.Request) (
 		Path:     f.Site().SitePath(),
 		Secure:   f.secureCookies,
 		HttpOnly: true,
+		SameSite: f.sameSiteCookies,
 	}
 	cookie.Expires = time.Now().Add(f.sessionDuration)
 

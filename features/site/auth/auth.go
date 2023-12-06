@@ -68,7 +68,9 @@ type MakeFeature interface {
 	SetXsrfHeaderName(headerName string) MakeFeature
 	SetXsrfCookieName(cookieName string) MakeFeature
 	SetJwtCookieName(cookieName string) MakeFeature
+
 	SetSecureCookies(secure bool) MakeFeature
+	SetSameSiteCookies(sameSite http.SameSite) MakeFeature
 
 	SetSessionDuration(duration time.Duration) MakeFeature
 	SetVerifiedDuration(duration time.Duration) MakeFeature
@@ -100,7 +102,9 @@ type CFeature struct {
 	secretKeys   map[string][]byte
 	audienceKeys map[string][]byte
 
-	secureCookies  bool
+	secureCookies   bool
+	sameSiteCookies http.SameSite
+
 	jwtCookieName  string
 	xsrfCookieName string
 	xsrfHeaderName string
@@ -165,6 +169,8 @@ func (f *CFeature) Init(this interface{}) {
 	f.verifiedDuration = DefaultVerifiedDuration
 	f.secretKeys = make(map[string][]byte)
 	f.audienceKeys = make(map[string][]byte)
+	f.secureCookies = false
+	f.sameSiteCookies = http.SameSiteStrictMode
 	return
 }
 
@@ -248,6 +254,11 @@ func (f *CFeature) SetJwtCookieName(cookieName string) MakeFeature {
 
 func (f *CFeature) SetSecureCookies(secure bool) MakeFeature {
 	f.secureCookies = secure
+	return f
+}
+
+func (f *CFeature) SetSameSiteCookies(sameSite http.SameSite) MakeFeature {
+	f.sameSiteCookies = sameSite
 	return f
 }
 
