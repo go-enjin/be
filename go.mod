@@ -44,12 +44,12 @@ require (
 	github.com/pkg/profile v1.7.0
 	github.com/polds/logrus-papertrail-hook v0.0.0-20180214143432-bcfe7b72c1a4
 	github.com/puzpuzpuz/xsync/v2 v2.5.1
-	github.com/samber/lo v1.38.1
+	github.com/samber/lo v1.39.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spkg/zipfs v0.7.1
-	github.com/tdewolff/minify/v2 v2.20.8
+	github.com/tdewolff/minify/v2 v2.20.9
 	github.com/tg123/go-htpasswd v1.2.1
-	github.com/urfave/cli/v2 v2.25.7
+	github.com/urfave/cli/v2 v2.26.0
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	github.com/xlzd/gotp v0.1.0
 	github.com/yeqown/go-qrcode/v2 v2.2.2
@@ -57,8 +57,8 @@ require (
 	github.com/yookoala/gofast v0.7.0
 	github.com/yookoala/realpath v1.0.0
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
-	golang.ngrok.com/ngrok v1.6.0
-	golang.ngrok.com/ngrok/log/logrus v0.0.0-20231130201155-52d1658aa7d9
+	golang.ngrok.com/ngrok v1.7.0
+	golang.ngrok.com/ngrok/log/logrus v0.0.0-20231201153607-267516f8afa6
 	golang.org/x/net v0.19.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/datatypes v1.2.0
