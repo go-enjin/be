@@ -327,64 +327,77 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 
 	category := f.Tag().Kebab()
 
-	secretKeyFlag, sessionDurationFlag, xsrfHeaderNameFlag, xsrfCookieNameFlag, jwtCookieNameFlag,
-		secureCookiesFlag, allowSignupsFlag, allowEmailsFlag, denyEmailsFlag := f.makeFlagNames()
+	fns := f.makeFlagNames()
 
 	b.AddFlags(
 		&cli.StringFlag{
-			Name:     secretKeyFlag,
+			Name:     fns.secretKey,
 			Usage:    "specify the default audience secret key",
-			EnvVars:  b.MakeEnvKeys(secretKeyFlag),
+			EnvVars:  b.MakeEnvKeys(fns.secretKey),
 			Category: category,
 		},
 		&cli.Int64Flag{
-			Name:     sessionDurationFlag,
+			Name:     fns.sessionDuration,
 			Usage:    "specify the session duration",
 			Value:    int64(f.sessionDuration.Seconds()),
-			EnvVars:  b.MakeEnvKeys(sessionDurationFlag),
+			EnvVars:  b.MakeEnvKeys(fns.sessionDuration),
 			Category: category,
 		},
 		&cli.StringFlag{
-			Name:     xsrfHeaderNameFlag,
+			Name:     fns.xsrfHeaderName,
 			Usage:    "specify the name of the XSRF header key (omit to disable XSRF)",
-			EnvVars:  b.MakeEnvKeys(xsrfHeaderNameFlag),
+			EnvVars:  b.MakeEnvKeys(fns.xsrfHeaderName),
 			Category: category,
 		},
 		&cli.StringFlag{
-			Name:     xsrfCookieNameFlag,
+			Name:     fns.xsrfCookieName,
 			Usage:    "specify the name of the XSRF cookie",
-			EnvVars:  b.MakeEnvKeys(xsrfCookieNameFlag),
+			EnvVars:  b.MakeEnvKeys(fns.xsrfCookieName),
 			Category: category,
 		},
 		&cli.StringFlag{
-			Name:     jwtCookieNameFlag,
+			Name:     fns.jwtCookieName,
 			Usage:    "specify the name of the JWT cookie",
-			EnvVars:  b.MakeEnvKeys(jwtCookieNameFlag),
+			EnvVars:  b.MakeEnvKeys(fns.jwtCookieName),
 			Category: category,
 		},
 		&cli.BoolFlag{
-			Name:     secureCookiesFlag,
+			Name:     fns.secureCookies,
 			Usage:    "set the secure flag on all cookies",
-			EnvVars:  b.MakeEnvKeys(secureCookiesFlag),
+			EnvVars:  b.MakeEnvKeys(fns.secureCookies),
 			Category: category,
 		},
 		&cli.BoolFlag{
-			Name:     allowSignupsFlag,
+			Name:     fns.allowSignups,
 			Usage:    "enable public signups",
-			EnvVars:  b.MakeEnvKeys(allowSignupsFlag),
+			EnvVars:  b.MakeEnvKeys(fns.allowSignups),
 			Category: category,
 		},
 		&cli.StringSliceFlag{
-			Name:     allowEmailsFlag,
+			Name:     fns.allowEmails,
 			Usage:    "specify emails allowed to signup when public signups are disabled",
-			EnvVars:  b.MakeEnvKeys(allowEmailsFlag),
+			EnvVars:  b.MakeEnvKeys(fns.allowEmails),
 			Category: category,
 		},
 		&cli.StringSliceFlag{
-			Name:     denyEmailsFlag,
+			Name:     fns.denyEmails,
 			Usage:    "specify emails denied from the site",
-			EnvVars:  b.MakeEnvKeys(denyEmailsFlag),
+			EnvVars:  b.MakeEnvKeys(fns.denyEmails),
 			Category: category,
+		},
+		&cli.StringFlag{
+			Name:     fns.signInPath,
+			Usage:    "specify the sign-in sub-path",
+			EnvVars:  b.MakeEnvKeys(fns.signInPath),
+			Category: category,
+			Value:    f.signInPath,
+		},
+		&cli.StringFlag{
+			Name:     fns.signOutPath,
+			Usage:    "specify the sign-out sub-path",
+			EnvVars:  b.MakeEnvKeys(fns.signOutPath),
+			Category: category,
+			Value:    f.signOutPath,
 		},
 	)
 	return
@@ -414,32 +427,31 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 	f.mfb.StartupSiteIncluding(f.Enjin)
 
-	secretKeyFlag, sessionDurationFlag, xsrfHeaderNameFlag, xsrfCookieNameFlag, jwtCookieNameFlag,
-		secureCookiesFlag, allowSignupsFlag, allowEmailsFlag, denyEmailsFlag := f.makeFlagNames()
+	fns := f.makeFlagNames()
 
-	if ctx.IsSet(allowSignupsFlag) {
-		f.SetUserSignups(ctx.Bool(allowSignupsFlag))
+	if ctx.IsSet(fns.allowSignups) {
+		f.SetUserSignups(ctx.Bool(fns.allowSignups))
 	}
-	if ctx.IsSet(allowEmailsFlag) {
-		if emails := ctx.StringSlice(allowEmailsFlag); len(emails) > 0 {
+	if ctx.IsSet(fns.allowEmails) {
+		if emails := ctx.StringSlice(fns.allowEmails); len(emails) > 0 {
 			f.AllowSignupsFrom(emails...)
 		}
 	}
-	if ctx.IsSet(denyEmailsFlag) {
-		if emails := ctx.StringSlice(denyEmailsFlag); len(emails) > 0 {
+	if ctx.IsSet(fns.denyEmails) {
+		if emails := ctx.StringSlice(fns.denyEmails); len(emails) > 0 {
 			f.DenySignupsFrom(emails...)
 		}
 	}
 
-	if ctx.IsSet(secretKeyFlag) {
-		if v := ctx.String(secretKeyFlag); v != "" {
+	if ctx.IsSet(fns.secretKey) {
+		if v := ctx.String(fns.secretKey); v != "" {
 			f.audienceKeys[DefaultAudience] = []byte(v)
 		} else {
-			err = fmt.Errorf("--%s value cannot be empty", secretKeyFlag)
+			err = fmt.Errorf("--%s value cannot be empty", fns.secretKey)
 			return
 		}
 	} else {
-		err = fmt.Errorf("--%s is required", secretKeyFlag)
+		err = fmt.Errorf("--%s is required", fns.secretKey)
 		return
 	}
 
@@ -450,8 +462,8 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		}
 	}
 
-	if ctx.IsSet(sessionDurationFlag) {
-		if v := ctx.Int64(sessionDurationFlag); v > 0 {
+	if ctx.IsSet(fns.sessionDuration) {
+		if v := ctx.Int64(fns.sessionDuration); v > 0 {
 			f.sessionDuration = time.Second * time.Duration(v)
 		}
 	}
@@ -460,20 +472,28 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
-	if ctx.IsSet(xsrfHeaderNameFlag) {
-		f.xsrfHeaderName = http.CanonicalHeaderKey(ctx.String(xsrfHeaderNameFlag))
+	if ctx.IsSet(fns.xsrfHeaderName) {
+		f.xsrfHeaderName = http.CanonicalHeaderKey(ctx.String(fns.xsrfHeaderName))
 	}
 
-	if ctx.IsSet(xsrfCookieNameFlag) {
-		f.xsrfCookieName = strcase.ToSnake(ctx.String(ctx.String(xsrfCookieNameFlag)))
+	if ctx.IsSet(fns.xsrfCookieName) {
+		f.xsrfCookieName = strcase.ToSnake(ctx.String(ctx.String(fns.xsrfCookieName)))
 	}
 
-	if ctx.IsSet(jwtCookieNameFlag) {
-		f.jwtCookieName = ctx.String(jwtCookieNameFlag)
+	if ctx.IsSet(fns.jwtCookieName) {
+		f.jwtCookieName = ctx.String(fns.jwtCookieName)
 	}
 
-	if ctx.IsSet(secureCookiesFlag) {
-		f.secureCookies = ctx.Bool(secureCookiesFlag)
+	if ctx.IsSet(fns.secureCookies) {
+		f.secureCookies = ctx.Bool(fns.secureCookies)
+	}
+
+	if ctx.IsSet(fns.signInPath) {
+		f.signInPath = ctx.String(fns.signInPath)
+	}
+
+	if ctx.IsSet(fns.signOutPath) {
+		f.signOutPath = ctx.String(fns.signOutPath)
 	}
 
 	return
@@ -686,17 +706,36 @@ func (f *CFeature) ResetUserFactors(r *http.Request, eid string) (err error) {
 	return
 }
 
-func (f *CFeature) makeFlagNames() (secretKeyFlag, sessionDurationFlag, xsrfHeaderName, xsrfCookieName,
-	jwtCookieName, secureCookies, allowSignups, allowEmails, denyEmails string) {
+type flagNames struct {
+	category        string
+	secretKey       string
+	sessionDuration string
+	xsrfHeaderName  string
+	xsrfCookieName  string
+	jwtCookieName   string
+	secureCookies   string
+	allowSignups    string
+	allowEmails     string
+	denyEmails      string
+	signInPath      string
+	signOutPath     string
+}
+
+func (f *CFeature) makeFlagNames() (fn flagNames) {
 	category := f.Tag().Kebab()
-	secretKeyFlag = category + "-secret-key"
-	sessionDurationFlag = category + "-session-duration"
-	xsrfHeaderName = category + "-xsrf-header-name"
-	xsrfCookieName = category + "-xsrf-cookie-name"
-	jwtCookieName = category + "-jwt-cookie-name"
-	secureCookies = category + "-secure-cookies"
-	allowSignups = category + "-allow-signups"
-	allowEmails = category + "-allow-emails"
-	denyEmails = category + "-deny-emails"
+	return flagNames{
+		category:        category,
+		secretKey:       category + "-secret-key",
+		sessionDuration: category + "-session-duration",
+		xsrfHeaderName:  category + "-xsrf-header-name",
+		xsrfCookieName:  category + "-xsrf-cookie-name",
+		jwtCookieName:   category + "-jwt-cookie-name",
+		secureCookies:   category + "-secure-cookies",
+		allowSignups:    category + "-allow-signups",
+		allowEmails:     category + "-allow-emails",
+		denyEmails:      category + "-deny-emails",
+		signInPath:      category + "-sign-in-path",
+		signOutPath:     category + "-sign-out-path",
+	}
 	return
 }
