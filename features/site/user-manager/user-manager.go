@@ -96,7 +96,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) etupSiteFeature(s feature.Site) (err error) {
+func (f *CFeature) SetupSiteFeature(s feature.Site) (err error) {
 	if err = f.CSiteFeature.SetupSiteFeature(s); err != nil {
 		return
 	}
