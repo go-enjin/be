@@ -76,6 +76,6 @@ func (f *CFeature) FinalizeSiteRequest(w http.ResponseWriter, r *http.Request) (
 	cookie.Expires = time.Now().Add(f.sessionDuration)
 
 	http.SetCookie(w, cookie)
-
+	m = r
 	return
 }
