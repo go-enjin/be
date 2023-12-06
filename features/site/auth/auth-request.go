@@ -22,7 +22,6 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
@@ -45,7 +44,7 @@ func (f *CFeature) AuthenticateSiteRequest(w http.ResponseWriter, r *http.Reques
 			f.HandleSignInPage(w, r)
 			return
 		}
-		log.ErrorRF(r, "error verifying JWT and is not the sign-in page: %v", err)
+		//log.ErrorRF(r, "error verifying JWT and is not the sign-in page: %v", err)
 		f.deleteCookie(w, f.jwtCookieName)
 		f.Enjin.ServeNotFound(w, r)
 		handled = true
