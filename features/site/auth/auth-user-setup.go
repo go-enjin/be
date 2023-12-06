@@ -171,7 +171,6 @@ func (f *CFeature) enforceUserSetupStages(claims *feature.CSiteAuthClaims, w htt
 					return
 				}
 				handled = true
-				//r = addSummaryNotice(r)
 				mfp.SiteUserSetupStageHandler(f, w, r)
 				return
 			}
@@ -190,7 +189,6 @@ func (f *CFeature) enforceUserSetupStages(claims *feature.CSiteAuthClaims, w htt
 		sab := f.sab.Features.Get(tag)
 		if handled = !sab.SiteUserSetupStageReady(claims.EID, r); handled {
 			// add notice with progress
-			//sab.SiteUserSetupStageHandler(f, w, addSummaryNotice(r))
 			sab.SiteUserSetupStageHandler(f, w, r)
 			return
 		}
@@ -201,7 +199,6 @@ func (f *CFeature) enforceUserSetupStages(claims *feature.CSiteAuthClaims, w htt
 		mfb := f.mfb.Features.Get(tag)
 		if handled = !mfb.SiteUserSetupStageReady(claims.EID, r); handled {
 			// add notice with progress
-			//mfb.SiteUserSetupStageHandler(f, w, addSummaryNotice(r))
 			mfb.SiteUserSetupStageHandler(f, w, r)
 			return
 		}
@@ -217,11 +214,9 @@ func (f *CFeature) enforceUserSetupStages(claims *feature.CSiteAuthClaims, w htt
 		// the number of required factors is the same as the total number of multifactor features, no need to
 		// display the mfa selector
 		for _, mfp := range canSetupFactors {
-			if !mfp.IsMultiFactorBackup() {
+			if handled = !mfp.IsMultiFactorBackup(); handled {
 				// process one at a time, in the order added during the enjin build phase
-				//mfp.SiteUserSetupStageHandler(f, w, addSummaryNotice(r))
 				mfp.SiteUserSetupStageHandler(f, w, r)
-				handled = true
 				return
 			}
 		}

@@ -35,7 +35,7 @@ func (f *CFeature) SiteUserSetupStageReady(eid string, r *http.Request) (ready b
 }
 
 func (f *CFeature) SiteUserSetupStageHandler(saf feature.SiteAuthFeature, w http.ResponseWriter, r *http.Request) {
-	if !f.ProcessSetupPage(saf, w, r) {
+	if handled := f.ProcessSetupPage(saf, w, r); !handled {
 		f.Enjin.ServeRedirect(r.URL.Path, w, r)
 	}
 	return
