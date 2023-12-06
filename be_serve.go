@@ -15,10 +15,13 @@
 package be
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	htmlTemplate "html/template"
 	"net/http"
+	"time"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
@@ -30,6 +33,7 @@ import (
 	"github.com/go-enjin/be/pkg/signals"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/userbase"
+	"github.com/go-enjin/be/types/page"
 )
 
 func (e *Enjin) FinalizeServeRequest(w http.ResponseWriter, r *http.Request) (modified *http.Request) {
@@ -38,12 +42,61 @@ func (e *Enjin) FinalizeServeRequest(w http.ResponseWriter, r *http.Request) (mo
 			r = m
 		}
 	}
+	modified = r
+	return
+}
+
+func (e *Enjin) ServeHtmlRedirect(destination string, w http.ResponseWriter, r *http.Request) {
+
+	t := e.MustGetTheme()
+	ctx := e.Context(r)
+	ctx.SetSpecific("HtmlRedirect", struct {
+		URL   string
+		Delay int
+	}{
+		URL:   destination,
+		Delay: e.eb.htmlRedirectDelay,
+	})
+
+	var err error
+	var content string
+	buf := bytes.Buffer{}
+	var tt *htmlTemplate.Template
+	if tt, err = t.NewHtmlTemplate(e, "redirect.tmpl", ctx); err != nil {
+		content = "<p>" + err.Error() + "</p>"
+	} else if tt, err = tt.Parse(`{{ template "partials/page/redirect.tmpl" . }}`); err != nil {
+		content = "<p>" + err.Error() + "</p>"
+	} else if err = tt.Execute(&buf, ctx); err != nil {
+		content = "<p>" + err.Error() + "</p>"
+	} else {
+		content = buf.String()
+	}
+
+	now := time.Now().Unix()
+	printer := lang.GetPrinterFromRequest(r)
+
+	var pg feature.Page
+	pg, _ = page.New(feature.EnjinTag.String(), destination, content, now, now, t, ctx)
+	pg.SetType("page")
+	pg.SetLayout("defaults")
+	pg.SetFormat("tmpl")
+	pg.SetTitle(printer.Sprintf("Redirecting"))
+
+	if err = e.eb.fServePagesHandler.ServePage(pg, t, ctx, w, r); err != nil {
+		log.ErrorRF(r, "error serving html redirect page: %v", err)
+	}
+
+	e.Emit(signals.ServedHtmlRedirect, feature.EnjinTag.String(), interface{}(e).(feature.Internals), r)
 }
 
 func (e *Enjin) ServeRedirect(destination string, w http.ResponseWriter, r *http.Request) {
+	if e.eb.alwaysHtmlRedirect {
+		e.ServeHtmlRedirect(destination, w, r)
+		return
+	}
 	r = e.FinalizeServeRequest(w, r)
 	http.Redirect(w, r, destination, http.StatusSeeOther)
-	e.Emit(signals.ServedRedirect, feature.EnjinTag.String(), interface{}(e).(feature.Internals), r)
+	e.Emit(signals.ServedHttpRedirect, feature.EnjinTag.String(), interface{}(e).(feature.Internals), r)
 }
 
 func (e *Enjin) ServeRedirectHomePath(w http.ResponseWriter, r *http.Request) {
