@@ -18,8 +18,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/xlzd/gotp"
-
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
@@ -33,7 +31,7 @@ func (f *CFeature) VerifyClaimFactor(claim *feature.CSiteAuthClaimsFactor, saf f
 		claim.C = ""
 	} else if _, userSecret, _, err := f.getSecureProvision(claim.N, r); err != nil || userSecret == "" {
 		// err or user secret empty
-	} else if hotp := gotp.NewDefaultHOTP(userSecret); claim.C != "" && claim.T > 0 {
+	} else if hotp := f.makeHotp(userSecret); claim.C != "" && claim.T > 0 {
 		// ready for verification
 		if verified = hotp.Verify(claim.C, int(claim.T)); verified {
 			claim.E = time.Now().Add(saf.GetVerifiedDuration()).Unix()
@@ -66,7 +64,7 @@ func (f *CFeature) ProcessVerification(verifyTarget, name, challenge string, saf
 	switch r.FormValue("submit") {
 
 	case f.SiteMultiFactorKey(), kebab:
-		hotp := gotp.NewDefaultHOTP(userSecret)
+		hotp := f.makeHotp(userSecret)
 		if m := f.sendNewToken(email, hotp.At(int(count)), r); m != nil {
 			r = m
 		}
@@ -74,7 +72,7 @@ func (f *CFeature) ProcessVerification(verifyTarget, name, challenge string, saf
 		return
 
 	case "challenge":
-		if totp := gotp.NewDefaultHOTP(userSecret); totp.Verify(challenge, int(count)) {
+		if hotp := f.makeHotp(userSecret); hotp.Verify(challenge, int(count)) {
 			berrs.Must(f.setSecureProvision(name, email, userSecret, count+1, r))
 			claim := feature.NewSiteAuthClaimsFactor(kebab, name, -1, count, challenge)
 			claims.SetVerifiedFactor(verifyTarget, claim)

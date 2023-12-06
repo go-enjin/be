@@ -75,7 +75,7 @@ func (f *CFeature) ProcessSetupPage(saf feature.SiteAuthFeature, w http.Response
 
 				} else if email = request.SafeQueryFormEmail(r, "email"); email != "" {
 
-					hotp := gotp.NewDefaultHOTP(secret)
+					hotp := f.makeHotp(secret)
 					submit := r.FormValue("submit")
 
 					switch submit {

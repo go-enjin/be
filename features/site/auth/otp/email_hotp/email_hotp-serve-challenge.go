@@ -17,8 +17,6 @@ package email_hotp
 import (
 	"net/http"
 
-	"github.com/xlzd/gotp"
-
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
@@ -49,7 +47,7 @@ func (f *CFeature) ProcessChallenge(name, challenge string, saf feature.SiteAuth
 	switch r.FormValue("submit") {
 
 	case f.SiteMultiFactorKey(), kebab:
-		hotp := gotp.NewDefaultHOTP(userSecret)
+		hotp := f.makeHotp(userSecret)
 		if m := f.sendNewToken(email, hotp.At(int(count)), r); m != nil {
 			r = m
 		}
@@ -58,7 +56,7 @@ func (f *CFeature) ProcessChallenge(name, challenge string, saf feature.SiteAuth
 		return
 
 	case "challenge":
-		if totp := gotp.NewDefaultHOTP(userSecret); totp.Verify(challenge, int(count)) {
+		if hotp := f.makeHotp(userSecret); hotp.Verify(challenge, int(count)) {
 			berrs.Must(f.setSecureProvision(name, email, userSecret, count+1, r))
 			claim := feature.NewSiteAuthClaimsFactor(kebab, name, -1, count, challenge)
 			claims.SetFactor(claim)

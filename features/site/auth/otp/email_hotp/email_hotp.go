@@ -19,12 +19,14 @@ import (
 	"net/http"
 
 	"github.com/urfave/cli/v2"
+	"github.com/xlzd/gotp"
 
 	"github.com/go-enjin/golang-org-x-text/message"
 
 	"github.com/go-enjin/be/pkg/feature"
 	site_secure_context "github.com/go-enjin/be/pkg/feature/site-secure-context"
 	"github.com/go-enjin/be/pkg/lang"
+	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/types/site"
 )
@@ -38,6 +40,10 @@ const (
 	RevokeNonceKey  = "email-hotp--revoke--form"
 	ManageNonceName = "email-hotp--manage--nonce"
 	ManageNonceKey  = "email-hotp--manage--form"
+)
+
+var (
+	DefaultHotpDigits = 8
 )
 
 var (
@@ -57,6 +63,7 @@ type MakeFeature interface {
 
 	SetEmailAccount(account string) MakeFeature
 	SetEmailProvider(tag feature.Tag) MakeFeature
+	SetHotpDigits(count int) MakeFeature
 
 	Make() Feature
 }
@@ -71,6 +78,8 @@ type CFeature struct {
 	emailSender      feature.EmailSender
 	emailProvider    feature.EmailProvider
 	emailAccount     string
+
+	hotpDigits int
 }
 
 func New() MakeFeature {
@@ -96,6 +105,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 func (f *CFeature) Init(this interface{}) {
 	f.CSiteFeature.Init(this)
 	f.IncludeSitePathNameFlag = false
+	f.hotpDigits = DefaultHotpDigits
 	return
 }
 
@@ -106,6 +116,14 @@ func (f *CFeature) SetEmailAccount(account string) MakeFeature {
 
 func (f *CFeature) SetEmailProvider(tag feature.Tag) MakeFeature {
 	f.emailProviderTag = tag
+	return f
+}
+
+func (f *CFeature) SetHotpDigits(count int) MakeFeature {
+	if count < 6 {
+		log.FatalDF(1, "the number of HOTP digits must be greater than 5")
+	}
+	f.hotpDigits = count
 	return f
 }
 
@@ -231,5 +249,10 @@ func (f *CFeature) CurrentUserFactorsReadyCount(r *http.Request) (count int) {
 
 func (f *CFeature) ResetUserFactors(r *http.Request, eid string) (err error) {
 	err = f.ssc.Delete(eid, r, f.Site().SiteUsers())
+	return
+}
+
+func (f *CFeature) makeHotp(secret string) (hotp *gotp.HOTP) {
+	hotp = gotp.NewHOTP(secret, f.hotpDigits, nil)
 	return
 }
