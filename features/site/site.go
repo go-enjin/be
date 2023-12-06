@@ -176,11 +176,11 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	if f.siteRootFeature != nil {
 		b.AddFeature(f.siteRootFeature)
 	}
-	category := f.FeatureTag.String()
-	prefix := f.FeatureTag.Kebab()
+	category := f.FeatureTag.Kebab()
 	b.AddFlags(&cli.StringFlag{
-		Name:     prefix + "-path",
-		Usage:    "specify the top-level site URL path",
+		Name:     category + "-path",
+		Usage:    "specify the top-level site path",
+		EnvVars:  b.MakeEnvKeys(category + "-path"),
 		Category: category,
 		Value:    f.sitePath,
 	})

@@ -114,6 +114,7 @@ func (f *CSiteFeature[M]) Build(b feature.Buildable) (err error) {
 		b.AddFlags(&cli.StringFlag{
 			Name:     prefix + "-path-name",
 			Usage:    "specify the URL path name for this site feature",
+			EnvVars:  b.MakeEnvKeys(prefix + "-path-name"),
 			Category: category,
 			Value:    f.SiteFeatureKey(),
 		})
