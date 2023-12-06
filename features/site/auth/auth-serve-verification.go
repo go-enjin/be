@@ -21,7 +21,6 @@ import (
 	beContext "github.com/go-enjin/be/pkg/context"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -138,7 +137,7 @@ func (f *CFeature) ProcessVerificationRequest(verifyTarget string, w http.Respon
 
 		if f.Enjin.VerifyNonce(VerificationNonceKey, nonce) {
 
-			if provision := forms.StrictSanitize(r.FormValue("provision")); provision != "" {
+			if provision := request.SafeQueryFormValue(r, "provision"); provision != "" {
 				if kebab, pFactor, ok := strings.Cut(provision, ";"); ok {
 
 					submit := r.FormValue("submit")
@@ -158,7 +157,7 @@ func (f *CFeature) ProcessVerificationRequest(verifyTarget string, w http.Respon
 					}
 
 					if submit == "challenge" {
-						if challenge := forms.StrictSanitize(r.FormValue("challenge")); challenge != "" {
+						if challenge := request.SafeQueryFormValue(r, "challenge"); challenge != "" {
 							if tag := f.mfa.Features.Find(kebab); tag.IsNil() {
 								log.ErrorRF(r, "invalid challenge provision received")
 								r = feature.AddErrorNotice(r, true, berrs.UnexpectedError(printer))
