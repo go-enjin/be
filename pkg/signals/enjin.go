@@ -53,7 +53,9 @@ const (
 	PreShutdownFeaturesPhase  signaling.Signal = "pre-enjin-shutdown-features-phase"
 	PostShutdownFeaturesPhase signaling.Signal = "post-enjin-shutdown-features-phase"
 
-	ServedRedirect signaling.Signal = "served-redirect"
+	ServedHttpRedirect signaling.Signal = "served-http-redirect"
+	ServedHtmlRedirect signaling.Signal = "served-meta-redirect"
+
 	Served204      signaling.Signal = "served-204"
 	Served400      signaling.Signal = "served-400"
 	Served401      signaling.Signal = "served-401"
