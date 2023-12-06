@@ -31,6 +31,16 @@ func (eb *EnjinBuilder) Set(key string, value interface{}) feature.Builder {
 	return eb
 }
 
+func (eb *EnjinBuilder) SetAlwaysHtmlRedirect(always bool) feature.Builder {
+	eb.alwaysHtmlRedirect = always
+	return eb
+}
+
+func (eb *EnjinBuilder) SetHtmlRedirectDelay(seconds int) feature.Builder {
+	eb.htmlRedirectDelay = seconds
+	return eb
+}
+
 func (eb *EnjinBuilder) AddHtmlHeadTag(name string, attr map[string]string) feature.Builder {
 	if len(attr) <= 1 {
 		log.FatalDF(1, "AddHtmlHeadTag requires at least two attribute keys")

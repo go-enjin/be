@@ -52,6 +52,15 @@ type Builder interface {
 	// Set a custom context key with value
 	Set(key string, value interface{}) Builder
 
+	// SetAlwaysHtmlRedirect configures the enjin to always use the HTML meta tag http-equiv=refresh method of
+	// redirecting visitors to another page, the default is to use HTTP status 303 (See other) header redirections
+	// unless explicitly calling the enjin ServeHtmlRedirect method
+	SetAlwaysHtmlRedirect(always bool) Builder
+
+	// SetHtmlRedirectDelay specifies the number of seconds to delay visitors when performing ServeHtmlRedirect calls,
+	// the default is 0 seconds (immediately on load)
+	SetHtmlRedirectDelay(seconds int) Builder
+
 	// AddPreset includes the given presets just before the normal enjin Build() phase, presets are added in the same
 	// order given and any features added will be inserted before all other enjin features present
 	AddPreset(presets ...Preset) Builder

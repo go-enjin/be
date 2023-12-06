@@ -90,6 +90,9 @@ type EnjinBuilder struct {
 	cspModifierFnOrder []string
 	cspModifierFns     map[string]feature.CspModifierFn
 
+	alwaysHtmlRedirect bool
+	htmlRedirectDelay  int
+
 	fFormatProviders                []feature.PageFormatProvider
 	fRequestFilters                 []feature.RequestFilter
 	fPageContextUpdaters            []feature.PageContextUpdater
