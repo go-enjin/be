@@ -73,7 +73,7 @@ type Service interface {
 	PermissionsPolicy() (handler *permissions.PolicyHandler)
 	ContentSecurityPolicy() (handler *csp.PolicyHandler)
 
-	FinalizeServeRequest(w http.ResponseWriter, r *http.Request)
+	FinalizeServeRequest(w http.ResponseWriter, r *http.Request) (modified *http.Request)
 
 	ServeRedirect(destination string, w http.ResponseWriter, r *http.Request)
 	ServeRedirectHomePath(w http.ResponseWriter, r *http.Request)
