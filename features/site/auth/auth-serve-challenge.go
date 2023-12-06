@@ -172,12 +172,14 @@ func (f *CFeature) ProcessChallengeRequest(w http.ResponseWriter, r *http.Reques
 			if handled, redirect = mfp.ProcessChallenge(pFactor, challenge, f, claims, w, r); handled {
 				// challenge handled
 				return
-			} else if redirect == "" {
-				redirect = claims.Context.String(gRedirectKey, "")
-				claims.Context.Delete(gRedirectKey)
-				f.Enjin.ServeRedirect(redirect, w, r)
-				return
 			} else {
+				if redirect == "" {
+					if redirect = claims.Context.String(gRedirectKey, ""); redirect != "" {
+						claims.Context.Delete(gRedirectKey)
+						f.Enjin.ServeRedirect(redirect, w, r)
+						return
+					}
+				}
 				f.Enjin.ServeRedirectHomePath(w, r)
 				return
 			}
