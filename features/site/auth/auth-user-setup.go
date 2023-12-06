@@ -126,7 +126,7 @@ func (f *CFeature) enforceUserSetupStages(claims *feature.CSiteAuthClaims, w htt
 
 	makeSummaryNotice := func() (text string, argv []interface{}, dismiss bool) {
 
-		text = printer.Sprintf(`Account Setup (Stage %[1]d of %[2]d)`, currentStage, totalStages)
+		text = printer.Sprintf(`Account Setup (Stage %[1]d of %[2]d)`, currentStage+1, totalStages)
 
 		if f.mustBackupAccounts.Len() > numProviderBackupsReady {
 			argv = append(argv, printer.Sprintf("%[1]d backup accounts", numProviderBackups-numProviderBackupsReady))
