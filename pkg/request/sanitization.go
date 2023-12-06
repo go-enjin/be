@@ -75,8 +75,8 @@ func SafeQueryFormHash10(r *http.Request, key string) (shasum string) {
 
 func SafeQueryFormSixDigits(r *http.Request, key string) (digits string) {
 	sanitized := forms.StrictSanitize(QueryFormValue(r, key))
-	if regexps.RxSixDigits.MatchString(sanitized) {
-		m := regexps.RxSixDigits.FindAllStringSubmatch(sanitized, 1)
+	if regexps.RxAtLeastSixDigits.MatchString(sanitized) {
+		m := regexps.RxAtLeastSixDigits.FindAllStringSubmatch(sanitized, 1)
 		digits = m[0][1]
 	}
 	return
