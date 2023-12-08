@@ -26,6 +26,22 @@ var (
 	RxShasum10 = regexp.MustCompile(`^([a-f0-9]{10})$`)
 )
 
+// Valid returns true if the string given is 10 or 64 hexadecimal characters [a-f0-9]
+func Valid(shasum string) (valid bool) {
+	size := len(shasum)
+	if valid = size == 10 || size == 64; valid {
+		for _, char := range shasum {
+			switch char {
+			case 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f':
+			default:
+				valid = false
+				return
+			}
+		}
+	}
+	return
+}
+
 func makeHash(h hash.Hash, data []byte) (shasum string, err error) {
 	if _, err = h.Write(data); err != nil {
 		return
