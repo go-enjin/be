@@ -85,7 +85,7 @@ func (f *CFeature) Init(this interface{}) {
 }
 
 func (f *CFeature) Make() (feat Feature) {
-	f.ViewLocaleAction = feature.NewAction(f.Tag().Kebab(), "view", "locale")
+	f.ViewLocaleAction = feature.NewAction(f.KebabTag, "view", "locale")
 	return f
 }
 

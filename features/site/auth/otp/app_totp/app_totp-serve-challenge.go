@@ -28,15 +28,14 @@ import (
 
 func (f *CFeature) ProcessChallenge(name, challenge string, saf feature.SiteAuthFeature, claims *feature.CSiteAuthClaims, w http.ResponseWriter, r *http.Request) (handled bool, redirect string) {
 
-	kebab := f.Tag().Kebab()
 	epoch := time.Now().Unix() // early to keep as close to the TOTP cycle as possible
 	printer := lang.GetPrinterFromRequest(r)
 
-	if claim, ok := claims.GetFactor(kebab, name); ok && f.VerifyClaimFactor(claim, saf, r) {
+	if claim, ok := claims.GetFactor(f.KebabTag, name); ok && f.VerifyClaimFactor(claim, saf, r) {
 		// existing factor verified
 		return
 	}
-	claims.RevokeFactor(kebab, name)
+	claims.RevokeFactor(f.KebabTag, name)
 
 	if userSecret, err := f.getSecureProvision(name, r); err != nil {
 		log.ErrorRF(r, "developer error: cannot process challenge for a factor that is not present in the secure context")
@@ -44,7 +43,7 @@ func (f *CFeature) ProcessChallenge(name, challenge string, saf feature.SiteAuth
 		f.Enjin.ServeNotFound(w, r)
 		return
 	} else if totp := gotp.NewDefaultTOTP(userSecret); totp.Verify(challenge, epoch) {
-		claim := feature.NewSiteAuthClaimsFactor(kebab, name, -1, epoch, challenge)
+		claim := feature.NewSiteAuthClaimsFactor(f.KebabTag, name, -1, epoch, challenge)
 		claims.SetFactor(claim)
 		// request allowed
 		return

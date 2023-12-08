@@ -63,7 +63,7 @@ func (f *CFeature) ProcessVerification(verifyTarget, name, challenge string, saf
 				consumed = append(consumed, challenge)
 				berrs.Must(f.setSecureProvision(name, codes, consumed, r))
 				expires := time.Now().Add(saf.GetVerifiedDuration()).Unix()
-				claim := feature.NewSiteAuthClaimsFactor(f.Tag().Kebab(), name, expires, -1, challenge)
+				claim := feature.NewSiteAuthClaimsFactor(f.KebabTag, name, expires, -1, challenge)
 				claims.SetVerifiedFactor(verifyTarget, claim)
 				// request allowed
 				return

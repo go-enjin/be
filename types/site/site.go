@@ -109,14 +109,12 @@ func (f *CSiteFeature[M]) Build(b feature.Buildable) (err error) {
 		return
 	}
 
-	category := f.Tag().String()
-	prefix := f.Tag().Kebab()
 	if f.IncludeSitePathNameFlag {
 		b.AddFlags(&cli.StringFlag{
-			Name:     prefix + "-path-name",
+			Name:     f.KebabTag + "-path-name",
 			Usage:    "specify the URL path name for this site feature",
-			EnvVars:  b.MakeEnvKeys(prefix + "-path-name"),
-			Category: category,
+			EnvVars:  b.MakeEnvKeys(f.KebabTag + "-path-name"),
+			Category: f.KebabTag,
 			Value:    f.SiteFeatureKey(),
 		})
 	}
@@ -128,8 +126,7 @@ func (f *CSiteFeature[M]) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
-	prefix := f.Tag().Kebab()
-	pathKey := prefix + "-path-name"
+	pathKey := f.KebabTag + "-path-name"
 	if ctx.IsSet(pathKey) {
 		if v := ctx.String(pathKey); v != "" {
 			if v = forms.StrictSanitize(strings.TrimSpace(v)); v != "" {

@@ -125,21 +125,20 @@ func (f *CFeature) Make() Feature {
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
-	category := f.Tag().Kebab()
 	envPrefix := f.Tag().ScreamingSnake()
 	b.AddFlags(
 		&cli.Int64Flag{
-			Name:     category + "-deny-duration",
+			Name:     f.KebabTag + "-deny-duration",
 			Usage:    "number of seconds to block denied ip addresses",
 			EnvVars:  b.MakeEnvKeys(envPrefix, "DENY_DURATION"),
 			Value:    DefaultDuration,
-			Category: category,
+			Category: f.KebabTag,
 		},
 		&cli.StringSliceFlag{
-			Name:     category + "-deny-addresses",
+			Name:     f.KebabTag + "-deny-addresses",
 			Usage:    "space separated list of IP addresses to always block",
 			EnvVars:  b.MakeEnvKeys(envPrefix, "DENY_ADDRESSES"),
-			Category: category,
+			Category: f.KebabTag,
 		},
 	)
 	return
@@ -147,15 +146,14 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	err = f.CFeature.Startup(ctx)
-	category := f.Tag().Kebab()
 
-	if denyDurationKey := category + "-deny-duration"; ctx.IsSet(denyDurationKey) {
+	if denyDurationKey := f.KebabTag + "-deny-duration"; ctx.IsSet(denyDurationKey) {
 		duration := ctx.Int64(denyDurationKey)
 		f.manager.SetPeriod(duration)
 		log.DebugF("%v - deny duration set to: %v", f.Tag(), duration)
 	}
 
-	if denyAddressesKey := category + "-deny-addresses"; ctx.IsSet(denyAddressesKey) {
+	if denyAddressesKey := f.KebabTag + "-deny-addresses"; ctx.IsSet(denyAddressesKey) {
 		addresses := ctx.StringSlice(denyAddressesKey)
 		for _, address := range addresses {
 			f.manager.Block(address)

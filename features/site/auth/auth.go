@@ -325,7 +325,7 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 		f.signOutPath = "/" + bePath.TrimSlashes(f.signOutPath)
 	}
 
-	category := f.Tag().Kebab()
+	category := f.KebabTag
 
 	fns := f.makeFlagNames()
 
@@ -722,7 +722,7 @@ type flagNames struct {
 }
 
 func (f *CFeature) makeFlagNames() (fn flagNames) {
-	category := f.Tag().Kebab()
+	category := f.KebabTag
 	return flagNames{
 		category:        category,
 		secretKey:       category + "-secret-key",

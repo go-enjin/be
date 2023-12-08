@@ -89,7 +89,7 @@ func (f *CFeature) ProcessSetupPage(saf feature.SiteAuthFeature, w http.Response
 						} else {
 							errors.Must(f.removeNewSecretKey(r))
 							errors.Must(f.setSecureProvision(provision, secret, r))
-							claim := feature.NewSiteAuthClaimsFactor(f.Tag().Kebab(), provision, -1, epoch, challenge)
+							claim := feature.NewSiteAuthClaimsFactor(f.KebabTag, provision, -1, epoch, challenge)
 							saf.SetUserFactor(r, claim)
 							return
 						}

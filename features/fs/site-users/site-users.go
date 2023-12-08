@@ -272,7 +272,7 @@ func (f *CFeature) UserActions() (list feature.Actions) {
 }
 
 func (f *CFeature) MakeRealID(email string) (rid string) {
-	rid = f.Tag().Kebab() + "_" + email
+	rid = f.KebabTag + "_" + email
 	return
 }
 

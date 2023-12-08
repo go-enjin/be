@@ -57,7 +57,7 @@ func (f *CFeature) ServeManagePage(settingsPath string, saf feature.SiteAuthFeat
 
 	ctx := beContext.Context{
 		"FeatureInfo": f.SiteFeatureInfo(r),
-		"Provider":    f.Tag().Kebab(),
+		"Provider":    f.KebabTag,
 		"FormAction":  r.URL.Path,
 		"Nonces": feature.Nonces{
 			{Name: ManageNonceName, Key: ManageNonceKey},

@@ -25,14 +25,13 @@ import (
 
 func (f *CFeature) ProcessChallenge(name, challenge string, saf feature.SiteAuthFeature, claims *feature.CSiteAuthClaims, w http.ResponseWriter, r *http.Request) (handled bool, redirect string) {
 
-	kebab := f.Tag().Kebab()
 	printer := lang.GetPrinterFromRequest(r)
 
-	if claim, ok := claims.GetFactor(kebab, name); ok && f.VerifyClaimFactor(claim, saf, r) {
+	if claim, ok := claims.GetFactor(f.KebabTag, name); ok && f.VerifyClaimFactor(claim, saf, r) {
 		// existing factor verified
 		return
 	}
-	claims.RevokeFactor(kebab, name)
+	claims.RevokeFactor(f.KebabTag, name)
 
 	var err error
 	var count int64
@@ -46,7 +45,7 @@ func (f *CFeature) ProcessChallenge(name, challenge string, saf feature.SiteAuth
 
 	switch r.FormValue("submit") {
 
-	case f.SiteMultiFactorKey(), kebab:
+	case f.SiteMultiFactorKey(), f.KebabTag:
 		hotp := f.makeHotp(userSecret)
 		if m := f.sendNewToken(email, hotp.At(int(count)), r); m != nil {
 			r = m
@@ -58,7 +57,7 @@ func (f *CFeature) ProcessChallenge(name, challenge string, saf feature.SiteAuth
 	case "challenge":
 		if hotp := f.makeHotp(userSecret); hotp.Verify(challenge, int(count)) {
 			berrs.Must(f.setSecureProvision(name, email, userSecret, count+1, r))
-			claim := feature.NewSiteAuthClaimsFactor(kebab, name, -1, count, challenge)
+			claim := feature.NewSiteAuthClaimsFactor(f.KebabTag, name, -1, count, challenge)
 			claims.SetFactor(claim)
 			// request allowed
 			return

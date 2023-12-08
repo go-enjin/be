@@ -293,9 +293,8 @@ func (f *CFeature) MakeEmailBody(path string, ctx beContext.Context) (fm beConte
 }
 
 func (f *CFeature) makeCliKeys() (to, tmpl, account string) {
-	kebabTag := f.Tag().Kebab()
-	to = "test-" + kebabTag + "-to"
-	tmpl = "test-" + kebabTag + "-tmpl"
-	account = "test-" + kebabTag + "-account"
+	to = "test-" + f.KebabTag + "-to"
+	tmpl = "test-" + f.KebabTag + "-tmpl"
+	account = "test-" + f.KebabTag + "-account"
 	return
 }

@@ -120,20 +120,18 @@ func (f *CFeature) Make() (feat Feature) {
 }
 
 func (f *CFeature) makeCliFlags() (authToken, withDomain, withRegion, withLogging string) {
-	category := f.Tag().Kebab()
-	authToken = category + "-authtoken"
-	withDomain = category + "-domain"
-	withRegion = category + "-region"
-	withLogging = category + "-logging"
+	authToken = f.KebabTag + "-authtoken"
+	withDomain = f.KebabTag + "-domain"
+	withRegion = f.KebabTag + "-region"
+	withLogging = f.KebabTag + "-logging"
 	return
 }
 
 func (f *CFeature) makeCliEnvKeys() (authToken, withDomain, withRegion, withLogging string) {
-	category := f.Tag().ScreamingSnake()
-	authToken = category + "_AUTHTOKEN"
-	withDomain = category + "_DOMAIN"
-	withRegion = category + "_REGION"
-	withLogging = category + "_LOGGING"
+	authToken = f.KebabTag + "_AUTHTOKEN"
+	withDomain = f.KebabTag + "_DOMAIN"
+	withRegion = f.KebabTag + "_REGION"
+	withLogging = f.KebabTag + "_LOGGING"
 	return
 }
 
@@ -142,7 +140,6 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 		return
 	}
 
-	category := f.Tag().Kebab()
 	authToken, withDomain, withRegion, withLogging := f.makeCliFlags()
 	authTokenEnv, withDomainEnv, withRegionEnv, withLoggingEnv := f.makeCliEnvKeys()
 	authTokenEnvKeys := b.MakeEnvKeys(authTokenEnv)
@@ -153,22 +150,22 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	b.AddFlags(
 		&cli.StringFlag{
 			Name:     authToken,
-			Category: category,
+			Category: f.KebabTag,
 			EnvVars:  authTokenEnvKeys,
 		},
 		&cli.StringFlag{
 			Name:     withDomain,
-			Category: category,
+			Category: f.KebabTag,
 			EnvVars:  b.MakeEnvKeys(withDomainEnv),
 		},
 		&cli.StringFlag{
 			Name:     withRegion,
-			Category: category,
+			Category: f.KebabTag,
 			EnvVars:  b.MakeEnvKeys(withRegionEnv),
 		},
 		&cli.BoolFlag{
 			Name:     withLogging,
-			Category: category,
+			Category: f.KebabTag,
 			EnvVars:  b.MakeEnvKeys(withLoggingEnv),
 		},
 	)

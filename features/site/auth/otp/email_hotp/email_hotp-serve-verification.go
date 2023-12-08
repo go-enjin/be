@@ -42,7 +42,6 @@ func (f *CFeature) VerifyClaimFactor(claim *feature.CSiteAuthClaimsFactor, saf f
 
 func (f *CFeature) ProcessVerification(verifyTarget, name, challenge string, saf feature.SiteAuthFeature, claims *feature.CSiteAuthClaims, w http.ResponseWriter, r *http.Request) (handled bool, redirect string) {
 
-	kebab := f.Tag().Kebab()
 	printer := lang.GetPrinterFromRequest(r)
 
 	if claim, ok := claims.GetVerifiedFactor(verifyTarget); ok && f.VerifyClaimFactor(claim, saf, r) {
@@ -63,7 +62,7 @@ func (f *CFeature) ProcessVerification(verifyTarget, name, challenge string, saf
 
 	switch r.FormValue("submit") {
 
-	case f.SiteMultiFactorKey(), kebab:
+	case f.SiteMultiFactorKey(), f.KebabTag:
 		hotp := f.makeHotp(userSecret)
 		if m := f.sendNewToken(email, hotp.At(int(count)), r); m != nil {
 			r = m
@@ -74,7 +73,7 @@ func (f *CFeature) ProcessVerification(verifyTarget, name, challenge string, saf
 	case "challenge":
 		if hotp := f.makeHotp(userSecret); hotp.Verify(challenge, int(count)) {
 			berrs.Must(f.setSecureProvision(name, email, userSecret, count+1, r))
-			claim := feature.NewSiteAuthClaimsFactor(kebab, name, -1, count, challenge)
+			claim := feature.NewSiteAuthClaimsFactor(f.KebabTag, name, -1, count, challenge)
 			claims.SetVerifiedFactor(verifyTarget, claim)
 			// request allowed
 			return

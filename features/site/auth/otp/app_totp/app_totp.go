@@ -154,7 +154,7 @@ func (f *CFeature) SiteMultiFactorLabel(printer *message.Printer) (label string)
 func (f *CFeature) SiteFeatureInfo(r *http.Request) (info *feature.CSiteFeatureInfo) {
 	printer := lang.GetPrinterFromRequest(r)
 	info = feature.NewSiteFeatureInfo(
-		f.Tag().Kebab(),
+		f.KebabTag,
 		f.SiteMultiFactorKey(),
 		f.SiteFeatureIcon(),
 		f.SiteMultiFactorLabel(printer),

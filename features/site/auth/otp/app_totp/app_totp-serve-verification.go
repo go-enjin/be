@@ -59,7 +59,7 @@ func (f *CFeature) ProcessVerification(verifyTarget, name, challenge string, saf
 		return
 	} else if totp := gotp.NewDefaultTOTP(userSecret); totp.Verify(challenge, epoch) {
 		expires := time.Now().Add(saf.GetVerifiedDuration()).Unix()
-		claim := feature.NewSiteAuthClaimsFactor(f.Tag().Kebab(), name, expires, epoch, challenge)
+		claim := feature.NewSiteAuthClaimsFactor(f.KebabTag, name, expires, epoch, challenge)
 		claims.SetVerifiedFactor(verifyTarget, claim)
 		// request allowed
 		return

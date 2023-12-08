@@ -42,7 +42,7 @@ func (f *CFeature) MakeAuthClaims(aud, email string, ctx context.Context) (claim
 		Email:   email,
 		Context: ctx,
 		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:    f.Tag().Kebab(),
+			Issuer:    f.KebabTag,
 			Subject:   eid,
 			Audience:  []string{audience},
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

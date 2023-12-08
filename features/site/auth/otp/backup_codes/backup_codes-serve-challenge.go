@@ -27,14 +27,13 @@ import (
 
 func (f *CFeature) ProcessChallenge(name, challenge string, saf feature.SiteAuthFeature, claims *feature.CSiteAuthClaims, w http.ResponseWriter, r *http.Request) (handled bool, redirect string) {
 
-	kebab := f.Tag().Kebab()
 	printer := lang.GetPrinterFromRequest(r)
 
-	if claim, ok := claims.GetFactor(kebab, name); ok && f.VerifyClaimFactor(claim, saf, r) {
+	if claim, ok := claims.GetFactor(f.KebabTag, name); ok && f.VerifyClaimFactor(claim, saf, r) {
 		// existing factor verified
 		return
 	}
-	claims.RevokeFactor(kebab, name)
+	claims.RevokeFactor(f.KebabTag, name)
 
 	if codes, consumed, err := f.getSecureProvision(name, r); err != nil {
 
@@ -56,7 +55,7 @@ func (f *CFeature) ProcessChallenge(name, challenge string, saf feature.SiteAuth
 						consumed = append(consumed, challenge)
 						berrs.Must(f.setSecureProvision(name, codes, consumed, r))
 						claims.SetFactor(&feature.CSiteAuthClaimsFactor{
-							K: kebab,
+							K: f.KebabTag,
 							N: name,
 							E: -1,
 							T: -1,

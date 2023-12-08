@@ -153,7 +153,7 @@ func (f *CFeature) Shutdown() {
 func (f *CFeature) SiteFeatureInfo(r *http.Request) (info *feature.CSiteFeatureInfo) {
 	printer := lang.GetPrinterFromRequest(r)
 	info = feature.NewSiteFeatureInfo(
-		f.Tag().Kebab(),
+		f.KebabTag,
 		f.SiteFeatureKey(),
 		f.SiteFeatureIcon(),
 		f.SiteFeatureLabel(printer),

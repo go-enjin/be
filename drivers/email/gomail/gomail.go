@@ -200,7 +200,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
-	tag := f.Tag().Kebab()
+	tag := f.KebabTag
 
 	for _, key := range maps.SortedKeys(f.accounts) {
 		account := f.accounts[key]
