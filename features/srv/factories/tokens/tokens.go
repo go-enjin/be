@@ -127,6 +127,11 @@ func (f *CFeature) Shutdown() {
 	f.CFeature.Shutdown()
 }
 
+func (f *CFeature) makeKey(k string) (key string) {
+	key = f.KebabTag + "__" + k
+	return
+}
+
 func (f *CFeature) randomValue() (value string) {
 	var err error
 	if value, err = crypto.RandomValue(f.numRandomBytes); err != nil {
@@ -247,18 +252,18 @@ func (f *CFeature) get(key string, duration time.Duration) (value, shasum string
 
 // VerifyToken will validate and evict the given nonce value
 func (f *CFeature) VerifyToken(key, value string) (valid bool) {
-	valid = f.verify(key, value)
+	valid = f.verify(f.makeKey(key), value)
 	return
 }
 
 // CreateToken will add a new nonce associated with the given key
 func (f *CFeature) CreateToken(key string) (value, shasum string) {
-	value, shasum = f.get(key, f.duration)
+	value, shasum = f.get(f.makeKey(key), f.duration)
 	return
 }
 
 // CreateTokenWith will add a new token with the given duration, associated with the given key
 func (f *CFeature) CreateTokenWith(key string, duration time.Duration) (value, shasum string) {
-	value, shasum = f.get(key, duration)
+	value, shasum = f.get(f.makeKey(key), duration)
 	return
 }

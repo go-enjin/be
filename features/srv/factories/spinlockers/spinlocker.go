@@ -28,7 +28,7 @@ var (
 )
 
 type spinlocker struct {
-	tag         feature.Tag
+	tag         string
 	key         string
 	readBucket  feature.KeyValueStore
 	writeBucket feature.KeyValueStore
@@ -44,7 +44,7 @@ func newSpinLocker(bucket feature.KeyValueStore, tag feature.Tag, key string, ti
 		interval = DefaultSpinlockerInterval
 	}
 	tl = &spinlocker{
-		tag:         tag,
+		tag:         tag.Kebab(),
 		key:         key,
 		writeBucket: bucket,
 		timeout:     timeout,
@@ -61,7 +61,7 @@ func newSpinRWLocker(readStore, writeStore feature.KeyValueStore, tag feature.Ta
 		interval = DefaultSpinlockerInterval
 	}
 	tl = &spinlocker{
-		tag:         tag,
+		tag:         tag.Kebab(),
 		key:         key,
 		readBucket:  readStore,
 		writeBucket: writeStore,
@@ -72,10 +72,10 @@ func newSpinRWLocker(readStore, writeStore feature.KeyValueStore, tag feature.Ta
 }
 
 func (l *spinlocker) makeKey() (key string) {
-	if l.tag.IsNil() {
+	if l.tag == "" {
 		key = l.key
 	} else {
-		key = l.tag.Kebab() + "_" + l.key
+		key = l.tag + "_" + l.key
 	}
 	return
 }

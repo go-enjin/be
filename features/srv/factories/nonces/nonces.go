@@ -62,6 +62,7 @@ type CFeature struct {
 	duration       time.Duration
 
 	nonces map[string]map[string]time.Time
+	kebab  string
 }
 
 func New() MakeFeature {
@@ -130,13 +131,18 @@ func (f *CFeature) Shutdown() {
 
 // VerifyNonce will return true if the nonce is valid and consume the nonce in the process
 func (f *CFeature) VerifyNonce(key, value string) (valid bool) {
-	valid = f.verify(key, value)
+	valid = f.verify(f.makeKey(key), value)
 	return
 }
 
 // CreateNonce will add a new nonce instance to the given key
 func (f *CFeature) CreateNonce(key string) (value string) {
-	value = f.create(key)
+	value = f.create(f.makeKey(key))
+	return
+}
+
+func (f *CFeature) makeKey(k string) (key string) {
+	key = f.KebabTag + "__" + k
 	return
 }
 
