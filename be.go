@@ -20,8 +20,11 @@ package be
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
 	"strings"
 	"sync"
+	"syscall"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -308,6 +311,18 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 	if err = e.setupRouter(e.router); err != nil {
 		return
 	}
+
+	go func() {
+		sigint := make(chan os.Signal, 1)
+		signal.Notify(sigint, syscall.SIGINT, syscall.SIGTERM)
+		<-sigint
+		for _, enjin := range e.eb.enjins {
+			for _, f := range enjin.Features().List() {
+				f.Shutdown()
+			}
+		}
+		e.Shutdown()
+	}()
 
 	if len(e.eb.enjins) == 0 {
 		return e.eb.fServiceListener.StartListening(e.router, e)
