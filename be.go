@@ -14,10 +14,6 @@
 
 package be
 
-// TODO: allow/deny direct connections
-// TODO: allow/deny proxy connections (all, any, cloudflare, atlassian)
-// TODO: allow/deny requests (atlas-gonnect stuff?)
-
 import (
 	"fmt"
 	"os"
@@ -172,8 +168,10 @@ func (e *Enjin) action(ctx *cli.Context) (err error) {
 		return
 	}
 
-	if err = e.startupRootService(ctx); err != nil && err.Error() == "http: Server closed" {
-		err = nil
+	if err = e.startupRootService(ctx); err != nil {
+		if err.Error() == "http: Server closed" || strings.Contains(err.Error(), "Listener closed") {
+			err = nil
+		}
 	}
 	return
 }
