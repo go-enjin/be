@@ -58,7 +58,7 @@ type AuthUserManager interface {
 	// userbase
 	NewAuthUser(rid, name, email, picture, audience string, attributes map[string]interface{}) (user AuthUser, err error)
 
-	// SetAuthUser writes the given User to the system
+	// SetAuthUser writes the given AuthUser to the system
 	SetAuthUser(user AuthUser) (err error)
 
 	// RemoveAuthUser deletes a user from the system
