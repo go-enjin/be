@@ -324,6 +324,30 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 		e.Shutdown()
 	}()
 
+	go func() {
+		sighup := make(chan os.Signal)
+		signal.Notify(sighup, syscall.SIGHUP)
+		for {
+			select {
+			case <-sighup:
+				e.Emit(signals.RootEnjinPreReload, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
+				for _, enjin := range e.eb.enjins {
+					for _, f := range enjin.Features().List() {
+						if rf, ok := f.This().(feature.ReloadableFeature); ok {
+							rf.Reload()
+						}
+					}
+				}
+				for _, f := range e.Features().List() {
+					if rf, ok := f.This().(feature.ReloadableFeature); ok {
+						rf.Reload()
+					}
+				}
+				e.Emit(signals.RootEnjinPostReload, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
+			}
+		}
+	}()
+
 	if len(e.eb.enjins) == 0 {
 		return e.eb.fServiceListener.StartListening(e.router, e)
 	}
