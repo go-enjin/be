@@ -18,13 +18,16 @@ package gocache
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
 )
 
-// TODO: implement a means of specifying supported cache configurations instead of hard-coded defaults
+const (
+	NoExpiration time.Duration = -1
+)
 
 const Tag feature.Tag = "drivers-kvs-gocache"
 
