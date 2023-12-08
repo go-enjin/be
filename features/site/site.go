@@ -105,6 +105,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 	f.Init(f)
 	f.PackageTag = Tag
 	f.FeatureTag = tag
+	f.CFeature.Construct(f)
 	f.CUsesActions.ConstructUsesActions(f)
 	return f
 }

@@ -67,6 +67,7 @@ func (f *CSiteFeature[M]) SelfFeature() (self feature.SiteFeature) {
 }
 
 func (f *CSiteFeature[M]) Construct(this interface{}) {
+	f.CFeature.Construct(this)
 	f.CUsesActions.ConstructUsesActions(this)
 	return
 }
