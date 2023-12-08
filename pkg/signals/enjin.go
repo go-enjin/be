@@ -26,9 +26,11 @@ const (
 	PreNewEnjinIncluded  signaling.Signal = "pre-new-enjin-included"
 	PostNewEnjinIncluded signaling.Signal = "post-new-enjin-included"
 
-	RootEnjinSetup    signaling.Signal = "root-enjin-setup"
-	RootEnjinStarting signaling.Signal = "root-enjin-starting"
-	RootEnjinShutdown signaling.Signal = "root-enjin-shutdown"
+	RootEnjinSetup      signaling.Signal = "root-enjin-setup"
+	RootEnjinStarting   signaling.Signal = "root-enjin-starting"
+	RootEnjinShutdown   signaling.Signal = "root-enjin-shutdown"
+	RootEnjinPreReload  signaling.Signal = "root-enjin-pre-reload"
+	RootEnjinPostReload signaling.Signal = "root-enjin-post-reload"
 
 	PreEnjinSetupRouter  signaling.Signal = "pre-enjin-setup-router"
 	PostEnjinSetupRouter signaling.Signal = "post-enjin-setup-router"
