@@ -31,7 +31,7 @@ func (e *Enjin) requestFiltersMiddleware(next http.Handler) http.Handler {
 		for _, rf := range e.eb.fRequestFilters {
 			if err := rf.FilterRequest(r); err != nil {
 				log.WarnRF(r, "filtering request from: %v - %v", remoteAddr, err)
-				e.Serve404(w, r)
+				e.ServeNotFound(w, r)
 				return
 			} else {
 				log.DebugRF(r, "allowing request from: %v", remoteAddr)
