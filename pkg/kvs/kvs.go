@@ -15,11 +15,13 @@
 package kvs
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"strings"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/gob"
+	beGob "github.com/go-enjin/be/pkg/gob"
 	"github.com/go-enjin/be/pkg/maths"
 )
 
@@ -33,107 +35,96 @@ type Variables interface {
 	maths.Number | byte | string
 }
 
-func GetSlice[T Variables](store feature.KeyValueStore, key interface{}) (values []T, err error) {
-	var v interface{}
-	if v, err = store.Get(key); err != nil {
+func SetMarshal(store feature.KeyValueStore, key string, value interface{}) (err error) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	if err = enc.Encode(value); err != nil {
 		return
 	}
-	var ok bool
-	if values, ok = v.([]T); !ok {
-		err = fmt.Errorf("value of %v is not %T", key, ([]T)(nil))
-	}
+	err = store.Set(key, buf.Bytes())
 	return
 }
 
-func RemoveFromSlice[T Variables](store feature.KeyValueStore, key interface{}, values ...T) (err error) {
-	var list []T
+func GetUnmarshal[T interface{}](store feature.KeyValueStore, key string, value *T) (err error) {
+	var data []byte
+	if data, err = store.Get(key); err != nil {
+		return
+	}
+	dec := gob.NewDecoder(bytes.NewBuffer(data))
+	err = dec.Decode(value)
+	return
+}
+
+func GetSlice[T Variables](store feature.KeyValueStore, key string) (values []T, err error) {
+	err = GetUnmarshal(store, key, &values)
+	return
+}
+
+func RemoveFromSlice[T Variables](store feature.KeyValueStore, key string, values ...T) (err error) {
+	var list, items []T
 	lookup := make(map[T]bool)
 	for _, value := range values {
 		lookup[value] = true
 	}
-	if v, e := store.Get(key); e == nil {
-		if items, ok := v.([]T); ok {
-			for _, item := range items {
-				if _, remove := lookup[item]; !remove {
-					list = append(list, item)
-				}
-			}
+	if err = GetUnmarshal(store, key, &items); err != nil {
+		return
+	}
+	for _, item := range items {
+		if _, remove := lookup[item]; !remove {
+			list = append(list, item)
 		}
 	}
-	err = store.Set(key, list)
+	err = SetMarshal(store, key, list)
 	return
 }
 
-func SetSlice[T Variables](store feature.KeyValueStore, key interface{}, values []T) (err error) {
-	err = store.Set(key, values)
+func SetSlice[T Variables](store feature.KeyValueStore, key string, values []T) (err error) {
+	err = SetMarshal(store, key, values)
 	return
 }
 
-func AppendToSlice[T Variables](store feature.KeyValueStore, key interface{}, values ...T) (err error) {
+func AppendToSlice[T Variables](store feature.KeyValueStore, key string, values ...T) (err error) {
 	var list []T
-	if v, e := store.Get(key); e == nil {
-		list, _ = v.([]T)
+	if err = GetUnmarshal(store, key, &list); err != nil {
+		return
 	}
-	err = store.Set(key, append(values, list...))
+	err = SetMarshal(store, key, append(list, values...))
 	return
 }
 
-func StringSliceEmpty(store feature.KeyValueStore, key interface{}) (empty bool) {
+func StringSliceEmpty(store feature.KeyValueStore, key string) (empty bool) {
 	var err error
-	var v interface{}
-	if v, err = store.Get(key); err != nil {
+	var values []string
+	if err = GetUnmarshal(store, key, &values); err == nil {
+		empty = len(values) == 0
+	}
+	return
+}
+
+func GetStringSlice(store feature.KeyValueStore, key string) (values []string, err error) {
+	err = GetUnmarshal(store, key, &values)
+	return
+}
+
+func AppendToStringSlice(store feature.KeyValueStore, key string, values ...string) (err error) {
+	var list []string
+	if err = GetUnmarshal(store, key, &list); err != nil {
 		return
 	}
-	vs, _ := v.(string)
-	empty = vs == ""
+	list = append(list, values...)
+	err = SetMarshal(store, key, list)
 	return
 }
 
-func GetStringSlice(store feature.KeyValueStore, key interface{}) (values []string, err error) {
-	var v interface{}
-	if v, err = store.Get(key); err != nil {
-		return
-	}
-	if vs, ok := v.(string); !ok {
-		err = fmt.Errorf("value of %v is not nl-string", key)
-	} else {
-		values = strings.Split(vs, "\n")
-	}
+func GetValue[T interface{}](store feature.KeyValueStore, key string) (value T) {
+	_ = GetUnmarshal(store, key, &value)
 	return
 }
 
-func AppendToStringSlice(store feature.KeyValueStore, key interface{}, values ...string) (err error) {
-	var list string
-	if v, e := store.Get(key); e == nil {
-		list, _ = v.(string)
-	}
-	combined := strings.Join(values, "\n")
-	if list != "" {
-		if combined != "" {
-			combined += "\n"
-		}
-		combined += list
-	}
-	err = store.Set(key, combined)
-	return
-}
-
-func GetValue[T interface{}](store feature.KeyValueStore, key interface{}) (value T) {
-	if v, e := store.Get(key); e == nil {
-		if vt, ok := v.(T); ok {
-			value = vt
-		}
-	}
-	return
-}
-
-func AddToNumber[T maths.Number](store feature.KeyValueStore, key interface{}, increment T) (updated T, err error) {
-	if v, e := store.Get(key); e == nil {
-		if vt, ok := v.(T); ok {
-			updated = vt + increment
-		}
-	}
-	err = store.Set(key, updated)
+func AddToNumber[T maths.Number](store feature.KeyValueStore, key string, increment T) (updated T, err error) {
+	var current T
+	_ = GetUnmarshal(store, key, &current)
+	err = SetMarshal(store, key, current+increment)
 	return
 }
 
@@ -151,10 +142,9 @@ func GetFlatList[T interface{}](store feature.KeyValueStore, key string) (values
 
 	for i := uint64(0); i < endIdx; i++ {
 		idxKey := MakeFlatListKey(key, "idx", fmt.Sprintf("%d", i))
-		if v, e := store.Get(idxKey); e == nil {
-			if item, ok := v.(T); ok {
-				values = append(values, item)
-			}
+		var value T
+		if e := GetUnmarshal(store, idxKey, &value); e == nil {
+			values = append(values, value)
 		}
 	}
 
@@ -163,7 +153,7 @@ func GetFlatList[T interface{}](store feature.KeyValueStore, key string) (values
 
 func EncodeKeyValue(value interface{}) (valueKey string, err error) {
 	var v []byte
-	if v, err = gob.Encode(value); err != nil {
+	if v, err = beGob.Encode(value); err != nil {
 		return
 	} else {
 		valueKey = string(v)
@@ -172,13 +162,13 @@ func EncodeKeyValue(value interface{}) (valueKey string, err error) {
 }
 
 func DecodeKeyValue(valueKey string) (value interface{}, err error) {
-	value, err = gob.Decode([]byte(valueKey))
+	value, err = beGob.Decode([]byte(valueKey))
 	return
 }
 
 func DecodeValue[T interface{}](encoded string) (value T, err error) {
 	var v interface{}
-	if v, err = gob.Decode([]byte(encoded)); err == nil {
+	if v, err = beGob.Decode([]byte(encoded)); err == nil {
 		value, _ = v.(T)
 	}
 	return
@@ -268,25 +258,24 @@ func YieldFlatList[T interface{}](store feature.KeyValueStore, key string) (yiel
 
 		for i := uint64(0); i < endIdx; i++ {
 			idxKey := MakeFlatListKey(key, "idx", fmt.Sprintf("%d", i))
-			if v, e := store.Get(idxKey); e == nil {
-				if isNil, ok := v.(privateKey); ok {
-					if isNil == gNilValue {
-						continue
-					}
-				}
-				if vs, ok := v.(string); ok {
-					if item, ee := DecodeValue[T](vs); ee == nil {
-						yield <- item
-						continue
-					}
-				}
-				if item, ok := v.(T); ok {
-					yield <- item
-				}
+			if GetIsNil(store, idxKey) {
+				continue
+			}
+			var item T
+			if e := GetUnmarshal(store, idxKey, &item); e == nil {
+				yield <- item
 			}
 		}
 
 	}(store, key, yield)
+	return
+}
+
+func GetIsNil(store feature.KeyValueStore, key string) (isNil bool) {
+	var pkv privateKey
+	if e := GetUnmarshal(store, key, &pkv); e == nil {
+		isNil = pkv == gNilValue
+	}
 	return
 }
 
@@ -301,13 +290,10 @@ func FirstInFlatList[T comparable](store feature.KeyValueStore, key string) (val
 
 	for i := uint64(0); i < endIndex; i++ {
 		idxKey := MakeFlatListKey(key, "idx", fmt.Sprintf("%d", i))
-		if v, e := store.Get(idxKey); e == nil {
-			if isNil, present := v.(privateKey); present && isNil == gNilValue {
-				continue
-			} else if value, ok = v.(T); ok {
-				return
-			}
+		if GetIsNil(store, idxKey) {
+			continue
 		}
+		ok = GetUnmarshal(store, idxKey, &value) == nil
 	}
 
 	return
@@ -324,13 +310,10 @@ func LastInFlatList[T comparable](store feature.KeyValueStore, key string) (valu
 
 	for i := endIndex - 1; i > 0; i-- {
 		idxKey := MakeFlatListKey(key, "idx", fmt.Sprintf("%d", i))
-		if v, e := store.Get(idxKey); e == nil {
-			if isNil, present := v.(privateKey); present && isNil == gNilValue {
-				continue
-			} else if value, ok = v.(T); ok {
-				return
-			}
+		if GetIsNil(store, idxKey) {
+			continue
 		}
+		ok = GetUnmarshal(store, idxKey, &value) == nil
 	}
 
 	return
@@ -346,12 +329,12 @@ func AppendToFlatList[T comparable](store feature.KeyValueStore, key string, val
 	var dstIdx uint64
 
 	if len(freeIndexes) > 0 {
-		if err = store.Set(freeKey, freeIndexes[1:]); err != nil {
+		dstIdx = freeIndexes[0]
+		if err = SetMarshal(store, freeKey, freeIndexes[1:]); err != nil {
 			err = fmt.Errorf("error recovering free index: %v - %v", freeKey, err)
 			return
 		}
-		dstIdx = freeIndexes[0]
-	} else if err = store.Set(endKey, endIndex+1); err != nil {
+	} else if err = SetMarshal(store, endKey, endIndex+1); err != nil {
 		err = fmt.Errorf("error incremented end index: %v - %v", endKey, err)
 		return
 	} else {
@@ -359,12 +342,12 @@ func AppendToFlatList[T comparable](store feature.KeyValueStore, key string, val
 	}
 
 	dstKey := MakeFlatListKey(key, "idx", fmt.Sprintf("%d", dstIdx))
-	if err = store.Set(dstKey, value); err != nil {
+	if err = SetMarshal(store, dstKey, value); err != nil {
 		err = fmt.Errorf("error storing value at key: %v - %v", dstKey, err)
 		return
 	}
 
-	if err = store.Set(countKey, GetValue[uint64](store, countKey)+1); err != nil {
+	if err = SetMarshal(store, countKey, GetValue[uint64](store, countKey)+1); err != nil {
 		err = fmt.Errorf("error storing flat-list count at key: %v - %v", countKey, err)
 		return
 	}
@@ -385,11 +368,11 @@ func RemoveFromFlatList[T comparable](store feature.KeyValueStore, key string, v
 	var rmIdx uint64
 	for idx := uint64(0); idx <= endIndex; idx++ {
 		idxKey := MakeFlatListKey(key, "idx", fmt.Sprintf("%d", idx))
-		if v, e := store.Get(idxKey); e == nil {
-			if t, ok := v.(T); ok {
-				if found = t == value; found {
-					rmIdx = idx
-				}
+		var item T
+		if e := GetUnmarshal(store, idxKey, &item); e == nil {
+			if found = item == value; found {
+				rmIdx = idx
+				break
 			}
 		}
 	}
@@ -400,11 +383,12 @@ func RemoveFromFlatList[T comparable](store feature.KeyValueStore, key string, v
 		if err = SetSlice[uint64](store, freeKey, freeIndexes); err != nil {
 			return
 		}
-		if err = store.Set(rmKey, gNilValue); err != nil {
+
+		if err = SetMarshal(store, rmKey, gNilValue); err != nil {
 			return
 		}
 
-		if err = store.Set(countKey, GetValue[uint64](store, countKey)-1); err != nil {
+		if err = SetMarshal(store, countKey, GetValue[uint64](store, countKey)-1); err != nil {
 			err = fmt.Errorf("error storing flat-list count at key: %v - %v", countKey, err)
 			return
 		}
