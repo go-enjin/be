@@ -130,7 +130,6 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Construct(this interface{}) {
 	f.CSiteFeature.Construct(this)
-	f.CUsesActions.ConstructUsesActions(this)
 	f.profileImagePath = DefaultProfileImagePath
 	f.viewOwnProfile = feature.NewAction(f.Tag().String(), "view-own", "profile")
 	f.viewOtherProfile = feature.NewAction(f.Tag().String(), "view-other", "profile")
