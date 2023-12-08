@@ -138,9 +138,14 @@ func (f *CFeature) makeUnderscore(ctx beContext.Context) interface{} {
 }
 
 func (f *CFeature) makeUnderscoreUnderscore(ctx beContext.Context) interface{} {
-	return func(argv ...string) (translated string, err error) {
+	return func(argvInput ...interface{}) (translated string, err error) {
 		r, _ := ctx.Get("R").(*http.Request)
 		targetLang, _ := ctx.Get("ReqLangTag").(language.Tag)
+
+		var argv []string
+		for _, input := range argvInput {
+			argv = append(argv, fmt.Sprintf("%v", input))
+		}
 		var targetPath, fallbackPath string
 
 		switch len(argv) {
@@ -263,7 +268,11 @@ func (f *CFeature) makeUnderscoreUnderscoreUnderscore(ctx beContext.Context) int
 }
 
 func (f *CFeature) makeUnderscoreTag(ctx beContext.Context) interface{} {
-	return func(tag language.Tag) (name string) {
+	return func(tagOrString interface{}) (name string, err error) {
+		var tag language.Tag
+		if tag, err = lang.ParseTag(tagOrString); err != nil {
+			return
+		}
 		var ok bool
 		if name, ok = f.Enjin.SiteLanguageDisplayName(tag); !ok {
 			name = display.Tags(tag).Name(tag)
@@ -273,7 +282,13 @@ func (f *CFeature) makeUnderscoreTag(ctx beContext.Context) interface{} {
 }
 
 func (f *CFeature) makeUnderscoreUnderscoreTag(ctx beContext.Context) interface{} {
-	return func(tx, tag language.Tag) (name string) {
+	return func(txInput, tagInput interface{}) (name string, err error) {
+		var tx, tag language.Tag
+		if tx, err = lang.ParseTag(txInput); err != nil {
+			return
+		} else if tag, err = lang.ParseTag(tagInput); err != nil {
+			return
+		}
 		name = display.Tags(tx).Name(tag)
 		return
 	}
