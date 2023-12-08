@@ -18,6 +18,7 @@ package pql
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -167,6 +168,14 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 	if f.contextValueKeyedBucket, err = f.KVC().Bucket(gPageContextValuesBucketName); err != nil {
 		return
+	}
+
+	// ensure the site locale buckets exist so that existing kvs data can be found
+	for _, tag := range append(f.Enjin.SiteLocales(), language.Und) {
+		if err = f.prepareTranslationsBucket(tag); err != nil {
+			err = fmt.Errorf("error preparing translations bucket: %v - %w", tag, err)
+			return
+		}
 	}
 	return
 }
