@@ -95,7 +95,6 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/features/fs/public",
 		"github.com/go-enjin/be/features/fs/site-users",
 		"github.com/go-enjin/be/features/fs/themes",
-		"github.com/go-enjin/be/features/fs/userbase",
 		"github.com/go-enjin/be/features/log/papertrail",
 		"github.com/go-enjin/be/features/notify/slack",
 		"github.com/go-enjin/be/features/outputs/htmlify",
