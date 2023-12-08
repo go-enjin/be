@@ -40,7 +40,7 @@ func (f *CFeature) ServeSettingsPanelSelectorPage(settingsPath string, w http.Re
 	}
 
 	su := f.Site().SiteUsers()
-	au := userbase.GetCurrentAuthUser(r)
+	au := userbase.GetCurrentUser(r)
 	printer := lang.GetPrinterFromRequest(r)
 	var deleteRequested *deleteOwnUser
 

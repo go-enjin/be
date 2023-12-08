@@ -46,7 +46,7 @@ func (f *CFeature) UpdateUserName(r *http.Request, eid string, name string) (err
 }
 
 func (f *CFeature) SetUserName(r *http.Request, eid string, name string) (err error) {
-	var au *beUser.AuthUser
+	var au *beUser.User
 
 	if stop := f.Emit(signals.PreSetUserName, f.Tag().String(), r, eid, &name); stop {
 		err = errors.ErrSignalStopped
@@ -54,12 +54,12 @@ func (f *CFeature) SetUserName(r *http.Request, eid string, name string) (err er
 	} else if !f.UserPresent(eid) {
 		err = errors.ErrUserNotFound
 		return
-	} else if au, err = f.getAuthUser(eid); err != nil {
+	} else if au, err = f.getUser(eid); err != nil {
 		return
 	}
 
 	au.Name = forms.StrictSanitize(name)
-	err = f.setAuthUser(au)
+	err = f.setUser(au)
 
 	f.Emit(signals.PostSetUserName, f.Tag().String(), r, eid, name, err)
 	return
@@ -83,7 +83,7 @@ func (f *CFeature) UpdateUserImage(r *http.Request, eid string, image string) (e
 }
 
 func (f *CFeature) SetUserImage(r *http.Request, eid string, image string) (err error) {
-	var au *beUser.AuthUser
+	var au *beUser.User
 
 	if stop := f.Emit(signals.PreSetUserImage, f.Tag().String(), r, eid, &image); stop {
 		err = errors.ErrSignalStopped
@@ -94,12 +94,12 @@ func (f *CFeature) SetUserImage(r *http.Request, eid string, image string) (err 
 	} else if !f.UserPresent(eid) {
 		err = errors.ErrUserNotFound
 		return
-	} else if au, err = f.getAuthUser(eid); err != nil {
+	} else if au, err = f.getUser(eid); err != nil {
 		return
 	}
 
 	au.Image = image
-	err = f.setAuthUser(au)
+	err = f.setUser(au)
 
 	f.Emit(signals.PostSetUserImage, f.Tag().String(), r, eid, image)
 	return
@@ -123,30 +123,30 @@ func (f *CFeature) UpdateUserContext(r *http.Request, eid string, ctx beContext.
 }
 
 func (f *CFeature) SetUserContext(r *http.Request, eid string, ctx beContext.Context) (err error) {
-	var au *beUser.AuthUser
+	var au *beUser.User
 
 	if stop := f.Emit(signals.PreSetUserContext, f.Tag().String(), r, eid, ctx); stop {
 		err = errors.ErrSignalStopped
 		return
-	} else if au, err = f.getAuthUser(eid); err != nil {
+	} else if au, err = f.getUser(eid); err != nil {
 		return
 	}
 
 	ctx.KebabKeys()
 	au.Context.ApplySpecific(ctx)
-	err = f.setAuthUser(au)
+	err = f.setUser(au)
 
 	f.Emit(signals.PostSetUserContext, f.Tag().String(), r, eid, ctx)
 	return
 }
 
 func (f *CFeature) SetUserSetting(r *http.Request, eid string, key string, value interface{}) (err error) {
-	var au *beUser.AuthUser
+	var au *beUser.User
 
 	if stop := f.Emit(signals.PreSetUserSetting, f.Tag().String(), r, eid, key, value); stop {
 		err = errors.ErrSignalStopped
 		return
-	} else if au, err = f.getAuthUser(eid); err != nil {
+	} else if au, err = f.getUser(eid); err != nil {
 		return
 	}
 
@@ -154,19 +154,19 @@ func (f *CFeature) SetUserSetting(r *http.Request, eid string, key string, value
 	settings.SetSpecific(key, value)
 	au.Context.SetSpecific("settings", settings)
 
-	err = f.setAuthUser(au)
+	err = f.setUser(au)
 
 	f.Emit(signals.PostSetUserSetting, f.Tag().String(), r, eid, key, value)
 	return
 }
 
 func (f *CFeature) SetUserSettings(r *http.Request, eid string, ctx beContext.Context) (err error) {
-	var au *beUser.AuthUser
+	var au *beUser.User
 
 	if stop := f.Emit(signals.PreSetUserSettings, f.Tag().String(), r, eid, ctx); stop {
 		err = errors.ErrSignalStopped
 		return
-	} else if au, err = f.getAuthUser(eid); err != nil {
+	} else if au, err = f.getUser(eid); err != nil {
 		return
 	}
 
@@ -174,7 +174,7 @@ func (f *CFeature) SetUserSettings(r *http.Request, eid string, ctx beContext.Co
 	settings.ApplySpecific(ctx)
 	au.Context.SetSpecific("settings", settings)
 
-	err = f.setAuthUser(au)
+	err = f.setUser(au)
 
 	f.Emit(signals.PostSetUserSettings, f.Tag().String(), r, eid, ctx)
 	return
@@ -200,7 +200,7 @@ func (f *CFeature) UpdateUserGroups(r *http.Request, eid string, groups ...featu
 
 func (f *CFeature) SetUserGroups(r *http.Request, eid string, groups ...feature.Group) (err error) {
 	list := feature.Groups(groups)
-	var au *beUser.AuthUser
+	var au *beUser.User
 
 	if stop := f.Emit(signals.PreSetUserGroups, f.Tag().String(), r, eid, &list); stop {
 		err = errors.ErrSignalStopped
@@ -208,7 +208,7 @@ func (f *CFeature) SetUserGroups(r *http.Request, eid string, groups ...feature.
 	} else if !f.UserPresent(eid) {
 		err = errors.ErrUserNotFound
 		return
-	} else if au, err = f.getAuthUser(eid); err != nil {
+	} else if au, err = f.getUser(eid); err != nil {
 		return
 	}
 
@@ -216,7 +216,7 @@ func (f *CFeature) SetUserGroups(r *http.Request, eid string, groups ...feature.
 		userbase.PublicGroup,
 		userbase.UsersGroup,
 	}.Append(list...)
-	err = f.setAuthUser(au)
+	err = f.setUser(au)
 
 	f.Emit(signals.PostSetUserGroups, f.Tag().String(), r, eid, list, err)
 	return
@@ -242,7 +242,7 @@ func (f *CFeature) UpdateUserPermissions(r *http.Request, eid string, permission
 
 func (f *CFeature) SetUserPermissions(r *http.Request, eid string, permissions ...feature.Action) (err error) {
 	actions := feature.Actions(permissions)
-	var au *beUser.AuthUser
+	var au *beUser.User
 
 	if stop := f.Emit(signals.PreSetUserPermissions, f.Tag().String(), r, eid, &actions); stop {
 		err = errors.ErrSignalStopped
@@ -250,12 +250,12 @@ func (f *CFeature) SetUserPermissions(r *http.Request, eid string, permissions .
 	} else if !f.UserPresent(eid) {
 		err = errors.ErrUserNotFound
 		return
-	} else if au, err = f.getAuthUser(eid); err != nil {
+	} else if au, err = f.getUser(eid); err != nil {
 		return
 	}
 
 	au.Actions = au.Actions.Append(actions...)
-	err = f.setAuthUser(au)
+	err = f.setUser(au)
 
 	f.Emit(signals.PostSetUserPermissions, f.Tag().String(), r, eid, actions, err)
 	return
@@ -279,7 +279,7 @@ func (f *CFeature) UpdateUserActive(r *http.Request, eid string, active bool) (e
 }
 
 func (f *CFeature) SetUserActive(r *http.Request, eid string, active bool) (err error) {
-	var au *beUser.AuthUser
+	var au *beUser.User
 
 	if stop := f.Emit(signals.PreSetUserActive, f.Tag().String(), r, eid, &active); stop {
 		err = errors.ErrSignalStopped
@@ -287,24 +287,24 @@ func (f *CFeature) SetUserActive(r *http.Request, eid string, active bool) (err 
 	} else if !f.UserPresent(eid) {
 		err = errors.ErrUserNotFound
 		return
-	} else if au, err = f.getAuthUser(eid); err != nil {
+	} else if au, err = f.getUser(eid); err != nil {
 		return
 	}
 
 	au.Active = active
-	err = f.setAuthUser(au)
+	err = f.setUser(au)
 
 	f.Emit(signals.PostSetUserActive, f.Tag().String(), r, eid, active, err)
 	return
 }
 
 func (f *CFeature) GetUserActive(r *http.Request, eid string) (active bool, err error) {
-	var au *beUser.AuthUser
+	var au *beUser.User
 
 	if !f.UserPresent(eid) {
 		err = errors.ErrUserNotFound
 		return
-	} else if au, err = f.getAuthUser(eid); err != nil {
+	} else if au, err = f.getUser(eid); err != nil {
 		return
 	}
 
@@ -330,7 +330,7 @@ func (f *CFeature) UpdateUserAdminLocked(r *http.Request, eid string, locked boo
 }
 
 func (f *CFeature) SetUserAdminLocked(r *http.Request, eid string, locked bool) (err error) {
-	var au *beUser.AuthUser
+	var au *beUser.User
 
 	if stop := f.Emit(signals.PreSetUserAdminLocked, f.Tag().String(), r, eid, &locked); stop {
 		err = errors.ErrSignalStopped
@@ -338,24 +338,24 @@ func (f *CFeature) SetUserAdminLocked(r *http.Request, eid string, locked bool) 
 	} else if !f.UserPresent(eid) {
 		err = errors.ErrUserNotFound
 		return
-	} else if au, err = f.getAuthUser(eid); err != nil {
+	} else if au, err = f.getUser(eid); err != nil {
 		return
 	}
 
 	au.AdminLocked = locked
-	err = f.setAuthUser(au)
+	err = f.setUser(au)
 
 	f.Emit(signals.PostSetUserAdminLocked, f.Tag().String(), r, eid, locked, err)
 	return
 }
 
 func (f *CFeature) GetUserAdminLocked(r *http.Request, eid string) (locked bool, err error) {
-	var au *beUser.AuthUser
+	var au *beUser.User
 
 	if !f.UserPresent(eid) {
 		err = errors.ErrUserNotFound
 		return
-	} else if au, err = f.getAuthUser(eid); err != nil {
+	} else if au, err = f.getUser(eid); err != nil {
 		return
 	}
 
@@ -364,12 +364,12 @@ func (f *CFeature) GetUserAdminLocked(r *http.Request, eid string) (locked bool,
 }
 
 func (f *CFeature) GetUserStatus(r *http.Request, eid string) (active, locked, visitor bool, err error) {
-	var au *beUser.AuthUser
+	var au *beUser.User
 
 	if !f.UserPresent(eid) {
 		err = errors.ErrUserNotFound
 		return
-	} else if au, err = f.getAuthUser(eid); err != nil {
+	} else if au, err = f.getUser(eid); err != nil {
 		return
 	}
 

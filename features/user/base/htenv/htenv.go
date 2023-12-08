@@ -38,7 +38,7 @@ var (
 type Feature interface {
 	feature.Feature
 	feature.SecretsProvider
-	feature.AuthUserProvider
+	feature.UserProvider
 	feature.GroupsProvider
 }
 
@@ -51,7 +51,7 @@ type CFeature struct {
 
 	env *site_environ.CSiteEnviron[MakeFeature]
 
-	users  map[string]*users.AuthUser
+	users  map[string]*users.User
 	hashes map[string]string
 	groups map[feature.Group][]string
 }
@@ -88,7 +88,7 @@ func (f *CFeature) Init(this interface{}) {
 		"user", "bcrypt-password-hash",
 		"group", "space separated usernames",
 	)
-	f.users = make(map[string]*users.AuthUser)
+	f.users = make(map[string]*users.User)
 	f.hashes = make(map[string]string)
 	f.groups = make(map[feature.Group][]string)
 }
@@ -126,7 +126,7 @@ func (f *CFeature) GetUserSecret(id string) (secret string) {
 	return
 }
 
-func (f *CFeature) SetUser(user users.AuthUser) (err error) {
+func (f *CFeature) SetUser(user users.User) (err error) {
 	// f.Lock()
 	// defer f.Unlock()
 	err = fmt.Errorf("cannot add user: %v is read-only", f.Tag())
@@ -140,14 +140,14 @@ func (f *CFeature) AddUserToGroup(id string, groups ...string) (err error) {
 	return
 }
 
-func (f *CFeature) AuthUserPresent(id string) (present bool) {
+func (f *CFeature) UserPresent(id string) (present bool) {
 	f.RLock()
 	defer f.RUnlock()
 	_, present = f.users[id]
 	return
 }
 
-func (f *CFeature) GetAuthUser(id string) (user feature.AuthUser, err error) {
+func (f *CFeature) GetUser(id string) (user feature.User, err error) {
 	f.RLock()
 	defer f.RUnlock()
 	if u, ok := f.users[id]; ok {

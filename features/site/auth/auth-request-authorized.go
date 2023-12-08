@@ -59,7 +59,7 @@ func (f *CFeature) AuthorizeUserSignIn(w http.ResponseWriter, r *http.Request, c
 	var err error
 	su.LockUser(r, claims.EID)
 
-	var au feature.AuthUser
+	var au feature.User
 	if au, err = su.RetrieveUser(r, claims.EID); err != nil {
 		su.UnlockUser(r, claims.EID)
 		log.ErrorRF(r, "error retrieving user %q: %v", claims.EID, err)
@@ -77,7 +77,7 @@ func (f *CFeature) AuthorizeUserSignIn(w http.ResponseWriter, r *http.Request, c
 		return
 	}
 
-	r = userbase.SetCurrentAuthUser(au, f.setPrivateClaims(r, claims))
+	r = userbase.SetCurrentUser(au, f.setPrivateClaims(r, claims))
 
 	for _, sf := range f.Site().SiteFeatures() {
 		if uu, ok := sf.This().(feature.SiteUserRequestModifier); ok {

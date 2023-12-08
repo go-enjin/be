@@ -41,28 +41,27 @@ type GroupsProvider interface {
 	GetUserGroups(eid string) (groups Groups)
 }
 
-type AuthUserProvider interface {
+type UserProvider interface {
 	Feature
 
-	// AuthUserPresent returns true if a user with the EID given is present
-	AuthUserPresent(eid string) (present bool)
+	// UserPresent returns true if a user with the EID given is present
+	UserPresent(eid string) (present bool)
 
-	// GetAuthUser returns the user by user.EID
-	GetAuthUser(eid string) (user AuthUser, err error)
+	// GetUser returns the user by user.EID
+	GetUser(eid string) (user User, err error)
 }
 
-type AuthUserManager interface {
+type UserManager interface {
 	Feature
 
-	// NewAuthUser constructs a new AuthUser instance and saves it to the
-	// userbase
-	NewAuthUser(rid, name, email, picture, audience string, attributes map[string]interface{}) (user AuthUser, err error)
+	// NewUser constructs a new User instance and saves it to the userbase
+	NewUser(rid, name, email, picture, audience string, attributes map[string]interface{}) (user User, err error)
 
-	// SetAuthUser writes the given AuthUser to the system
-	SetAuthUser(user AuthUser) (err error)
+	// SetUser writes the given User to the system
+	SetUser(user User) (err error)
 
-	// RemoveAuthUser deletes a user from the system
-	RemoveAuthUser(eid string) (err error)
+	// RemoveUser deletes a user from the system
+	RemoveUser(eid string) (err error)
 }
 
 type SecretsProvider interface {

@@ -19,6 +19,5 @@ type tPrivateRequestKey string
 const (
 	gCurrentEidKey         tPrivateRequestKey = "current-eid"
 	gCurrentUserKey        tPrivateRequestKey = "current-user"
-	gCurrentAuthUserKey    tPrivateRequestKey = "current-auth-user"
 	gCurrentPermissionsKey tPrivateRequestKey = "current-permissions"
 )

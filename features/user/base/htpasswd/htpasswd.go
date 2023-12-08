@@ -39,7 +39,7 @@ var (
 
 type Feature interface {
 	feature.Feature
-	feature.AuthUserProvider
+	feature.UserProvider
 	feature.GroupsProvider
 	feature.SecretsProvider
 }
@@ -169,18 +169,18 @@ func (f *CFeature) GetUserSecret(id string) (hash string) {
 	return
 }
 
-func (f *CFeature) AuthUserPresent(id string) (present bool) {
+func (f *CFeature) UserPresent(id string) (present bool) {
 	f.RLock()
 	defer f.RUnlock()
 	_, present = f.parsedPwd[id]
 	return
 }
 
-func (f *CFeature) GetAuthUser(id string) (user feature.AuthUser, err error) {
+func (f *CFeature) GetUser(id string) (user feature.User, err error) {
 	f.RLock()
 	defer f.RUnlock()
 	if _, found := f.parsedPwd[id]; found {
-		user = users.NewAuthUser(id, id, "", "", beContext.Context{})
+		user = users.NewUser(id, id, "", "", beContext.Context{})
 	} else {
 		err = fmt.Errorf("user not found")
 	}
@@ -211,7 +211,7 @@ func (f *CFeature) IsUserInGroup(id string, group feature.Group) (present bool) 
 	return
 }
 
-// func (f *CFeature) AddUser(user *userbase.AuthUser) (err error) {
+// func (f *CFeature) AddUser(user *userbase.User) (err error) {
 // 	// f.Lock()
 // 	// defer f.Unlock()
 // 	err = fmt.Errorf("%v feature is read-only", f.Tag())

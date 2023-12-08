@@ -37,10 +37,10 @@ func (f *CFeature) makeUserPath(eid string) (path string) {
 	return
 }
 
-func (f *CFeature) ListUsers(r *http.Request, pg, numPerPage int, sortDesc bool) (list []feature.AuthUser, total int) {
+func (f *CFeature) ListUsers(r *http.Request, pg, numPerPage int, sortDesc bool) (list []feature.User, total int) {
 	for _, file := range f.MountPoints.ListFiles("/user") {
 		eid := bePath.Base(file)
-		if au, err := f.getAuthUser(eid); err == nil {
+		if au, err := f.getUser(eid); err == nil {
 			list = append(list, au)
 		} else {
 			log.ErrorRF(r, "error getting auth user: %v - %w", eid, err)
@@ -73,8 +73,8 @@ func (f *CFeature) UserPresent(eid string) (present bool) {
 	return
 }
 
-func (f *CFeature) makeUser(origin, rid, eid, email string) (u *beUser.AuthUser, err error) {
-	u = &beUser.AuthUser{
+func (f *CFeature) makeUser(origin, rid, eid, email string) (u *beUser.User, err error) {
+	u = &beUser.User{
 		RID:     rid,
 		EID:     eid,
 		Name:    beStrings.NameFromEmail(email),
@@ -108,7 +108,7 @@ func (f *CFeature) SignUpUser(r *http.Request, claims *feature.CSiteAuthClaims) 
 		return
 	}
 
-	var u feature.AuthUser
+	var u feature.User
 	if u, err = f.makeUser(claims.Audience[0], claims.RID, claims.EID, claims.Email); err != nil {
 		return
 	}
@@ -130,7 +130,7 @@ func (f *CFeature) CreateUser(r *http.Request, origin, rid, eid, email string) (
 		return
 	}
 
-	var u feature.AuthUser
+	var u feature.User
 	if u, err = f.makeUser(origin, rid, eid, email); err != nil {
 		return
 	}
@@ -139,15 +139,15 @@ func (f *CFeature) CreateUser(r *http.Request, origin, rid, eid, email string) (
 	return
 }
 
-func (f *CFeature) RetrieveUser(r *http.Request, eid string) (user feature.AuthUser, err error) {
+func (f *CFeature) RetrieveUser(r *http.Request, eid string) (user feature.User, err error) {
 	//uid := userbase.GetCurrentEID(r)
 	if stop := f.Emit(signals.PreRetrieveUser, f.Tag().String(), r, eid); stop {
 		err = beErrors.ErrSignalStopped
 		return
 	}
 
-	var au *beUser.AuthUser
-	if au, err = f.getAuthUser(eid); err == nil {
+	var au *beUser.User
+	if au, err = f.getUser(eid); err == nil {
 
 		au.Actions = au.Actions.Append(f.Enjin.PublicUserActions()...)
 
@@ -169,8 +169,8 @@ func (f *CFeature) RetrieveUser(r *http.Request, eid string) (user feature.AuthU
 func (f *CFeature) DeleteUser(r *http.Request, eid string) (err error) {
 	uid := userbase.GetCurrentEID(r)
 
-	var au *beUser.AuthUser
-	if au, err = f.getAuthUser(eid); err == nil {
+	var au *beUser.User
+	if au, err = f.getUser(eid); err == nil {
 
 		if stop := f.Emit(signals.PreDeleteUser, f.Tag().String(), r, eid, au); stop {
 			err = beErrors.ErrSignalStopped

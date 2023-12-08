@@ -37,7 +37,7 @@ func IsValidEID(eid string) (valid bool) {
 	return
 }
 
-func IsUserActive(au feature.AuthUser) (active bool) {
+func IsUserActive(au feature.User) (active bool) {
 	if adminLocked, ok := au.UnsafeContext().Get(UserAdminLockedKey).(bool); ok && adminLocked {
 		return
 	}

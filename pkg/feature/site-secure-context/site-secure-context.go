@@ -97,7 +97,7 @@ func (c *CSecureContext) Get(eid string, r *http.Request, sup feature.SiteUsersP
 
 func (c *CSecureContext) GetUnsafe(eid string, r *http.Request, sup feature.SiteUsersProvider) (ctx context.Context, err error) {
 
-	var au feature.AuthUser
+	var au feature.User
 	if au, err = sup.RetrieveUser(r, eid); err != nil {
 		return
 	}
@@ -136,7 +136,7 @@ func (c *CSecureContext) SetUnsafe(eid string, r *http.Request, sup feature.Site
 	sup.LockUser(r, eid)
 	defer sup.UnlockUser(r, eid)
 
-	var au feature.AuthUser
+	var au feature.User
 	if au, err = sup.RetrieveUser(r, eid); err != nil {
 		return
 	}
@@ -163,7 +163,7 @@ func (c *CSecureContext) Delete(eid string, r *http.Request, sup feature.SiteUse
 	sup.LockUser(r, eid)
 	defer sup.UnlockUser(r, eid)
 
-	var au feature.AuthUser
+	var au feature.User
 	if au, err = sup.RetrieveUser(r, eid); err != nil {
 		return
 	}

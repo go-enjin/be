@@ -71,5 +71,5 @@ type SiteRootFeature interface {
 type SiteUserRequestModifier interface {
 	SiteFeature
 
-	ModifyUserRequest(au AuthUser, r *http.Request) (modified *http.Request)
+	ModifyUserRequest(au User, r *http.Request) (modified *http.Request)
 }

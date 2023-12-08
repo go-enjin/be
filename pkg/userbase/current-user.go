@@ -21,15 +21,15 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 )
 
-func GetCurrentAuthUser(r *http.Request) (u feature.AuthUser) {
-	if v := r.Context().Value(gCurrentAuthUserKey); v != nil {
-		u, _ = v.(feature.AuthUser)
+func GetCurrentUser(r *http.Request) (u feature.User) {
+	if v := r.Context().Value(gCurrentUserKey); v != nil {
+		u, _ = v.(feature.User)
 	}
 	return
 }
 
-func SetCurrentAuthUser(u feature.AuthUser, r *http.Request) (m *http.Request) {
-	if m = r.Clone(context.WithValue(r.Context(), gCurrentAuthUserKey, u)); u == nil {
+func SetCurrentUser(u feature.User, r *http.Request) (m *http.Request) {
+	if m = r.Clone(context.WithValue(r.Context(), gCurrentUserKey, u)); u == nil {
 		m = setCurrentEID(m, nil)
 	} else {
 		m = setCurrentEID(m, u.GetEID())

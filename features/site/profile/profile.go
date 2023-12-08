@@ -317,7 +317,7 @@ func (f *CFeature) RouteSiteFeature(r chi.Router) {
 	}
 }
 
-func (f *CFeature) ModifyUserRequest(au feature.AuthUser, r *http.Request) (modified *http.Request) {
+func (f *CFeature) ModifyUserRequest(au feature.User, r *http.Request) (modified *http.Request) {
 	if f.siteLocaleEnabled {
 		if locale, ok := au.GetSetting("locale").(string); ok && locale != "" {
 			if parsed, err := language.Parse(locale); err == nil {
@@ -356,7 +356,7 @@ func (f *CFeature) ServeProfilePage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var err error
-	var au feature.AuthUser
+	var au feature.User
 	if au, err = f.Site().SiteUsers().RetrieveUser(r, eid); err != nil {
 		f.Enjin.ServeNotFound(w, r)
 		return
@@ -376,7 +376,7 @@ func (f *CFeature) ServeProfilePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (f *CFeature) SiteUserSetupStageReady(eid string, r *http.Request) (ready bool) {
-	au := userbase.GetCurrentAuthUser(r)
+	au := userbase.GetCurrentUser(r)
 	if displayName, ok := au.GetSetting("display-name").(string); ok {
 		ready = displayName != ""
 	}
@@ -385,7 +385,7 @@ func (f *CFeature) SiteUserSetupStageReady(eid string, r *http.Request) (ready b
 
 func (f *CFeature) SiteUserSetupStageHandler(saf feature.SiteAuthFeature, w http.ResponseWriter, r *http.Request) {
 	var err error
-	var au feature.AuthUser
+	var au feature.User
 	printer := lang.GetPrinterFromRequest(r)
 
 	su := f.Site().SiteUsers()

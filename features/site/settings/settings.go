@@ -188,7 +188,7 @@ func (f *CFeature) ServeSettingsPage(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: route settings panels changes if r.URL.Path != settings path
 
-	au := userbase.GetCurrentAuthUser(r)
+	au := userbase.GetCurrentUser(r)
 	matter := au.GetSettings()
 
 	f.RenderSettingsWith(matter, w, r)
@@ -348,9 +348,9 @@ func (f *CFeature) ReceiveSettingsChanges(w http.ResponseWriter, r *http.Request
 	}
 
 	var err error
-	var au feature.AuthUser
+	var au feature.User
 	if au, err = f.Site().SiteUsers().RetrieveUser(r, eid); err != nil {
-		au = userbase.GetCurrentAuthUser(r)
+		au = userbase.GetCurrentUser(r)
 	}
 
 	uCtx := au.GetSettings()

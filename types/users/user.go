@@ -25,10 +25,10 @@ import (
 )
 
 var (
-	_ feature.AuthUser = (*AuthUser)(nil)
+	_ feature.User = (*User)(nil)
 )
 
-type AuthUser struct {
+type User struct {
 	RID         string          `json:"real-id"`
 	EID         string          `json:"enjin-id"`
 	Name        string          `json:"name"`
@@ -42,9 +42,9 @@ type AuthUser struct {
 	AdminLocked bool            `json:"admin-locked"`
 }
 
-func NewAuthUser(id, name, email, image string, ctx context.Context) (user *AuthUser) {
+func NewUser(id, name, email, image string, ctx context.Context) (user *User) {
 	eid, _ := sha.DataHash10([]byte(id))
-	user = &AuthUser{
+	user = &User{
 		RID:     id,
 		EID:     eid,
 		Name:    name,
@@ -56,52 +56,52 @@ func NewAuthUser(id, name, email, image string, ctx context.Context) (user *Auth
 	return
 }
 
-func (u *AuthUser) GetRID() (rid string) {
+func (u *User) GetRID() (rid string) {
 	rid = u.RID
 	return
 }
 
-func (u *AuthUser) GetEID() (eid string) {
+func (u *User) GetEID() (eid string) {
 	eid = u.EID
 	return
 }
 
-func (u *AuthUser) GetName() (name string) {
+func (u *User) GetName() (name string) {
 	name = u.Name
 	return
 }
 
-func (u *AuthUser) GetEmail() (email string) {
+func (u *User) GetEmail() (email string) {
 	email = u.Email
 	return
 }
 
-func (u *AuthUser) GetImage() (image string) {
+func (u *User) GetImage() (image string) {
 	image = u.Image
 	return
 }
 
-func (u *AuthUser) GetOrigin() (origin string) {
+func (u *User) GetOrigin() (origin string) {
 	origin = u.Origin
 	return
 }
 
-func (u *AuthUser) UnsafeContext() (ctx context.Context) {
+func (u *User) UnsafeContext() (ctx context.Context) {
 	ctx = u.Context
 	return
 }
 
-func (u *AuthUser) GetActive() (active bool) {
+func (u *User) GetActive() (active bool) {
 	active = u.Active
 	return
 }
 
-func (u *AuthUser) GetAdminLocked() (locked bool) {
+func (u *User) GetAdminLocked() (locked bool) {
 	locked = u.AdminLocked
 	return
 }
 
-func (u *AuthUser) SafeContext(includeKeys ...string) (ctx context.Context) {
+func (u *User) SafeContext(includeKeys ...string) (ctx context.Context) {
 	ctx = context.Context{
 		"EID":          u.EID,
 		"Name":         u.Name,
@@ -122,7 +122,7 @@ func (u *AuthUser) SafeContext(includeKeys ...string) (ctx context.Context) {
 	return
 }
 
-func (u *AuthUser) GetSettings(limitKeys ...string) (settings context.Context) {
+func (u *User) GetSettings(limitKeys ...string) (settings context.Context) {
 	settings = context.Context{
 		"Email":        u.Email,
 		"DisplayName":  u.Context.String(".settings.display-name", u.Name),
@@ -142,29 +142,29 @@ func (u *AuthUser) GetSettings(limitKeys ...string) (settings context.Context) {
 	return
 }
 
-func (u *AuthUser) GetSetting(key string) (value interface{}) {
+func (u *User) GetSetting(key string) (value interface{}) {
 	if ctx := u.Context.Context("settings"); len(ctx) > 0 {
 		value = ctx.Get(key)
 	}
 	return
 }
 
-func (u *AuthUser) GetGroups() (groups feature.Groups) {
+func (u *User) GetGroups() (groups feature.Groups) {
 	groups = append(groups, u.Groups...)
 	return
 }
 
-func (u *AuthUser) GetActions() (actions feature.Actions) {
+func (u *User) GetActions() (actions feature.Actions) {
 	actions = append(actions, u.Actions...)
 	return
 }
 
-func (u *AuthUser) IsVisitor() (visitor bool) {
+func (u *User) IsVisitor() (visitor bool) {
 	visitor = u.EID == userbase.VisitorEID
 	return
 }
 
-func (u *AuthUser) Can(actions ...feature.Action) (allowed bool) {
+func (u *User) Can(actions ...feature.Action) (allowed bool) {
 	if u.AdminLocked {
 		return
 	}
@@ -172,7 +172,7 @@ func (u *AuthUser) Can(actions ...feature.Action) (allowed bool) {
 	return
 }
 
-func (u *AuthUser) CanAll(actions ...feature.Action) (allowed bool) {
+func (u *User) CanAll(actions ...feature.Action) (allowed bool) {
 	if u.AdminLocked {
 		return
 	}
@@ -180,7 +180,7 @@ func (u *AuthUser) CanAll(actions ...feature.Action) (allowed bool) {
 	return
 }
 
-func (u *AuthUser) Bytes() (data []byte) {
+func (u *User) Bytes() (data []byte) {
 	var err error
 	if data, err = json.MarshalIndent(u, "", "\t"); err != nil {
 		panic(err)

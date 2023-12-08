@@ -18,7 +18,7 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 )
 
-type AuthUser interface {
+type User interface {
 	GetRID() (rid string)
 	GetEID() (eid string)
 	GetName() (name string)
@@ -43,10 +43,4 @@ type AuthUser interface {
 	IsVisitor() (visitor bool)
 
 	Bytes() (data []byte)
-}
-
-type User interface {
-	AuthUser
-	AsPage() (pg Page)
-	FilteredContext(includeKeys ...string) (ctx context.Context)
 }

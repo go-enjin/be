@@ -80,7 +80,7 @@ func (f *CFeature) setGroup(group feature.Group, permissions ...feature.Action) 
 	return
 }
 
-func (f *CFeature) getAuthUser(eid string) (user *beUser.AuthUser, err error) {
+func (f *CFeature) getUser(eid string) (user *beUser.User, err error) {
 	if !f.UserPresent(eid) {
 		err = errors.ErrUserNotFound
 		return
@@ -89,12 +89,12 @@ func (f *CFeature) getAuthUser(eid string) (user *beUser.AuthUser, err error) {
 	if data, err = f.MountPoints.ReadFile(f.makeUserPath(eid)); err != nil {
 		return
 	}
-	user = &beUser.AuthUser{}
+	user = &beUser.User{}
 	err = json.Unmarshal(data, user)
 	return
 }
 
-func (f *CFeature) setAuthUser(au *beUser.AuthUser) (err error) {
+func (f *CFeature) setUser(au *beUser.User) (err error) {
 	if !f.UserPresent(au.EID) {
 		err = errors.ErrUserNotFound
 		return

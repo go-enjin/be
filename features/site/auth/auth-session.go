@@ -125,7 +125,7 @@ func (f *CFeature) deleteCookie(w http.ResponseWriter, name string) {
 func (f *CFeature) resetCurrentUser(w http.ResponseWriter, r *http.Request) (m *http.Request) {
 	f.deleteCookie(w, f.jwtCookieName)
 	m = f.setPrivateClaims(r, nil)
-	m = userbase.SetCurrentAuthUser(nil, m)
+	m = userbase.SetCurrentUser(nil, m)
 	m = userbase.SetCurrentPermissions(m, f.Enjin.GetPublicAccess()...)
 	return
 }

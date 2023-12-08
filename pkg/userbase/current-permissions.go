@@ -22,7 +22,7 @@ import (
 )
 
 func GetCurrentPermissions(r *http.Request) (actions feature.Actions) {
-	if u := GetCurrentAuthUser(r); u != nil {
+	if u := GetCurrentUser(r); u != nil {
 		actions = u.GetActions()
 	}
 

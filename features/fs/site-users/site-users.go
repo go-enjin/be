@@ -242,9 +242,9 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	for _, email := range maps.SortedKeys(f.initUsers) {
 		rid := f.MakeRealID(email)
 		eid := f.MakeEnjinID(rid)
-		if au, ee := f.getAuthUser(eid); ee == nil {
+		if au, ee := f.getUser(eid); ee == nil {
 			au.Groups = au.Groups.Append(f.initUsers[email]...)
-			_ = f.setAuthUser(au)
+			_ = f.setUser(au)
 		}
 	}
 

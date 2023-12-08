@@ -34,7 +34,7 @@ func (f *CFeature) loadEnvironment() (err error) {
 	if named, ok := f.env.GetSiteEnviron("user"); ok {
 		for name, hash := range named {
 			f.hashes[name] = hash
-			f.users[name] = users.NewAuthUser(f.Tag().String()+"--"+name, name, "", "", beContext.Context{})
+			f.users[name] = users.NewUser(f.Tag().String()+"--"+name, name, "", "", beContext.Context{})
 		}
 	}
 

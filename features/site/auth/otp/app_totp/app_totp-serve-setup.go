@@ -105,7 +105,7 @@ func (f *CFeature) ProcessSetupPage(saf feature.SiteAuthFeature, w http.Response
 
 	handled = true
 
-	au := userbase.GetCurrentAuthUser(r)
+	au := userbase.GetCurrentUser(r)
 
 	ctx := context.Context{
 		"FeatureInfo": f.SiteFeatureInfo(r),

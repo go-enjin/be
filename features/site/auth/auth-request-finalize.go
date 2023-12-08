@@ -23,7 +23,7 @@ import (
 )
 
 func (f *CFeature) FinalizeSiteRequest(w http.ResponseWriter, r *http.Request) (m *http.Request) {
-	var au feature.AuthUser
+	var au feature.User
 	var claims *feature.CSiteAuthClaims
 
 	if claims = f.getPrivateClaims(r); claims == nil {

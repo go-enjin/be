@@ -49,7 +49,7 @@ func (f *CFeature) SiteUserSetupStageHandler(saf feature.SiteAuthFeature, w http
 
 func (f *CFeature) ServeSetupPage(settingsPath string, saf feature.SiteAuthFeature, w http.ResponseWriter, r *http.Request) (redirect string) {
 	printer := lang.GetPrinterFromRequest(r)
-	au := userbase.GetCurrentAuthUser(r)
+	au := userbase.GetCurrentUser(r)
 	eid := au.GetEID()
 	email := au.GetEmail()
 	su := f.Site().SiteUsers()

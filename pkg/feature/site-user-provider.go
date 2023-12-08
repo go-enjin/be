@@ -40,10 +40,10 @@ type SiteUsersProvider interface {
 	RLockUser(r *http.Request, eid string)
 	RUnlockUser(r *http.Request, eid string)
 
-	ListUsers(r *http.Request, pg, numPerPage int, sortDesc bool) (list []AuthUser, total int)
+	ListUsers(r *http.Request, pg, numPerPage int, sortDesc bool) (list []User, total int)
 	SignUpUser(r *http.Request, claims *CSiteAuthClaims) (err error)
 	CreateUser(r *http.Request, origin, rid, eid, email string) (err error)
-	RetrieveUser(r *http.Request, eid string) (user AuthUser, err error)
+	RetrieveUser(r *http.Request, eid string) (user User, err error)
 	DeleteUser(r *http.Request, eid string) (err error)
 
 	UpdateUserName(r *http.Request, eid string, name string) (err error)

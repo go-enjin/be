@@ -93,7 +93,7 @@ type CFeature struct {
 	upNames          []string
 	gpNames          []string
 	spNames          []string
-	usersProviders   []feature.AuthUserProvider
+	usersProviders   []feature.UserProvider
 	groupsProviders  []feature.GroupsProvider
 	secretsProviders []feature.SecretsProvider
 }
@@ -387,10 +387,10 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		efTag := ef.Tag().String()
 		for _, upName := range f.upNames {
 			if efTag == upName {
-				if upf, ok := feature.AsTyped[feature.AuthUserProvider](ef); ok {
+				if upf, ok := feature.AsTyped[feature.UserProvider](ef); ok {
 					f.usersProviders = append(f.usersProviders, upf)
 				} else {
-					err = fmt.Errorf("%v feature is not a userbase.AuthUserProvider", efTag)
+					err = fmt.Errorf("%v feature is not a userbase.UserProvider", efTag)
 					return
 				}
 			}
@@ -418,7 +418,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 
 	if len(f.usersProviders) == 0 {
-		err = fmt.Errorf("at least one userbase.AuthUserProvider is required")
+		err = fmt.Errorf("at least one userbase.UserProvider is required")
 		return
 	} else if len(f.groupsProviders) == 0 {
 		err = fmt.Errorf("at least one userbase.GroupsProvider is required")
@@ -504,7 +504,7 @@ func (f *CFeature) RestrictServePage(pgCtx beContext.Context, w http.ResponseWri
 			if allow = f.isUserInGroup(id, group); allow {
 				tag := f.Tag().Camel()
 				modCtx[tag+"UserID"] = id
-				modCtx[tag+"User"] = users.NewAuthUser(id, id, "", "", beContext.Context{"ID": id, "GetName": id})
+				modCtx[tag+"User"] = users.NewUser(id, id, "", "", beContext.Context{"ID": id, "GetName": id})
 				if f.cacheControl != "" {
 					if _, exists := modCtx["CacheControl"]; !exists {
 						modCtx["CacheControl"] = f.cacheControl
@@ -609,9 +609,9 @@ func (f *CFeature) isRequestIgnored(path string) (ignored bool) {
 	return
 }
 
-func (f *CFeature) getUser(id, _ string) (user feature.AuthUser) {
+func (f *CFeature) getUser(id, _ string) (user feature.User) {
 	for _, upf := range f.usersProviders {
-		if found, err := upf.GetAuthUser(id); err == nil && found != nil {
+		if found, err := upf.GetUser(id); err == nil && found != nil {
 			user = found
 			return
 		}
