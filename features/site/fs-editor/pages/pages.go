@@ -142,7 +142,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 
 func (f *CFeature) SetupEditorRoute(r chi.Router) {
 	f.CEditorFeature.SetupEditorRoute(r)
-	r.Post("/", f.SelfEditor().ReceiveFileEditorChanges)
+	r.Post("/*", f.SelfEditor().ReceiveFileEditorChanges)
 }
 
 func (f *CFeature) SetupEditor(es feature.EditorSite) {
