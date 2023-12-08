@@ -18,7 +18,6 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
@@ -27,7 +26,7 @@ import (
 )
 
 func init() {
-	gob.Register(&PageStub{})
+	gob.Register(PageStub{})
 }
 
 type ValueStubPair struct {
@@ -36,14 +35,14 @@ type ValueStubPair struct {
 }
 
 type PageStub struct {
-	Origin   string
-	FS       fs.FileSystem
-	Point    string
-	Shasum   string
-	Source   string
-	Language language.Tag
-	Fallback language.Tag
-	EnjinCtx beContext.Context
+	Origin   string            `json:"origin"`
+	FS       fs.FileSystem     `json:"fs"`
+	Point    string            `json:"point"`
+	Shasum   string            `json:"shasum"`
+	Source   string            `json:"source"`
+	Language language.Tag      `json:"language"`
+	Fallback language.Tag      `json:"fallback"`
+	EnjinCtx beContext.Context `json:"enjin-ctx"`
 }
 
 func NewPageStub(origin string, enjin beContext.Context, bfs fs.FileSystem, point, source, shasum string, fallback language.Tag) (s *PageStub) {
@@ -60,68 +59,47 @@ func NewPageStub(origin string, enjin beContext.Context, bfs fs.FileSystem, poin
 	return
 }
 
+type encodedPageStub struct {
+	Origin   string            `json:"origin"`
+	FS       string            `json:"fs"`
+	Point    string            `json:"point"`
+	Shasum   string            `json:"shasum"`
+	Source   string            `json:"source"`
+	Language string            `json:"language"`
+	Fallback string            `json:"fallback"`
+	EnjinCtx beContext.Context `json:"enjin-ctx"`
+}
+
 func (ps *PageStub) MarshalBinary() (data []byte, err error) {
-	return ps.GobEncode()
-}
-
-func (ps *PageStub) UnmarshalBinary(data []byte) (err error) {
-	return ps.GobDecode(data)
-}
-
-func (ps *PageStub) GobEncode() (data []byte, err error) {
-	var ctx []byte
-	if ctx, err = ps.EnjinCtx.AsJSON(); err != nil {
-		return
-	}
-	parts := []string{
-		ps.Origin,
-		ps.FS.ID(),
-		ps.Point,
-		ps.Shasum,
-		ps.Source,
-		ps.Language.String(),
-		ps.Fallback.String(),
-		string(ctx),
-	}
-	text := strings.Join(parts, "\n")
-	data = []byte(text)
+	data, err = json.Marshal(encodedPageStub{
+		Origin:   ps.Origin,
+		FS:       ps.FS.ID(),
+		Point:    ps.Point,
+		Shasum:   ps.Shasum,
+		Source:   ps.Source,
+		Language: ps.Language.String(),
+		Fallback: ps.Fallback.String(),
+		EnjinCtx: ps.EnjinCtx,
+	})
 	return
 }
 
-func (ps *PageStub) GobDecode(data []byte) (err error) {
-	text := string(data)
-	parts := strings.Split(text, "\n")
-	if len(parts) != 8 {
-		err = fmt.Errorf("invalid number of data parts: %#+v", parts)
+func (ps *PageStub) UnmarshalBinary(data []byte) (err error) {
+	var es encodedPageStub
+	if err = json.Unmarshal(data, &es); err != nil {
 		return
 	}
-	ps.Origin = parts[0]
-	id := parts[1]
-	if v, ok := fs.GetFileSystem(id); ok {
-		ps.FS = v
+	ps.Origin = es.Origin
+	ps.Point = es.Point
+	ps.Shasum = es.Shasum
+	ps.Source = es.Source
+	ps.Language, _ = language.Parse(es.Language)
+	ps.Fallback, _ = language.Parse(es.Fallback)
+	ps.EnjinCtx = es.EnjinCtx
+	if f, ok := fs.GetFileSystem(es.FS); ok {
+		ps.FS = f
 	} else {
-		err = fmt.Errorf("filesystem not found: %v", id)
-		return
-	}
-	ps.Point = parts[2]
-	ps.Shasum = parts[3]
-	ps.Source = parts[4]
-	var lt language.Tag
-	if lt, err = language.Parse(parts[5]); err != nil {
-		err = fmt.Errorf("error parsing filesystem language tag: %v - %v", parts[5], err)
-		return
-	}
-	ps.Language = lt
-	var ft language.Tag
-	if ft, err = language.Parse(parts[6]); err != nil {
-		err = fmt.Errorf("error parsing filesystem language tag: %v - %v", parts[6], err)
-		return
-	}
-	ps.Fallback = ft
-	ps.EnjinCtx = beContext.Context{}
-	if err = json.Unmarshal([]byte(parts[7]), &ps.EnjinCtx); err != nil {
-		err = fmt.Errorf("error parsing filesystem context: %v", err)
-		return
+		err = fmt.Errorf("filesystem not found: %v", es.FS)
 	}
 	return
 }
