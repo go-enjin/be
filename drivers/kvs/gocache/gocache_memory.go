@@ -19,8 +19,6 @@ package gocache
 import (
 	"time"
 
-	"github.com/patrickmn/go-cache"
-
 	"github.com/go-enjin/be/pkg/log"
 )
 
