@@ -654,6 +654,12 @@
             "fuzzy": true
         },
         {
+            "id": "Redirecting",
+            "key": "Redirecting",
+            "message": "Redirecting",
+            "translation": "Redirecting"
+        },
+        {
             "id": "Bad request",
             "key": "Bad request",
             "message": "Bad request",
@@ -988,19 +994,18 @@
             "fuzzy": true
         },
         {
-            "id": "Account Setup (Stage {CurrentStage} of {TotalStages})",
+            "id": "Account Setup (Stage {CurrentStage__1} of {TotalStages})",
             "key": "Account Setup (Stage %[1]d of %[2]d)",
-            "message": "Account Setup (Stage {CurrentStage} of {TotalStages})",
-            "translation": "アカウントの設定%[2]d) 中(Stage %[1]d",
-            "translatorComment": "Copied from source.",
+            "message": "Account Setup (Stage {CurrentStage__1} of {TotalStages})",
+            "translation": "アカウントの設定%[2]d) 中(%[2]d %[1]d)",
             "placeholders": [
                 {
-                    "id": "CurrentStage",
+                    "id": "CurrentStage__1",
                     "string": "%[1]d",
                     "type": "int",
                     "underlyingType": "int",
                     "argNum": 1,
-                    "expr": "currentStage"
+                    "expr": "currentStage + 1"
                 },
                 {
                     "id": "TotalStages",
@@ -1010,8 +1015,7 @@
                     "argNum": 2,
                     "expr": "totalStages"
                 }
-            ],
-            "fuzzy": true
+            ]
         },
         {
             "id": "{NumProviderBackups___numProviderBackupsReady} backup accounts",
