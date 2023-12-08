@@ -298,25 +298,13 @@ func CmpLang(a interface{}, other ...interface{}) (equal bool, err error) {
 	var aTag language.Tag
 	var oTags []language.Tag
 
-	parse := func(v interface{}) (tag language.Tag, err error) {
-		switch t := v.(type) {
-		case string:
-			tag, err = language.Parse(t)
-		case language.Tag:
-			tag = t
-		default:
-			err = fmt.Errorf("all arguments must be of either string or language.Tag type")
-		}
-		return
-	}
-
-	if aTag, err = parse(a); err != nil {
+	if aTag, err = lang.ParseTag(a); err != nil {
 		return
 	}
 
 	for _, o := range other {
 		var oTag language.Tag
-		if oTag, err = parse(o); err != nil {
+		if oTag, err = lang.ParseTag(o); err != nil {
 			return
 		}
 		oTags = append(oTags, oTag)
