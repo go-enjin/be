@@ -17,16 +17,7 @@
 package gocache
 
 import (
-	"fmt"
-	"os"
-	"sync"
-
-	"github.com/dgraph-io/ristretto"
-
-	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/gob"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 type RistrettoSupport interface {
@@ -36,164 +27,11 @@ type RistrettoSupport interface {
 func (f *CFeature) AddRistrettoCache(name string, buckets ...string) MakeFeature {
 	f.Lock()
 	defer f.Unlock()
-	f.caches[name] = newRistrettoCache()
+	f.addCache(name, newRistrettoCache())
 	for _, bucket := range buckets {
 		if _, err := f.caches[name].AddBucket(bucket); err != nil {
 			log.FatalDF(1, "error adding bucket to cache: %v - %v", name, bucket)
 		}
 	}
 	return f
-}
-
-var _ feature.KeyValueCache = (*cRistrettoCache)(nil)
-
-type cRistrettoCache struct {
-	buckets map[string]*cRistrettoStore
-	sync.RWMutex
-}
-
-func newRistrettoCache() (cache *cRistrettoCache) {
-	cache = &cRistrettoCache{
-		buckets: make(map[string]*cRistrettoStore),
-	}
-	return
-}
-
-func (c *cRistrettoCache) ListBuckets() (names []string) {
-	names = maps.SortedKeys(c.buckets)
-	return
-}
-
-func (c *cRistrettoCache) MustBucket(name string) (kvs feature.KeyValueStore) {
-	if v, err := c.Bucket(name); err != nil {
-		log.ErrorDF(1, "error getting required bucket \"%v\": - %v", name, err)
-		panic(err)
-	} else {
-		kvs = v
-	}
-	return
-}
-
-func (c *cRistrettoCache) Bucket(name string) (kvs feature.KeyValueStore, err error) {
-	if v, e := c.GetBucket(name); e == nil {
-		kvs = v
-		return
-	}
-	kvs, err = c.AddBucket(name)
-	return
-}
-
-func (c *cRistrettoCache) AddBucket(name string) (kvs feature.KeyValueStore, err error) {
-	c.Lock()
-	defer c.Unlock()
-	if _, exists := c.buckets[name]; exists {
-		err = BucketExists
-		return
-	}
-	c.buckets[name] = newRistrettoBucket()
-	kvs = c.buckets[name]
-	return
-}
-
-func (c *cRistrettoCache) GetBucket(name string) (kvs feature.KeyValueStore, err error) {
-	c.RLock()
-	defer c.RUnlock()
-	if v, ok := c.buckets[name]; ok {
-		kvs = v
-	} else {
-		err = BucketNotFound
-	}
-	return
-}
-
-func (c *cRistrettoCache) GetBucketSource(name string) (src interface{}) {
-	return
-}
-
-var _ feature.KeyValueStore = (*cRistrettoStore)(nil)
-
-type cRistrettoStore struct {
-	//cache map[string][]byte
-	//shards cRistrettoStoreCaches
-
-	cache *ristretto.Cache
-	sync.RWMutex
-}
-
-func newRistrettoBucket() (store *cRistrettoStore) {
-	var err error
-	store = &cRistrettoStore{}
-	if store.cache, err = ristretto.NewCache(&ristretto.Config{
-		NumCounters: 1e7,
-		MaxCost:     1 << 30,
-		BufferItems: 64,
-	}); err != nil {
-		log.FatalF("error constructing ristretto cache instance: %v", err)
-	}
-	return
-}
-
-func (f *cRistrettoStore) Get(k interface{}) (value interface{}, err error) {
-	f.RLock()
-	defer f.RUnlock()
-	var ok bool
-	var key string
-	if key, ok = k.(string); !ok {
-		err = fmt.Errorf("not a string key: %#+v", k)
-		return
-	}
-
-	var data []byte
-	var v interface{}
-
-	if v, ok = f.cache.Get(key); !ok {
-		err = os.ErrNotExist
-		return
-	} else if data, ok = v.([]byte); !ok {
-		err = fmt.Errorf("invalid value type: %T for key: %v", v, key)
-		return
-	}
-
-	//if data, ok = f.cache[key]; !ok {
-	//	err = os.ErrNotExist
-	//	return
-	//}
-
-	value, err = gob.Decode(data)
-	return
-}
-
-func (f *cRistrettoStore) Set(k interface{}, value interface{}) (err error) {
-	f.Lock()
-	defer f.Unlock()
-	var ok bool
-	var key string
-	if key, ok = k.(string); !ok {
-		err = fmt.Errorf("not a string key: %#+v", k)
-		return
-	}
-	var data []byte
-	if data, err = gob.Encode(value); err != nil {
-		return
-	}
-
-	if !f.cache.Set(key, data, 0) {
-		log.FatalF("ristretto set dropped for key: %v", key)
-	}
-
-	//f.cache[key] = data
-	return
-}
-
-func (f *cRistrettoStore) Delete(key interface{}) (err error) {
-	//f.Lock()
-	//defer f.Unlock()
-	// var data []byte
-	// if data, err = gob.Encode(value); err != nil {
-	// 	return
-	// }
-	f.Lock()
-	defer f.Unlock()
-	f.cache.Del(key)
-	return
 }
