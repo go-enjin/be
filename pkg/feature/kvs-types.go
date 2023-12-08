@@ -14,6 +14,10 @@
 
 package feature
 
+import (
+	"github.com/urfave/cli/v2"
+)
+
 // TODO: investigate KeyValueStore implementing sync.RWMutex
 
 type KeyValueCaches interface {
@@ -37,13 +41,14 @@ type KeyValueCache interface {
 	GetBucketSource(name string) (src interface{})
 }
 
-type KeyValueStore interface {
-	Get(key interface{}) (value interface{}, err error)
-	Set(key interface{}, value interface{}) (err error)
-	Delete(key interface{}) (err error)
+type KeyValueCacheFeature interface {
+	Build(b Buildable) (err error)
+	Startup(ctx *cli.Context) (err error)
+	Shutdown()
 }
 
-type KeyValueStoreAny interface {
-	Get(key interface{}) (value interface{}, ok bool)
-	Set(key interface{}, value interface{})
+type KeyValueStore interface {
+	Get(key string) (value []byte, err error)
+	Set(key string, value []byte) (err error)
+	Delete(key string) (err error)
 }
