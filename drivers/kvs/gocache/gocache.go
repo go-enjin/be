@@ -44,10 +44,9 @@ type Feature interface {
 }
 
 type MakeFeature interface {
-	MemorySupport
-	IMCacheSupport
-	MemShardSupport
 	BigCacheSupport
+	IMCacheSupport
+	MemorySupport
 	RistrettoSupport
 
 	Make() Feature
