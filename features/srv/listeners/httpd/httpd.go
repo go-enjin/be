@@ -18,11 +18,9 @@ package httpd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/urfave/cli/v2"
@@ -133,33 +131,14 @@ func (f *CFeature) StartListening(router *chi.Mux, e feature.EnjinRunner) (err e
 	e.Notify("http listener starting")
 	log.DebugF("http listener info:\n%v", e.StartupString())
 
-	// TODO: implement signal handler features for http listeners
 	f.srv = &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", f.listen, f.port),
 		Handler: router,
 	}
 
-	idleConnectionsClosed := make(chan struct{})
-	go func() {
-		sigint := make(chan os.Signal, 1)
-		signal.Notify(sigint, syscall.SIGINT, syscall.SIGTERM)
-		<-sigint
-		if f.srv != nil {
-			if ee := f.srv.Shutdown(context.Background()); ee != nil {
-				log.ErrorF("error shutting down http listener: %v", ee)
-			}
-			f.srv = nil
-		}
-		e.Shutdown()
-		close(idleConnectionsClosed)
-	}()
-
-	if err = f.srv.ListenAndServe(); err != http.ErrServerClosed {
-		log.ErrorF("unexpected error during http listener startup: %v", err)
-		close(idleConnectionsClosed)
+	if err = f.srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+		log.ErrorF("unexpected error during http listener startup/shutdown: %v", err)
 		return
 	}
-
-	<-idleConnectionsClosed
 	return
 }

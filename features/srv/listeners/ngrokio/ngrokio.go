@@ -22,10 +22,8 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
-	"os/signal"
 	"strconv"
-	"syscall"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/urfave/cli/v2"
@@ -237,8 +235,6 @@ func (f *CFeature) ServiceInfo() (scheme, listen string, port int) {
 func (f *CFeature) StartListening(router *chi.Mux, e feature.EnjinRunner) (err error) {
 	e.Notify("ngrok listener starting")
 
-	// TODO: implement signal handler features for ngrok listeners
-
 	f.background = context.Background()
 
 	var conOpts []ngrok.ConnectOption
@@ -264,37 +260,14 @@ func (f *CFeature) StartListening(router *chi.Mux, e feature.EnjinRunner) (err e
 	if f.tunnel, err = ngrok.Listen(f.background, ngrokConfig.HTTPEndpoint(tunOpts...), conOpts...); err != nil {
 		return
 	}
-	//log.InfoF("ngrok.io tunnel created: %v", f.tunnel.URL())
 	log.DebugF("ngrok listener info:\n%v", e.StartupString())
 
-	idleConnectionsClosed := make(chan struct{})
-	go func() {
-		sigint := make(chan os.Signal, 1)
-		signal.Notify(sigint, syscall.SIGINT, syscall.SIGTERM)
-		<-sigint
-		if f.tunnel != nil {
-			if ee := f.tunnel.Close(); ee != nil {
-				log.ErrorF("error closing ngrok.io tunnel: %v", ee)
-			}
-		}
-		e.Shutdown()
-		close(idleConnectionsClosed)
-	}()
-
 	if err = http.Serve(f.tunnel, router); err != nil {
-		log.ErrorF("unexpected error during ngrok.io tunnel startup: %v", err)
-		select {
-		case _, ok := <-idleConnectionsClosed:
-			if ok {
-				close(idleConnectionsClosed)
-			}
-		default:
-			// nop
+		if !strings.Contains(err.Error(), "Listener closed") {
+			log.ErrorF("unexpected error during ngrok.io tunnel startup: %v", err)
 		}
 		return
 	}
-
-	<-idleConnectionsClosed
 
 	return
 }
