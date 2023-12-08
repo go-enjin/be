@@ -23,6 +23,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	uses_kvc "github.com/go-enjin/be/pkg/feature/uses-kvc"
 	"github.com/go-enjin/be/pkg/hash/sha"
+	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 )
@@ -168,9 +169,7 @@ func (f *CFeature) verify(key, value string) (valid bool) {
 	f.Lock()
 	defer f.Unlock()
 
-	var ok bool
 	var err error
-	var v interface{}
 	var expiration time.Time
 	var tokenBucket, aliasBucket feature.KeyValueStore
 
@@ -190,13 +189,14 @@ func (f *CFeature) verify(key, value string) (valid bool) {
 
 	var shasum string
 
-	if len(value) == 10 {
+	if sha.Valid(value) {
+		// use the value as the shasum and get the value from the kvs
 		shasum = value
-		if v, err = aliasBucket.Get(shasum); err != nil {
+		if err = kvs.GetUnmarshal(aliasBucket, shasum, &value); err != nil {
 			// not a valid token alias and nothing to clean up
 			return
-		} else if value, ok = v.(string); !ok {
-			// shasum exists but it's not a string?!
+		} else if value == "" {
+			// shasum exists but it's empty
 			_ = aliasBucket.Delete(shasum)
 			return
 		}
@@ -210,11 +210,9 @@ func (f *CFeature) verify(key, value string) (valid bool) {
 		_ = aliasBucket.Delete(shasum)
 	}()
 
-	if v, err = tokenBucket.Get(value); err != nil {
-	} else if expiration, ok = v.(time.Time); ok {
+	if err = kvs.GetUnmarshal(tokenBucket, value, &expiration); err == nil {
 		valid = time.Now().Before(expiration)
 	}
-
 	return
 }
 
@@ -241,9 +239,9 @@ func (f *CFeature) get(key string, duration time.Duration) (value, shasum string
 
 	maps.MakeTypedKey(key, f.tokens)
 	f.tokens[key][value] = time.Now().Add(f.duration)
-	if err = tokenBucket.Set(value, f.tokens[key][value]); err != nil {
+	if err = kvs.SetMarshal(tokenBucket, value, f.tokens[key][value]); err != nil {
 		panic(err)
-	} else if err = aliasBucket.Set(shasum, value); err != nil {
+	} else if err = kvs.SetMarshal(aliasBucket, shasum, value); err != nil {
 		panic(err)
 	}
 
