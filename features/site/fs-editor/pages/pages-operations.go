@@ -31,6 +31,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	bePath "github.com/go-enjin/be/pkg/path"
+	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -585,7 +586,7 @@ func (f *CFeature) OpPageCreateValidate(r *http.Request, pg feature.Page, ctx, f
 
 func (f *CFeature) OpPageCreateHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (redirect string) {
 	printer := lang.GetPrinterFromRequest(r)
-	dstUri, dstArchetype, dstInfo, dstFS, dstMP, dstExists, stop := f.ParseCreatePageForm(r, pg, ctx, form, info, eid, &redirect)
+	dstUri, dstFormat, dstArchetype, dstInfo, dstFS, dstMP, dstExists, stop := f.ParseCreatePageForm(r, pg, ctx, form, info, eid, &redirect)
 	if stop {
 		return
 	}
@@ -606,9 +607,21 @@ func (f *CFeature) OpPageCreateHandler(r *http.Request, pg feature.Page, ctx, fo
 	var data []byte
 	var format string
 
-	if dstArchetype != "" {
-		t := f.Enjin.MustGetTheme()
-		if format, data, err = t.MakeArchetype(f.Enjin, dstArchetype); err != nil {
+	if dstArchetype == "" {
+		dstArchetype = "page." + dstFormat
+	}
+
+	t := f.Enjin.MustGetTheme()
+	sTheme := f.Site().SiteTheme()
+	var aTheme feature.Theme
+	if slices.Within(dstArchetype, sTheme.ListArchetypes()) {
+		aTheme = sTheme
+	} else if slices.Within(dstArchetype, t.ListArchetypes()) {
+		aTheme = t
+	}
+
+	if aTheme != nil {
+		if format, data, err = aTheme.MakeArchetype(f.Enjin, dstArchetype); err != nil {
 			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error making archetype "%[1]s": %[2]s`, dstArchetype, err.Error()))
 			return
 		}

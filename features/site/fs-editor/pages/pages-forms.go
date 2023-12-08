@@ -121,7 +121,7 @@ func (f *CFeature) ParseFormToDraft(pm *matter.PageMatter, fields context.Fields
 	return
 }
 
-func (f *CFeature) ParseCreatePageForm(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string, redirect *string) (dstUri, dstArchetype string, dstInfo *editor.File, dstFS feature.FileSystemFeature, dstMP *feature.CMountPoint, dstExists bool, stop bool) {
+func (f *CFeature) ParseCreatePageForm(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string, redirect *string) (dstUri, dstFormat, dstArchetype string, dstInfo *editor.File, dstFS feature.FileSystemFeature, dstMP *feature.CMountPoint, dstExists bool, stop bool) {
 	printer := lang.GetPrinterFromRequest(r)
 
 	t := f.Enjin.MustGetTheme()
@@ -164,6 +164,8 @@ func (f *CFeature) ParseCreatePageForm(r *http.Request, pg feature.Page, ctx, fo
 	} else {
 		fileFormat = matched
 	}
+
+	dstFormat = fileFormat
 
 	createMode := form.String(editor.CreatePageActionKey+"~create-mode", "page")
 	if createMode == "arch" {
