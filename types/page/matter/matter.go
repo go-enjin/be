@@ -160,7 +160,7 @@ func ParsePageMatter(origin string, path string, created, updated time.Time, raw
 func (pm *PageMatter) Bytes() (data []byte, err error) {
 	var matter []byte
 	switch pm.FrontMatterType {
-	case JsonMatter:
+	case NoneMatter, JsonMatter:
 		data = append(data, "{{{\n"...)
 		if matter, err = pm.Matter.AsJSON(); err != nil {
 			return
@@ -182,7 +182,6 @@ func (pm *PageMatter) Bytes() (data []byte, err error) {
 		}
 		data = append(data, matter...)
 		data = append(data, "\n---\n"...)
-	case NoneMatter:
 	}
 	data = append(data, pm.Body...)
 	return
