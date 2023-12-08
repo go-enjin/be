@@ -50,6 +50,7 @@ type MakeFeature interface {
 	BigCacheSupport
 	IMCacheSupport
 	MemorySupport
+	RedisSupport
 	RistrettoSupport
 
 	Make() Feature
