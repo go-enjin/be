@@ -43,7 +43,8 @@ func (f *CFeature) RemoveFromIndex(stub *feature.PageStub, p feature.Page) (err 
 	defer f.Unlock()
 	//isDefaultLocale := p.LanguageTag() == f.Enjin.SiteDefaultLanguage()
 
-	if v, ee := f.pageStubsBucket.Get(p.Shasum()); ee != nil || v == nil {
+	if v := f.getPageStub(f.pageStubsBucket, p.Shasum()); v == nil {
+		//log.WarnF("page stub already indexed: %v", p.Shasum())
 		return
 	} else if err = f.removeIndexForPageStub(p.Shasum()); err != nil {
 		return

@@ -22,6 +22,7 @@ import (
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/types/page"
 )
@@ -38,14 +39,16 @@ func (f *CFeature) findStubPage(shasum string) (pg feature.Page) {
 	return
 }
 
-func (f *CFeature) findStub(shasum string) (stub *feature.PageStub) {
-	if vStub, e := f.pageStubsBucket.Get(shasum); e == nil {
-		if s, ok := vStub.(*feature.PageStub); ok {
-			stub = s
-		} else {
-			log.ErrorF("expected: *matter.PageStub, received: %T from stubs bucket: %v", vStub, gPageStubsBucketName)
-		}
+func (f *CFeature) getPageStub(store feature.KeyValueStore, shasum string) (stub *feature.PageStub) {
+	stub = &feature.PageStub{}
+	if err := kvs.GetUnmarshal(store, shasum, stub); err != nil {
+		stub = nil
 	}
+	return
+}
+
+func (f *CFeature) findStub(shasum string) (stub *feature.PageStub) {
+	stub = f.getPageStub(f.pageStubsBucket, shasum)
 	return
 }
 

@@ -49,7 +49,8 @@ func (f *CFeature) AddToIndex(stub *feature.PageStub, p feature.Page) (err error
 
 	// TODO: figure out a slightly more unique constraint than .Shasum(); copies can have the same shasums!
 
-	if v, ee := f.pageStubsBucket.Get(p.Shasum()); ee == nil && v != nil {
+	if v := f.getPageStub(f.pageStubsBucket, p.Shasum()); v != nil {
+		//log.WarnF("page stub already indexed: %v", p.Shasum())
 		return
 	} else if err = f.addIndexForPageStub(p.Shasum(), stub); err != nil {
 		return
@@ -144,7 +145,7 @@ func (f *CFeature) AddToIndex(stub *feature.PageStub, p feature.Page) (err error
 }
 
 func (f *CFeature) addIndexForPageStub(shasum string, stub *feature.PageStub) (err error) {
-	if err = f.pageStubsBucket.Set(shasum, stub); err != nil {
+	if err = kvs.SetMarshal(f.pageStubsBucket, shasum, stub); err != nil {
 		err = fmt.Errorf("error setting shasum stubs bucket: %v", err)
 		return
 	}
@@ -187,14 +188,21 @@ func (f *CFeature) addIndexForTranslatedBy(url, shasum string) (err error) {
 	return
 }
 
-func (f *CFeature) addIndexForTranslations(lang language.Tag, shasum, translates string) (err error) {
+func (f *CFeature) prepareTranslationsBucket(lang language.Tag) (err error) {
 	if _, found := f.translationsBucket[lang]; !found {
 		if f.translationsBucket[lang], err = f.KVC().Bucket(f.makeLangBucketName(lang)); err != nil {
 			return
 		}
 	}
+	return
+}
 
-	if err = f.translationsBucket[lang].Set(translates, shasum); err != nil {
+func (f *CFeature) addIndexForTranslations(lang language.Tag, shasum, translates string) (err error) {
+	if err = f.prepareTranslationsBucket(lang); err != nil {
+		return
+	}
+
+	if err = kvs.SetMarshal(f.translationsBucket[lang], translates, shasum); err != nil {
 		err = fmt.Errorf("error setting languages string: [%v] %v - %v", lang, translates, err)
 		return
 	}
