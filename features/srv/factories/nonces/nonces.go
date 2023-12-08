@@ -24,6 +24,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	uses_kvc "github.com/go-enjin/be/pkg/feature/uses-kvc"
+	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 )
@@ -174,20 +175,17 @@ func (f *CFeature) verify(key, value string) (valid bool) {
 	f.Lock()
 	defer f.Unlock()
 
-	var ok bool
 	var err error
-	var v interface{}
 	var expiration time.Time
 	var bucket feature.KeyValueStore
 
 	if bucket, err = f.KVC().Bucket(key); err != nil {
 		return
-	} else if v, err = bucket.Get(value); err != nil {
+	} else if err = kvs.GetUnmarshal(bucket, value, &expiration); err != nil {
 		return
-	} else if expiration, ok = v.(time.Time); ok {
-		valid = time.Now().Before(expiration)
 	}
 
+	valid = time.Now().Before(expiration)
 	delete(f.nonces[key], value)
 	_ = bucket.Delete(value)
 	return
@@ -207,7 +205,7 @@ func (f *CFeature) create(key string) (value string) {
 	value = f.randomValue()
 	maps.MakeTypedKey(key, f.nonces)
 	f.nonces[key][value] = time.Now().Add(f.duration)
-	if err = bucket.Set(value, f.nonces[key][value]); err != nil {
+	if err = kvs.SetMarshal(bucket, value, f.nonces[key][value]); err != nil {
 		panic(err)
 	}
 
