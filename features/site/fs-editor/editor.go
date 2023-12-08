@@ -80,7 +80,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 		label = printer.Sprintf("FS Editor")
 		return
 	})
-	f.CUsesActions.ConstructUsesActions(f)
+	f.CSiteFeature.Construct(f)
 	return f
 }
 
