@@ -15,19 +15,13 @@
 package site
 
 import (
-	"fmt"
-
 	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/kvs"
 )
 
 func (f *CFeature) GetContextUnsafe(eid string) (ctx context.Context) {
-	var ok bool
-	if v, err := f.userContextBucket.Get(eid); err != nil || v == nil {
+	if err := kvs.GetUnmarshal(f.userContextBucket, eid, &ctx); err != nil {
 		ctx = context.Context{}
-	} else if ctx, ok = v.(context.Context); ok {
-	} else if ctx, ok = v.(map[string]interface{}); ok {
-	} else {
-		panic(fmt.Errorf("value is neither a beContext.Context nor a map[string]interface{}: %T", v))
 	}
 	return
 }
@@ -40,7 +34,7 @@ func (f *CFeature) GetContext(eid string) (ctx context.Context) {
 }
 
 func (f *CFeature) SetContextUnsafe(eid string, ctx context.Context) {
-	if err := f.userContextBucket.Set(eid, ctx); err != nil {
+	if err := kvs.SetMarshal(f.userContextBucket, eid, ctx); err != nil {
 		panic(err)
 	}
 	return
