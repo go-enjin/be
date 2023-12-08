@@ -55,6 +55,7 @@ type MakeFeature interface {
 type CFeature struct {
 	feature.CFeature
 
+	order  []string
 	caches map[string]feature.KeyValueCache
 }
 
@@ -80,7 +81,20 @@ func (f *CFeature) Make() Feature {
 	return f
 }
 
+func (f *CFeature) addCache(key string, kvc feature.KeyValueCache) {
+	f.order = append(f.order, key)
+	f.caches[key] = kvc
+}
+
 func (f *CFeature) Build(b feature.Buildable) (err error) {
+	for _, key := range f.order {
+		kvc, _ := f.caches[key]
+		if kvcf, ok := kvc.(feature.KeyValueCacheFeature); ok {
+			if err = kvcf.Build(b); err != nil {
+				return
+			}
+		}
+	}
 	return
 }
 
@@ -88,10 +102,24 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if err = f.CFeature.Startup(ctx); err != nil {
 		return
 	}
+	for _, key := range f.order {
+		kvc, _ := f.caches[key]
+		if kvcf, ok := kvc.(feature.KeyValueCacheFeature); ok {
+			if err = kvcf.Startup(ctx); err != nil {
+				return
+			}
+		}
+	}
 	return
 }
 
 func (f *CFeature) Shutdown() {
+	for _, key := range f.order {
+		kvc, _ := f.caches[key]
+		if kvcf, ok := kvc.(feature.KeyValueCacheFeature); ok {
+			kvcf.Shutdown()
+		}
+	}
 	return
 }
 
