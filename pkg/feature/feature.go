@@ -64,6 +64,7 @@ type CFeature struct {
 	this interface{}
 	ctx  context.Context
 
+	KebabTag   string
 	PackageTag Tag
 	FeatureTag Tag
 
@@ -77,6 +78,7 @@ func (f *CFeature) UsageNotes() (notes []string) {
 }
 
 func (f *CFeature) Construct(this interface{}) {
+	f.KebabTag = f.Tag().Kebab()
 	return
 }
 
