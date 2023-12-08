@@ -32,7 +32,7 @@ func Valid(shasum string) (valid bool) {
 	if valid = size == 10 || size == 64; valid {
 		for _, char := range shasum {
 			switch char {
-			case 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f':
+			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f':
 			default:
 				valid = false
 				return
