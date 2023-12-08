@@ -17,6 +17,7 @@ package catalog
 import (
 	"strings"
 	"text/scanner"
+	"unicode"
 
 	"github.com/go-enjin/be/pkg/strings/fmtsubs"
 )
@@ -184,6 +185,12 @@ func ParseTemplateMessages(input string) (msgs []*Message, err error) {
 		s.Filename = "input.tmpl"
 		s.Mode ^= scanner.SkipComments
 		//s.Whitespace ^= 1<<'\t' | 1<<'\n' | 1<<' '
+		s.IsIdentRune = func(ch rune, i int) bool {
+			if i == 0 && (ch == '$' || ch == '.') {
+				return true
+			}
+			return ch == '.' || ch == '_' || unicode.IsLetter(ch) || (unicode.IsDigit(ch) && i > 1)
+		}
 
 		state := &parseMessageState{}
 
