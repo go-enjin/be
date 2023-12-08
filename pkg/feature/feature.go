@@ -56,6 +56,10 @@ type Feature interface {
 	Shutdown()
 }
 
+type ReloadableFeature interface {
+	Reload()
+}
+
 type MakeFeature interface {
 	Make() Feature
 }
