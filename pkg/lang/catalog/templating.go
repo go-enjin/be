@@ -15,10 +15,13 @@
 package catalog
 
 import (
+	"strconv"
 	"strings"
 	"text/scanner"
 	"unicode"
 
+	"github.com/go-enjin/be/pkg/slices"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/strings/fmtsubs"
 )
 
@@ -150,9 +153,113 @@ func MakeMessageFromKey(key, comment string, argv ...string) (m *Message) {
 		Key:               key,
 		Message:           replaced,
 		Translation:       &Translation{String: replaced},
-		TranslatorComment: comment,
+		TranslatorComment: CoalesceTranslatorComment(comment),
 		Placeholders:      placeholders,
 		Fuzzy:             true,
+	}
+	return
+}
+
+func ParseTranslatorComment(input string) (comments, sources []string) {
+	// /* screen reader only *//* screen reader only */\n[from: layouts/partials/footer.tmpl, path/file.name...]
+
+	state := struct {
+		skipOnce    bool
+		skipMany    int
+		comment     string
+		commentOpen bool
+		source      string
+		sourceOpen  bool
+	}{}
+
+	last := len(input) - 1
+	for idx, this := range input {
+
+		if state.skipOnce {
+			state.skipOnce = false
+			continue
+		} else if state.skipMany > 0 {
+			state.skipMany -= 1
+			continue
+		} else if this == '\n' {
+			continue
+		}
+
+		var next uint8
+		if idx < last {
+			next = input[idx+1]
+		}
+
+		if state.commentOpen {
+			if state.skipOnce = this == '*' && idx < last && next == '/'; state.skipOnce {
+				comments = append(comments, strings.TrimSpace(state.comment))
+				state.commentOpen = false
+				state.comment = ""
+				continue
+			}
+			state.comment += string(this)
+			continue
+		}
+
+		if state.sourceOpen {
+			if state.skipOnce = this == ',' && idx < last && next == ' '; state.skipOnce {
+				sources = append(sources, strings.TrimSpace(state.source))
+				state.source = ""
+				continue
+			} else if this == ']' {
+				sources = append(sources, strings.TrimSpace(state.source))
+				state.sourceOpen = false
+				state.source = ""
+				continue
+			}
+			state.source += string(this)
+			continue
+		}
+
+		if state.skipOnce = this == '/' && idx < last && next == '*'; state.skipOnce {
+			state.commentOpen = true
+			continue
+		}
+
+		if this == '[' && idx+6 < last && input[idx:idx+7] == "[from: " {
+			state.sourceOpen = true
+			state.skipMany = 6
+			continue
+		}
+
+	}
+
+	return
+}
+
+func CoalesceTranslatorComment(input string) (coalesced string) {
+	if input == "" {
+		return
+	}
+	comments, sources := ParseTranslatorComment(input)
+	var comment, source string
+	if len(comments) > 0 {
+		comments = slices.Unique(comments)
+		comment = strings.Join(comments, "; ")
+	}
+	if len(sources) > 0 {
+		lookup := slices.DuplicateCounts(sources)
+		sources = slices.Unique(sources)
+		for idx, src := range sources {
+			if count, present := lookup[src]; present {
+				sources[idx] += "=" + strconv.Itoa(count)
+			}
+		}
+		source = strings.Join(sources, ", ")
+	}
+	if comment != "" {
+		coalesced += "/* " + comment + " */"
+	}
+	if source != "" {
+		if coalesced != "" {
+			coalesced += "\n"
+		}
+		coalesced += "[from: " + source + "]"
 	}
 	return
 }
