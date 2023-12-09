@@ -19,7 +19,6 @@ import (
 
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/lang/catalog"
-	"github.com/go-enjin/be/pkg/strings/fmtsubs"
 )
 
 type Select struct {
@@ -71,18 +70,7 @@ func (l *LocaleMessage) Copy() (cloned *LocaleMessage) {
 }
 
 func ParseNewMessage(key, comment string) (m *LocaleMessage) {
-	var placeholders catalog.Placeholders
-	replaced, labelled, subs, _ := fmtsubs.ParseFmtString(key)
-	for _, sub := range subs {
-		placeholders = append(placeholders, &catalog.Placeholder{
-			ID:             sub.Label,
-			String:         sub.String(),
-			Type:           sub.Type,
-			UnderlyingType: sub.Type,
-			ArgNum:         sub.Pos,
-			Expr:           "-",
-		})
-	}
+	replaced, labelled, placeholders := catalog.ParseMessagePlaceholders(key)
 	shasum, _ := sha.DataHash10(key)
 	m = &LocaleMessage{
 		ID:                labelled,
