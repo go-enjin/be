@@ -146,7 +146,9 @@ func IsFalse(text string) bool {
 	return false
 }
 
-func TrimQuotes(maybeQuoted string) (unquoted string) {
+// IsQuoted returns true if the first and last characters in the input are the same and are one of the three main quote
+// types: single ('), double (") and literal (`)
+func IsQuoted(maybeQuoted string) (quoted bool) {
 	if total := len(maybeQuoted); total > 2 {
 		// there's enough length for quotes to be possible
 		if last := total - 1; maybeQuoted[0] == maybeQuoted[last] {
@@ -154,10 +156,20 @@ func TrimQuotes(maybeQuoted string) (unquoted string) {
 			switch maybeQuoted[0] {
 			case '\'', '`', '"':
 				// valid quote detected, trim string
-				unquoted = maybeQuoted[1:last]
+				quoted = true
 				return
 			}
 		}
+	}
+	return
+}
+
+// TrimQuotes returns the string with the first and last characters trimmed from the string if the string IsQuoted and
+// returns the unmodified input string otherwise
+func TrimQuotes(maybeQuoted string) (unquoted string) {
+	if IsQuoted(maybeQuoted) {
+		unquoted = maybeQuoted[1 : len(maybeQuoted)-1]
+		return
 	}
 	unquoted = maybeQuoted
 	return
