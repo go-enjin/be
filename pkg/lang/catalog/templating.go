@@ -127,7 +127,7 @@ func parseTmplStatements(input string) (list []string) {
 	return
 }
 
-func parseMessagePlaceholders(key string, argv ...string) (replaced, labelled string, placeholders Placeholders) {
+func ParseMessagePlaceholders(key string, argv ...string) (replaced, labelled string, placeholders Placeholders) {
 	var subs fmtsubs.FmtSubs
 	replaced, labelled, subs, _ = fmtsubs.ParseFmtString(key, argv...)
 	for _, sub := range subs {
@@ -144,7 +144,7 @@ func parseMessagePlaceholders(key string, argv ...string) (replaced, labelled st
 }
 
 func MakeMessageFromKey(key, comment string, argv ...string) (m *Message) {
-	replaced, labelled, placeholders := parseMessagePlaceholders(key, argv...)
+	replaced, labelled, placeholders := ParseMessagePlaceholders(key, argv...)
 	m = &Message{
 		ID:                labelled,
 		Key:               key,
