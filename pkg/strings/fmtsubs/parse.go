@@ -42,6 +42,17 @@ type subst struct {
 	value  string
 }
 
+func TrimVarPrefix(tmplVar string) (trimmed string) {
+	if len(tmplVar) > 0 {
+		if tmplVar[0] == '$' || tmplVar[0] == '.' {
+			trimmed = tmplVar[1:]
+			return
+		}
+	}
+	trimmed = tmplVar
+	return
+}
+
 func ParseFmtString(format string, argv ...string) (replaced, labelled string, subs FmtSubs, err error) {
 
 	var list FmtSubs
@@ -101,8 +112,8 @@ func ParseFmtString(format string, argv ...string) (replaced, labelled string, s
 				valueType = "-"
 			}
 
-			if len(argv) > (state.pos - 1) {
-				label = strcase.ToCamel(argv[state.pos-1])
+			if len(argv) >= state.pos {
+				label = strcase.ToCamel(TrimVarPrefix(argv[state.pos-1]))
 				if label != "" && subPos > 0 {
 					label += fmt.Sprintf("%d%s", state.pos, convert.ToLetters(subPos))
 				}
