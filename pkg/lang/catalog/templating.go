@@ -272,6 +272,10 @@ type parseMessageState struct {
 
 func ParseTemplateMessages(input string) (msgs []*Message, err error) {
 
+	// TODO: implement support for inline template statements
+	//       example: _ "the message: %[1]s" (printf "not working yet")
+	//       error: placeholders are "Printf" and "NotWorkingYet", even though there is only one replacement verb
+
 	var pruned []string
 	for _, item := range parseTmplStatements(input) {
 		if strings.HasPrefix(item, "_ ") {
