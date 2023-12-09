@@ -210,3 +210,30 @@ func Merge[V comparable, S ~[]V](src S, others ...S) (modified S) {
 	}
 	return
 }
+
+// Unique returns a new slice with duplicate values omitted, maintaining order
+func Unique[V comparable, S ~[]V](src S) (unique S) {
+	lookup := make(map[V]struct{})
+	for _, this := range src {
+		if _, present := lookup[this]; present {
+			continue
+		}
+		lookup[this] = struct{}{}
+		unique = append(unique, this)
+	}
+	return
+}
+
+// DuplicateCounts returns a mapping of values and their respective counts, distinct values not included
+func DuplicateCounts[V comparable, S ~[]V](src S) (counts map[V]int) {
+	counts = make(map[V]int)
+	for _, this := range src {
+		counts[this] += 1
+	}
+	for _, this := range src {
+		if count, ok := counts[this]; ok && count == 1 {
+			delete(counts, this)
+		}
+	}
+	return
+}
