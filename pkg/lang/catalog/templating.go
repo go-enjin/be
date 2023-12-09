@@ -186,8 +186,12 @@ func ParseTemplateMessages(input string) (msgs []*Message, err error) {
 		s.Mode ^= scanner.SkipComments
 		//s.Whitespace ^= 1<<'\t' | 1<<'\n' | 1<<' '
 		s.IsIdentRune = func(ch rune, i int) bool {
-			if i == 0 && (ch == '$' || ch == '.') {
-				return true
+			if i == 0 {
+				if ch == '$' || ch == '.' {
+					return true
+				}
+				// all template identifiers start with $ or .
+				return false
 			}
 			return ch == '.' || ch == '_' || unicode.IsLetter(ch) || (unicode.IsDigit(ch) && i > 1)
 		}
