@@ -202,8 +202,8 @@ func ParseTemplateMessages(input string) (msgs []*Message, err error) {
 			token := s.TokenText()
 			if state.format == "" {
 				if size := len(token); size > 2 {
-					if token[0] == '"' && token[size-1] == '"' {
-						state.format = token[1 : size-1]
+					if beStrings.IsQuoted(token) {
+						state.format = beStrings.TrimQuotes(token)
 					} else {
 						// variable translation
 						state = nil
@@ -215,6 +215,9 @@ func ParseTemplateMessages(input string) (msgs []*Message, err error) {
 					state.comment += "\n"
 				}
 				state.comment += token
+			} else if beStrings.IsQuoted(token) {
+				// support quoted string arguments
+				state.argv = append(state.argv, beStrings.TrimQuotes(token))
 			} else {
 				if argc := len(state.argv); argc > 0 {
 					switch state.argv[argc-1] {
