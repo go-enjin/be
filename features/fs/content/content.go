@@ -176,6 +176,10 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 	f.searchProviderTags = searchProviderTags
 
+	return
+}
+
+func (f *CFeature) PostStartup(ctx *cli.Context) (err error) {
 	err = f.PopulateIndexes()
 	return
 }
@@ -258,7 +262,7 @@ func (f *CFeature) PopulateIndexes() (err error) {
 								tag := f.indexProviderTags[idx]
 								pipStart := time.Now()
 								if eeeee := pip.AddToIndex(pmStub, pg); eeeee != nil {
-									log.ErrorF("error adding to page index: %v - %v", file, eeeee)
+									log.ErrorF("error adding to page %q index: %v - %v", pip.Tag(), file, eeeee)
 								} else {
 									// log.DebugF("%v indexed %v", pip.(feature.Feature).Tag(), pg.Url)
 								}
@@ -273,7 +277,7 @@ func (f *CFeature) PopulateIndexes() (err error) {
 								tag := f.searchProviderTags[idx]
 								sepStart := time.Now()
 								if eeeee := sep.AddToSearchIndex(pmStub, pg); eeeee != nil {
-									log.ErrorF("error adding to search index: %v - %v", file, eeeee)
+									log.ErrorF("error adding to search %q index: %v - %v", sep.Tag(), file, eeeee)
 								} else {
 									// log.DebugF("%v indexed %v", sep.(feature.Feature).Tag(), pg.Url)
 								}
