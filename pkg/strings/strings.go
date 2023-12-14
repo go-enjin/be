@@ -271,7 +271,7 @@ func AddClassNamesToNjnBlock(data map[string]interface{}, classes ...string) map
 }
 
 func Empty(value string) (empty bool) {
-	empty = regexps.RxEmpty.MatchString(value)
+	empty = strings.TrimSpace(value) == ""
 	return
 }
 
