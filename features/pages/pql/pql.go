@@ -53,6 +53,8 @@ type Feature interface {
 	feature.PageIndexFeature
 	feature.QueryIndexFeature
 	feature.PageContextProvider
+
+	UnsafeAllUrls() (store feature.KeyValueStore)
 }
 
 type MakeFeature interface {
@@ -82,7 +84,7 @@ type CFeature struct {
 	excludeContextKeys []string
 	includeContextKeys []string
 
-	allUrlsBucket           feature.KeyValueStore
+	allUrlsBucket           feature.ExtendedKeyValueStore
 	pageUrlsBucket          feature.KeyValueStore
 	pageStubsBucket         feature.KeyValueStore
 	permalinksBucket        feature.KeyValueStore
@@ -148,25 +150,19 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 
-	if f.allUrlsBucket, err = f.KVC().Bucket(gAllUrlsBucketName); err != nil {
+	if f.allUrlsBucket, err = kvs.ExtendedBucket(f.KVC(), gAllUrlsBucketName); err != nil {
 		return
-	}
-	if f.pageUrlsBucket, err = f.KVC().Bucket(gPageUrlsBucketName); err != nil {
+	} else if f.pageUrlsBucket, err = f.KVC().Bucket(gPageUrlsBucketName); err != nil {
 		return
-	}
-	if f.pageStubsBucket, err = f.KVC().Bucket(gPageStubsBucketName); err != nil {
+	} else if f.pageStubsBucket, err = f.KVC().Bucket(gPageStubsBucketName); err != nil {
 		return
-	}
-	if f.permalinksBucket, err = f.KVC().Bucket(gPermalinksBucketName); err != nil {
+	} else if f.permalinksBucket, err = f.KVC().Bucket(gPermalinksBucketName); err != nil {
 		return
-	}
-	if f.translatedByBucket, err = f.KVC().Bucket(gPageTranslatedByBucketName); err != nil {
+	} else if f.translatedByBucket, err = f.KVC().Bucket(gPageTranslatedByBucketName); err != nil {
 		return
-	}
-	if f.redirectionsBucket, err = f.KVC().Bucket(gPageRedirectionsBucketName); err != nil {
+	} else if f.redirectionsBucket, err = f.KVC().Bucket(gPageRedirectionsBucketName); err != nil {
 		return
-	}
-	if f.contextValueKeyedBucket, err = f.KVC().Bucket(gPageContextValuesBucketName); err != nil {
+	} else if f.contextValueKeyedBucket, err = f.KVC().Bucket(gPageContextValuesBucketName); err != nil {
 		return
 	}
 
@@ -180,10 +176,18 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
+func (f *CFeature) UnsafeAllUrls() (store feature.KeyValueStore) {
+	store = f.allUrlsBucket
+	return
+}
+
 func (f *CFeature) FindPageStub(shasum string) (stub *feature.PageStub) {
 	//f.RLock()
 	//defer f.RUnlock()
-	_ = kvs.GetUnmarshal(f.pageStubsBucket, shasum, stub)
+	s := &feature.PageStub{}
+	if err := kvs.GetUnmarshal(f.pageStubsBucket, shasum, s); err == nil {
+		stub = s
+	}
 	return
 }
 
@@ -214,17 +218,12 @@ func (f *CFeature) PageContextValueCounts(key string) (counts map[interface{}]ui
 
 	for value := range kvs.YieldFlatList[string](f.contextValueKeyedBucket, key) {
 
-		valueKey, _ := kvs.EncodeKeyValue(value)
+		valueKey, _ := kvs.MarshalConcrete(value)
 		list := kvs.GetFlatList[string](ctxKeyedValueBucket, valueKey)
 		counts[value] += uint64(len(list))
 
 	}
 
-	return
-}
-
-func (f *CFeature) YieldPageContextValues(key string) (values chan interface{}) {
-	values = kvs.YieldFlatList[interface{}](f.contextValueKeyedBucket, key)
 	return
 }
 
@@ -238,12 +237,19 @@ func (f *CFeature) YieldPageContextValueStubs(key string) (pairs chan *feature.V
 
 		found := make(map[string]struct{})
 
-		for value := range f.YieldPageContextValues(key) {
+		for valueKey := range kvs.YieldFlatList[string](f.contextValueKeyedBucket, key) {
+
+			//var err error
+			//var valueKey string
+			//if valueKey, err = kvs.EncodeKeyValue(value); err != nil {
+			//	log.ErrorF("error encoding %v key value: %T - %v", key, value, err)
+			//	continue
+			//}
 
 			var err error
-			var valueKey string
-			if valueKey, err = kvs.EncodeKeyValue(value); err != nil {
-				log.ErrorF("error encoding %v key value: %T - %v", key, value, err)
+			var value interface{}
+			if value, err = kvs.UnmarshalConcrete(valueKey); err != nil {
+				log.ErrorF("error unmarshalling concrete value: %q - %v", valueKey, err)
 				continue
 			}
 
@@ -272,7 +278,7 @@ func (f *CFeature) YieldFilterPageContextValueStubs(include bool, key string, va
 	ctxKeyedValueBucketName := f.makeCtxValBucketName(key)
 	ctxKeyedValueBucket := f.KVC().MustBucket(ctxKeyedValueBucketName)
 	var searchKey string
-	if valueKey, err := kvs.EncodeKeyValue(value); err != nil {
+	if valueKey, err := kvs.MarshalConcrete(value); err != nil {
 		log.ErrorF("error encoding %v key value: %T - %v", key, value, err)
 	} else {
 		searchKey = valueKey
@@ -283,16 +289,18 @@ func (f *CFeature) YieldFilterPageContextValueStubs(include bool, key string, va
 
 		found := make(map[string]struct{})
 
-		for yv := range kvs.YieldFlatList[interface{}](f.contextValueKeyedBucket, key) {
+		for valueKey := range kvs.YieldFlatList[string](f.contextValueKeyedBucket, key) {
 
-			var err error
-			var valueKey string
-			if valueKey, err = kvs.EncodeKeyValue(yv); err != nil {
-				log.ErrorF("error encoding %v key value: %T - %v", key, yv, err)
-				continue
-			} else if include && searchKey != valueKey {
+			if include && searchKey != valueKey {
 				continue
 			} else if !include && searchKey == valueKey {
+				continue
+			}
+
+			var err error
+			var yv interface{}
+			if yv, err = kvs.UnmarshalConcrete(valueKey); err != nil {
+				log.ErrorF("error unmarshalling concrete value: %q - %v", valueKey, err)
 				continue
 			}
 
@@ -319,7 +327,7 @@ func (f *CFeature) FilterPageContextValueStubs(include bool, key string, value i
 	ctxKeyedValueBucketName := f.makeCtxValBucketName(key)
 	ctxKeyedValueBucket := f.KVC().MustBucket(ctxKeyedValueBucketName)
 	var searchKey string
-	if valueKey, err := kvs.EncodeKeyValue(value); err != nil {
+	if valueKey, err := kvs.MarshalConcrete(value); err != nil {
 		log.ErrorF("error encoding %v key value: %T - %v", key, value, err)
 		return
 	} else {
@@ -328,14 +336,9 @@ func (f *CFeature) FilterPageContextValueStubs(include bool, key string, value i
 
 	found := make(map[string]struct{})
 
-	for yv := range kvs.YieldFlatList[interface{}](f.contextValueKeyedBucket, key) {
+	for valueKey := range kvs.YieldFlatList[string](f.contextValueKeyedBucket, key) {
 
-		var err error
-		var valueKey string
-		if valueKey, err = kvs.EncodeKeyValue(yv); err != nil {
-			log.ErrorF("error encoding %v key value: %T - %v", key, yv, err)
-			continue
-		} else if include && searchKey != valueKey {
+		if include && searchKey != valueKey {
 			continue
 		} else if !include && searchKey == valueKey {
 			continue
@@ -474,7 +477,8 @@ func (f *CFeature) LookupPrefixed(prefix string) (pages []feature.Page) {
 
 	prefix = bePath.CleanWithSlash(prefix)
 
-	allUrls := kvs.GetFlatList[string](f.allUrlsBucket, "all")
+	//allUrls := kvs.GetFlatList[string](f.allUrlsBucket, "all")
+	allUrls := f.allUrlsBucket.Keys("")
 	for _, url := range allUrls {
 		if strings.HasPrefix(url, prefix) {
 			if shasums := kvs.GetFlatList[string](f.pageUrlsBucket, url); len(shasums) > 0 {

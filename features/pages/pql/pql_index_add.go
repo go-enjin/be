@@ -49,7 +49,8 @@ func (f *CFeature) AddToIndex(stub *feature.PageStub, p feature.Page) (err error
 
 	// TODO: figure out a slightly more unique constraint than .Shasum(); copies can have the same shasums!
 
-	if v := f.getPageStub(f.pageStubsBucket, p.Shasum()); v != nil {
+	//if v := f.getPageStub(f.pageStubsBucket, p.Shasum()); v != nil {
+	if kvs.IsSet(f.pageStubsBucket, p.Shasum()) {
 		//log.WarnF("page stub already indexed: %v", p.Shasum())
 		return
 	} else if err = f.addIndexForPageStub(p.Shasum(), stub); err != nil {
@@ -105,6 +106,7 @@ func (f *CFeature) AddToIndex(stub *feature.PageStub, p feature.Page) (err error
 		included[key] = struct{}{}
 	}
 
+	shasum := p.Shasum()
 	for pCtxKey, pCtxValue := range p.Context() {
 
 		kebab := strcase.ToKebab(pCtxKey)
@@ -123,21 +125,21 @@ func (f *CFeature) AddToIndex(stub *feature.PageStub, p feature.Page) (err error
 			int, int8, int16, int32, int64,
 			uint, uint8, uint16, uint32, uint64,
 			time.Time, time.Duration:
-			if err = f.addIndexForPageContextValue(pCtxKey, p.Shasum(), t); err != nil {
+			if err = f.addIndexForPageContextValue(pCtxKey, shasum, t); err != nil {
 				return
 			}
-			//case []string:
-			//	for _, tv := range t {
-			//		if err = f.addIndexForPageContextValue(pCtxKey, p.Shasum(), tv); err != nil {
-			//			return
-			//		}
-			//	}
-			//case []interface{}:
-			//	for _, tv := range t {
-			//		if err = f.addIndexForPageContextValue(pCtxKey, p.Shasum(), tv); err != nil {
-			//			return
-			//		}
-			//	}
+		case []string:
+			for _, tv := range t {
+				if err = f.addIndexForPageContextValue(pCtxKey, p.Shasum(), tv); err != nil {
+					return
+				}
+			}
+		case []interface{}:
+			for _, tv := range t {
+				if err = f.addIndexForPageContextValue(pCtxKey, p.Shasum(), tv); err != nil {
+					return
+				}
+			}
 		}
 
 	}
@@ -167,7 +169,7 @@ func (f *CFeature) addIndexForPageUrl(url, shasum string) (err error) {
 		return
 	}
 
-	if err = kvs.AppendToFlatList(f.allUrlsBucket, "all", url); err != nil {
+	if err = kvs.SetMarshal(f.allUrlsBucket, url, ""); err != nil {
 		err = fmt.Errorf("error updating flat-list of known urls: %v", err)
 	}
 	return
@@ -212,7 +214,7 @@ func (f *CFeature) addIndexForTranslations(lang language.Tag, shasum, translates
 func (f *CFeature) addIndexForPageContextValue(key, shasum string, value interface{}) (err error) {
 
 	var valueKey string
-	if valueKey, err = kvs.EncodeKeyValue(value); err != nil {
+	if valueKey, err = kvs.MarshalConcrete(value); err != nil {
 		err = fmt.Errorf("error encoding %v key value: %T - %v", key, value, err)
 		return
 	}

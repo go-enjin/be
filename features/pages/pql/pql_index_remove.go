@@ -161,7 +161,7 @@ func (f *CFeature) removeIndexForPageUrl(url, shasum string) (err error) {
 		return
 	}
 
-	if err = kvs.RemoveFromFlatList[string](f.allUrlsBucket, "all", url); err != nil {
+	if err = f.allUrlsBucket.Delete(url); err != nil {
 		err = fmt.Errorf("error updating flat-list of known urls: %v", err)
 	}
 
@@ -198,7 +198,7 @@ func (f *CFeature) removeIndexForTranslations(lang language.Tag, shasum, transla
 func (f *CFeature) removeIndexForPageContextValue(key, shasum string, value interface{}) (err error) {
 
 	var valueKey string
-	if valueKey, err = kvs.EncodeKeyValue(value); err != nil {
+	if valueKey, err = kvs.MarshalConcrete(value); err != nil {
 		err = fmt.Errorf("error encoding %v key value: %T - %v", key, value, err)
 		return
 	}
