@@ -52,7 +52,7 @@ type KeywordProvider interface {
 	Size() (count int)
 	KnownKeywords() (keywords []string)
 	KeywordStubs(keyword string) (stubs PageStubs)
-	Range(fn func(key string, value []string) (proceed bool))
+	Range(prefix string, fn func(key string, value []string) (proceed bool))
 }
 
 type PageContextProvider interface {
