@@ -15,6 +15,7 @@
 package feature
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/urfave/cli/v2"
@@ -46,8 +47,9 @@ type Feature interface {
 	//  - if feature A instead calls `f.Self().Thing()` instead, feature B's method is invoked
 	//
 	// The example above is of course contrived as this only works with Feature methods, however, the design pattern can
-	// be re-used in other systems to achieve the same effect
+	// be re-used in other systems to achieve the same effect, see EditorFeature.SelfEditor for another example.
 	Self() (f Feature)
+	State() (state LifeCycleState)
 	Depends() (deps Tags)
 	UsageNotes() (notes []string)
 	Build(c Buildable) (err error)
@@ -65,8 +67,9 @@ type MakeFeature interface {
 }
 
 type CFeature struct {
-	this interface{}
-	ctx  context.Context
+	this  interface{}
+	ctx   context.Context
+	state LifeCycleState
 
 	KebabTag   string
 	PackageTag Tag
@@ -83,6 +86,7 @@ func (f *CFeature) UsageNotes() (notes []string) {
 
 func (f *CFeature) Construct(this interface{}) {
 	f.KebabTag = f.Tag().Kebab()
+	f.SetState(StateConstructed)
 	return
 }
 
@@ -91,6 +95,43 @@ func (f *CFeature) Init(this interface{}) {
 	f.ctx = context.New()
 	f.PackageTag = NotImplemented
 	f.FeatureTag = NotImplemented
+	f.SetState(StateInitialized)
+}
+
+func (f *CFeature) Make() Feature {
+	f.SetState(StateMade)
+	return f.Self()
+}
+
+func (f *CFeature) Build(b Buildable) (err error) {
+	f.SetState(StateBuilt)
+	return
+}
+
+func (f *CFeature) Setup(enjin Internals) {
+	f.Enjin = enjin
+	f.SetState(StateSetup)
+}
+
+func (f *CFeature) Startup(ctx *cli.Context) (err error) {
+	if f.Tag() == NotImplemented {
+		panic("not implemented")
+	}
+	log.DebugDF(1, "%v starting up", f.Tag())
+	f.SetState(StateStarted)
+	return
+}
+
+func (f *CFeature) Shutdown() {
+	log.DebugDF(1, "%v shutting down", f.FeatureTag)
+	f.SetState(StateShutdown)
+}
+
+func (f *CFeature) BaseTag() (pkg Tag) {
+	if f.PackageTag == NotImplemented {
+		panic("not implemented")
+	}
+	return f.PackageTag
 }
 
 func (f *CFeature) Tag() (tag Tag) {
@@ -100,11 +141,21 @@ func (f *CFeature) Tag() (tag Tag) {
 	return f.FeatureTag
 }
 
-func (f *CFeature) BaseTag() (pkg Tag) {
-	if f.PackageTag == NotImplemented {
-		panic("not implemented")
+func (f *CFeature) SetState(state LifeCycleState) {
+	if !state.Valid() {
+		panic(fmt.Errorf("invalid state: %d", state))
 	}
-	return f.PackageTag
+	f.Lock()
+	defer f.Unlock()
+	f.state = state
+	return
+}
+
+func (f *CFeature) State() (state LifeCycleState) {
+	f.RLock()
+	defer f.RUnlock()
+	state = f.state
+	return
 }
 
 func (f *CFeature) This() (this interface{}) {
@@ -119,40 +170,19 @@ func (f *CFeature) Self() (self Feature) {
 	return
 }
 
-func (f *CFeature) Make() Feature {
-	return f.Self()
+func (f *CFeature) Depends() (deps Tags) {
+	return
 }
 
 func (f *CFeature) CloneBaseFeature() (cloned CFeature) {
 	cloned = CFeature{
 		this:       f.this,
 		ctx:        f.ctx.Copy(),
+		state:      f.state,
+		KebabTag:   f.KebabTag,
+		PackageTag: f.PackageTag,
 		FeatureTag: f.FeatureTag,
 		Enjin:      f.Enjin,
 	}
 	return
-}
-
-func (f *CFeature) Depends() (deps Tags) {
-	return
-}
-
-func (f *CFeature) Build(b Buildable) (err error) {
-	return
-}
-
-func (f *CFeature) Setup(enjin Internals) {
-	f.Enjin = enjin
-}
-
-func (f *CFeature) Startup(ctx *cli.Context) (err error) {
-	if f.Tag() == NotImplemented {
-		panic("not implemented")
-	}
-	log.DebugDF(1, "%v starting up", f.Tag())
-	return
-}
-
-func (f *CFeature) Shutdown() {
-	log.DebugDF(1, "%v shutting down", f.FeatureTag)
 }
