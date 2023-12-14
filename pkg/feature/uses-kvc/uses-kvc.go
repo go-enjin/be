@@ -37,6 +37,12 @@ type CUsesKVC[M interface{}] struct {
 	this interface{}
 }
 
+func NewUsesKVC[M interface{}](this interface{}) (kvc *CUsesKVC[M]) {
+	kvc = &CUsesKVC[M]{}
+	kvc.InitUsesKVC(this)
+	return
+}
+
 func (f *CUsesKVC[M]) InitUsesKVC(this interface{}) {
 	f.this = this
 }
