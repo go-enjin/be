@@ -79,6 +79,8 @@ type Enjin struct {
 	lockers feature.SyncLockerFactory
 
 	mutex *sync.RWMutex
+
+	fmcache feature.FuncMap
 }
 
 func newEnjin(eb *EnjinBuilder) *Enjin {

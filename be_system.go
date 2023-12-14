@@ -100,12 +100,22 @@ func (e *Enjin) MustGetThemeNamed(name string) (t feature.Theme) {
 }
 
 func (e *Enjin) MakeFuncMap(ctx context.Context) (fm feature.FuncMap) {
+	var empty bool
+	if empty = len(ctx) == 0; empty {
+		if empty = len(e.fmcache) == 0; !empty {
+			fm = e.fmcache
+			return
+		}
+	}
 	fm = feature.FuncMap{}
 	for _, fmp := range e.eb.fFuncMapProviders {
 		made := fmp.MakeFuncMap(ctx)
 		for name, fn := range made {
 			fm[name] = fn
 		}
+	}
+	if empty {
+		e.fmcache = fm
 	}
 	return
 }
