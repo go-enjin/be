@@ -137,11 +137,11 @@ func (c *cRedisCache) AddBucket(name string) (kvs feature.KeyValueStore, err err
 	}
 	redisStore := redis_store.NewRedis(c.client, options...)
 	cacheManager := cache.New[string](redisStore)
-
 	c.buckets[name] = &cRedisStore{
-		tag:   c.this.Tag().Kebab(),
-		name:  name,
-		cache: cacheManager,
+		tag:    c.this.Tag().Kebab(),
+		name:   name,
+		cache:  cacheManager,
+		client: c.client,
 	}
 	kvs = c.buckets[name]
 	return
