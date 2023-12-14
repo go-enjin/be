@@ -60,7 +60,6 @@ type PageContextProvider interface {
 	FindPageStub(shasum string) (stub *PageStub)
 	PageContextValuesCount(key string) (count uint64)
 	PageContextValueCounts(key string) (counts map[interface{}]uint64)
-	YieldPageContextValues(key string) (values chan interface{})
 	YieldPageContextValueStubs(key string) (pairs chan *ValueStubPair)
 	YieldFilterPageContextValueStubs(include bool, key string, value interface{}) (pairs chan *ValueStubPair)
 	FilterPageContextValueStubs(include bool, key string, value interface{}) (stubs PageStubs)
