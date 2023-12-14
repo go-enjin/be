@@ -37,6 +37,7 @@ var (
 	ErrAudienceNotFound      = errors.New("audience not found")
 	ErrFileSystemLockTimeout = errors.New("filesystem lock request timed out")
 	ErrSuspiciousPanic       = errors.New("suspicious activity or possible programmer error")
+	ErrDataTypeNotSupported  = errors.New("data type not supported")
 )
 
 func BadRequestError(printer *message.Printer) (msg string) {
