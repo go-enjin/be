@@ -156,6 +156,19 @@ func newIncludedEnjin(eb *EnjinBuilder, parent *Enjin) *Enjin {
 }
 
 func (e *Enjin) action(ctx *cli.Context) (err error) {
+
+	go func() {
+		sigint := make(chan os.Signal, 1)
+		signal.Notify(sigint, syscall.SIGINT, syscall.SIGTERM)
+		<-sigint
+		for _, enjin := range e.eb.enjins {
+			for _, f := range enjin.Features().List() {
+				f.Shutdown()
+			}
+		}
+		e.Shutdown()
+	}()
+
 	if err = e.SetupRootEnjin(ctx); err != nil {
 		return
 	}
@@ -309,18 +322,6 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 	if err = e.setupRouter(e.router); err != nil {
 		return
 	}
-
-	go func() {
-		sigint := make(chan os.Signal, 1)
-		signal.Notify(sigint, syscall.SIGINT, syscall.SIGTERM)
-		<-sigint
-		for _, enjin := range e.eb.enjins {
-			for _, f := range enjin.Features().List() {
-				f.Shutdown()
-			}
-		}
-		e.Shutdown()
-	}()
 
 	go func() {
 		sighup := make(chan os.Signal)
