@@ -116,9 +116,9 @@ func CountDistinctFlatListValues[T comparable](store feature.KeyValueStore, key 
 }
 
 func RangeFlatList[T comparable](store feature.KeyValueStore, key string, fn func(item T) (stop bool)) {
-
-	store.Range(key+"__idx__", func(key string, value []byte) (stop bool) {
-		if GetIsNil(store, key) {
+	extended := MustAsExtended(store)
+	extended.Range(key+"__idx__", func(key string, value []byte) (stop bool) {
+		if GetIsNil(extended, key) {
 			return
 		}
 		var item T
