@@ -28,6 +28,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-enjin/be/pkg/profiling"
 	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/factories/nonces"
@@ -400,4 +401,6 @@ func (e *Enjin) Shutdown() {
 	}
 	e.Emit(signals.RootEnjinShutdown, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 	e.Notify("enjin shutdown complete")
+	profiling.Stop()
+	os.Exit(0)
 }
