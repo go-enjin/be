@@ -49,7 +49,7 @@ var (
 )
 
 type ResultsPostProcessor interface {
-	SearchResultsPostProcess(p feature.Page)
+	SearchResultsPostProcess(r *http.Request, p feature.Page)
 }
 
 type Feature interface {
@@ -273,7 +273,7 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p feature.Page) (pg f
 
 		// finalize
 		for _, rp := range feature.FilterTyped[ResultsPostProcessor](f.Enjin.Features().List()) {
-			rp.SearchResultsPostProcess(p)
+			rp.SearchResultsPostProcess(r, p)
 		}
 		pg = p
 		redirect = ""
