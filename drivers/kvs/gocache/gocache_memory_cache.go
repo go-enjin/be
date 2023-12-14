@@ -82,7 +82,8 @@ func (c *cMemoryCache) AddBucket(name string) (kvs feature.KeyValueStore, err er
 	gocacheStore := store_go_cache.NewGoCache(gocacheClient)
 	cacheManager := gocache.New[[]byte](gocacheStore)
 	c.buckets[name] = &cMemoryStore{
-		cache: cacheManager,
+		client: gocacheClient,
+		cache:  cacheManager,
 	}
 	kvs = c.buckets[name]
 	return

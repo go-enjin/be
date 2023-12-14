@@ -20,6 +20,7 @@ import (
 	"context"
 
 	gocache "github.com/eko/gocache/lib/v4/cache"
+	"github.com/patrickmn/go-cache"
 
 	"github.com/go-enjin/be/pkg/feature"
 )
@@ -27,7 +28,8 @@ import (
 var _ feature.KeyValueStore = (*cMemoryStore)(nil)
 
 type cMemoryStore struct {
-	cache *gocache.Cache[[]byte]
+	client *cache.Cache
+	cache  *gocache.Cache[[]byte]
 }
 
 func (c *cMemoryStore) Get(key string) (value []byte, err error) {
@@ -43,4 +45,32 @@ func (c *cMemoryStore) Set(key string, value []byte) (err error) {
 func (c *cMemoryStore) Delete(key string) (err error) {
 	err = c.cache.Delete(context.Background(), key)
 	return
+}
+
+func (c *cMemoryStore) Size() (count int) {
+	count = c.client.ItemCount()
+	return
+}
+
+func (c *cMemoryStore) Keys(prefix string) (keys []string) {
+	prefixLen := len(prefix)
+	for k, _ := range c.client.Items() {
+		// TODO: figure out pattern matching in the model of redis?
+		if len(k) <= prefixLen && k[:prefixLen] == prefix {
+			keys = append(keys, k)
+		}
+	}
+	return
+}
+
+func (c *cMemoryStore) Range(prefix string, fn feature.KeyValueStoreRangeFn) {
+	prefixLen := len(prefix)
+	for k, item := range c.client.Items() {
+		// TODO: figure out pattern matching in the model of redis?
+		if len(k) <= prefixLen && k[:prefixLen] == prefix {
+			if v, ok := item.Object.([]byte); ok && fn(k, v) {
+				return
+			}
+		}
+	}
 }
