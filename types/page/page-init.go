@@ -65,28 +65,16 @@ func (p *CPage) initFrontMatter() (err error) {
 
 func (p *CPage) parseContext(ctx context.Context) {
 	ctx.CamelizeKeys()
-	ctx.DeleteKeys("Url", "Path", "Section", "Slug", "Language", "Content")
+	ctx.DeleteKeys("Path", "Section", "Slug", "Language", "Content")
 
-	p.SetSlugUrl(p.fields.Url)
-	p.SetLanguage(p.fields.LanguageTag)
+	p.SetSlugUrl(ctx.String("Url", p.fields.Url))
+	p.SetLanguage(p.fields.LanguageTag) // language is controlled by filesystems, not individual pages
 
 	p.fields.Type = ctx.String("Type", "page")
-
-	//if ctxLang := ctx.String("Language", p.fields.Language); ctxLang != "" {
-	//	if tag, err := language.Parse(ctxLang); err == nil {
-	//		p.SetLanguage(tag)
-	//	} else {
-	//		p.SetLanguage(language.Und)
-	//	}
-	//} else {
-	//	p.SetLanguage(language.Und)
-	//}
 
 	if ctxTranslates := ctx.String("Translates", p.fields.Translates); ctxTranslates != "" {
 		p.SetTranslates(ctxTranslates)
 	}
-
-	//p.SetSlugUrl(ctx.String("Url", p.fields.Url))
 
 	if ctxPermalinkId := ctx.String("Permalink", p.fields.Permalink.String()); ctxPermalinkId != "" {
 		if err := p.SetPermalink(ctxPermalinkId); err != nil {
