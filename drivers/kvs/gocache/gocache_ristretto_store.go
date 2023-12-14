@@ -45,11 +45,11 @@ func newRistrettoBucket() (store *cRistrettoStore) {
 	return
 }
 
-func (f *cRistrettoStore) Get(key string) (value []byte, err error) {
+func (c *cRistrettoStore) Get(key string) (value []byte, err error) {
 	var ok bool
 	var v interface{}
 
-	if v, ok = f.cache.Get(key); !ok {
+	if v, ok = c.cache.Get(key); !ok {
 		err = os.ErrNotExist
 		return
 	} else if value, ok = v.([]byte); !ok {
@@ -60,14 +60,14 @@ func (f *cRistrettoStore) Get(key string) (value []byte, err error) {
 	return
 }
 
-func (f *cRistrettoStore) Set(key string, value []byte) (err error) {
-	if !f.cache.Set(key, value, 0) {
+func (c *cRistrettoStore) Set(key string, value []byte) (err error) {
+	if !c.cache.Set(key, value, 0) {
 		log.FatalF("ristretto set dropped for key: %v", key)
 	}
 	return
 }
 
-func (f *cRistrettoStore) Delete(key string) (err error) {
-	f.cache.Del(key)
+func (c *cRistrettoStore) Delete(key string) (err error) {
+	c.cache.Del(key)
 	return
 }
