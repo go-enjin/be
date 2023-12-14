@@ -18,8 +18,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-// TODO: investigate KeyValueStore implementing sync.RWMutex
-
 type KeyValueCaches interface {
 	Feature
 
@@ -51,4 +49,14 @@ type KeyValueStore interface {
 	Get(key string) (value []byte, err error)
 	Set(key string, value []byte) (err error)
 	Delete(key string) (err error)
+}
+
+type KeyValueStoreRangeFn func(key string, value []byte) (stop bool)
+
+type ExtendedKeyValueStore interface {
+	KeyValueStore
+
+	Size() (count int)
+	Keys(prefix string) (keys []string)
+	Range(prefix string, fn KeyValueStoreRangeFn)
 }
