@@ -79,3 +79,31 @@ func (c *cIMCacheStore) Delete(key string) (err error) {
 	c.cache.Remove(key)
 	return
 }
+
+func (c *cIMCacheStore) Size() (count int) {
+	count = c.cache.Len()
+	return
+}
+
+func (c *cIMCacheStore) Keys(prefix string) (keys []string) {
+	prefixLen := len(prefix)
+	for k, _ := range c.cache.GetAll() {
+		// TODO: figure out pattern matching in the model of redis?
+		if len(k) <= prefixLen && k[:prefixLen] == prefix {
+			keys = append(keys, k)
+		}
+	}
+	return
+}
+
+func (c *cIMCacheStore) Range(prefix string, fn feature.KeyValueStoreRangeFn) {
+	prefixLen := len(prefix)
+	for k, v := range c.cache.GetAll() {
+		// TODO: figure out pattern matching in the model of redis?
+		if len(k) <= prefixLen && k[:prefixLen] == prefix {
+			if stop := fn(k, v); stop {
+				return
+			}
+		}
+	}
+}
