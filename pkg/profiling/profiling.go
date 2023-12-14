@@ -49,5 +49,6 @@ func Start() {
 func Stop() {
 	if profiler != nil {
 		profiler.Stop()
+		profiler = nil
 	}
 }
