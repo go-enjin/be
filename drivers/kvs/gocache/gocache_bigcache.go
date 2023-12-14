@@ -34,7 +34,7 @@ func (f *CFeature) AddBigCache(name string, buckets ...string) MakeFeature {
 func (f *CFeature) AddExpiringBigCache(name string, lifeWindow, cleanWindow time.Duration, buckets ...string) MakeFeature {
 	f.Lock()
 	defer f.Unlock()
-	f.addCache(name, newBigCache(lifeWindow, cleanWindow))
+	f.addCache(name, newBigCache(f.KebabTag, lifeWindow, cleanWindow))
 	for _, bucket := range buckets {
 		if _, err := f.caches[name].AddBucket(bucket); err != nil {
 			log.FatalDF(1, "error adding bucket to cache: %v - %v", name, bucket)

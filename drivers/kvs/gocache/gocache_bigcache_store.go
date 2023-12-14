@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/allegro/bigcache/v3"
 	gocache "github.com/eko/gocache/lib/v4/cache"
 
 	"github.com/go-enjin/be/pkg/feature"
@@ -28,7 +29,9 @@ import (
 var _ feature.KeyValueStore = (*cBigCacheStore)(nil)
 
 type cBigCacheStore struct {
-	cache *gocache.Cache[[]byte]
+	name   string
+	cache  *gocache.Cache[[]byte]
+	client *bigcache.BigCache
 }
 
 func (c *cBigCacheStore) Get(key string) (value []byte, err error) {
@@ -51,4 +54,50 @@ func (c *cBigCacheStore) Set(key string, value []byte) (err error) {
 func (c *cBigCacheStore) Delete(key string) (err error) {
 	err = c.cache.Delete(context.Background(), key)
 	return
+}
+
+func (c *cBigCacheStore) Size() (count int) {
+	count = c.client.Len()
+	return
+}
+
+func (c *cBigCacheStore) Keys(prefix string) (keys []string) {
+	var err error
+	prefixLen := len(prefix)
+	if iter := c.client.Iterator(); iter != nil {
+		for {
+			var entry bigcache.EntryInfo
+			if entry, err = iter.Value(); err != nil {
+				continue
+			}
+			// TODO: figure out pattern matching in the model of redis?
+			if key := entry.Key(); len(key) <= prefixLen && key[:prefixLen] == prefix {
+				keys = append(keys, key)
+			}
+		}
+	}
+	return
+}
+
+func (c *cBigCacheStore) Range(prefix string, fn feature.KeyValueStoreRangeFn) {
+	var err error
+	prefixLen := len(prefix)
+	if iter := c.client.Iterator(); iter != nil {
+		for {
+			var entry bigcache.EntryInfo
+			if entry, err = iter.Value(); err != nil {
+				continue
+			}
+			key := entry.Key()
+			// TODO: figure out pattern matching in the model of redis?
+			if len(key) <= prefixLen && key[:prefixLen] == prefix {
+				if fn(entry.Key(), entry.Value()) {
+					return
+				}
+			}
+			if !iter.SetNext() {
+				return
+			}
+		}
+	}
 }

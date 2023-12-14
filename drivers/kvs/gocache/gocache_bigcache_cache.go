@@ -33,6 +33,7 @@ import (
 var _ feature.KeyValueCache = (*cBigCache)(nil)
 
 type cBigCache struct {
+	tag         string
 	buckets     map[string]*cBigCacheStore
 	lifeWindow  time.Duration
 	cleanWindow time.Duration
@@ -40,8 +41,9 @@ type cBigCache struct {
 	sync.RWMutex
 }
 
-func newBigCache(lifeWindow, cleanWindow time.Duration) (cache *cBigCache) {
+func newBigCache(tag string, lifeWindow, cleanWindow time.Duration) (cache *cBigCache) {
 	cache = &cBigCache{
+		tag:         tag,
 		lifeWindow:  lifeWindow,
 		cleanWindow: cleanWindow,
 		buckets:     make(map[string]*cBigCacheStore),
@@ -92,13 +94,18 @@ func (c *cBigCache) AddBucket(name string) (kvs feature.KeyValueStore, err error
 		Verbose:            dcfg.Verbose,
 		Hasher:             dcfg.Hasher,
 		HardMaxCacheSize:   dcfg.HardMaxCacheSize,
-		Logger:             log.PrefixedLogger("bigcache"),
+		Logger:             log.PrefixedLogger(c.tag + "-bigcache"),
 	}
-	gocacheClient, _ := bigcache.New(context.Background(), cfg)
-	gocacheStore := store_go_cache.NewBigcache(gocacheClient)
+	var bigCacheClient *bigcache.BigCache
+	if bigCacheClient, err = bigcache.New(context.Background(), cfg); err != nil {
+		return
+	}
+	gocacheStore := store_go_cache.NewBigcache(bigCacheClient)
 	cacheManager := gocache.New[[]byte](gocacheStore)
 	c.buckets[name] = &cBigCacheStore{
-		cache: cacheManager,
+		name:   name,
+		cache:  cacheManager,
+		client: bigCacheClient,
 	}
 	kvs = c.buckets[name]
 	return
