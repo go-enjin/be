@@ -325,7 +325,10 @@ func (f *CFeature) ReceiveFileEditorChanges(w http.ResponseWriter, r *http.Reque
 	for _, k := range maps.SortedKeys(r.Form) {
 		v := r.Form[k]
 		for i := 0; i < len(v); i++ {
-			v[i] = html.UnescapeString(forms.StrictSanitize(html.UnescapeString(v[i])))
+			escaped := html.EscapeString(v[i])
+			sanitized := forms.StrictSanitize(escaped)
+			cleaned := html.UnescapeString(sanitized)
+			v[i] = cleaned
 		}
 		switch len(v) {
 		case 0: // nop
