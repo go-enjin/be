@@ -609,7 +609,7 @@
             "id": "Forbidden",
             "key": "Forbidden",
             "message": "Forbidden",
-            "translation": "禁止",
+            "translation": "閲覧禁止",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -657,7 +657,7 @@
             "id": "Redirecting",
             "key": "Redirecting",
             "message": "Redirecting",
-            "translation": "Redirecting"
+            "translation": "リダイレクト"
         },
         {
             "id": "Bad request",
@@ -1611,7 +1611,7 @@
             "id": "error reading file: \"{Error}\"",
             "key": "error reading file: \"%[1]s\"",
             "message": "error reading file: \"{Error}\"",
-            "translation": "ファイル読み取りエラー:  \"%[1]s\"",
+            "translation": "\"%[1]s\"：ファイル読み取りエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1629,7 +1629,7 @@
             "id": "error reading draft: \"{Error}\"",
             "key": "error reading draft: \"%[1]s\"",
             "message": "error reading draft: \"{Error}\"",
-            "translation": "下書きの読み取りエラーt: \"%[1]s\"",
+            "translation": "\"%[1]s\"；下書きの読み取りエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1883,7 +1883,7 @@
             "id": "error saving to draft file: \"{Error}\"",
             "key": "error saving to draft file: \"%[1]s\"",
             "message": "error saving to draft file: \"{Error}\"",
-            "translation": "ドラフトファイルへの保存エラー: \"%[1]s\"",
+            "translation": "\"%[1]s\"：ドラフトファイルへの保存エラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1937,7 +1937,7 @@
             "id": "error saving final changes to draft: \"{Error}\"",
             "key": "error saving final changes to draft: \"%[1]s\"",
             "message": "error saving final changes to draft: \"{Error}\"",
-            "translation": "ドラフト\"%[1]s\" の最終変更保存中にエラーが発生しました",
+            "translation": "\"%[1]s\" ：ドラフトの最終変更保存中にエラーが発生しました",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1955,7 +1955,7 @@
             "id": "error reading final draft: \"{Error}\"",
             "key": "error reading final draft: \"%[1]s\"",
             "message": "error reading final draft: \"{Error}\"",
-            "translation": "最終ドラフトの読み取りエラー:「%[1]s」",
+            "translation": "\"%[1]s\" ：最終ドラフトの読み取りエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1973,7 +1973,7 @@
             "id": "error writing file: \"{Error}\"",
             "key": "error writing file: \"%[1]s\"",
             "message": "error writing file: \"{Error}\"",
-            "translation": "ファイルの書き込みエラー: \"%[1]s\"",
+            "translation": "\"%[1]s\"：ファイルの書き込みエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1991,7 +1991,7 @@
             "id": "error removing final draft: \"{Error}\"",
             "key": "error removing final draft: \"%[1]s\"",
             "message": "error removing final draft: \"{Error}\"",
-            "translation": "最終ドラフトの削除中にエラーが発生しました: \"%[1]s\"",
+            "translation": "\"%[1]s\"：最終ドラフトの削除中にエラーが発生しました",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2009,7 +2009,7 @@
             "id": "error unlocking file: \"{Error}\"",
             "key": "error unlocking file: \"%[1]s\"",
             "message": "error unlocking file: \"{Error}\"",
-            "translation": "ファイルのロック解除エラー: \"%[1]s\"",
+            "translation": "\"%[1]s\"：ファイルのロック解除エラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2193,7 +2193,7 @@
             "id": "error reading \"{SrcUri}\" file stats: {Error}",
             "key": "error reading \"%[1]s\" file stats: %[2]s",
             "message": "error reading \"{SrcUri}\" file stats: {Error}",
-            "translation": "「%[1]s」ファイル統計の読み取りエラー: %[2]s",
+            "translation": "%[2]s：「%[1]s」ファイル統計の読み取りエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2219,7 +2219,7 @@
             "id": "error reading \"{SrcUri}\": {Error}",
             "key": "error reading \"%[1]s\": %[2]s",
             "message": "error reading \"{SrcUri}\": {Error}",
-            "translation": "\"%[1]s\":の読み取り中にエラーが発生しました: %[2]s",
+            "translation": "%[2]s：\"%[1]s\":の読み取り中にエラーが発生しました",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2245,7 +2245,7 @@
             "id": "error writing \"{DstUri}\": {Error}",
             "key": "error writing \"%[1]s\": %[2]s",
             "message": "error writing \"{DstUri}\": {Error}",
-            "translation": "\"%[1]s\"の書き込みエラー: %[2]s",
+            "translation": "%[2]s：\"%[1]s\"の書き込みエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2271,7 +2271,7 @@
             "id": "error preserving file timestamps \"{DstUri}\": {Error}",
             "key": "error preserving file timestamps \"%[1]s\": %[2]s",
             "message": "error preserving file timestamps \"{DstUri}\": {Error}",
-            "translation": "error preserving  \"%[1]s\"ァイルのタイムスタンプの保存中にエラーが発生しました: %[2]s",
+            "translation": "%[2]s：\"%[1]s\"ァイルのタイムスタンプの保存中にエラーが発生しました",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2297,7 +2297,7 @@
             "id": "error reading \"{DstUri}\" shasum: {Error}",
             "key": "error reading \"%[1]s\" shasum: %[2]s",
             "message": "error reading \"{DstUri}\" shasum: {Error}",
-            "translation": "erro \"%[1]s\"  シャサムの読み取り中にエラーが発生しました: %[2]s",
+            "translation": "%[2]s： \"%[1]s\"  シャサムの読み取り中にエラーが発生しました",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2331,7 +2331,7 @@
             "id": "error unlocking source file \"{SrcUri}\" before deleting during move: {Error}",
             "key": "error unlocking source file \"%[1]s\" before deleting during move: %[2]s",
             "message": "error unlocking source file \"{SrcUri}\" before deleting during move: {Error}",
-            "translation": "移動中に削除する前のソース ファイル \"%[1]s\" のロックを解除中にエラーが発生しました: %[2]s",
+            "translation": "%[2]s：移動中に削除する前のソース ファイル \"%[1]s\" のロックを解除中にエラーが発生しました",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2357,7 +2357,7 @@
             "id": "error removing \"{SrcUri}\": {Error}",
             "key": "error removing \"%[1]s\": %[2]s",
             "message": "error removing \"{SrcUri}\": {Error}",
-            "translation": "\"%[1]s\"の削除中にエラーが発生しました: %[2]s",
+            "translation": "%[2]s：\"%[1]s\"の削除中にエラーが発生しました",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2589,7 +2589,7 @@
             "id": "error locking {FsidCode} locale for editing: {Error}",
             "key": "error locking %[1]s locale for editing: %[2]s",
             "message": "error locking {FsidCode} locale for editing: {Error}",
-            "translation": "e 編集用の %[1]sロケールをロック中にエラーが発生しました: %[2]s %[2]s (JA)",
+            "translation": "%[2]s: %[1]sのロケールをロック中にエラーが発生しました",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2615,7 +2615,7 @@
             "id": "error taking over editing: {Error}",
             "key": "error taking over editing: %[1]s",
             "message": "error taking over editing: {Error}",
-            "translation": "編集引き継ぎエラー: %[1]s",
+            "translation": "%[1]s: 編集引き継ぎエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2641,7 +2641,7 @@
             "id": "error unlocking locale for editing by others: {Error}",
             "key": "error unlocking locale for editing by others: %[1]s",
             "message": "error unlocking locale for editing by others: {Error}",
-            "translation": "他の人が編集できるロケールのロックを解除中にエラーが発生しました: %[1]s",
+            "translation": "%[1]s：他の人が編集できるロケールのロックを解除中にエラーが発生しました",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2675,7 +2675,7 @@
             "id": "error reading locales data: {Error}",
             "key": "error reading locales data: %[1]s",
             "message": "error reading locales data: {Error}",
-            "translation": "ロケールデータの読み取りエラー: %[1]s",
+            "translation": "%[1]s；ロケールデータの読み取りエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2693,7 +2693,7 @@
             "id": "error performing draft changes: {Error}",
             "key": "error performing draft changes: %[1]s",
             "message": "error performing draft changes: {Error}",
-            "translation": "ドラフト変更の実行中にエラーが発生しました: %[1]s",
+            "translation": "%[1]s：ドラフト変更の実行中にエラーが発生しました",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2711,7 +2711,7 @@
             "id": "error writing draft changes: {Error}",
             "key": "error writing draft changes: %[1]s",
             "message": "error writing draft changes: {Error}",
-            "translation": "ドラフト変更の書き込みエラー: %[1]s",
+            "translation": "%[1]s：ドラフト変更の書き込みエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2801,7 +2801,7 @@
             "id": "translation copied to: {DstPath}",
             "key": "translation copied to: %[1]s",
             "message": "translation copied to: {DstPath}",
-            "translation": "翻訳をコピーしました: %[1]s",
+            "translation": "%[1]s：翻訳をコピーしました",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2909,7 +2909,7 @@
             "id": "error reading draft: \"{Err}\"",
             "key": "error reading draft: \"%v\"",
             "message": "error reading draft: \"{Err}\"",
-            "translation": "ドラフトの読み取りエラー: \"%[1]v\"",
+            "translation": "\"%[1]v\"：ドラフトの読み取りエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2927,7 +2927,7 @@
             "id": "error reading file: \"{Err}\"",
             "key": "error reading file: \"%v\"",
             "message": "error reading file: \"{Err}\"",
-            "translation": "ファイルの読み取りエラー: \"%[1]v\"",
+            "translation": "\"%[1]v\"：ファイルの読み取りエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2945,7 +2945,7 @@
             "id": "error encoding menu: \"{Err}\"",
             "key": "error encoding menu: \"%v\"",
             "message": "error encoding menu: \"{Err}\"",
-            "translation": "メニューの符号化エラー: \"%[1]v\"",
+            "translation": "\"%[1]v\"：メニューの符号化エラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3057,7 +3057,7 @@
             "id": "error encoding form context: \"{Error}\"",
             "key": "error encoding form context: \"%[1]s\"",
             "message": "error encoding form context: \"{Error}\"",
-            "translation": "フォームコンテキストのエンコードエラー: \"%[1]s\"",
+            "translation": "\"%[1]s\"：フォームコンテキストのエンコードエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3075,7 +3075,7 @@
             "id": "error decoding form context: \"{Error}\"",
             "key": "error decoding form context: \"%[1]s\"",
             "message": "error decoding form context: \"{Error}\"",
-            "translation": "フォームコンテキストのデコードエラー: \"%[1]s\"",
+            "translation": "\"%[1]s\"：フォームコンテキストのデコードエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3093,7 +3093,7 @@
             "id": "error encoding cleaned menu: \"{Error}\"",
             "key": "error encoding cleaned menu: \"%v\"",
             "message": "error encoding cleaned menu: \"{Error}\"",
-            "translation": "エンコクリーンアップされたメニューのエンコードエラー: \"%[1]v\"",
+            "translation": "\"%[1]v\"：エンコクリーンアップされたメニューのエンコードエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3111,7 +3111,7 @@
             "id": "error decoding cleaned menu: \"{Error}\"",
             "key": "error decoding cleaned menu: \"%v\"",
             "message": "error decoding cleaned menu: \"{Error}\"",
-            "translation": "エンコクリーンアップされたメニューのデコードエラー: \"%[1]v\"",
+            "translation": "\"%[1]v\"：エンコクリーンアップされたメニューのデコードエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3129,7 +3129,7 @@
             "id": "error saving draft changes: \"{Error}\"",
             "key": "error saving draft changes: \"%[1]s\"",
             "message": "error saving draft changes: \"{Error}\"",
-            "translation": "ドラフト変更の保存エラー: \"%[1]s\"",
+            "translation": "\"%[1]s\"：ドラフト変更の保存エラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3147,7 +3147,7 @@
             "id": "error saving final draft changes: \"{Error}\"",
             "key": "error saving final draft changes: \"%[1]s\"",
             "message": "error saving final draft changes: \"{Error}\"",
-            "translation": "ドラフトの変更を最終保存するときにエラーが発生しました: \"%[1]s\"",
+            "translation": "\"%[1]s\"：ドラフトの変更を最終保存するときにエラーが発生しました",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3165,7 +3165,7 @@
             "id": "error decoding draft data: \"{Error}\"",
             "key": "error decoding draft data: \"%[1]s\"",
             "message": "error decoding draft data: \"{Error}\"",
-            "translation": "ドラフトデータのデコードエラー: \"%[1]s\"",
+            "translation": "\"%[1]s\"：ドラフトデータのデコードエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3183,7 +3183,7 @@
             "id": "error encoding draft menu: \"{Error}\"",
             "key": "error encoding draft menu: \"%[1]s\"",
             "message": "error encoding draft menu: \"{Error}\"",
-            "translation": "ドラフトメニューのエンコードエラー: \"%[1]s\"",
+            "translation": "\"%[1]s\"：ドラフトメニューのエンコードエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3305,7 +3305,7 @@
             "id": "error reading draft page matter: \"{Error}\"",
             "key": "error reading draft page matter: \"%[1]s\"",
             "message": "error reading draft page matter: \"{Error}\"",
-            "translation": "ドラフトページ問題の読み取りエラー: \"%[1]s\"",
+            "translation": "\"%[1]s\"：ドラフトページ問題の読み取りエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3323,7 +3323,7 @@
             "id": "error preparing draft page preview: \"{Error}\"",
             "key": "error preparing draft page preview: \"%[1]s\"",
             "message": "error preparing draft page preview: \"{Error}\"",
-            "translation": "ドラフト ページ プレビューの準備中にエラーが発生しました: \"%[1]s\"",
+            "translation": "\"%[1]s\"：ドラフト ページ プレビューの準備中にエラーが発生しました",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3349,7 +3349,7 @@
             "id": "error parsing page-matter: \"{Err}\"",
             "key": "error parsing page-matter: \"%v\"",
             "message": "error parsing page-matter: \"{Err}\"",
-            "translation": "ページ事項の解析エラー: \"%[1]v\"",
+            "translation": "\"%[1]v\"：ページ事項の解析エラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3367,7 +3367,7 @@
             "id": "error finalizing edit page: \"{Err}\"",
             "key": "error finalizing edit page: \"%v\"",
             "message": "error finalizing edit page: \"{Err}\"",
-            "translation": "編集ページの終了中にエラーが発生しました: \"%[1]v\"",
+            "translation": "\"%[1]v\"：編集ページの終了中にエラーが発生しました",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3385,7 +3385,7 @@
             "id": "error decoding form body: \"{Err}\"",
             "key": "error decoding form body: \"%v\"",
             "message": "error decoding form body: \"{Err}\"",
-            "translation": "フォーム本文のデコードエラー: \"%[1]v\"",
+            "translation": "\"%[1]v\"：フォーム本文のデコードエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3445,7 +3445,7 @@
             "id": "{Key} error: {Error}",
             "key": "%[1]s error: %[2]s",
             "message": "{Key} error: {Error}",
-            "translation": "%[1]s エラー: %[2]s",
+            "translation": "%[2]s：%[1]s エラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3541,7 +3541,7 @@
             "id": "error saving draft page changes: \"{Error}\"",
             "key": "error saving draft page changes: \"%[1]s\"",
             "message": "error saving draft page changes: \"{Error}\"",
-            "translation": "ドラフトページの変更を保存するときにエラーが発生しました: \"%[1]s\"",
+            "translation": "\"%[1]s\"：ドラフトページの変更を保存するときにエラーが発生しました",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3603,7 +3603,7 @@
             "id": "error writing draft page: \"{Error}\"",
             "key": "error writing draft page: \"%[1]s\"",
             "message": "error writing draft page: \"{Error}\"",
-            "translation": "ドラフトページの書き込みエラー: \"%[1]s\"",
+            "translation": "\"%[1]s\"：ドラフトページの書き込みエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3621,7 +3621,7 @@
             "id": "error publishing draft page: \"{Error}\"",
             "key": "error publishing draft page: \"%[1]s\"",
             "message": "error publishing draft page: \"{Error}\"",
-            "translation": "ドラフトページのパブリッシュエラー: \"%[1]s\"",
+            "translation": "\"%[1]s\"：ドラフトページのパブリッシュエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3639,7 +3639,7 @@
             "id": "error removing final draft page: \"{Error}\"",
             "key": "error removing final draft page: \"%[1]s\"",
             "message": "error removing final draft page: \"{Error}\"",
-            "translation": "最終ドラフトページの削除中にエラーが発生しました: \"%[1]s\"",
+            "translation": "\"%[1]s\"：最終ドラフトページの削除中にエラーが発生しました",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3657,7 +3657,7 @@
             "id": "error unlocking page file: \"{Error}\"",
             "key": "error unlocking page file: \"%[1]s\"",
             "message": "error unlocking page file: \"{Error}\"",
-            "translation": "ページファイルのロック解除エラー: \"%[1]s\"",
+            "translation": "\"%[1]s\"：ページファイルのロック解除エラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3735,7 +3735,7 @@
             "id": "page format render error: {Error}",
             "key": "page format render error: %[1]s",
             "message": "page format render error: {Error}",
-            "translation": "ページフォーマットのレンダリングエラー: %[1]s",
+            "translation": "%[1]s：ページフォーマットのレンダリングエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3805,7 +3805,7 @@
             "id": "error reading \"{SrcUri}\" page matter: {Error}",
             "key": "error reading \"%[1]s\" page matter: %[2]s",
             "message": "error reading \"{SrcUri}\" page matter: {Error}",
-            "translation": "\"%[1]s\" ページマットの読み取りエラーr: %[2]s",
+            "translation": "%[2]s：\"%[1]s\" ページマットの読み取りエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3831,7 +3831,7 @@
             "id": "error preparing \"{SrcUri}\" page matter: {Error}",
             "key": "error preparing \"%[1]s\" page matter: %[2]s",
             "message": "error preparing \"{SrcUri}\" page matter: {Error}",
-            "translation": "\"%[1]s\" ページの準備中にエラーが発生しました: %[2]s",
+            "translation": "%[2]s：\"%[1]s\" ページの準備中にエラーが発生しました",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3891,7 +3891,7 @@
             "id": "error making archetype \"{DstArchetype}\": {Error}",
             "key": "error making archetype \"%[1]s\": %[2]s",
             "message": "error making archetype \"{DstArchetype}\": {Error}",
-            "translation": "\"%[1]s\"アーキタイプ作成エラー : %[2]s",
+            "translation": "%[2]s：\"%[1]s\"アーキタイプ作成エラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3917,7 +3917,7 @@
             "id": "page format error: {Title} - {Summary}",
             "key": "page format error: %[1]s - %[2]s",
             "message": "page format error: {Title} - {Summary}",
-            "translation": "ページフォーマットエラー: %[1]s - %[2]s",
+            "translation": "%[1]s - %[2]s：ページフォーマットエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3943,7 +3943,7 @@
             "id": "page render error: {Error}",
             "key": "page render error: %[1]s",
             "message": "page render error: {Error}",
-            "translation": "ページレンダリングエラー: %[1]s",
+            "translation": "%[1]s：ページレンダリングエラー",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4041,7 +4041,7 @@
             "id": "{Name} (default)",
             "key": "%[1]s (default)",
             "message": "{Name} (default)",
-            "translation": "%[1]s (デフォルト）",
+            "translation": "(デフォルト）%[1]s",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4219,6 +4219,14 @@
             "message": "User Manager",
             "translation": "ユーザーマネージャー",
             "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "it is of the form \"\u003cx\" where x is an integer that is larger than the argument.",
+            "key": "it is of the form \"\u003cx\" where x is an integer that is larger than the argument.",
+            "message": "it is of the form \"\u003cx\" where x is an integer that is larger than the argument.",
+            "translation": "\"\u003cx\" は、x が引数よりも大きい整数である形式です。",
+            "translatorComment": "[from: layouts/partials/fs-editor/dialog/add-tx-case.tmpl]",
             "fuzzy": true
         }
     ]
