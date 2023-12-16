@@ -15,6 +15,7 @@
 package menus
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/urfave/cli/v2"
@@ -49,11 +50,16 @@ type Feature interface {
 type MakeFeature interface {
 	feature.EditorMakeFeature[MakeFeature]
 
+	AddMenuFileSystems(features ...feature.Feature) MakeFeature
+	AddMenuFileSystemsByTag(tags ...feature.Tag) MakeFeature
+
 	Make() Feature
 }
 
 type CFeature struct {
 	fs_editor.CEditorFeature[MakeFeature]
+
+	extraTags feature.Tags
 }
 
 func New() MakeFeature {
@@ -82,6 +88,20 @@ func (f *CFeature) Init(this interface{}) {
 	return
 }
 
+func (f *CFeature) AddMenuFileSystems(features ...feature.Feature) MakeFeature {
+	for _, ef := range features {
+		if efs, ok := ef.This().(feature.FileSystemFeature); ok {
+			f.EditingFileSystems = append(f.EditingFileSystems, efs)
+		}
+	}
+	return f
+}
+
+func (f *CFeature) AddMenuFileSystemsByTag(tags ...feature.Tag) MakeFeature {
+	f.extraTags = f.extraTags.Append(tags...)
+	return f
+}
+
 func (f *CFeature) Make() (feat Feature) {
 	return f
 }
@@ -102,6 +122,22 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		if fsf, ok := mp.This().(feature.FileSystemFeature); ok {
 			f.EditingFileSystems = append(f.EditingFileSystems, fsf)
 			log.DebugF("%v editing filesystem: %v", f.Tag(), fsf.Tag())
+		} else {
+			err = fmt.Errorf("not a feature.FileSystemFeature: %q", mp.Tag())
+			return
+		}
+	}
+	for _, extra := range f.extraTags {
+		if ef, ok := f.Enjin.Features().Get(extra); ok {
+			if efs, ok := ef.This().(feature.FileSystemFeature); ok {
+				f.EditingFileSystems = append(f.EditingFileSystems, efs)
+			} else {
+				err = fmt.Errorf("not a feature.FileSystemFeature: %q", extra)
+				return
+			}
+		} else {
+			err = fmt.Errorf("feature not found: %q", extra)
+			return
 		}
 	}
 	return
