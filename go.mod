@@ -40,7 +40,7 @@ require (
 	github.com/mrz1836/go-sanitize v1.3.1
 	github.com/niklasfasching/go-org v1.7.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
-	github.com/pelletier/go-toml/v2 v2.1.0
+	github.com/pelletier/go-toml/v2 v2.1.1
 	github.com/pkg/profile v1.7.0
 	github.com/polds/logrus-papertrail-hook v0.0.0-20180214143432-bcfe7b72c1a4
 	github.com/puzpuzpuz/xsync/v2 v2.5.1
