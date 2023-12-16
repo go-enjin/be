@@ -17,7 +17,7 @@
 #: uncomment to echo instead of execute
 #CMD=echo
 
-ENJIN_MK_VERSION := v0.2.15
+ENJIN_MK_VERSION := v0.2.16
 
 #
 #: phony make targets
@@ -123,7 +123,7 @@ BUILT_IN_GOPKG_KEYS += _GOTEXT
 _GOTEXT_LABEL := Go-Enjin fork of golang.org/x/text
 _GOTEXT_GO_PACKAGE ?= github.com/go-enjin/golang-org-x-text
 _GOTEXT_LOCAL_PATH ?= ../golang-org-x-text
-_GOTEXT_LATEST_VER ?= v0.12.1-enjin.1
+_GOTEXT_LATEST_VER ?= v0.12.1-enjin.2
 
 # Go-Enjin fork of text scanner package
 BUILT_IN_GOPKG_KEYS += _TEXT_SCANNER
