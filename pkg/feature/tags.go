@@ -67,13 +67,14 @@ func (t Tags) Find(name string) (found Tag, ok bool) {
 }
 
 // Append returns a (unique) list with the given tags appended
-func (t Tags) Append(tags ...Tag) Tags {
+func (t Tags) Append(tags ...Tag) (list Tags) {
+	list = t[:]
 	for _, tag := range tags {
-		if !t.Has(tag) {
-			return append(t, tag)
+		if !list.Has(tag) {
+			list = append(list, tag)
 		}
 	}
-	return t
+	return
 }
 
 // Len returns the number of tags
