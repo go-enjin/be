@@ -120,9 +120,6 @@ func (f *CFeature) SetStartupGC(percent int) MakeFeature {
 func (f *CFeature) Make() Feature {
 	f.indexProviderTags = f.indexProviderTags.Unique()
 	f.searchProviderTags = f.searchProviderTags.Unique()
-	if f.indexProviderTags.Len() == 0 {
-		log.FatalDF(1, "%v feature requires at least one feature.PageIndexFeature", f.Tag())
-	}
 	return f
 }
 
@@ -148,10 +145,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 			log.DebugF("%v feature ignoring index provider: %v", f.Tag(), tag)
 		}
 	}
-	if len(f.indexProviders) == 0 {
-		err = fmt.Errorf(`%v feature required index provider(s) not found: %+v`, f.Tag(), f.indexProviderTags)
-		return
-	} else if len(f.indexProviderTags) != len(indexProviderTags) {
+	if len(f.indexProviderTags) != len(indexProviderTags) {
 		err = fmt.Errorf("%v feature required %d index providers yet found only %d: %+v != %+v",
 			f.Tag(), len(f.indexProviderTags), len(indexProviderTags), f.indexProviderTags, indexProviderTags)
 		return
