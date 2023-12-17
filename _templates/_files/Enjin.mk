@@ -17,7 +17,7 @@
 #: uncomment to echo instead of execute
 #CMD=echo
 
-ENJIN_MK_VERSION := v0.2.16
+ENJIN_MK_VERSION := v0.2.17
 
 #
 #: phony make targets
@@ -746,7 +746,7 @@ endif
 	@echo "  profile.cpu   make build dev with cpu profiling"
 	@echo "  profile.mem   make build dev with mem profiling"
 	@echo
-	@echo "  note: use 'make stop' from another terminal to end profiling"
+	@echo "  note: use 'make stop-profiling' from another terminal to end profiling"
 
 ifneq (${_DEPS_PRESENT},)
 	@echo
@@ -1193,7 +1193,7 @@ stop:
 	@RUNNING_PIDS=$$(\
 		COLUMNS=1024 ps -x -a -o pid=,command= \
 			| egrep -v '(grep|tail)' \
-			| egrep "^\\s*[0-9]*\\s*\./${APP_NAME}\$$" \
+			| egrep "^\\s*[0-9]*\\s*(${PWD}|\.)/${APP_NAME}\$$" \
 			| awk '{print $$1}' \
 		); \
 		if [ -z "$${RUNNING_PIDS}" ]; then \
@@ -1204,7 +1204,7 @@ stop:
 				LINE=$$(\
 					COLUMNS=1024 ps -x -a -o pid=,command= \
 						| egrep -v '(grep|tail)' \
-						| egrep "^\\s*$${RP}\\s*\./${APP_NAME}\$$" \
+						| egrep "^\\s*$${RP}\\s*(${PWD}|\.)/${APP_NAME}\$$" \
 				); \
 				RP_TREE=$(call _find_pid_tree,$${RP}); \
 				echo "#######################################################"; \
@@ -1268,7 +1268,7 @@ stop-profiling: STOP_PROFILING=true
 stop-profiling: stop
 
 profile.mem: export BE_PROFILE_MODE=mem
-profile.mem: export BE_PROFILE_PATH=.
+profile.mem: export BE_PROFILE_PATH=${PROFILE_PATH}
 profile.mem: build dev
 	@if [ -f mem.pprof ]; then \
 		echo "# <Enter> to load mem.pprof, <CTRL+c> to abort"; \
