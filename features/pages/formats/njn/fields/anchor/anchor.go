@@ -104,6 +104,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 	if attrs, classes, _, e := maps.ParseNjnFieldAttributes(field); e == nil {
 		if decorated {
 			classes = append(classes, "decorated")
+			attrs["class"] = strings.Join(classes, " ")
 		}
 		if data["Attributes"], e = maps.FinalizeNjnFieldAttributes(attrs); e != nil {
 			err = fmt.Errorf("error finalizing njn field attributes: %v", e)
