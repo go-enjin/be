@@ -85,7 +85,7 @@ func (s CGormDBPathSupport[MakeTypedFeature]) startupGormDBPathSupport(f *CFeatu
 		var db *gorm.DB
 		if v := f.Enjin.MustDB(mgdb.connection); v != nil {
 			if db, ok = v.(*gorm.DB); !ok {
-				err = fmt.Errorf("connection error: %v; expected *gorm.DB, found %T", mgdb.connection)
+				err = fmt.Errorf("connection error: %v; expected *gorm.DB, found %T", mgdb.connection, v)
 				return
 			}
 		} else {
