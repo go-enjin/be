@@ -737,5 +737,4 @@ func (f *CFeature) makeFlagNames() (fn flagNames) {
 		signInPath:      category + "-sign-in-path",
 		signOutPath:     category + "-sign-out-path",
 	}
-	return
 }

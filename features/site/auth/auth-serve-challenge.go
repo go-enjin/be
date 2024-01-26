@@ -243,7 +243,6 @@ func (f *CFeature) ServeChallengeRequest(w http.ResponseWriter, r *http.Request)
 	if err := f.Site().PrepareAndServePage("site-auth", "otp--challenge", thisPath, t, w, r, ctx); err != nil {
 		log.ErrorRF(r, "error serving prepared mfa--challenge page: %v", err)
 		panic(err)
-		return
 	}
 	return
 }

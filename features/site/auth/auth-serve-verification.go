@@ -237,7 +237,6 @@ func (f *CFeature) ServeVerificationRequest(verifyTarget string, w http.Response
 	if err := f.Site().PrepareAndServePage("site-auth", "otp--verification", verifyTarget, t, w, r, ctx); err != nil {
 		log.ErrorRF(r, "error serving prepared mfa--challenge page: %v", err)
 		panic(err)
-		return
 	}
 
 	handled = true

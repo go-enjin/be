@@ -135,7 +135,6 @@ func (f *CFeature) ServeSignInPage(w http.ResponseWriter, r *http.Request) {
 	if err = f.Site().PrepareAndServePage("site-auth", "sign-in", signInPath, t, w, r, ctx); err != nil {
 		log.ErrorRF(r, "error preparing and serving sign-in page: %v", err)
 		panic(err)
-		return
 	}
 
 	return

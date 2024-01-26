@@ -187,7 +187,6 @@ func (f *CFeature) ServeSignInConfirmationPage(email string, saf feature.SiteAut
 	if err := saf.Site().PrepareAndServePage("site-auth", "sign-in--email-token", saf.SiteAuthSignInPath(), t, w, r, ctx); err != nil {
 		log.ErrorRF(r, "error preparing and serving sign-in--email-token page: %v", err)
 		panic(err)
-		return
 	}
 
 	return

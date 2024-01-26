@@ -195,7 +195,6 @@ func (f *CFeature) ServeSignInConfirmationPage(email, backupEmail string, s feat
 	if err := s.Site().PrepareAndServePage("site-auth", "sign-in--email-backup", s.SiteAuthSignInPath(), t, w, r, ctx); err != nil {
 		log.ErrorRF(r, "error preparing and serving sign-in--email-backup page: %v", err)
 		panic(err)
-		return
 	}
 
 	return

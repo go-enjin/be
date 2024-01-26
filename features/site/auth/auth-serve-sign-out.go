@@ -101,6 +101,5 @@ func (f *CFeature) ServeSignOutPage(w http.ResponseWriter, r *http.Request) {
 	if err := f.Site().PrepareAndServePage("site-auth", "sign-out", signOutPath, t, w, r, ctx); err != nil {
 		log.ErrorRF(r, "error preparing and serving sign-out page: %v", err)
 		panic(err)
-		return
 	}
 }
