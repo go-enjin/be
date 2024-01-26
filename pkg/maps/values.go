@@ -221,9 +221,9 @@ func FinalizeNjnFieldAttributes(attrs map[string]interface{}) (attributes []temp
 		case nil:
 			attributes = append(attributes, template.HTMLAttr(fmt.Sprintf(`%v`, k)))
 		case string:
-			attributes = append(attributes, template.HTMLAttr(fmt.Sprintf(`%v="%v"`, k, strings.EscapeHtmlAttribute(t))))
+			attributes = append(attributes, template.HTMLAttr(fmt.Sprintf(`%v=%q`, k, strings.EscapeHtmlAttribute(t))))
 		case template.HTMLAttr:
-			attributes = append(attributes, template.HTMLAttr(fmt.Sprintf(`%v="%v"`, k, t)))
+			attributes = append(attributes, template.HTMLAttr(fmt.Sprintf(`%v=%q`, k, t)))
 		default:
 			err = fmt.Errorf("unsupported type: %T %+v", t, t)
 		}
