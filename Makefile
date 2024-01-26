@@ -17,7 +17,9 @@
 #: uncomment to echo instead of execute
 #CMD=echo
 
-.PHONY: help compile generate build be-update local unlocal tidy
+.PHONY: all help compile generate build locales
+.PHONY: be-update local unlocal tidy
+.PHONY: deps fmt reportcard
 
 MAKEFILE_VERSION = v0.0.3
 
@@ -42,14 +44,41 @@ DJHT_LOCAL_PATH := ../../../github.com/go-enjin/github-com-djherbis-times
 GOTS_GO_PACKAGE := github.com/go-enjin/go-stdlib-text-scanner
 GOTS_LOCAL_PATH := ../../../github.com/go-enjin/go-stdlib-text-scanner
 
-GOLANG ?= 1.21.0
+GOLANG ?= 1.21.6
 GO_MOD ?= 1021
+
+GOIMPORT_LOCALS += github.com/go-corelibs
+GOIMPORT_LOCALS += github.com/go-curses
+GOIMPORT_LOCALS += github.com/go-enjin
 
 _INTERNAL_BUILD_LOG_ := /dev/null
 #_INTERNAL_BUILD_LOG_ := ./build.log
 
+all: help
+
 help:
-	@echo "usage: make <build|generate|local|unlocal|tidy>"
+	@echo "usage: make <compile|generate|build|locales>"
+	@echo "       make <be-update|local|unlocal|tidy>"
+	@echo "       make <deps|fmt|reportcard>"
+
+export GO_BIN=$(shell which go)
+export GOFMT_BIN=$(shell which gofmt)
+export GOIMPORTS_BIN=$(shell which goimports)
+export LOCALS_VALUE=$(shell echo "${GOIMPORT_LOCALS}" | perl -pe 's/\s+/,/msg')
+export GOCONVEY_BIN=$(shell which goconvey)
+export GOVULNCHECK_BIN=$(shell which govulncheck)
+export GOCYCLO_BIN=$(shell which gocyclo)
+export INEFFASSIGN_BIN=$(shell which ineffassign)
+export MISSPELL_BIN=$(shell which misspell)
+
+define __install_dep
+if [ -z "$(1)" ]; then \
+	echo "# installing $(1)"; \
+	${GO_BIN} install "$(2)@latest"; \
+else \
+	echo "# $(1) installed already"; \
+fi
+endef
 
 ifeq ($(origin ENJENV_BIN),undefined)
 ENJENV_BIN:=$(shell which enjenv)
@@ -110,7 +139,6 @@ $(if ${GOPKG_KEYS},$(foreach key,${GOPKG_KEYS},$(shell \
 		fi \
 )))
 endef
-
 
 define _make_go_local
 echo "_make_go_local $(1) $(2)" >> ${_INTERNAL_BUILD_LOG_}; \
@@ -181,6 +209,9 @@ generate: _golang
 	@echo "# running go generate ./..."
 	@$(call _source_activate_run,go,generate,./...)
 
+locales: _golang
+	@$(call _source_activate_run,_scripts/be-locales.sh,./...)
+
 build: generate compile
 
 be-update: export GOPROXY=direct
@@ -210,3 +241,43 @@ tidy: _golang
 		echo "# go mod tidy"; \
 		$(call _source_activate_run,go,mod,tidy); \
 	fi
+
+deps:
+	@$(call __install_dep,${GOIMPORTS_BIN},golang.org/x/tools/cmd/goimports)
+	@$(call __install_dep,${GOCONVEY_BIN},github.com/smartystreets/goconvey)
+	@$(call __install_dep,${GOVULNCHECK_BIN},golang.org/x/vuln/cmd/govulncheck)
+	@$(call __install_dep,${GOCYCLO_BIN},github.com/fzipp/gocyclo/cmd/gocyclo)
+	@$(call __install_dep,${INEFFASSIGN_BIN},github.com/gordonklaus/ineffassign)
+	@$(call __install_dep,${MISSPELL_BIN},github.com/client9/misspell/cmd/misspell)
+
+fmt:
+	@echo "# running gofmt -s ..."
+	@find * -name "*.go" -print0 | xargs -0 -n 1 ${GOFMT_BIN} -s -w
+	@echo "# running goimports ..."
+	@find * -name "*.go" -print0 | xargs -0 -n 1 ${GOIMPORTS_BIN} -w --local ${LOCALS_VALUE}
+
+reportcard:
+	@echo "# code sanity and style report"
+	@echo "#: go vet"
+	@${GO_BIN} vet -tags all ./... || true
+	@echo "#: gocyclo"
+	@${GOCYCLO_BIN} -over 15 `find * -name "*.go"` || true
+	@echo "#: ineffassign"
+	@${INEFFASSIGN_BIN} ./... || true
+	@echo "#: misspell"
+	@${MISSPELL_BIN} ./... || true
+	@echo "#: gofmt -s"
+	@echo -e -n `find * -name "*.go" | while read SRC; do \
+	  ${GOFMT_BIN} -s "$${SRC}" > "$${SRC}.fmts"; \
+	  if ! cmp "$${SRC}" "$${SRC}.fmts" 2> /dev/null; then \
+	    echo "can simplify: $${SRC}\\n"; \
+	  fi; \
+	  rm -f "$${SRC}.fmts"; \
+	done`
+	@echo "#: govulncheck"
+	@echo -e -n `${GOVULNCHECK_BIN} -tags all ./... \
+	  | egrep '^Vulnerability #' \
+	  | sort -u -V \
+	  | while read LINE; do \
+	    echo "$${LINE}\n"; \
+	  done`
