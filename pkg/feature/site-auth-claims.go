@@ -139,7 +139,9 @@ func (c *CSiteAuthClaims) GetVerifiedFactor(target string) (factor *CSiteAuthCla
 	if v := c.Context.Get(".v." + shasum); v != nil {
 		if factor, ok = v.(*CSiteAuthClaimsFactor); ok {
 			return
-		} else if m, ok := v.(map[string]interface{}); ok {
+		}
+		var m map[string]interface{}
+		if m, ok = v.(map[string]interface{}); ok {
 			factor, ok = ParseSiteAuthClaimsFactor(m)
 		}
 	}
