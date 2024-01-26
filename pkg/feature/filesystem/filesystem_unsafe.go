@@ -26,7 +26,6 @@ import (
 
 func (f *CFeature[MakeTypedFeature]) findPageMatterPathMount(path string) (realpath string, mountPoint *feature.CMountPoint, locale language.Tag, err error) {
 
-	var ok bool
 	var uri, modified string
 	theme := f.Enjin.MustGetTheme()
 	formats := theme.ListFormats()
@@ -35,7 +34,9 @@ func (f *CFeature[MakeTypedFeature]) findPageMatterPathMount(path string) (realp
 	defLang := f.Enjin.SiteDefaultLanguage()
 
 	uri = bePath.CleanWithSlash(path)
-	if tag, modified, ok = lang.ParseLangPath(uri); ok {
+	if t, m, ok := lang.ParseLangPath(uri); ok {
+		tag = t
+		modified = m
 		uri = modified
 	}
 

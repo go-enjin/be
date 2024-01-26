@@ -220,14 +220,15 @@ func (f *CFeature[MakeTypedFeature]) FindPathMountPoint(path string) (mps featur
 }
 
 func (f *CFeature[MakeTypedFeature]) Exists(path string) (present bool) {
-	var ok bool
 	var uri, modified string
 
 	tag := language.Und
 	defLang := f.Enjin.SiteDefaultLanguage()
 
 	uri = bePath.CleanWithSlash(path)
-	if tag, modified, ok = lang.ParseLangPath(uri); ok {
+	if t, m, ok := lang.ParseLangPath(uri); ok {
+		tag = t
+		modified = m
 		uri = modified
 	}
 
