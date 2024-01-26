@@ -59,7 +59,7 @@ func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []stri
 				log.ErrorF("error un-escaping url path: %v", e)
 			} else {
 				query = html.UnescapeString(vv)
-				query = forms.StrictSanitize(vv)
+				query = forms.StrictSanitize(query)
 			}
 			foundQuery = true
 		}
