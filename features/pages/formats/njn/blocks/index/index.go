@@ -109,8 +109,11 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	}
 
 	numPerPage, pageIndex, pageNumber := 10, 0, 1
-	if numPerPage, err = maps.ExtractIntValue("index-num-per-page", data); err != nil {
+	if v, ee := maps.ExtractIntValue("index-num-per-page", data); ee != nil {
+		err = ee
 		return
+	} else if v > 0 {
+		numPerPage = v
 	}
 	blockNumPerPage := numPerPage
 
