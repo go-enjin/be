@@ -80,7 +80,7 @@ func CleanRelativePath(path string) (cleaned string) {
 // in kebab-cased format
 func StrictCleanKebabValue(name string) (cleaned string) {
 	cleaned = strings.ReplaceAll(StrictClean(name), "/", "-")
-	cleaned = strcase.ToKebab(name)
+	cleaned = strcase.ToKebab(cleaned)
 	return
 }
 
