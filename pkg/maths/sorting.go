@@ -17,7 +17,7 @@ package maths
 import "sort"
 
 func SortedNumbers[K Number, V interface{}](data map[K]V) (keys []K) {
-	for key, _ := range data {
+	for key := range data {
 		keys = append(keys, key)
 	}
 	sort.Slice(keys, func(i, j int) bool {
@@ -27,7 +27,7 @@ func SortedNumbers[K Number, V interface{}](data map[K]V) (keys []K) {
 }
 
 func ReverseSortedNumbers[K Number, V interface{}](data map[K]V) (keys []K) {
-	for key, _ := range data {
+	for key := range data {
 		keys = append(keys, key)
 	}
 	sort.Slice(keys, func(i, j int) bool {

@@ -77,7 +77,7 @@ func (m MountedPoints) HasRWFS() (rw bool) {
 }
 
 func (m MountedPoints) ListMounts() (mounts []string) {
-	for point, _ := range m {
+	for point := range m {
 		mounts = append(mounts, point)
 	}
 	// root points must go last

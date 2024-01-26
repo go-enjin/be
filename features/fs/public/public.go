@@ -148,7 +148,7 @@ func (f *CFeature) ServeBasePath(prefix, index string) MakeFeature {
 }
 
 func (f *CFeature) Make() Feature {
-	for point, _ := range f.mountCacheControl {
+	for point := range f.mountCacheControl {
 		if _, found := f.MountPoints[point]; !found {
 			log.FatalDF(1, "mount cache control mount-point not found: %v", point)
 		}

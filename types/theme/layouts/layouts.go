@@ -105,7 +105,7 @@ func (l *Layouts) ListLayouts() (names []string) {
 			}
 		}
 	}
-	for name, _ := range l.cache {
+	for name := range l.cache {
 		unique[name] = struct{}{}
 	}
 	delete(unique, globals.DefaultThemeLayoutName)

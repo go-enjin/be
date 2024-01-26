@@ -33,7 +33,7 @@ func StringsAsTags(names []string) (tags Tags) {
 // SortedFeatureTags returns a natural.StringSlice list of Tag keys
 func SortedFeatureTags[V interface{}](data map[Tag]V) (tags Tags) {
 	var keys []string
-	for key, _ := range data {
+	for key := range data {
 		keys = append(keys, key.String())
 	}
 	sort.Sort(natural.StringSlice(keys))

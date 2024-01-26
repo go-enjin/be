@@ -75,7 +75,7 @@ func (c Context) Empty() (empty bool) {
 // Keys returns a list of all the map keys in the Context, sorted in natural
 // order for consistency
 func (c Context) Keys() (keys []string) {
-	for k, _ := range c {
+	for k := range c {
 		keys = append(keys, k)
 	}
 	sort.Sort(natural.StringSlice(keys))
@@ -428,7 +428,7 @@ func (c Context) AsMapStrings() (out map[string]string) {
 func (c Context) AsOsEnviron() (out []string) {
 	data := c.AsMapStrings()
 	var keys []string
-	for k, _ := range data {
+	for k := range data {
 		key := strcase.ToScreamingSnake(k)
 		keys = append(keys, key)
 	}

@@ -371,7 +371,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 			brokenPairs = append(brokenPairs, fpk)
 		}
 	}
-	for fgk, _ := range foundGroups {
+	for fgk := range foundGroups {
 		if _, ok := foundRegexs[fgk]; !ok {
 			if !slices.Within(fgk, brokenPairs) {
 				brokenPairs = append(brokenPairs, fgk)

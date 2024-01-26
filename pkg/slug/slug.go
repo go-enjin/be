@@ -340,7 +340,7 @@ func FinalizeSlugfile(force bool) (slugsums string, removed []string, err error)
 		dir = bePath.TrimDotSlash(dir)
 		dl := len(dir)
 		accounted := false
-		for file, _ := range slugMap {
+		for file := range slugMap {
 			fl := len(file)
 			if dl < fl {
 				if file[:dl] == dir {
@@ -388,7 +388,7 @@ func ValidateSlugsumsComplete() (slugMap, fileMap ShaMap, imposters, extraneous,
 			}
 		}
 	}
-	for file, _ := range fileMap {
+	for file := range fileMap {
 		if file == SumsName {
 			continue
 		}

@@ -23,7 +23,7 @@ import (
 )
 
 func SortedLanguageTagKeys[V interface{}](m map[language.Tag]V) (sorted []language.Tag) {
-	for k, _ := range m {
+	for k := range m {
 		sorted = append(sorted, k)
 	}
 	sorted = SortLanguageTags(sorted)

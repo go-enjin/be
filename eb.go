@@ -285,7 +285,7 @@ func (eb *EnjinBuilder) prepareBuild() {
 	}
 
 	if eb.theme == "" {
-		for k, _ := range eb.theming {
+		for k := range eb.theming {
 			eb.theme = k
 			break
 		}

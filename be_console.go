@@ -82,7 +82,7 @@ func (e *Enjin) initConsoles() {
 	numConsoles := len(e.eb.consoles)
 	if numConsoles > 0 {
 		var included []string
-		for tag, _ := range e.eb.consoles {
+		for tag := range e.eb.consoles {
 			included = append(included, tag.String())
 		}
 		sort.Strings(included)

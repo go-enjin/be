@@ -87,7 +87,7 @@ func (c *cIMCacheStore) Size() (count int) {
 
 func (c *cIMCacheStore) Keys(prefix string) (keys []string) {
 	prefixLen := len(prefix)
-	for k, _ := range c.cache.GetAll() {
+	for k := range c.cache.GetAll() {
 		// TODO: figure out pattern matching in the model of redis?
 		if len(k) <= prefixLen && k[:prefixLen] == prefix {
 			keys = append(keys, k)

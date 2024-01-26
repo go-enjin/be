@@ -65,7 +65,7 @@ func (f Fields) Len() (count int) {
 }
 
 func (f Fields) Keys() (keys []string) {
-	for k, _ := range f {
+	for k := range f {
 		keys = append(keys, k)
 	}
 	return

@@ -211,7 +211,7 @@ func (t *CTheme) GetConfig() (config *feature.ThemeConfig) {
 
 func (t *CTheme) GetBlockThemeNames() (names []string) {
 	names = append(names, "primary", "secondary")
-	for k, _ := range t.GetConfig().BlockThemes {
+	for k := range t.GetConfig().BlockThemes {
 		names = append(names, k)
 	}
 	return

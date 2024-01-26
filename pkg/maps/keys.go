@@ -35,7 +35,7 @@ func ValuesSortedByKeys[K ~string, V interface{}](data map[K]V) (values []V) {
 // SortedKeyLengths returns the list of keys natural sorted and from longest to
 // shortest
 func SortedKeyLengths[K ~string, V interface{}](data map[K]V) (keys []K) {
-	for key, _ := range data {
+	for key := range data {
 		keys = append(keys, key)
 	}
 	// longest -> shortest, natsort same lengths
@@ -51,7 +51,7 @@ func SortedKeyLengths[K ~string, V interface{}](data map[K]V) (keys []K) {
 }
 
 func SortedKeys[K ~string, V interface{}](data map[K]V) (keys []K) {
-	for key, _ := range data {
+	for key := range data {
 		keys = append(keys, key)
 	}
 	sort.Slice(keys, func(i, j int) (less bool) {
@@ -62,7 +62,7 @@ func SortedKeys[K ~string, V interface{}](data map[K]V) (keys []K) {
 }
 
 func ReverseSortedKeys[K ~string, V interface{}](data map[K]V) (keys []K) {
-	for key, _ := range data {
+	for key := range data {
 		keys = append(keys, key)
 	}
 	sort.Slice(keys, func(i, j int) (less bool) {
@@ -73,7 +73,7 @@ func ReverseSortedKeys[K ~string, V interface{}](data map[K]V) (keys []K) {
 }
 
 func OrderedKeys[K cmp.Ordered, V interface{}](data map[K]V) (keys []K) {
-	for key, _ := range data {
+	for key := range data {
 		keys = append(keys, key)
 	}
 	sort.Slice(keys, func(i, j int) (less bool) {
@@ -84,7 +84,7 @@ func OrderedKeys[K cmp.Ordered, V interface{}](data map[K]V) (keys []K) {
 }
 
 func ReverseOrderedKeys[K cmp.Ordered, V interface{}](data map[K]V) (keys []K) {
-	for key, _ := range data {
+	for key := range data {
 		keys = append(keys, key)
 	}
 	sort.Slice(keys, func(i, j int) (less bool) {
@@ -96,7 +96,7 @@ func ReverseOrderedKeys[K cmp.Ordered, V interface{}](data map[K]V) (keys []K) {
 
 func SortedKeysByLastKeyword[K ~string, V interface{}](data map[K]V) (keys []K) {
 	lookup := make(map[K]string)
-	for key, _ := range data {
+	for key := range data {
 		keywords := regexps.RxKeywords.FindAllString(string(key), -1)
 		lookup[key] = keywords[len(keywords)-1]
 		keys = append(keys, key)
@@ -116,7 +116,7 @@ func SortedKeysByLastKeyword[K ~string, V interface{}](data map[K]V) (keys []K) 
 
 func SortedKeysByLastName[K ~string, V interface{}](data map[K]V) (keys []K) {
 	lookup := make(map[K]string)
-	for key, _ := range data {
+	for key := range data {
 		lookup[key] = strings.LastName(string(key))
 		keys = append(keys, key)
 	}
@@ -134,21 +134,21 @@ func SortedKeysByLastName[K ~string, V interface{}](data map[K]V) (keys []K) {
 }
 
 func Keys[K ~string, V interface{}](data map[K]V) (keys []K) {
-	for key, _ := range data {
+	for key := range data {
 		keys = append(keys, key)
 	}
 	return
 }
 
 func AnyKeys[V interface{}](data map[interface{}]V) (keys []interface{}) {
-	for key, _ := range data {
+	for key := range data {
 		keys = append(keys, key)
 	}
 	return
 }
 
 func TypedKeys[T comparable, V interface{}](data map[T]V) (keys []T) {
-	for key, _ := range data {
+	for key := range data {
 		keys = append(keys, key)
 	}
 	return

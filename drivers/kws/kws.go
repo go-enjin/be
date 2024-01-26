@@ -191,11 +191,11 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 		mustScores[word] = multiplier * (baseValue + 100.0)
 	}
 	notScores := make(map[string]float64)
-	for word, _ := range notWords {
+	for word := range notWords {
 		notScores[word] = -1000.0
 	}
 	notStubs := make(map[string]bool)
-	for word, _ := range notWords {
+	for word := range notWords {
 		stubs := kvs.GetFlatList[string](f.keyword, word)
 		for _, shasum := range stubs {
 			notStubs[shasum] = true
@@ -206,7 +206,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 	if numMustWords > 0 {
 		mustMatch := make(map[string]feature.PageStubs)
 		mustCache := make(map[string]map[string]int)
-		for word, _ := range mustWords {
+		for word := range mustWords {
 			if shasums, ok := f.findWordShasums(word); ok {
 				// log.WarnF("found %d stubs for %v", len(stubs), word)
 				for _, shasum := range shasums {
@@ -236,7 +236,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 			}
 		}
 
-		for word, _ := range shouldWords {
+		for word := range shouldWords {
 			if shasums, ok := f.findWordShasums(word); ok {
 				for _, shasum := range shasums {
 					if _, exists := scores[shasum]; exists {
@@ -250,7 +250,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 
 	} else {
 		// no must words present
-		for word, _ := range shouldWords {
+		for word := range shouldWords {
 			if shasums, ok := f.findWordShasums(word); ok {
 				for _, shasum := range shasums {
 					if _, not := notStubs[shasum]; not {
@@ -266,7 +266,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 	// sort results based on score
 
 	var sorted []string
-	for shasum, _ := range scores {
+	for shasum := range scores {
 		sorted = append(sorted, shasum)
 	}
 	sort.Slice(sorted, func(i, j int) (less bool) {

@@ -54,7 +54,7 @@ func (c *cMemoryStore) Size() (count int) {
 
 func (c *cMemoryStore) Keys(prefix string) (keys []string) {
 	prefixLen := len(prefix)
-	for k, _ := range c.client.Items() {
+	for k := range c.client.Items() {
 		// TODO: figure out pattern matching in the model of redis?
 		if len(k) <= prefixLen && k[:prefixLen] == prefix {
 			keys = append(keys, k)
