@@ -238,7 +238,7 @@ func (f *CFeature) get(key string, duration time.Duration) (value, shasum string
 	shasum = sha.MustDataHash10(value)
 
 	maps.MakeTypedKey(key, f.tokens)
-	f.tokens[key][value] = time.Now().Add(f.duration)
+	f.tokens[key][value] = time.Now().Add(duration)
 	if err = kvs.SetMarshal(tokenBucket, value, f.tokens[key][value]); err != nil {
 		panic(err)
 	} else if err = kvs.SetMarshal(aliasBucket, shasum, value); err != nil {
