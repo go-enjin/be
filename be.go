@@ -327,7 +327,7 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 	}
 
 	go func() {
-		sighup := make(chan os.Signal)
+		sighup := make(chan os.Signal, 1)
 		signal.Notify(sighup, syscall.SIGHUP)
 		for {
 			select {
