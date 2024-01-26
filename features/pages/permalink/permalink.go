@@ -233,7 +233,7 @@ func (f *CFeature) _permalinkMatcher(path string, p feature.Page) (found string,
 			case 36:
 				// e0f7ae8b-85e0-4c3f-b6c7-4c84b59bd3e7
 				if parsedUuid := uuid.FromStringOrNil(parsed); parsedUuid != uuid.Nil {
-					ok = parsedUuid.String() == parsedUuid.String()
+					ok = parsedUuid.String() == parsed
 				}
 			}
 		}
