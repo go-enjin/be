@@ -87,6 +87,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 	var textValue interface{}
 	if textValue, ok = field["text"]; !ok {
 		err = fmt.Errorf("footnote %v missing text: %+v", data["Index"], field)
+		return
 	}
 	switch typedText := textValue.(type) {
 	case string:
@@ -105,6 +106,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 	var noteValue interface{}
 	if noteValue, ok = field["note"]; !ok {
 		err = fmt.Errorf("footnote %v missing note", data["Index"])
+		return
 	}
 
 	switch typedNote := noteValue.(type) {
