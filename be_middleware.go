@@ -17,12 +17,12 @@ package be
 import (
 	"net/http"
 
+	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	beNet "github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/net/headers"
-	"github.com/go-enjin/be/pkg/slices"
 )
 
 func (e *Enjin) requestFiltersMiddleware(next http.Handler) http.Handler {

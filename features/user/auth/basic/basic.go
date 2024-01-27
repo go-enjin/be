@@ -27,6 +27,7 @@ import (
 	auth "github.com/abbot/go-http-auth"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/slices"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	site_environ "github.com/go-enjin/be/pkg/feature/site-environ"
@@ -35,7 +36,6 @@ import (
 	beNet "github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/net/serve"
 	"github.com/go-enjin/be/pkg/request"
-	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/types/users"
 )
 

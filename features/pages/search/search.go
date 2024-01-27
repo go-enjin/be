@@ -28,13 +28,13 @@ import (
 	"github.com/urfave/cli/v2"
 	"golang.org/x/net/html"
 
+	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request/argv"
-	"github.com/go-enjin/be/pkg/slices"
 )
 
 var (

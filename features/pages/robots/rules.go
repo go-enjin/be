@@ -20,7 +20,7 @@ import (
 	"strings"
 
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-corelibs/slices"
 )
 
 type RuleGroup interface {

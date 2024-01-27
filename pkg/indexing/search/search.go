@@ -19,10 +19,10 @@ import (
 
 	"github.com/blevesearch/bleve/v2/mapping"
 
+	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/search"
-	"github.com/go-enjin/be/pkg/slices"
 )
 
 var (

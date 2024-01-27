@@ -22,7 +22,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-corelibs/slices"
 )
 
 type htgroups struct {

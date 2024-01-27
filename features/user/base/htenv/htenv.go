@@ -21,10 +21,10 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/feature"
 	site_environ "github.com/go-enjin/be/pkg/feature/site-environ"
 	"github.com/go-enjin/be/pkg/globals"
-	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/types/users"
 )
 

@@ -16,7 +16,7 @@ package feature
 
 import (
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-corelibs/slices"
 )
 
 var (

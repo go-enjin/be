@@ -24,6 +24,7 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/message"
 
+	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
@@ -31,7 +32,6 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	bePath "github.com/go-enjin/be/pkg/path"
-	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/types/page/matter"
 )
 

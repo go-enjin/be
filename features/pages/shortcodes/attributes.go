@@ -19,7 +19,7 @@ package shortcodes
 import (
 	"strings"
 
-	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-corelibs/slices"
 )
 
 type Attributes struct {

@@ -20,7 +20,7 @@ import (
 	"strings"
 
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-corelibs/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 

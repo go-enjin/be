@@ -22,7 +22,7 @@ import (
 
 	"golang.org/x/net/html"
 
-	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-corelibs/slices"
 )
 
 func (re *RenderEnjin) PrepareStringTags(text string) (data []interface{}, err error) {

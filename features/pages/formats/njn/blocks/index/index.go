@@ -27,6 +27,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 
+	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
@@ -34,7 +35,6 @@ import (
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/pages"
 	"github.com/go-enjin/be/pkg/request/argv"
-	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 

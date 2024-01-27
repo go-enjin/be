@@ -21,8 +21,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-corelibs/slices"
 	errors2 "github.com/go-enjin/be/pkg/errors"
-	"github.com/go-enjin/be/pkg/slices"
 )
 
 type ConcreteTag uint8

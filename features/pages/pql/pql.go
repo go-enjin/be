@@ -28,6 +28,7 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/features/pages/pql/matcher"
 	"github.com/go-enjin/be/features/pages/pql/selector"
 	"github.com/go-enjin/be/pkg/feature"
@@ -36,7 +37,6 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/pages"
 	bePath "github.com/go-enjin/be/pkg/path"
-	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/types/page"
 )
 

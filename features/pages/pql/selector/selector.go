@@ -24,13 +24,13 @@ import (
 
 	"github.com/puzpuzpuz/xsync/v2"
 
+	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/cmp"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/regexps"
-	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/types/page"
 )

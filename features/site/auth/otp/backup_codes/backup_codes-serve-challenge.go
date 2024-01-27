@@ -18,11 +18,11 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-corelibs/slices"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/slices"
 )
 
 func (f *CFeature) ProcessChallenge(name, challenge string, saf feature.SiteAuthFeature, claims *feature.CSiteAuthClaims, w http.ResponseWriter, r *http.Request) (handled bool, redirect string) {

@@ -17,9 +17,9 @@ package be
 import (
 	"fmt"
 
+	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/slices"
 )
 
 func (e *Enjin) DB(tag string) (db interface{}, err error) {

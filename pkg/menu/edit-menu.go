@@ -17,7 +17,7 @@ package menu
 import (
 	"encoding/json"
 
-	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-corelibs/slices"
 )
 
 type EditMenu []*EditItem

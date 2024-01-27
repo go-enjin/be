@@ -27,6 +27,7 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/message"
 
+	"github.com/go-corelibs/slices"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	site_environ "github.com/go-enjin/be/pkg/feature/site-environ"
@@ -36,7 +37,6 @@ import (
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
 	bePath "github.com/go-enjin/be/pkg/path"
-	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/site"
 )

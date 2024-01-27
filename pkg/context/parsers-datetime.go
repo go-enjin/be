@@ -20,7 +20,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/values"
 )
 

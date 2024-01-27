@@ -25,12 +25,12 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
-	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/types/theme/layouts"
 )
 

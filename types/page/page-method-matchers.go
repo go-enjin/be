@@ -17,9 +17,9 @@ package page
 import (
 	"strings"
 
+	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/pageql"
-	"github.com/go-enjin/be/pkg/slices"
 )
 
 func (p *CPage) Match(path string) (found string, ok bool) {

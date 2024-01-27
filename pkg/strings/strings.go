@@ -25,7 +25,7 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/go-enjin/be/pkg/regexps"
-	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-corelibs/slices"
 )
 
 func StringsToKebabs(in ...string) (out []string) {

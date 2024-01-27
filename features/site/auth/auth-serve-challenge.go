@@ -18,13 +18,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/context"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request"
-	"github.com/go-enjin/be/pkg/slices"
 )
 
 type multiFactor struct {

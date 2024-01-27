@@ -15,7 +15,7 @@
 package feature
 
 import (
-	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-corelibs/slices"
 )
 
 type SiteInfosLookup[T interface{}] struct {

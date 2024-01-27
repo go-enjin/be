@@ -17,7 +17,7 @@ package cli
 import (
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-corelibs/slices"
 )
 
 func FlagInFlags(name string, flags []cli.Flag) (ok bool) {

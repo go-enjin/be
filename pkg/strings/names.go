@@ -25,7 +25,7 @@ import (
 	"github.com/maruel/natural"
 
 	"github.com/go-enjin/be/pkg/regexps"
-	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-corelibs/slices"
 )
 
 var nameSuffixes = []string{

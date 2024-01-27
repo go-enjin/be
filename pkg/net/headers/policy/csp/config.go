@@ -7,7 +7,7 @@ package csp
 import (
 	"fmt"
 
-	"github.com/go-enjin/be/pkg/slices"
+	"github.com/go-corelibs/slices"
 )
 
 type ContentSecurityPolicyConfig struct {

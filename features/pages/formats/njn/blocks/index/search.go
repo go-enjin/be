@@ -21,11 +21,11 @@ import (
 	"html"
 	"net/url"
 
+	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request/argv"
-	"github.com/go-enjin/be/pkg/slices"
 )
 
 func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []string, reqArgv *argv.Argv) (redirect string, err error) {

@@ -19,10 +19,10 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/headers"
-	"github.com/go-enjin/be/pkg/slices"
 	"github.com/go-enjin/be/pkg/values"
 )
 

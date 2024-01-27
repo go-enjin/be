@@ -17,8 +17,9 @@
 package shortcodes
 
 import (
+	"github.com/go-corelibs/slices"
+
 	beContext "github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/slices"
 )
 
 type Nodes []*Node

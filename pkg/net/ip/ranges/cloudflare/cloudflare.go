@@ -20,9 +20,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net"
-	"github.com/go-enjin/be/pkg/slices"
 )
 
 var (

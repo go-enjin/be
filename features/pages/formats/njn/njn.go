@@ -27,6 +27,7 @@ import (
 
 	"github.com/go-enjin/golang-org-x-text/language"
 
+	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/card"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/carousel"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/content"
@@ -65,7 +66,6 @@ import (
 	beForms "github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/slices"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
