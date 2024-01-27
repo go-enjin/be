@@ -18,13 +18,13 @@ import (
 	"fmt"
 	"html/template"
 	"strconv"
-	strings2 "strings"
+	"strings"
 
 	"github.com/iancoleman/strcase"
 
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/slices"
-	"github.com/go-enjin/be/pkg/strings"
+	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 func ExtractBoolValue(v interface{}) (b bool) {
@@ -37,9 +37,9 @@ func ExtractBoolValue(v interface{}) (b bool) {
 	case bool:
 		b = t
 	case string:
-		b = strings.IsTrue(t)
+		b = beStrings.IsTrue(t)
 	case []byte:
-		b = strings.IsTrue(string(t))
+		b = beStrings.IsTrue(string(t))
 	}
 	return
 }
@@ -49,9 +49,9 @@ func ExtractEnumValue(key string, upper bool, enums []string, data map[string]in
 		switch t := v.(type) {
 		case string:
 			if upper {
-				t = strings2.ToUpper(t)
+				t = strings.ToUpper(t)
 			} else {
-				t = strings2.ToLower(t)
+				t = strings.ToLower(t)
 			}
 			for _, enum := range enums {
 				if t == enum {
@@ -122,7 +122,7 @@ func ParseNjnFieldAttributes(field map[string]interface{}) (attributes map[strin
 			if v, found := attrs["class"]; found {
 				switch t := v.(type) {
 				case string:
-					classes = strings2.Split(t, " ")
+					classes = strings.Split(t, " ")
 					attributes["class"] = t
 				case []interface{}:
 					for _, i := range t {
@@ -130,7 +130,7 @@ func ParseNjnFieldAttributes(field map[string]interface{}) (attributes map[strin
 							classes = append(classes, name)
 						}
 					}
-					attributes["class"] = strings2.Join(classes, " ")
+					attributes["class"] = strings.Join(classes, " ")
 				default:
 					err = fmt.Errorf("unsupported class type: %T %+v", v, v)
 					return
@@ -149,7 +149,7 @@ func ParseNjnFieldAttributes(field map[string]interface{}) (attributes map[strin
 							list = append(list, fmt.Sprintf(`%v:%v`, k, value))
 						}
 					}
-					attributes["style"] = strings2.Join(list, ";")
+					attributes["style"] = strings.Join(list, ";")
 				default:
 					err = fmt.Errorf("unsupported style type: %T %+v", v, v)
 					return
@@ -169,7 +169,7 @@ func ParseNjnFieldAttributes(field map[string]interface{}) (attributes map[strin
 			}
 
 		case []template.HTMLAttr:
-			if a, e := strings.ParseHtmlTagAttributes(attrs); e != nil {
+			if a, e := beStrings.ParseHtmlTagAttributes(attrs); e != nil {
 				err = fmt.Errorf("error parsing html tag attributes: %v", e)
 				log.ErrorF("%v", err)
 				return
@@ -221,7 +221,7 @@ func FinalizeNjnFieldAttributes(attrs map[string]interface{}) (attributes []temp
 		case nil:
 			attributes = append(attributes, template.HTMLAttr(fmt.Sprintf(`%v`, k)))
 		case string:
-			attributes = append(attributes, template.HTMLAttr(fmt.Sprintf(`%v=%q`, k, strings.EscapeHtmlAttribute(t))))
+			attributes = append(attributes, template.HTMLAttr(fmt.Sprintf(`%v=%q`, k, beStrings.EscapeHtmlAttribute(t))))
 		case template.HTMLAttr:
 			attributes = append(attributes, template.HTMLAttr(fmt.Sprintf(`%v=%q`, k, t)))
 		default:
