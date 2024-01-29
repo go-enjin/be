@@ -4220,14 +4220,6 @@
             "translation": "ユーザーマネージャー",
             "translatorComment": "Copied from source.",
             "fuzzy": true
-        },
-        {
-            "id": "it is of the form \"\u003cx\" where x is an integer that is larger than the argument.",
-            "key": "it is of the form \"\u003cx\" where x is an integer that is larger than the argument.",
-            "message": "it is of the form \"\u003cx\" where x is an integer that is larger than the argument.",
-            "translation": "\"\u003cx\" は、x が引数よりも大きい整数である形式です。",
-            "translatorComment": "[from: layouts/partials/fs-editor/dialog/add-tx-case.tmpl]",
-            "fuzzy": true
         }
     ]
 }
