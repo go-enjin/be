@@ -21,6 +21,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/go-corelibs/slices"
+	"github.com/go-corelibs/words"
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
@@ -30,7 +31,6 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/request/argv"
-	"github.com/go-enjin/be/pkg/strings/words"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -176,7 +176,7 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if searchQuery != "" {
-			wc := words.DefaultConfig()
+			wc := words.Default()
 			order := append([]string{}, ld.Order...)
 			for _, shasum := range ld.Order {
 				if msgs, ok := ld.Data[shasum]; ok {

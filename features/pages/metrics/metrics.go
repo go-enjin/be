@@ -23,11 +23,11 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-corelibs/slices"
+	"github.com/go-corelibs/words"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/maths"
-	"github.com/go-enjin/be/pkg/strings/words"
 )
 
 var (
@@ -147,7 +147,7 @@ func (f *CFeature) UpdatePageContext(pageCtx context.Context, r *http.Request) (
 
 	content := pageCtx.String("Content", "nil")
 
-	wordCount := words.Count(content, nil)
+	wordCount := words.Count(content)
 	additions.SetSpecific("WordCount", wordCount)
 
 	wordCountLabel := printer.Sprintf("%[1]d words", wordCount)
