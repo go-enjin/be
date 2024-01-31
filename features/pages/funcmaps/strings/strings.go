@@ -32,7 +32,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/mime"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	clStrings "github.com/go-corelibs/strings"
 )
 
 var (
@@ -168,16 +168,16 @@ func MergeClassNames(names ...interface{}) (result template.HTML) {
 	for _, name := range names {
 		switch nameTyped := name.(type) {
 		case string:
-			accepted = beStrings.UniqueFromSpaceSep(nameTyped, accepted)
+			accepted = clStrings.UniqueFromSpaceSep(nameTyped, accepted)
 
 		case map[string]interface{}:
 			if v, ok := nameTyped["Class"]; ok {
 				if vString, ok := v.(string); ok {
-					accepted = beStrings.UniqueFromSpaceSep(vString, accepted)
+					accepted = clStrings.UniqueFromSpaceSep(vString, accepted)
 				} else if vList, ok := v.([]interface{}); ok {
 					for _, vlItem := range vList {
 						if vliString, ok := vlItem.(string); ok {
-							accepted = beStrings.UniqueFromSpaceSep(vliString, accepted)
+							accepted = clStrings.UniqueFromSpaceSep(vliString, accepted)
 						}
 					}
 				} else {

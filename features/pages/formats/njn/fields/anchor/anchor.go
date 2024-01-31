@@ -22,7 +22,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/maps"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	clStrings "github.com/go-corelibs/strings"
 )
 
 const (
@@ -97,7 +97,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 
 	decorated := false
 	if v, ok := field["decorated"].(string); ok {
-		if beStrings.IsTrue(v) {
+		if clStrings.IsTrue(v) {
 			decorated = true
 		}
 	}

@@ -29,7 +29,7 @@ import (
 	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/forms"
 	bePath "github.com/go-enjin/be/pkg/path"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/pkg/values"
 )
 
@@ -79,9 +79,9 @@ func BoolParser(spec *Field, input interface{}) (parsed interface{}, err error) 
 	switch t := input.(type) {
 	case string:
 		if t = strings.TrimSpace(t); t != "" {
-			if isTrue := beStrings.IsTrue(t); isTrue {
+			if isTrue := clStrings.IsTrue(t); isTrue {
 				parsed = true
-			} else if isFalse := beStrings.IsFalse(t); isFalse {
+			} else if isFalse := clStrings.IsFalse(t); isFalse {
 				parsed = false
 			} else {
 				err = errors.New(spec.Printer.Sprintf("not a boolean string value"))

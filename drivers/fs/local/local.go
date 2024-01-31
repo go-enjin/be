@@ -34,7 +34,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	beMime "github.com/go-enjin/be/pkg/mime"
 	bePath "github.com/go-enjin/be/pkg/path"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -249,7 +249,7 @@ func (f *FileSystem) FindFilePath(prefix string, extensions ...string) (path str
 		}
 	}
 
-	sort.Sort(beStrings.SortByLengthDesc(extensions))
+	sort.Sort(clStrings.SortByLength(extensions))
 
 	realpath = strings.TrimSuffix(realpath, "/")
 	var paths []string

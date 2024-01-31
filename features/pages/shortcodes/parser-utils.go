@@ -21,7 +21,7 @@ import (
 
 	scanner "github.com/go-enjin/go-stdlib-text-scanner"
 
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	clStrings "github.com/go-corelibs/strings"
 )
 
 func slurpTo(scan *scanner.Scanner, to ...string) (text string, stop string) {
@@ -109,7 +109,7 @@ func parseOpeningTag(input string) (raw, name string, attributes *Attributes, ok
 		// [name=value]
 		m := rxNameValue.FindAllStringSubmatch(input, 1)
 		name = strings.ToLower(m[0][1])
-		attributes.Set(name, beStrings.TrimQuotes(m[0][2]))
+		attributes.Set(name, clStrings.TrimQuotes(m[0][2]))
 
 	} else if ok = rxNameKeyValues.MatchString(input); ok {
 		// [name key=value...]

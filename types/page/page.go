@@ -29,7 +29,7 @@ import (
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -110,7 +110,7 @@ func NewFromPageMatter(pm *matter.PageMatter, formats feature.PageFormatProvider
 
 	path := pg.SetFormat(pm.Path)
 	pg.SetSlugUrl(path)
-	pg.fields.Title = beStrings.TitleCase(strings.Join(strings.Split(pg.fields.Slug, "-"), " "))
+	pg.fields.Title = clStrings.ToSpacedTitle(strings.Join(strings.Split(pg.fields.Slug, "-"), " "))
 
 	if err = pg.initFrontMatter(); err != nil {
 		return
@@ -195,7 +195,7 @@ func NewPageFromStub(ps *feature.PageStub, formats feature.PageFormatProvider) (
 		return
 	}
 
-	//path := beStrings.TrimPrefixes(ps.Source, ps.Fallback.String())
+	//path := clStrings.TrimPrefixes(ps.Source, ps.Fallback.String())
 	var epoch, created, updated int64
 
 	if epoch, err = ps.FS.FileCreated(ps.Source); err == nil {

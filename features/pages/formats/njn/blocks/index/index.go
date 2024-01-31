@@ -35,7 +35,7 @@ import (
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/pages"
 	"github.com/go-enjin/be/pkg/request/argv"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	clStrings "github.com/go-corelibs/strings"
 )
 
 // TODO: SearchWithin is way too heavy for quoted.fyi, does not use kws
@@ -125,7 +125,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			kebab := strcase.ToKebab(strings.TrimSpace(before))
 			indexViews = append(indexViews, kebab)
 			if after == "" {
-				indexViewTitles = append(indexViewTitles, beStrings.ToSpacedCamel(before))
+				indexViewTitles = append(indexViewTitles, clStrings.ToSpacedCamel(before))
 			} else {
 				indexViewTitles = append(indexViewTitles, strings.TrimSpace(after))
 			}

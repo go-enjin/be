@@ -19,7 +19,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	clStrings "github.com/go-corelibs/strings"
 )
 
 const (
@@ -53,7 +53,7 @@ func (t Tag) Camel() string {
 
 // SpacedCamel returns the tag as a Spaced Camel Cased string (first letters capitalized, separated by spaces)
 func (t Tag) SpacedCamel() string {
-	return beStrings.ToSpacedCamel(t.Kebab())
+	return clStrings.ToSpacedCamel(t.Kebab())
 }
 
 // Kebab returns the Tag as a kebab-cased string

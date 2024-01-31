@@ -29,7 +29,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/maths"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	clStrings "github.com/go-corelibs/strings"
 )
 
 // Context is a wrapper around a map[string]interface{} structure which is used
@@ -53,7 +53,7 @@ func NewFromOsEnviron(slices ...[]string) (c Context) {
 	for _, slice := range slices {
 		for _, pair := range slice {
 			if key, value, ok := strings.Cut(pair, "="); ok {
-				c.SetSpecific(key, beStrings.TrimQuotes(value))
+				c.SetSpecific(key, clStrings.TrimQuotes(value))
 			}
 		}
 	}

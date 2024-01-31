@@ -21,6 +21,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
+	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
@@ -28,7 +29,6 @@ import (
 	"github.com/go-enjin/be/pkg/request"
 	"github.com/go-enjin/be/pkg/request/argv"
 	"github.com/go-enjin/be/pkg/signals"
-	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
@@ -174,7 +174,7 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 
 	// route processor middleware features, in order of longest to shortest
 	sortedRoutes := maps.Keys(e.eb.processors)
-	sort.Sort(beStrings.SortByLengthDesc(sortedRoutes))
+	sort.Sort(clStrings.SortByLength(sortedRoutes))
 	for _, route := range sortedRoutes {
 		log.DebugF("including enjin %v route processor middleware", route)
 		router.Use(func(next http.Handler) http.Handler {

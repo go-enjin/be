@@ -26,7 +26,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/strings"
+	"github.com/go-corelibs/strings"
 )
 
 const Tag feature.Tag = "drivers-email-fakemail"

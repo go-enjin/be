@@ -29,7 +29,7 @@ import (
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	clStrings "github.com/go-corelibs/strings"
 )
 
 const Tag feature.Tag = "outputs-htmlify"
@@ -119,7 +119,7 @@ func (f *CFeature) CanTransform(mime string, r *http.Request) (ok bool) {
 			return
 		}
 	}
-	basicMime := beStrings.GetBasicMime(mime)
+	basicMime := clStrings.GetBasicMime(mime)
 	switch basicMime {
 	case "text/html":
 		ok = true

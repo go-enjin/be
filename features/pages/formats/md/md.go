@@ -28,10 +28,10 @@ import (
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
 
+	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 const Tag feature.Tag = "pages-formats-md"
@@ -194,15 +194,15 @@ func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 				skipNext = false
 				// log.DebugF("skipping text: %v - %v", node.Type, node.Data)
 			} else {
-				data := beStrings.StripTmplTags(node.Data)
+				data := clStrings.PruneTmplActions(node.Data)
 				data = strings.ReplaceAll(data, "permalink", "")
 				data = strings.ReplaceAll(data, "top", "")
-				if !beStrings.Empty(data) {
+				if !clStrings.Empty(data) {
 					if addLinkNext {
 						addLinkNext = false
 						// log.DebugF("adding markdown link: %v", data)
 						doc.AddLink(data)
-						contents = beStrings.AppendWithSpace(contents, data)
+						contents = clStrings.AppendWithSpace(contents, data)
 					} else if addHeadingNext {
 						addHeadingNext = false
 						// log.DebugF("adding markdown heading: %v", data)
@@ -212,7 +212,7 @@ func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 						// log.DebugF("adding markdown footnote: %v", data)
 						doc.AddFootnote(data)
 					} else {
-						contents = beStrings.AppendWithSpace(contents, data)
+						contents = clStrings.AppendWithSpace(contents, data)
 					}
 				} else {
 					addLinkNext = false
@@ -229,7 +229,7 @@ func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 
 	walk(parsed)
 
-	if !beStrings.Empty(contents) {
+	if !clStrings.Empty(contents) {
 		doc.AddContent(contents)
 		// log.DebugF("adding markdown contents:\n%v", contents)
 	}

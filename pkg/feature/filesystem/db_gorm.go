@@ -22,10 +22,10 @@ import (
 	"github.com/urfave/cli/v2"
 	"gorm.io/gorm"
 
+	clStrings "github.com/go-corelibs/strings"
 	beFsGormDB "github.com/go-enjin/be/drivers/fs/db/gorm"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
-	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 type GormDBPathSupport[MakeTypedFeature interface{}] interface {
@@ -94,7 +94,7 @@ func (s CGormDBPathSupport[MakeTypedFeature]) startupGormDBPathSupport(f *CFeatu
 		}
 		table := f.Tag().Snake()
 		if mgdb.mount != "/" {
-			table += "_" + beStrings.PathToSnake(mgdb.mount)
+			table += "_" + clStrings.PathToSnake(mgdb.mount)
 		}
 		var gfs *beFsGormDB.DBFileSystem
 		log.DebugF("mounting gorm db: mount=%v, path=%v, table=%v - %v", mgdb.mount, mgdb.path, table, mgdb.connection)

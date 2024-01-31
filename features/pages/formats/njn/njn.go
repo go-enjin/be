@@ -29,6 +29,7 @@ import (
 	"github.com/go-corelibs/x-text/message"
 
 	"github.com/go-corelibs/slices"
+	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/card"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/carousel"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/content"
@@ -66,7 +67,6 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	beForms "github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
-	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 var (
@@ -401,7 +401,7 @@ func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 							return
 						}
 						doc.AddFootnote(text + ": " + note)
-						contents = beStrings.AppendWithSpace(contents, text)
+						contents = clStrings.AppendWithSpace(contents, text)
 					}
 				} else {
 					err = fmt.Errorf("footnote text not found: %+v", data)
@@ -416,7 +416,7 @@ func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 						return
 					}
 					doc.AddLink(text)
-					contents = beStrings.AppendWithSpace(contents, text)
+					contents = clStrings.AppendWithSpace(contents, text)
 				} else {
 					err = fmt.Errorf("anchor text not found: %+v", data)
 				}
@@ -449,7 +449,7 @@ func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 							if text, err = walker(sectionList); err != nil {
 								err = fmt.Errorf("error walking section list: %v", err)
 							} else if text != "" {
-								contents = beStrings.AppendWithSpace(contents, text)
+								contents = clStrings.AppendWithSpace(contents, text)
 							}
 						} else {
 							err = fmt.Errorf("invalid section structure: %T %+v", sectionData, sectionData)
@@ -463,7 +463,7 @@ func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 							if text, err = walker(footerList); err != nil {
 								err = fmt.Errorf("error walking footer list: %v", err)
 							} else if text != "" {
-								contents = beStrings.AppendWithSpace(contents, text)
+								contents = clStrings.AppendWithSpace(contents, text)
 							}
 						} else {
 							err = fmt.Errorf("invalid footer structure: %T %+v", footerData, footerData)
@@ -477,7 +477,7 @@ func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 							if text, err = walker(blocksList); err != nil {
 								err = fmt.Errorf("error walking blocks list: %v", err)
 							} else if text != "" {
-								contents = beStrings.AppendWithSpace(contents, text)
+								contents = clStrings.AppendWithSpace(contents, text)
 							}
 						} else {
 							err = fmt.Errorf("invalid blocks structure: %T %+v", blocksData, blocksData)
@@ -498,7 +498,7 @@ func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 						return
 					}
 
-					contents = beStrings.AppendWithSpace(contents, text)
+					contents = clStrings.AppendWithSpace(contents, text)
 				}
 			}
 		}
@@ -509,13 +509,13 @@ func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 		for _, datum := range data {
 			switch dt := datum.(type) {
 			case string:
-				contents = beStrings.AppendWithSpace(contents, dt)
+				contents = clStrings.AppendWithSpace(contents, dt)
 			case map[string]interface{}:
 				var text string
 				if text, err = parser(dt); err != nil {
 					return
 				} else if text != "" {
-					contents = beStrings.AppendWithSpace(contents, text)
+					contents = clStrings.AppendWithSpace(contents, text)
 				}
 			default:
 				err = fmt.Errorf("invalid data structure: %T %+v", dt, dt)
@@ -528,7 +528,7 @@ func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 	if contents, err = walker(data); err != nil {
 		return
 	}
-	doc.AddContent(beForms.StrictSanitize(beStrings.StripTmplTags(contents)))
+	doc.AddContent(beForms.StrictSanitize(clStrings.PruneTmplActions(contents)))
 
 	out = doc
 	return

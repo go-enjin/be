@@ -22,7 +22,7 @@ import (
 	"strings"
 
 	"github.com/go-enjin/be/pkg/feature"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	clStrings "github.com/go-corelibs/strings"
 )
 
 const (
@@ -93,7 +93,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	if v, ok := data["page-title"]; ok {
 		switch t := v.(type) {
 		case string:
-			pageTitle = beStrings.IsTrue(t)
+			pageTitle = clStrings.IsTrue(t)
 		case bool:
 			pageTitle = t
 		case int:
@@ -114,7 +114,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	if v, ok := data["with-self"]; ok {
 		switch t := v.(type) {
 		case string:
-			withSelf = beStrings.IsTrue(t)
+			withSelf = clStrings.IsTrue(t)
 		case bool:
 			withSelf = t
 		case int:

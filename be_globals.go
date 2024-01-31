@@ -26,7 +26,6 @@ import (
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
-	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 func init() {
@@ -75,7 +74,7 @@ func init() {
 		if check == "true" {
 			earlyDebug = true
 		} else {
-			if idx := beStrings.StringIndexInStrings("--debug", os.Args...); idx >= 0 {
+			if idx := slices.IndexOf(os.Args, "--debug"); idx >= 0 {
 				if len(os.Args) > idx+1 {
 					if strings.ToLower(os.Args[idx+1]) == "true" {
 						earlyDebug = true

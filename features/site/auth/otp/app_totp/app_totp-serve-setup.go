@@ -24,14 +24,15 @@ import (
 	"github.com/yeqown/go-qrcode/v2"
 	"github.com/yeqown/go-qrcode/writer/standard"
 
+	"github.com/go-corelibs/path"
 	"github.com/go-corelibs/slices"
+	"github.com/go-corelibs/strings"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request"
-	"github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -66,7 +67,7 @@ func (f *CFeature) ProcessSetupPage(saf feature.SiteAuthFeature, w http.Response
 
 	names := f.listSecureProvisions(r)
 	for slices.Within(provision, names) {
-		provision = strings.IncrementFileName(provision)
+		provision = path.IncrementFileName(provision)
 	}
 
 	if r.Method == http.MethodPost {

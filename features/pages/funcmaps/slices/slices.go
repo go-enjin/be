@@ -33,7 +33,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/maths"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	clStrings "github.com/go-corelibs/strings"
 )
 
 var (
@@ -205,7 +205,7 @@ func SortedLastNameFirstLetters(values []interface{}) (firsts []string) {
 	cache := make(map[string]bool)
 	for _, v := range values {
 		if value, ok := v.(string); ok && value != "" {
-			if word := beStrings.LastName(value); word != "" {
+			if word := clStrings.LastName(value); word != "" {
 				char := strings.ToLower(string(word[0]))
 				cache[char] = true
 			}

@@ -19,7 +19,7 @@ import (
 
 	"github.com/pkg/profile"
 
-	"github.com/go-enjin/be/pkg/cli/env"
+	"github.com/go-corelibs/env"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -28,8 +28,8 @@ var profiler interface {
 }
 
 func Start() {
-	if mode := env.Get("BE_PROFILE_MODE", ""); mode != "" {
-		path := env.Get("BE_PROFILE_PATH", ".")
+	if mode := env.String("BE_PROFILE_MODE", ""); mode != "" {
+		path := env.String("BE_PROFILE_PATH", ".")
 		options := []func(*profile.Profile){
 			profile.ProfilePath(path),
 			profile.NoShutdownHook,

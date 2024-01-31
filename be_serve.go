@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"time"
 
+	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
@@ -31,7 +32,6 @@ import (
 	"github.com/go-enjin/be/pkg/request"
 	"github.com/go-enjin/be/pkg/request/argv"
 	"github.com/go-enjin/be/pkg/signals"
-	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/page"
 )
@@ -337,17 +337,17 @@ func (e *Enjin) ServeData(data []byte, mime string, w http.ResponseWriter, r *ht
 	}
 
 	// only one translation allowed, non-feature translators take precedence
-	basicMime := beStrings.GetBasicMime(mime)
+	basicMime := clStrings.GetBasicMime(mime)
 	if fn, ok := e.eb.translators[basicMime]; ok {
 		data, mime = fn(data)
-		basicMime = beStrings.GetBasicMime(mime)
+		basicMime = clStrings.GetBasicMime(mime)
 	} else {
 		for _, ot := range e.eb.fOutputTranslators {
 			// log.TraceRF(r, "checking output filter: %v", f.Tag())
 			if ot.CanTranslate(mime) {
 				if d, m, err := ot.TranslateOutput(e, data, mime); err == nil {
 					data, mime = d, m
-					basicMime = beStrings.GetBasicMime(mime)
+					basicMime = clStrings.GetBasicMime(mime)
 					log.DebugRF(r, "filtered output: %v - %v", ot.Tag(), mime)
 				} else {
 					log.DebugRF(r, "%v error filtering output: %v", ot.Tag(), err)

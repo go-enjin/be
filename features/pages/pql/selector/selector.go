@@ -31,7 +31,6 @@ import (
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/regexps"
-	beStrings "github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/types/page"
 )
 
@@ -221,7 +220,7 @@ func (m *cSelector) processWithStatement() (selected map[string]interface{}, err
 			var values []interface{}
 			kvp, _ := m.lookup.Load(sel.ContextKey)
 			for value, shasums := range kvp {
-				if beStrings.AnyStringsInStrings(matchedShasums, shasums) {
+				if slices.AnyWithin(matchedShasums, shasums) {
 					switch vt := value.(type) {
 					case []string:
 						for _, vtv := range vt {

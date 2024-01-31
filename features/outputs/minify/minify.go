@@ -23,12 +23,12 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-corelibs/slices"
+	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
 	beMinify "github.com/go-enjin/be/pkg/net/minify"
 	bePath "github.com/go-enjin/be/pkg/path"
-	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 const Tag feature.Tag = "outputs-minify"
@@ -142,7 +142,7 @@ func (f *CFeature) CanTransform(mime string, r *http.Request) (ok bool) {
 		}
 	}
 	if len(f.mimeTypes) > 0 {
-		basicMime := beStrings.GetBasicMime(mime)
+		basicMime := clStrings.GetBasicMime(mime)
 		for _, supported := range f.mimeTypes {
 			switch supported {
 			case mime, basicMime:
@@ -161,7 +161,7 @@ func (f *CFeature) TransformOutput(mime string, input []byte) (output []byte) {
 	if output, err = _minifyInstance.Bytes(mime, input); err == nil {
 		return
 	}
-	log.ErrorF("error minifying %v: %v", beStrings.GetBasicMime(mime), err)
+	log.ErrorF("error minifying %v: %v", clStrings.GetBasicMime(mime), err)
 	output = input
 	return
 }

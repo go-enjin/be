@@ -25,7 +25,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/maps"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	clStrings "github.com/go-corelibs/strings"
 )
 
 type MakeFeature[M interface{}] interface {
@@ -72,7 +72,7 @@ func (c *CSiteEnviron[M]) InitSiteEnviron(this interface{}, keysHelp ...string) 
 	} else {
 		for i := 0; i < count; i += 2 {
 			key := strcase.ToKebab(keysHelp[i])
-			help := beStrings.TrimQuotes(keysHelp[i+1])
+			help := clStrings.TrimQuotes(keysHelp[i+1])
 			maps.MakeTypedKey(key, c.siteEnvironData)
 			c.siteEnvironHelp[key] = help
 		}
@@ -106,7 +106,7 @@ func (c *CSiteEnviron[M]) StartupSiteEnviron() (err error) {
 				if strings.HasPrefix(key, envPrefix) {
 					name := strings.TrimPrefix(key, envPrefix)
 					name = strcase.ToKebab(name)
-					value = beStrings.TrimQuotes(value)
+					value = clStrings.TrimQuotes(value)
 					maps.MakeTypedKey(keys[idx], c.siteEnvironData)
 					c.siteEnvironData[keys[idx]][name] = value
 				}

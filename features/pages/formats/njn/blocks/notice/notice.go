@@ -22,7 +22,7 @@ import (
 	"strings"
 
 	"github.com/go-enjin/be/pkg/feature"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	clStrings "github.com/go-corelibs/strings"
 )
 
 const (
@@ -85,13 +85,13 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 
 	block = re.PrepareGenericBlock("notice", data)
 
-	if v, ok := data["dismiss"].(string); ok && beStrings.IsTrue(v) {
+	if v, ok := data["dismiss"].(string); ok && clStrings.IsTrue(v) {
 		block["Dismiss"] = "true"
 	} else {
 		block["Dismiss"] = "false"
 	}
 
-	if v, ok := data["open"].(string); ok && beStrings.IsTrue(v) {
+	if v, ok := data["open"].(string); ok && clStrings.IsTrue(v) {
 		block["Open"] = "true"
 	} else {
 		block["Open"] = "false"

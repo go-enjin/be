@@ -21,13 +21,14 @@ import (
 
 	"github.com/iancoleman/strcase"
 
+	"github.com/go-corelibs/path"
+	"github.com/go-corelibs/strings"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request"
-	"github.com/go-enjin/be/pkg/strings"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -65,7 +66,7 @@ func (f *CFeature) ServeSetupPage(settingsPath string, saf feature.SiteAuthFeatu
 		provision = printer.Sprintf("Backup Email")
 	}
 	for f.hasSecureProvision(eid, provision, r) {
-		provision = strings.IncrementFileName(provision)
+		provision = path.IncrementFileName(provision)
 	}
 
 	var denied string

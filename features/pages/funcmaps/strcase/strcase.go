@@ -25,7 +25,7 @@ import (
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	clStrings "github.com/go-corelibs/strings"
 )
 
 var (
@@ -101,10 +101,10 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		"toScreamingKebab":     strcase.ToScreamingKebab,
 		"toSnake":              strcase.ToSnake,
 		"toScreamingSnake":     strcase.ToScreamingSnake,
-		"toDeepKey":            beStrings.ToDeepKey,
-		"toDeepVar":            beStrings.ToDeepVar,
-		"toSpaced":             beStrings.ToSpaced,
-		"toSpacedCamel":        beStrings.ToSpacedCamel,
+		"toDeepKey":            clStrings.ToDeepKey,
+		"toDeepVar":            clStrings.ToDeepVar,
+		"toSpaced":             clStrings.ToSpaced,
+		"toSpacedCamel":        clStrings.ToSpacedCamel,
 	}
 	return
 }

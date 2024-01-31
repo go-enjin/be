@@ -17,6 +17,7 @@ package backup_codes
 import (
 	"net/http"
 
+	"github.com/go-corelibs/path"
 	"github.com/go-corelibs/slices"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
@@ -26,7 +27,6 @@ import (
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request"
-	"github.com/go-enjin/be/pkg/strings"
 )
 
 func (f *CFeature) SiteUserSetupStageReady(eid string, r *http.Request) (ready bool) {
@@ -60,7 +60,7 @@ func (f *CFeature) ProcessSetupPage(saf feature.SiteAuthFeature, w http.Response
 
 	names := f.listSecureProvisions(r)
 	for slices.Within(provision, names) {
-		provision = strings.IncrementFileName(provision)
+		provision = path.IncrementFileName(provision)
 	}
 
 	printer := message.GetPrinter(r)

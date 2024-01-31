@@ -24,7 +24,6 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
-	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 const (
@@ -88,7 +87,7 @@ func (f *CField) AddTag(name string) MakeField {
 }
 
 func (f *CField) RemoveTag(name string) MakeField {
-	if idx := beStrings.StringIndexInStrings(name, f.supported...); idx >= 0 {
+	if idx := slices.IndexOf(f.supported, name); idx >= 0 {
 		f.supported = slices.Remove(f.supported, idx)
 	}
 	return f

@@ -23,6 +23,7 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/go-corelibs/slices"
+	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/pkg/log"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
@@ -37,9 +38,9 @@ func ExtractBoolValue(v interface{}) (b bool) {
 	case bool:
 		b = t
 	case string:
-		b = beStrings.IsTrue(t)
+		b = clStrings.IsTrue(t)
 	case []byte:
-		b = beStrings.IsTrue(string(t))
+		b = clStrings.IsTrue(string(t))
 	}
 	return
 }
@@ -221,7 +222,7 @@ func FinalizeNjnFieldAttributes(attrs map[string]interface{}) (attributes []temp
 		case nil:
 			attributes = append(attributes, template.HTMLAttr(fmt.Sprintf(`%v`, k)))
 		case string:
-			attributes = append(attributes, template.HTMLAttr(fmt.Sprintf(`%v=%q`, k, beStrings.EscapeHtmlAttribute(t))))
+			attributes = append(attributes, template.HTMLAttr(fmt.Sprintf(`%v=%q`, k, clStrings.EscapeHtmlAttribute(t))))
 		case template.HTMLAttr:
 			attributes = append(attributes, template.HTMLAttr(fmt.Sprintf(`%v=%q`, k, t)))
 		default:

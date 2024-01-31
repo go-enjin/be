@@ -27,7 +27,7 @@ import (
 	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	clStrings "github.com/go-corelibs/strings"
 )
 
 func (re *RenderEnjin) PrepareErrorBlock(summary string, data ...interface{}) (block map[string]interface{}, err error) {
@@ -160,12 +160,12 @@ func (re *RenderEnjin) PrepareGenericBlock(typeName string, data map[string]inte
 	if v, ok = data["class"].(string); ok {
 		preparedData["Class"] = v
 	}
-	if v, ok = data["jump-top"].(string); ok && beStrings.IsTrue(v) {
+	if v, ok = data["jump-top"].(string); ok && clStrings.IsTrue(v) {
 		preparedData["JumpTop"] = "true"
 	} else {
 		// preparedData["JumpTop"] = "false"
 	}
-	if v, ok = data["jump-link"].(string); ok && beStrings.IsTrue(v) {
+	if v, ok = data["jump-link"].(string); ok && clStrings.IsTrue(v) {
 		preparedData["JumpLink"] = "true"
 	} else {
 		// preparedData["JumpLink"] = "false"

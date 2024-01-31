@@ -27,7 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/signals"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/pkg/userbase"
 	beUser "github.com/go-enjin/be/types/users"
 )
@@ -77,7 +77,7 @@ func (f *CFeature) makeUser(origin, rid, eid, email string) (u *beUser.User, err
 	u = &beUser.User{
 		RID:     rid,
 		EID:     eid,
-		Name:    beStrings.NameFromEmail(email),
+		Name:    clStrings.NameFromEmail(email),
 		Email:   email,
 		Origin:  origin,
 		Active:  true,
