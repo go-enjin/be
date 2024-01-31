@@ -20,14 +20,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/go-enjin/golang-org-x-text/language"
-
 	"github.com/go-corelibs/slices"
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/request/argv"
@@ -38,7 +37,7 @@ import (
 func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Request) (pg feature.Page, ctx context.Context, info *editor.File, eid string, mountPoints feature.MountPoints, handled bool) {
 
 	eid = userbase.GetCurrentEID(r)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	var err error
 
@@ -153,7 +152,7 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 	eid := userbase.GetCurrentEID(r)
 	fsid := chi.URLParam(r, "fsid")
 	code := chi.URLParam(r, "code")
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if pg, ctx, info, _, mountPoints, handled = f.PrepareRenderFileEditor(w, r); handled {
 		return
@@ -303,7 +302,7 @@ func (f *CFeature) ReceiveFileEditorChanges(w http.ResponseWriter, r *http.Reque
 	if pg, ctx, info, eid, _, handled = f.PrepareRenderFileEditor(w, r); handled {
 		return
 	}
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if info.Tilde != "" {
 		// deny anything posted to .~stuff

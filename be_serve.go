@@ -23,8 +23,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/net/serve"
@@ -73,7 +73,7 @@ func (e *Enjin) ServeHtmlRedirect(destination string, w http.ResponseWriter, r *
 	}
 
 	now := time.Now().Unix()
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	var pg feature.Page
 	pg, _ = page.New(feature.EnjinTag.String(), destination, content, now, now, t, ctx)
@@ -167,7 +167,7 @@ func (e *Enjin) ServeStatusPage(status int, w http.ResponseWriter, r *http.Reque
 	e.Emit(signals.PreServeStatusPage, feature.EnjinTag.String(), interface{}(e).(feature.Internals), status, r)
 
 	r = serve.SetServeStatus(status, r)
-	reqLangTag := lang.GetTag(r)
+	reqLangTag := message.GetTag(r)
 
 	if path, ok := e.eb.statusPages[status]; ok {
 		if pg := e.FindPage(r, reqLangTag, path); pg != nil {

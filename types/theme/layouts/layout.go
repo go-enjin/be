@@ -20,9 +20,10 @@ import (
 	"strings"
 	"sync"
 
+	cllang "github.com/go-corelibs/lang"
+
 	"github.com/go-enjin/be/pkg/feature"
 	beFs "github.com/go-enjin/be/pkg/fs"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -81,7 +82,7 @@ func (l *Layout) load() (err error) {
 			}
 
 			//l.lastMods[entryName] = lastMod
-			l.cache[entryName] = lang.PruneTranslatorComments(string(data))
+			l.cache[entryName] = cllang.PruneTranslatorComments(string(data))
 
 			log.TraceF("cached %v layout %v data: %v", l.name, entryName, entryPath)
 		}

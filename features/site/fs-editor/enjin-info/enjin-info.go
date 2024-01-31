@@ -19,11 +19,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/go-enjin/golang-org-x-text/message"
-
+	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
 	fs_editor "github.com/go-enjin/be/types/site/fs-editor"
@@ -100,7 +98,7 @@ func (f *CFeature) RenderDashboard(w http.ResponseWriter, r *http.Request) {
 		f.Enjin.ServeNotFound(w, r)
 		return
 	}
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	enjinCtx := f.Enjin.Context(r).Copy()
 	enjinInfo, _ := enjinCtx.Get("EnjinInfo").(feature.EnjinInfo)

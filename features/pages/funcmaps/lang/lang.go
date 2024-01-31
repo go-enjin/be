@@ -22,9 +22,10 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/golang-org-x-text/language"
-	"github.com/go-enjin/golang-org-x-text/language/display"
-	"github.com/go-enjin/golang-org-x-text/message"
+	cllang "github.com/go-corelibs/lang"
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/language/display"
+	"github.com/go-corelibs/x-text/message"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
@@ -270,7 +271,7 @@ func (f *CFeature) makeUnderscoreUnderscoreUnderscore(ctx beContext.Context) int
 func (f *CFeature) makeUnderscoreTag(ctx beContext.Context) interface{} {
 	return func(tagOrString interface{}) (name string, err error) {
 		var tag language.Tag
-		if tag, err = lang.ParseTag(tagOrString); err != nil {
+		if tag, err = cllang.ParseTag(tagOrString); err != nil {
 			return
 		}
 		var ok bool
@@ -284,9 +285,9 @@ func (f *CFeature) makeUnderscoreTag(ctx beContext.Context) interface{} {
 func (f *CFeature) makeUnderscoreUnderscoreTag(ctx beContext.Context) interface{} {
 	return func(txInput, tagInput interface{}) (name string, err error) {
 		var tx, tag language.Tag
-		if tx, err = lang.ParseTag(txInput); err != nil {
+		if tx, err = cllang.ParseTag(txInput); err != nil {
 			return
-		} else if tag, err = lang.ParseTag(tagInput); err != nil {
+		} else if tag, err = cllang.ParseTag(tagInput); err != nil {
 			return
 		}
 		name = display.Tags(tx).Name(tag)
@@ -298,13 +299,13 @@ func CmpLang(a interface{}, other ...interface{}) (equal bool, err error) {
 	var aTag language.Tag
 	var oTags []language.Tag
 
-	if aTag, err = lang.ParseTag(a); err != nil {
+	if aTag, err = cllang.ParseTag(a); err != nil {
 		return
 	}
 
 	for _, o := range other {
 		var oTag language.Tag
-		if oTag, err = lang.ParseTag(o); err != nil {
+		if oTag, err = cllang.ParseTag(o); err != nil {
 			return
 		}
 		oTags = append(oTags, oTag)

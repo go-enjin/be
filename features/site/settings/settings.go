@@ -26,12 +26,10 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/golang-org-x-text/message"
-
+	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
@@ -196,7 +194,7 @@ func (f *CFeature) ServeSettingsPage(w http.ResponseWriter, r *http.Request) {
 
 func (f *CFeature) RenderSettingsWith(matter beContext.Context, w http.ResponseWriter, r *http.Request) {
 	t := f.SiteFeatureTheme()
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	var order []string
 	panels := make(map[string]string)
@@ -235,7 +233,7 @@ func (f *CFeature) ReceiveSettingsChanges(w http.ResponseWriter, r *http.Request
 	// TODO: route settings panels changes if r.URL.Path != settings path
 
 	eid := userbase.GetCurrentEID(r)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if nonce := request.SafeQueryFormValue(r, SettingPanelNonceName); nonce != "" {
 		if !f.Enjin.VerifyNonce(SettingPanelNonceKey, nonce) {

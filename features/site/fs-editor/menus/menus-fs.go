@@ -17,8 +17,8 @@ package menus
 import (
 	"net/http"
 
-	"github.com/go-enjin/golang-org-x-text/language"
-
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/maps"
@@ -27,7 +27,7 @@ import (
 
 func (f *CFeature) UpdatePathInfo(info *editor.File, r *http.Request) {
 	// page-level actions (floating bottom-right button menu actions)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if !info.ReadOnly {
 		info.Actions = append(info.Actions, editor.MakeCreateMenuAction(printer))
@@ -40,7 +40,7 @@ func (f *CFeature) UpdateFileInfo(info *editor.File, r *http.Request) {
 	f.CEditorFeature.UpdateFileInfo(info, r)
 	t := f.Enjin.MustGetTheme()
 	supported := t.GetConfig().Supports.Menus
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	if info.Path != "" {
 		info.Indicators = append(info.Indicators, &editor.Indicator{
 			Icon:    "danger fa-solid fa-circle-xmark",
@@ -67,7 +67,7 @@ func (f *CFeature) UpdateFileInfo(info *editor.File, r *http.Request) {
 func (f *CFeature) UpdateFileInfoForEditing(info *editor.File, r *http.Request) {
 	// only on the editing page
 	f.CEditorFeature.UpdateFileInfoForEditing(info, r)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if untranslated := f.GetUntranslatedLocales(info); len(untranslated) > 0 {
 		info.Actions = append(info.Actions, editor.MakeTranslateAction(printer, info.File))

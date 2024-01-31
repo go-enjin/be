@@ -17,17 +17,16 @@ package menus
 import (
 	"net/http"
 
-	"github.com/go-enjin/golang-org-x-text/language"
-
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/lang"
 )
 
 func (f *CFeature) ParseCreateMenuForm(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string, redirect *string) (dstUri string, dstInfo *editor.File, dstFS feature.FileSystemFeature, dstMP *feature.CMountPoint, dstExists bool, stop bool) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	var err error
 	var fileLocale language.Tag

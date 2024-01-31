@@ -20,9 +20,9 @@ import (
 	"time"
 
 	"github.com/go-corelibs/slices"
+	"github.com/go-corelibs/x-text/message"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -73,7 +73,7 @@ func (f *CFeature) ProcessVerification(verifyTarget, name, challenge string, saf
 		}
 	}
 
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	r = feature.AddErrorNotice(r, true, berrs.OtpChallengeFailed(printer))
 	handled, redirect = saf.ServeVerificationRequest(verifyTarget, w, r)
 	return

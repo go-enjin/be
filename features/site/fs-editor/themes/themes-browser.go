@@ -18,10 +18,10 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/mime"
 	"github.com/go-enjin/be/pkg/path"
@@ -104,7 +104,7 @@ func (f *CFeature) RenderFileBrowser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx.SetSpecific("EditFiles", files)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	r = feature.AddUserNotices(r, f.Editor.Site().PullNotices(eid)...)
 	pg.SetTitle(printer.Sprintf("Browsing: %[1]s", titlePath))
 	f.SelfEditor().ServePreparedEditPage(pg, ctx, w, r)

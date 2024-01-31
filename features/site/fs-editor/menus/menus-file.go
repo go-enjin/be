@@ -21,10 +21,10 @@ import (
 
 	"github.com/iancoleman/strcase"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -47,7 +47,7 @@ func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
 	if pg, ctx, info, eid, handled = f.PrepareRenderFileEditor(w, r); handled {
 		return
 	}
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	var err error
 	var list menu.EditMenu
@@ -132,7 +132,7 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 	if pg, ctx, info, eid, handled = f.PrepareRenderFileEditor(w, r); handled {
 		return
 	}
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if info.Tilde != "" {
 		if info.Tilde != "draft" || !info.HasDraft {

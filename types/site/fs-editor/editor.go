@@ -19,13 +19,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/go-enjin/golang-org-x-text/language"
-
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
 	bePkgEditor "github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/types/site"
@@ -108,7 +107,7 @@ func (f *CEditorFeature[MakeTypedFeature]) UserActions() (list feature.Actions) 
 }
 
 func (f *CEditorFeature[MakeTypedFeature]) SiteFeatureInfo(r *http.Request) (info *feature.CSiteFeatureInfo) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	info = feature.NewSiteFeatureInfo(
 		f.Self().Tag().Kebab(),
 		f.SelfEditor().SiteFeatureKey(),
@@ -260,7 +259,7 @@ func (f *CEditorFeature[MakeTypedFeature]) SetupEditorRoute(r chi.Router) {
 }
 
 func (f *CEditorFeature[MakeTypedFeature]) PrepareEditPage(pageType, editorType string, r *http.Request) (pg feature.Page, ctx beContext.Context, err error) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	pg, ctx, err = f.Editor.Site().PreparePage(f.Editor.BaseTag().Kebab(), pageType, editorType, f.Editor.SiteFeatureTheme(), r)
 
 	ctx.SetSpecific("EditorType", editorType)
@@ -314,7 +313,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ServePreparedEditPage(pg feature.Page
 }
 
 func (f *CEditorFeature[MakeTypedFeature]) ParseCopyMoveTranslateForm(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *bePkgEditor.File, eid string, redirect *string) (srcUri, dstUri string, dstInfo *bePkgEditor.File, srcFS, dstFS feature.FileSystemFeature, srcMP, dstMP *feature.CMountPoint, srcExists, dstExists bool, stop bool) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	var param string
 	if submit, ok := form["submit"]; ok && submit == bePkgEditor.CopyActionKey {

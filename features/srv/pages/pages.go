@@ -22,10 +22,10 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/signaling"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/net/serve"
@@ -90,7 +90,7 @@ func (f *CFeature) Shutdown() {
 
 func (f *CFeature) RoutePage(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
-	tag := lang.GetTag(r)
+	tag := message.GetTag(r)
 
 	// look for any page provider providing the requested page
 	for _, pp := range feature.FilterTyped[feature.PageProvider](f.Enjin.Features().List()) {

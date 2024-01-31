@@ -23,12 +23,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/golang-org-x-text/message"
-
+	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	site_including "github.com/go-enjin/be/pkg/feature/site-including"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/pkg/userbase"
@@ -196,7 +194,7 @@ func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
 }
 
 func (f *CFeature) MakePageContextFields(r *http.Request) (fields beContext.Fields) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	fields = beContext.Fields{
 		"title": {
 			Key:      "title",
@@ -296,7 +294,7 @@ func (f *CFeature) MakePageContextFields(r *http.Request) (fields beContext.Fiel
 		},
 	}
 
-	tag := lang.GetTag(r)
+	tag := message.GetTag(r)
 	if f.Enjin.SiteDefaultLanguage().String() != tag.String() {
 		fields["translates"] = &beContext.Field{
 			Key:      "translates",

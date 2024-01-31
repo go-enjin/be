@@ -19,11 +19,10 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/golang-org-x-text/message"
+	"github.com/go-corelibs/x-text/message"
 
 	"github.com/go-enjin/be/pkg/feature"
 	site_secure_context "github.com/go-enjin/be/pkg/feature/site-secure-context"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/types/site"
 )
@@ -152,7 +151,7 @@ func (f *CFeature) SiteMultiFactorLabel(printer *message.Printer) (label string)
 }
 
 func (f *CFeature) SiteFeatureInfo(r *http.Request) (info *feature.CSiteFeatureInfo) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	info = feature.NewSiteFeatureInfo(
 		f.KebabTag,
 		f.SiteMultiFactorKey(),

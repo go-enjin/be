@@ -17,14 +17,14 @@ package auth
 import (
 	"net/http"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
 func (f *CFeature) enforceUserSetupStages(claims *feature.CSiteAuthClaims, w http.ResponseWriter, r *http.Request) (handled bool) {
 
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	/*
 			- get a list of all features with account setup stages

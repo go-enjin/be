@@ -23,11 +23,11 @@ import (
 
 	"github.com/iancoleman/strcase"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/features/site/auth"
 	"github.com/go-enjin/be/pkg/context"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request"
 	beStrings "github.com/go-enjin/be/pkg/strings"
@@ -36,7 +36,7 @@ import (
 func (f *CFeature) SiteAuthSignInHandler(w http.ResponseWriter, r *http.Request, saf feature.SiteAuthFeature) (claims *feature.CSiteAuthClaims, redirect string, err error) {
 	// TODO: factor in nonce checks with email links and form posts
 
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	emailSentMessage := printer.Sprintf("New sign-in token email sent")
 

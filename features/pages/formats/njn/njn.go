@@ -25,7 +25,8 @@ import (
 
 	"github.com/blevesearch/bleve/v2/mapping"
 
-	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
 
 	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/card"
@@ -64,7 +65,6 @@ import (
 	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	beForms "github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
@@ -341,7 +341,7 @@ func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 	doc := NewEnjinDocument(pg.Language(), pg.Url(), pg.Title())
 
 	r, _ := http.NewRequest("GET", pg.Url(), nil)
-	r = lang.SetTag(r, pg.LanguageTag())
+	r = message.SetTag(r, pg.LanguageTag())
 	for _, ptp := range feature.FilterTyped[feature.PageTypeProcessor](f.Enjin.Features().List()) {
 		if v, _, processed, e := ptp.ProcessRequestPageType(r, pg); e != nil {
 			log.ErrorF("error processing page type for njn format indexing: %v - %v", pg.Url(), e)

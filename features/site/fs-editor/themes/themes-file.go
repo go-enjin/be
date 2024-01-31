@@ -19,11 +19,11 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	beMime "github.com/go-enjin/be/pkg/mime"
@@ -34,7 +34,7 @@ import (
 func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Request) (pg feature.Page, ctx context.Context, info *editor.File, currentUser string, handled bool) {
 
 	currentUser = userbase.GetCurrentEID(r)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	var err error
 
@@ -148,7 +148,7 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 	if pg, ctx, info, eid, handled = f.PrepareRenderFileEditor(w, r); handled {
 		return
 	}
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	var body string
 	if info.HasDraft {
@@ -185,7 +185,7 @@ func (f *CFeature) ReceiveFileEditorChanges(w http.ResponseWriter, r *http.Reque
 	if pg, ctx, info, eid, handled = f.PrepareRenderFileEditor(w, r); handled {
 		return
 	}
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if info.Tilde != "" {
 		// deny anything posted to .~stuff

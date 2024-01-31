@@ -20,11 +20,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/golang-org-x-text/message"
-
+	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/types/site"
@@ -106,7 +104,7 @@ func (f *CFeature) RouteSiteFeature(r chi.Router) {
 
 func (f *CFeature) RenderDashboard(path string, w http.ResponseWriter, r *http.Request) {
 	t := f.SiteFeatureTheme()
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	ctx := beContext.Context{
 		"Title":         f.SiteFeatureLabel(printer),

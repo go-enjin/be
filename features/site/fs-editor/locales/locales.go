@@ -20,8 +20,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/golang-org-x-text/message"
-
+	"github.com/go-corelibs/x-text/message"
 	bePkgEditor "github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"

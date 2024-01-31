@@ -19,17 +19,17 @@ import (
 
 	"github.com/mrz1836/go-sanitize"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/errors"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
 func (f *CFeature) opDeleteUser(form context.Context, r *http.Request) {
 	eid := userbase.GetCurrentEID(r)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if !userbase.CurrentUserCan(r, f.Action("delete", "user")) {
 		log.WarnRF(r, "user %q attempted to create a new user without permission!", eid)

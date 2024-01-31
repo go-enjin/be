@@ -25,14 +25,12 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/golang-org-x-text/message"
-
 	"github.com/go-corelibs/slices"
+	"github.com/go-corelibs/x-text/message"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	site_environ "github.com/go-enjin/be/pkg/feature/site-environ"
 	site_including "github.com/go-enjin/be/pkg/feature/site-including"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
@@ -608,7 +606,7 @@ func (f *CFeature) UpdateSiteRoutes(r chi.Router) {
 }
 
 func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	if userbase.IsVisitor(r) {
 		m = append(m, &menu.Item{
 			Text: printer.Sprintf("Sign-in"),

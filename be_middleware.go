@@ -18,8 +18,8 @@ import (
 	"net/http"
 
 	"github.com/go-corelibs/slices"
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	beNet "github.com/go-enjin/be/pkg/net"
 	"github.com/go-enjin/be/pkg/net/headers"
@@ -72,7 +72,7 @@ func (e *Enjin) redirectionMiddleware(next http.Handler) http.Handler {
 
 		if rp := e.FindRedirection(path); rp != nil {
 			langMode := e.SiteLanguageMode()
-			reqLang := lang.GetTag(r)
+			reqLang := message.GetTag(r)
 			dst := langMode.ToUrl(e.SiteDefaultLanguage(), reqLang, rp.Url())
 			log.DebugRF(r, "redirecting from %v to %v", path, dst)
 			e.ServeRedirect(dst, w, r)

@@ -15,21 +15,18 @@
 package profile
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-enjin/golang-org-x-text/language"
-	"github.com/go-enjin/golang-org-x-text/language/display"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/golang-org-x-text/message"
-
 	"github.com/go-corelibs/slices"
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/language/display"
+	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/pkg/request"
@@ -232,7 +229,7 @@ func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
 }
 
 func (f *CFeature) SiteSettingsFields(r *http.Request) (fields beContext.Fields) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	fields = beContext.Fields{
 		"display-name": {
@@ -324,9 +321,7 @@ func (f *CFeature) ModifyUserRequest(au feature.User, r *http.Request) (modified
 				locales := f.Enjin.SiteLocales()
 				if locales.Has(parsed) {
 					tag, printer := f.Enjin.MakeLanguagePrinter(parsed.String())
-					ctx := context.WithValue(r.Context(), lang.LanguageTag, tag)
-					ctx = context.WithValue(ctx, lang.LanguagePrinter, printer)
-					modified = r.Clone(ctx)
+					modified = message.SetPrinter(message.SetTag(r, tag), printer)
 				} else {
 					//log.ErrorRF(r, "user has locale not supported by enjin: %v - %v", parsed, locales)
 				}
@@ -386,7 +381,7 @@ func (f *CFeature) SiteUserSetupStageReady(eid string, r *http.Request) (ready b
 func (f *CFeature) SiteUserSetupStageHandler(saf feature.SiteAuthFeature, w http.ResponseWriter, r *http.Request) {
 	var err error
 	var au feature.User
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	su := f.Site().SiteUsers()
 	eid := userbase.GetCurrentEID(r)

@@ -18,7 +18,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/go-enjin/be/pkg/lang"
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/request"
 )
 
@@ -66,7 +66,7 @@ func Serve204(w http.ResponseWriter, r *http.Request) {
 }
 
 func Serve400(w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusBadRequest)
 	// The request was rejected due to being an Unauthorized user (or anonymous guest)
@@ -74,7 +74,7 @@ func Serve400(w http.ResponseWriter, r *http.Request) {
 }
 
 func Serve401(w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusUnauthorized)
 	// The request was rejected due to being an Unauthorized user (or anonymous guest)
@@ -82,7 +82,7 @@ func Serve401(w http.ResponseWriter, r *http.Request) {
 }
 
 func ServeBasic401(w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("WWW-Authenticate", "Basic")
 	w.WriteHeader(http.StatusUnauthorized)
@@ -90,7 +90,7 @@ func ServeBasic401(w http.ResponseWriter, r *http.Request) {
 }
 
 func Serve403(w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusForbidden)
 	// The request was rejected due to being Forbidden to the user (or anonymous guest)
@@ -98,7 +98,7 @@ func Serve403(w http.ResponseWriter, r *http.Request) {
 }
 
 func Serve404(w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusNotFound)
 	// The request was rejected due to the page requested not existing
@@ -106,7 +106,7 @@ func Serve404(w http.ResponseWriter, r *http.Request) {
 }
 
 func Serve405(w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusMethodNotAllowed)
 	// The request was rejected due to the method used bin not allowed
@@ -114,7 +114,7 @@ func Serve405(w http.ResponseWriter, r *http.Request) {
 }
 
 func Serve500(w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusInternalServerError)
 	// The request resulted in an internal server error
@@ -122,7 +122,7 @@ func Serve500(w http.ResponseWriter, r *http.Request) {
 }
 
 func Serve502(w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusBadGateway)
 	// The request resulted in a bad gateway error
@@ -130,7 +130,7 @@ func Serve502(w http.ResponseWriter, r *http.Request) {
 }
 
 func Serve503(w http.ResponseWriter, r *http.Request) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusServiceUnavailable)
 	// The request resulted in a service unavailable error

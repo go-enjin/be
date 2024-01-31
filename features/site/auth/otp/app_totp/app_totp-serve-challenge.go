@@ -20,16 +20,16 @@ import (
 
 	"github.com/xlzd/gotp"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 )
 
 func (f *CFeature) ProcessChallenge(name, challenge string, saf feature.SiteAuthFeature, claims *feature.CSiteAuthClaims, w http.ResponseWriter, r *http.Request) (handled bool, redirect string) {
 
 	epoch := time.Now().Unix() // early to keep as close to the TOTP cycle as possible
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if claim, ok := claims.GetFactor(f.KebabTag, name); ok && f.VerifyClaimFactor(claim, saf, r) {
 		// existing factor verified

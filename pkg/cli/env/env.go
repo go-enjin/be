@@ -19,8 +19,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-corelibs/slices"
+	"github.com/go-enjin/be/pkg/context"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 

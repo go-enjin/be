@@ -21,7 +21,7 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-corelibs/x-text/language"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/types/page/matter"

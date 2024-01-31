@@ -20,7 +20,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-enjin/golang-org-x-text/language"
+	cllang "github.com/go-corelibs/lang"
+	"github.com/go-corelibs/x-text/language"
 
 	"github.com/go-enjin/be/pkg/editor"
 
@@ -85,7 +86,7 @@ func ParsePageMatter(origin string, path string, created, updated time.Time, raw
 		path = modified
 	}
 	path = bePath.CleanWithSlash(path)
-	cleaned := lang.PruneTranslatorComments(string(raw))
+	cleaned := cllang.PruneTranslatorComments(string(raw))
 
 	var ctx beContext.Context
 	matter, content, matterType := ParseContent(cleaned)

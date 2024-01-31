@@ -18,15 +18,15 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
 func (f *CFeature) AuthorizeUserSignIn(w http.ResponseWriter, r *http.Request, claims *feature.CSiteAuthClaims) (handled bool, m *http.Request) {
 
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	email := strings.ToLower(claims.Email)
 	unknownErrMessage := printer.Sprintf("an unknown error occurred")
 	su := f.Site().SiteUsers()

@@ -23,14 +23,14 @@ import (
 
 	"golang.org/x/net/html"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 )
 
 func (f *CFeature) handleQueryRedirect(r *http.Request) (redirect string, err error) {
-	tag := lang.GetTag(r)
-	printer := lang.GetPrinterFromRequest(r)
+	tag := message.GetTag(r)
+	printer := message.GetPrinter(r)
 	var query string
 	var foundNonce, foundQuery bool
 	for k, v := range r.URL.Query() {

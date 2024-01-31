@@ -18,9 +18,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-enjin/golang-org-x-text/language"
-
-	"github.com/go-enjin/be/pkg/lang/catalog"
+	"github.com/go-corelibs/lang"
+	"github.com/go-corelibs/x-text/language"
 )
 
 type LocaleData struct {
@@ -30,7 +29,7 @@ type LocaleData struct {
 	Order []string                                   `json:"order"`
 }
 
-func ConvertToPlaceholders(translation string, placeholders []*catalog.Placeholder) (modified string) {
+func ConvertToPlaceholders(translation string, placeholders []*lang.Placeholder) (modified string) {
 	modified = translation
 	for _, placeholder := range placeholders {
 		modified = strings.ReplaceAll(modified, placeholder.String, "{"+placeholder.ID+"}")
@@ -38,7 +37,7 @@ func ConvertToPlaceholders(translation string, placeholders []*catalog.Placehold
 	return
 }
 
-func ConvertFromPlaceholders(translation string, placeholders []*catalog.Placeholder) (modified string) {
+func ConvertFromPlaceholders(translation string, placeholders []*lang.Placeholder) (modified string) {
 	modified = translation
 	for _, placeholder := range placeholders {
 		modified = strings.ReplaceAll(modified, "{"+placeholder.ID+"}", placeholder.String)
@@ -106,36 +105,36 @@ func (l *LocaleData) SetPluralTranslation(tag language.Tag, shasum, arg string, 
 	return
 }
 
-func (l *LocaleData) MakeGoTextData() (lookup map[language.Tag]*catalog.GoText) {
+func (l *LocaleData) MakeGoTextData() (lookup map[language.Tag]*lang.GoText) {
 	unique := map[language.Tag]map[string]struct{}{}
-	lookup = map[language.Tag]*catalog.GoText{}
+	lookup = map[language.Tag]*lang.GoText{}
 
 	for _, shasum := range l.Order {
 		for tag, msg := range l.Data[shasum] {
 			if _, present := lookup[tag]; !present {
-				lookup[tag] = &catalog.GoText{Language: tag.String()}
+				lookup[tag] = &lang.GoText{Language: tag.String()}
 				unique[tag] = map[string]struct{}{}
 			}
 			if _, present := unique[tag][msg.ID]; present {
 				continue
 			}
 			unique[tag][msg.ID] = struct{}{}
-			var plural *catalog.Select
+			var plural *lang.Select
 			if msg.Translation.Select != nil {
-				plural = &catalog.Select{
+				plural = &lang.Select{
 					Arg:     msg.Translation.Select.Arg,
 					Feature: msg.Translation.Select.Feature,
-					Cases:   map[string]catalog.SelectCase{},
+					Cases:   map[string]lang.SelectCase{},
 				}
 				for k, v := range msg.Translation.Select.Cases {
-					plural.Cases[k] = catalog.SelectCase{Msg: v}
+					plural.Cases[k] = lang.SelectCase{Msg: v}
 				}
 			}
-			lookup[tag].Messages = append(lookup[tag].Messages, &catalog.Message{
+			lookup[tag].Messages = append(lookup[tag].Messages, &lang.Message{
 				ID:      msg.ID,
 				Key:     msg.Key,
 				Message: msg.Message,
-				Translation: &catalog.Translation{
+				Translation: &lang.Translation{
 					String: msg.Translation.String,
 					Select: plural,
 				},

@@ -21,14 +21,13 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"golang.org/x/net/html"
 
-	"github.com/go-enjin/golang-org-x-text/language"
-
 	"github.com/go-corelibs/slices"
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/userbase"
@@ -38,7 +37,7 @@ import (
 func (f *CFeature) ParseFormToDraft(pm *matter.PageMatter, fields context.Fields, form context.Context, info *editor.File, r *http.Request) (modified *matter.PageMatter, redirect string, errs map[string]error) {
 	var err error
 	eid := userbase.GetCurrentEID(r)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if pm == nil {
 		if pm, err = f.ReadDraftPage(info); err != nil {
@@ -122,7 +121,7 @@ func (f *CFeature) ParseFormToDraft(pm *matter.PageMatter, fields context.Fields
 }
 
 func (f *CFeature) ParseCreatePageForm(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string, redirect *string) (dstUri, dstFormat, dstArchetype string, dstInfo *editor.File, dstFS feature.FileSystemFeature, dstMP *feature.CMountPoint, dstExists bool, stop bool) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	t := f.Enjin.MustGetTheme()
 	archetypes := t.ListArchetypes()

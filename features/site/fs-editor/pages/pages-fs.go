@@ -19,11 +19,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-enjin/golang-org-x-text/language"
-
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -117,7 +116,7 @@ func (f *CFeature) RemovePage(info *editor.File, pm *matter.PageMatter) (err err
 
 func (f *CFeature) UpdatePathInfo(info *editor.File, r *http.Request) {
 	// page-level actions (floating bottom-right button menu actions)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if !info.ReadOnly {
 		info.Actions = append(info.Actions, editor.MakeCreatePageAction(printer))
@@ -129,7 +128,7 @@ func (f *CFeature) UpdatePathInfo(info *editor.File, r *http.Request) {
 func (f *CFeature) UpdateFileInfo(info *editor.File, r *http.Request) {
 	// browser row actions and editing page
 	f.CEditorFeature.UpdateFileInfo(info, r)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if info.HasDraft {
 		info.Actions = append(info.Actions, editor.MakePreviewDraftAction(printer))
@@ -147,7 +146,7 @@ func (f *CFeature) UpdateFileInfo(info *editor.File, r *http.Request) {
 func (f *CFeature) UpdateFileInfoForEditing(info *editor.File, r *http.Request) {
 	// only on the editing page
 	f.CEditorFeature.UpdateFileInfoForEditing(info, r)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if untranslated := f.GetUntranslatedLocales(info); len(untranslated) > 0 {
 		info.Actions = append(info.Actions, editor.MakeTranslateAction(printer, info.File))

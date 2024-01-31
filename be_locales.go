@@ -15,22 +15,21 @@
 package be
 
 import (
-	"github.com/go-enjin/golang-org-x-text/language"
-	"github.com/go-enjin/golang-org-x-text/language/display"
-	"github.com/go-enjin/golang-org-x-text/message/catalog"
-
+	cllang "github.com/go-corelibs/lang"
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/language/display"
+	"github.com/go-corelibs/x-text/message/catalog"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/signals"
-
 	"github.com/go-enjin/be/pkg/lang"
-	pkgLangCatalog "github.com/go-enjin/be/pkg/lang/catalog"
+	beCatalog "github.com/go-enjin/be/pkg/lang/catalog"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/signals"
 )
 
 func (e *Enjin) ReloadLocales() {
 	e.Emit(signals.PreEnjinReloadLocales, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 
-	ctlg := pkgLangCatalog.New()
+	ctlg := beCatalog.New()
 	// include locale features
 	for _, lp := range e.eb.fLocalesProviders {
 		//log.DebugF("adding %v locales", lp.Tag())
@@ -43,7 +42,7 @@ func (e *Enjin) ReloadLocales() {
 	e.Emit(signals.PostEnjinReloadLocales, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 }
 
-func (e *Enjin) SiteLocales() (locales lang.Tags) {
+func (e *Enjin) SiteLocales() (locales cllang.Tags) {
 	if len(e.eb.localeTags) == 0 {
 		e.mutex.RLock()
 		defer e.mutex.RUnlock()

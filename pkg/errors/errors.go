@@ -17,7 +17,7 @@ package errors
 import (
 	"errors"
 
-	"github.com/go-enjin/golang-org-x-text/message"
+	"github.com/go-corelibs/x-text/message"
 )
 
 var (

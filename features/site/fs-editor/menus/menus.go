@@ -20,12 +20,10 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/golang-org-x-text/message"
-
+	"github.com/go-corelibs/x-text/message"
 	bePkgEditor "github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/signaling"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
 	fs_editor "github.com/go-enjin/be/types/site/fs-editor"
@@ -172,7 +170,7 @@ func (f *CFeature) SetupEditor(es feature.EditorSite) {
 				}
 				filenames += key + ".json"
 			}
-			printer := lang.GetPrinterFromRequest(r)
+			printer := message.GetPrinter(r)
 			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`a file name is required; %[1]s supports the following menu files: %[2]s`, t.Name(), filenames))
 		}
 		return

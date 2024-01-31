@@ -21,7 +21,8 @@ import (
 	"github.com/blevesearch/bleve/v2/mapping"
 	"github.com/blevesearch/bleve/v2/search/highlight/format/html"
 
-	"github.com/go-enjin/golang-org-x-text/language"
+	cllang "github.com/go-corelibs/lang"
+	"github.com/go-corelibs/x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
 	indexing "github.com/go-enjin/be/pkg/indexing/search"
@@ -38,7 +39,7 @@ func SearchWithin(input string, numPerPage, pageNumber int, pages []feature.Page
 
 	docMaps := make(map[string]*mapping.DocumentMapping)
 	for _, pg := range pages {
-		if !lang.TagInTagSlices(pg.LanguageTag(), locales) {
+		if !cllang.TagInTagSlices(pg.LanguageTag(), locales) {
 			locales = append(locales, pg.LanguageTag())
 		}
 		if _, ok := docMaps[pg.Format()]; !ok {
@@ -93,7 +94,7 @@ func SearchWithin(input string, numPerPage, pageNumber int, pages []feature.Page
 			err = fmt.Errorf("invalid language")
 			return
 		} else {
-			if found := lang.TagInTags(queryLangTag, locales...); !found {
+			if found := cllang.TagInTags(queryLangTag, locales...); !found {
 				err = fmt.Errorf("unsupported language: %v", queryLangTag)
 				return
 			}

@@ -18,10 +18,10 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request"
 )
@@ -73,7 +73,7 @@ func (f *CFeature) SignOutPageHandler(w http.ResponseWriter, r *http.Request) (h
 			return
 		}
 		handled = true
-		r = feature.AddErrorNotice(r, true, berrs.FormExpiredError(lang.GetPrinterFromRequest(r)))
+		r = feature.AddErrorNotice(r, true, berrs.FormExpiredError(message.GetPrinter(r)))
 		f.ServeSignInPage(w, r)
 		return
 	}

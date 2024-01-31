@@ -21,10 +21,10 @@ import (
 
 	"github.com/iancoleman/strcase"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request"
 	"github.com/go-enjin/be/pkg/strings"
@@ -48,7 +48,7 @@ func (f *CFeature) SiteUserSetupStageHandler(saf feature.SiteAuthFeature, w http
 }
 
 func (f *CFeature) ServeSetupPage(settingsPath string, saf feature.SiteAuthFeature, w http.ResponseWriter, r *http.Request) (redirect string) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	au := userbase.GetCurrentUser(r)
 	eid := au.GetEID()
 	email := au.GetEmail()

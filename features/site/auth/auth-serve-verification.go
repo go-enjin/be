@@ -18,10 +18,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/pkg/request"
@@ -131,7 +131,7 @@ func (f *CFeature) ProcessVerificationRequest(verifyTarget string, w http.Respon
 		return
 	}
 
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if nonce := request.SafeQueryFormValue(r, VerificationNonceName); nonce != "" {
 

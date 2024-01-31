@@ -22,8 +22,8 @@ import (
 	"net/url"
 
 	"github.com/go-corelibs/slices"
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request/argv"
 )
@@ -34,7 +34,7 @@ func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []stri
 	defTag := f.Enjin.SiteDefaultLanguage()
 
 	// tag := lang.GetTag(r)
-	printer := lang.GetPrinterFromRequest(reqArgv.Request)
+	printer := message.GetPrinter(reqArgv.Request)
 	var query string
 	var foundNonce, foundQuery bool
 	for k, v := range reqArgv.Request.URL.Query() {

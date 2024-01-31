@@ -18,19 +18,19 @@ import (
 	errors2 "errors"
 	"net/http"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/path"
 	"github.com/go-enjin/be/types/page"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
 func (f *CFeature) FinalizeRenderFileEditor(r *http.Request, eid string, pg feature.Page, pm *matter.PageMatter, ctx context.Context, info *editor.File) (modified *http.Request, err error) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	var p feature.Page
 	if p, err = page.NewFromPageMatter(pm.Copy(), f.Enjin.MustGetTheme(), f.Enjin.Context(r)); err != nil {

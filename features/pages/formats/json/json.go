@@ -24,11 +24,11 @@ import (
 
 	"github.com/blevesearch/bleve/v2/mapping"
 
-	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -114,7 +114,7 @@ func (f *CFeature) AddSearchDocumentMapping(tag language.Tag, indexMapping *mapp
 func (f *CFeature) IndexDocument(pg feature.Page) (out interface{}, err error) {
 
 	r, _ := http.NewRequest("GET", pg.Url(), nil)
-	r = lang.SetTag(r, pg.LanguageTag())
+	r = message.SetTag(r, pg.LanguageTag())
 	for _, ptp := range feature.FilterTyped[feature.PageTypeProcessor](f.Enjin.Features().List()) {
 		if v, _, processed, e := ptp.ProcessRequestPageType(r, pg); e != nil {
 			log.ErrorF("error processing page type for json format indexing: %v - %v", pg.Url(), e)

@@ -15,7 +15,7 @@
 package feature
 
 import (
-	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-corelibs/x-text/language"
 
 	"github.com/go-enjin/be/pkg/menu"
 )

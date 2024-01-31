@@ -24,12 +24,10 @@ import (
 
 	"github.com/maruel/natural"
 
-	"github.com/go-enjin/golang-org-x-text/language"
-	"github.com/go-enjin/golang-org-x-text/message"
-
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	beMime "github.com/go-enjin/be/pkg/mime"
@@ -159,7 +157,7 @@ func (f *CFeature) RemoveDirectory(info *editor.File) (err error) {
 
 func (f *CFeature) PrepareEditableFile(r *http.Request, info *editor.File) (editFile *editor.File) {
 	eid := userbase.GetCurrentEID(r)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	for _, mpf := range f.EditingFileSystems {
 		mpfTag := mpf.Tag().String()
@@ -244,7 +242,7 @@ func (f *CFeature) ListFileSystemLocales(fsid string) (list editor.Files) {
 }
 
 func (f *CFeature) ListFileSystemDirectories(r *http.Request, fsid, code, dirs string) (list editor.Files) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	//dirsPath := editor.MakeLangCodePath(code, dirs)
 	dirsPath := dirs
 	lookup := make(map[string]struct{})
@@ -300,7 +298,7 @@ func (f *CFeature) ListFileSystemFiles(r *http.Request, fsid, code, dirs string)
 	}
 	//isUnd := code == language.Und.String()
 	eid := userbase.GetCurrentEID(r)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	//dirsPath := editor.MakeLangCodePath(code, dirs)
 	dirsPath := dirs
 	unique := map[string]struct{}{}

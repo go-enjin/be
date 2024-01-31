@@ -15,7 +15,7 @@
 package feature
 
 import (
-	"github.com/go-enjin/golang-org-x-text/message"
+	"github.com/go-corelibs/x-text/message"
 )
 
 type MessagePrinterFn func(printer *message.Printer) (text string)

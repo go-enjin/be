@@ -17,17 +17,17 @@ package user_manager
 import (
 	"net/http"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/errors"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
 func (f *CFeature) opReactivateUser(form context.Context, r *http.Request) {
 	eid := userbase.GetCurrentEID(r)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if !userbase.CurrentUserCan(r, f.Action("update", "user")) {
 		log.WarnRF(r, "user %q attempted to reactivate a user without permission!", eid)

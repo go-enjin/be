@@ -19,9 +19,9 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 )
 
 var (
@@ -85,7 +85,7 @@ func (f *CFeature) Shutdown() {
 }
 
 func (f *CFeature) PrepareServePage(ctx context.Context, t feature.Theme, p feature.Page, w http.ResponseWriter, r *http.Request) (out context.Context, modified *http.Request, stop bool) {
-	reqLangTag := lang.GetTag(r)
+	reqLangTag := message.GetTag(r)
 	ctx.SetSpecific("Request", map[string]string{
 		"URL":        r.URL.String(),
 		"Path":       r.URL.Path,

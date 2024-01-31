@@ -20,14 +20,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-enjin/golang-org-x-text/language"
-
+	cllang "github.com/go-corelibs/lang"
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/hash/sha"
-	"github.com/go-enjin/be/pkg/lang"
-	"github.com/go-enjin/be/pkg/lang/catalog"
 	"github.com/go-enjin/be/pkg/log"
 	beMime "github.com/go-enjin/be/pkg/mime"
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -67,11 +66,7 @@ func (f *CFeature) FindMountPoints(fsid, code string) (mountPoints feature.Mount
 	}
 
 	//var mountPoints feature.MountPoints
-	if countMountedPoints := len(mountedPoints); countMountedPoints > 1 {
-		if v, present := mountedPoints[code]; present {
-			mountPoints = v
-		}
-	} else if countMountedPoints == 1 {
+	if countMountedPoints := len(mountedPoints); countMountedPoints > 1 || countMountedPoints == 1 {
 		if v, present := mountedPoints[code]; present {
 			mountPoints = v
 		}
@@ -84,7 +79,7 @@ func (f *CFeature) WriteLocales(ld *LocaleData, mountPoints feature.MountPoints)
 	lookup := ld.MakeGoTextData()
 	if len(lookup) == 0 {
 		for _, tag := range f.Enjin.SiteLocales() {
-			lookup[tag] = &catalog.GoText{Language: tag.String()}
+			lookup[tag] = &cllang.GoText{Language: tag.String()}
 		}
 	}
 	for _, mountPoint := range mountPoints {
@@ -117,7 +112,7 @@ func (f *CFeature) WriteDraftLocales(ld *LocaleData, mountPoints feature.MountPo
 	lookup := ld.MakeGoTextData()
 	if len(lookup) == 0 {
 		for _, tag := range f.Enjin.SiteLocales() {
-			lookup[tag] = &catalog.GoText{Language: tag.String()}
+			lookup[tag] = &cllang.GoText{Language: tag.String()}
 		}
 	}
 	for _, mountPoint := range mountPoints {
@@ -169,7 +164,7 @@ func (f *CFeature) ReadDraftLocales(fsid, code string, mountPoints feature.Mount
 	}
 
 	unique := make(map[string]struct{})
-	process := func(tag language.Tag, parsed *catalog.GoText) {
+	process := func(tag language.Tag, parsed *cllang.GoText) {
 		for _, msg := range parsed.Messages {
 			shasum, _ := sha.DataHash10(msg.Key)
 			if _, present := ld.Data[shasum]; !present {
@@ -243,7 +238,7 @@ func (f *CFeature) ReadDraftLocales(fsid, code string, mountPoints feature.Mount
 				}
 
 				if data, ee := mountPoint.ROFS.ReadFile(msgPath); ee == nil {
-					if parsed, _, eee := catalog.ParseGoText(data); eee == nil {
+					if parsed, _, eee := cllang.ParseGoText(data); eee == nil {
 						process(localeDir, parsed)
 					}
 				}
@@ -253,7 +248,7 @@ func (f *CFeature) ReadDraftLocales(fsid, code string, mountPoints feature.Mount
 						outPath := prefix + "out.gotext.json"
 						if msgPath != outPath {
 							if data, ee := mountPoint.ROFS.ReadFile(outPath); ee == nil {
-								if parsed, _, eee := catalog.ParseGoText(data); eee == nil {
+								if parsed, _, eee := cllang.ParseGoText(data); eee == nil {
 									process(localeDir, parsed)
 								}
 							}
@@ -466,7 +461,7 @@ func (f *CFeature) UnlockLocales(fsid, code string) (err error) {
 
 func (f *CFeature) UpdatePathInfo(info *editor.File, r *http.Request) {
 	// page-level actions (floating bottom-right button menu actions)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if !info.ReadOnly {
 		info.Actions = append(info.Actions, editor.MakeCreatePageAction(printer))
@@ -479,7 +474,7 @@ func (f *CFeature) UpdatePathInfo(info *editor.File, r *http.Request) {
 func (f *CFeature) UpdateFileInfo(info *editor.File, r *http.Request) {
 	// browser row actions and editing page
 	//f.CEditorFeature.UpdateFileInfo(info, r)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	eid := userbase.GetCurrentEID(r)
 
 	if info.Locked {

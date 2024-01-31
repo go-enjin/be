@@ -17,10 +17,10 @@ package auth
 import (
 	"net/http"
 
+	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request"
 	"github.com/go-enjin/be/pkg/userbase"
@@ -41,7 +41,7 @@ func (f *CFeature) ServeSettingsPanelSelectorPage(settingsPath string, w http.Re
 
 	su := f.Site().SiteUsers()
 	au := userbase.GetCurrentUser(r)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	var deleteRequested *deleteOwnUser
 
 	if r.Method == http.MethodPost {

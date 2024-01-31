@@ -17,8 +17,8 @@ package pages
 import (
 	"net/http"
 
+	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/path"
 )
 
@@ -44,7 +44,7 @@ func (f *CFeature) MakePageArchetypeContextFields(r *http.Request, name string) 
 		}
 	}
 
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	parsers := f.Enjin.PageContextParsers()
 	fields.Init(printer, parsers)
 	return

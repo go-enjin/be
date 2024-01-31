@@ -18,13 +18,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-enjin/golang-org-x-text/language"
-	"github.com/go-enjin/golang-org-x-text/message"
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
@@ -142,7 +141,7 @@ func (e *Enjin) GetThemeRenderer(ctx context.Context) (renderer feature.ThemeRen
 }
 
 func (e *Enjin) MakeLanguagePrinter(requested string) (tag language.Tag, printer *message.Printer) {
-	tag, printer = lang.NewCatalogPrinter(requested, e.SiteLanguageCatalog())
+	tag, printer = message.NewCatalogPrinter(requested, e.SiteLanguageCatalog())
 	return
 }
 
@@ -164,7 +163,7 @@ func (e *Enjin) MakePageContextField(key string, r *http.Request) (field *contex
 	}
 
 	if field, ok = fields[key]; ok {
-		printer := lang.GetPrinterFromRequest(r)
+		printer := message.GetPrinter(r)
 		parsers := e.PageContextParsers()
 		var fn context.Parser
 		if fn, ok = parsers[field.Format]; ok && fn != nil {
@@ -198,7 +197,7 @@ func (e *Enjin) MakePageContextFields(r *http.Request) (fields context.Fields) {
 		}
 	}
 
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	parsers := e.PageContextParsers()
 	for k, v := range fields {
 		if fn := parsers[v.Format]; fn != nil {

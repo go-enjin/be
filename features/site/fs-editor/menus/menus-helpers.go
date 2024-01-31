@@ -18,8 +18,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/editor"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/pkg/userbase"
@@ -27,7 +27,7 @@ import (
 
 func (f *CFeature) ParseFormToDraft(list []interface{}, info *editor.File, r *http.Request) (parsed menu.EditMenu, redirect string) {
 	eid := userbase.GetCurrentEID(r)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	if data, ee := json.Marshal(list); ee != nil {
 		log.ErrorRF(r, "error encoding form context: %v", ee)
 		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error encoding form context: "%[1]s"`, ee.Error()))
@@ -44,7 +44,7 @@ func (f *CFeature) ParseFormToDraft(list []interface{}, info *editor.File, r *ht
 
 func (f *CFeature) ParseDraftToMenu(parsed menu.EditMenu, info *editor.File, r *http.Request) (cleaned menu.Menu, redirect string) {
 	eid := userbase.GetCurrentEID(r)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	if data, ee := json.Marshal(parsed); ee != nil {
 		log.ErrorRF(r, "error encoding cleaned menu: %v", ee)
 		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error encoding cleaned menu: "%v"`, ee))

@@ -19,7 +19,8 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
@@ -89,10 +90,10 @@ func (f *CFeature) Shutdown() {
 }
 
 func (f *CFeature) PrepareServePage(ctx context.Context, t feature.Theme, p feature.Page, w http.ResponseWriter, r *http.Request) (out context.Context, modified *http.Request, stop bool) {
-	reqLangTag := lang.GetTag(r)
+	reqLangTag := message.GetTag(r)
 	ctx.SetSpecific("ReqLangTag", reqLangTag)
 
-	ctx.SetSpecific(lang.PrinterKey, lang.GetPrinterFromRequest(r))
+	ctx.SetSpecific(lang.PrinterKey, message.GetPrinter(r))
 	ctx.SetSpecific(string(argv.RequestKey), argv.Get(r))
 
 	parsedTag := f.Enjin.SiteDefaultLanguage()

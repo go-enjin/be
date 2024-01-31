@@ -25,12 +25,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/maruel/natural"
 
-	"github.com/go-enjin/golang-org-x-text/language"
-
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/page"
@@ -158,7 +157,7 @@ func (e *Enjin) Context(r *http.Request) (ctx context.Context) {
 
 	baseInfo := feature.MakeEnjinInfo(e)
 	if e.eb.enjinTextFn != nil && r != nil {
-		printer := lang.GetPrinterFromRequest(r)
+		printer := message.GetPrinter(r)
 		baseInfo.EnjinText = e.eb.enjinTextFn(printer)
 	}
 	ctx.SetSpecific("EnjinInfo", baseInfo)

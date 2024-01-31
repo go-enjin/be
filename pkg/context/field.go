@@ -17,7 +17,7 @@ package context
 import (
 	"fmt"
 
-	"github.com/go-enjin/golang-org-x-text/message"
+	"github.com/go-corelibs/x-text/message"
 )
 
 type Field struct {

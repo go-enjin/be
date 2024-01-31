@@ -21,9 +21,9 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -119,7 +119,7 @@ func ProcessActiveItems(m menu.Menu, r *http.Request) (modified menu.Menu, found
 }
 
 func (f *CFeature) PrepareServePage(ctx beContext.Context, t feature.Theme, p feature.Page, w http.ResponseWriter, r *http.Request) (out beContext.Context, modified *http.Request, stop bool) {
-	reqLangTag := lang.GetTag(r)
+	reqLangTag := message.GetTag(r)
 
 	var siteMenu map[string]interface{}
 	if v := ctx.Get("SiteMenu"); v != nil {

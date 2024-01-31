@@ -23,7 +23,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
@@ -108,7 +109,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *CFeature) MakePageContextFields(r *http.Request) (fields context.Fields) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	id, _ := uuid.NewV4()
 	fields = context.Fields{
 		"permalink": {
@@ -145,7 +146,7 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 
 				log.DebugF("permalink detected: %v", permalinkPath)
 
-				reqTag := lang.GetTag(r)
+				reqTag := message.GetTag(r)
 				defTag := f.Enjin.SiteDefaultLanguage()
 				var checkTags []language.Tag
 				if reqTag != defTag {

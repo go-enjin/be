@@ -20,9 +20,9 @@ import (
 
 	"github.com/xlzd/gotp"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -65,7 +65,7 @@ func (f *CFeature) ProcessVerification(verifyTarget, name, challenge string, saf
 		return
 	}
 
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	r = feature.AddErrorNotice(r, true, errors.OtpChallengeFailed(printer))
 	handled, redirect = saf.ServeVerificationRequest(verifyTarget, w, r)
 	return

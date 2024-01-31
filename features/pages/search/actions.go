@@ -19,8 +19,9 @@ package search
 import (
 	"fmt"
 
-	"github.com/go-enjin/golang-org-x-text/language"
 	"github.com/urfave/cli/v2"
+
+	"github.com/go-corelibs/x-text/language"
 )
 
 func (f *CFeature) SearchAction(ctx *cli.Context) (err error) {

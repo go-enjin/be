@@ -23,14 +23,12 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/golang-org-x-text/message"
-
+	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/signaling"
 	uses_actions "github.com/go-enjin/be/pkg/feature/uses-actions"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -175,7 +173,7 @@ func (f *CSiteFeature[M]) RouteSiteFeature(r chi.Router) {
 }
 
 func (f *CSiteFeature[M]) SiteFeatureInfo(r *http.Request) (info *feature.CSiteFeatureInfo) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	info = feature.NewSiteFeatureInfo(
 		f.Self().Tag().Kebab(),
 		f.SelfFeature().SiteFeatureKey(),

@@ -23,7 +23,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/iancoleman/strcase"
 
-	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-corelibs/x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/kvs"

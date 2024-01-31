@@ -26,9 +26,9 @@ import (
 	"github.com/maruel/natural"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/x-text/language"
 	uses_kvc "github.com/go-enjin/be/pkg/feature/uses-kvc"
 	"github.com/go-enjin/be/pkg/kvs"
-	"github.com/go-enjin/golang-org-x-text/language"
 
 	"github.com/go-enjin/be/pkg/feature"
 	indexingSearch "github.com/go-enjin/be/pkg/indexing/search"

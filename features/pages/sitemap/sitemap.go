@@ -25,11 +25,11 @@ import (
 	"github.com/urfave/cli/v2"
 	"golang.org/x/net/html"
 
-	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
 
 	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/values"
 
 	"github.com/go-enjin/be/pkg/feature"
@@ -134,7 +134,7 @@ func (f *CFeature) ChangeFreqParser(spec *context.Field, input interface{}) (par
 }
 
 func (f *CFeature) MakePageContextFields(r *http.Request) (fields context.Fields) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	fields = context.Fields{
 		"sitemap-ignored": {
 			Key:          "sitemap-ignored",

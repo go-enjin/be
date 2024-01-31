@@ -29,10 +29,10 @@ import (
 	"golang.org/x/net/html"
 
 	"github.com/go-corelibs/slices"
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request/argv"
 )
@@ -199,7 +199,7 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p feature.Page) (pg f
 		// prepare arguments
 		reqArgv := argv.Get(r)
 		p.Context().SetSpecific(argv.RequestConsumedKey, true)
-		reqLangTag := lang.GetTag(r)
+		reqLangTag := message.GetTag(r)
 		numPerPage, pageIndex, pageNumber := p.Context().ValueAsInt("DefaultNumPerPage", 10), 0, 1
 		if reqArgv.NumPerPage > -1 {
 			numPerPage = reqArgv.NumPerPage
@@ -246,7 +246,7 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p feature.Page) (pg f
 				idStart := pageIndex*numPerPage + 1
 				idEnd := idStart + numHits - 1
 
-				printer := lang.GetPrinterFromRequest(r)
+				printer := message.GetPrinter(r)
 				var resultSummary, hitsSummary, pageSummary string
 				// Search result summary, <total-hits>
 				resultSummary = printer.Sprintf("%[1]d results found", results.Total)

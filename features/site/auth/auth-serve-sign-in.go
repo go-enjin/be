@@ -18,10 +18,10 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request"
 )
@@ -65,7 +65,7 @@ func (f *CFeature) findSapFeatureByKey(key string) (sap feature.SiteAuthProvider
 }
 
 func (f *CFeature) SignInPageHandler(w http.ResponseWriter, r *http.Request) (claims *feature.CSiteAuthClaims, handled bool, redirect string, err error) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if nonce := request.SafeQueryFormValue(r, SignInNonceName); nonce != "" && f.Enjin.VerifyNonce(SignInNonceKey, nonce) {
 		submit := request.SafeQueryFormValue(r, "submit")

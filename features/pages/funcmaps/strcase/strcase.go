@@ -20,8 +20,8 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/golang-org-x-text/cases"
-	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-corelibs/x-text/cases"
+	"github.com/go-corelibs/x-text/language"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"

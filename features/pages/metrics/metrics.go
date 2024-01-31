@@ -23,13 +23,11 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-corelibs/slices"
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/maths"
 	"github.com/go-enjin/be/pkg/strings/words"
-
-	"github.com/go-enjin/golang-org-x-text/message"
 )
 
 var (
@@ -134,8 +132,7 @@ func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.
 }
 
 func (f *CFeature) UpdatePageContext(pageCtx context.Context, r *http.Request) (additions context.Context) {
-	var printer *message.Printer
-	printer = lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	additions = context.New()
 

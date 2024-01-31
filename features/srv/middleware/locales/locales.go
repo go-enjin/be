@@ -21,11 +21,11 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request/argv"
 )
@@ -121,15 +121,15 @@ func (f *CFeature) LocaleHandler(next http.Handler) (this http.Handler) {
 		// 	}
 		// }
 
-		if v, ok := r.Context().Value(lang.LanguageTag).(language.Tag); ok {
+		if v, ok := message.GetLanguageTag(r); ok {
 			// a request modifier feature is specifying the user's language
 			requested = v
 		}
 
 		tag, printer := f.Enjin.MakeLanguagePrinter(requested.String())
-		ctx := context.WithValue(r.Context(), lang.LanguageTag, tag)
-		ctx = context.WithValue(ctx, lang.LanguagePrinter, printer)
-		ctx = context.WithValue(ctx, lang.LanguageDefault, f.Enjin.SiteDefaultLanguage())
+		r = message.SetTag(r, tag)
+		r = message.SetDefaultTag(r, f.Enjin.SiteDefaultLanguage())
+		r = message.SetPrinter(r, printer)
 
 		if reqPath == "" {
 			reqPath = "/"
@@ -137,10 +137,10 @@ func (f *CFeature) LocaleHandler(next http.Handler) (this http.Handler) {
 			reqPath = "/" + reqPath
 		}
 
-		if reqArgv, ok := ctx.Value(argv.RequestKey).(*argv.Argv); ok {
+		if reqArgv, ok := r.Context().Value(argv.RequestKey).(*argv.Argv); ok {
 			reqArgv.Path = reqPath
 			reqArgv.Language = tag
-			ctx = context.WithValue(ctx, argv.RequestKey, reqArgv)
+			r = r.Clone(context.WithValue(r.Context(), argv.RequestKey, reqArgv))
 		}
 
 		r.URL.Path = reqPath
@@ -149,6 +149,6 @@ func (f *CFeature) LocaleHandler(next http.Handler) (this http.Handler) {
 			r.RequestURI = "/"
 		}
 
-		next.ServeHTTP(w, r.Clone(ctx))
+		next.ServeHTTP(w, r)
 	})
 }

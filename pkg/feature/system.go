@@ -21,9 +21,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-enjin/golang-org-x-text/language"
-	"github.com/go-enjin/golang-org-x-text/message"
-	"github.com/go-enjin/golang-org-x-text/message/catalog"
+	cllang "github.com/go-corelibs/lang"
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
+	"github.com/go-corelibs/x-text/message/catalog"
 
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature/signaling"
@@ -43,7 +44,7 @@ type EnjinBase interface {
 	SiteCopyrightYear() (year string)
 	SiteCopyrightNotice() (notice string)
 
-	SiteLocales() (locales lang.Tags)
+	SiteLocales() (locales cllang.Tags)
 	SiteLanguageMode() (mode lang.Mode)
 	SiteLanguageCatalog() (c catalog.Catalog)
 	SiteDefaultLanguage() (tag language.Tag)

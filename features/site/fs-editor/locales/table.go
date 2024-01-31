@@ -15,7 +15,7 @@
 package locales
 
 import (
-	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-corelibs/x-text/language"
 )
 
 // TODO: expand upon Table idea and construct a generic type

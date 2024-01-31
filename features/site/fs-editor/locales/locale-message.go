@@ -17,8 +17,8 @@ package locales
 import (
 	"maps"
 
+	"github.com/go-corelibs/lang"
 	"github.com/go-enjin/be/pkg/hash/sha"
-	"github.com/go-enjin/be/pkg/lang/catalog"
 )
 
 type Select struct {
@@ -33,14 +33,14 @@ type LocaleTranslation struct {
 }
 
 type LocaleMessage struct {
-	ID                string               `json:"id"`
-	Key               string               `json:"key"`
-	Message           string               `json:"message"`
-	Translation       *LocaleTranslation   `json:"translation"`
-	TranslatorComment string               `json:"translatorComment,omitempty"`
-	Placeholders      catalog.Placeholders `json:"placeholders,omitempty"`
-	Fuzzy             bool                 `json:"fuzzy,omitempty"`
-	Shasum            string               `json:"shasum"`
+	ID                string             `json:"id"`
+	Key               string             `json:"key"`
+	Message           string             `json:"message"`
+	Translation       *LocaleTranslation `json:"translation"`
+	TranslatorComment string             `json:"translatorComment,omitempty"`
+	Placeholders      lang.Placeholders  `json:"placeholders,omitempty"`
+	Fuzzy             bool               `json:"fuzzy,omitempty"`
+	Shasum            string             `json:"shasum"`
 }
 
 func (l *LocaleMessage) Copy() (cloned *LocaleMessage) {
@@ -70,7 +70,7 @@ func (l *LocaleMessage) Copy() (cloned *LocaleMessage) {
 }
 
 func ParseNewMessage(key, comment string) (m *LocaleMessage) {
-	replaced, labelled, placeholders := catalog.ParseMessagePlaceholders(key)
+	replaced, labelled, placeholders := lang.ParseMessagePlaceholders(key)
 	shasum, _ := sha.DataHash10(key)
 	m = &LocaleMessage{
 		ID:                labelled,

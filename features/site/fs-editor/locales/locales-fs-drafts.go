@@ -18,9 +18,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-enjin/golang-org-x-text/language"
-
-	"github.com/go-enjin/be/pkg/lang/catalog"
+	"github.com/go-corelibs/lang"
+	"github.com/go-corelibs/x-text/language"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -43,7 +42,7 @@ func (f *CFeature) performDraftChanges(r *http.Request, translations map[string]
 
 				case map[string]interface{}:
 					if arg, ok := t["arg"].(string); ok {
-						var foundPlaceholder *catalog.Placeholder
+						var foundPlaceholder *lang.Placeholder
 						if msg, ok := ld.Data[shasum][tag]; ok {
 							numerics := msg.Placeholders.Numeric()
 							for _, placeholder := range numerics {

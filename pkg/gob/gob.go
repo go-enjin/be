@@ -19,7 +19,7 @@ import (
 	"encoding/gob"
 	"time"
 
-	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-corelibs/x-text/language"
 )
 
 func init() {

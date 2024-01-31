@@ -17,10 +17,10 @@ package pages
 import (
 	"net/http"
 
+	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
 	bePkgEditor "github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/types/page"
 	"github.com/go-enjin/be/types/page/matter"
@@ -34,7 +34,7 @@ func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
 	if _, ctx, info, eid, handled = f.PrepareRenderFileEditor(w, r); handled {
 		return
 	}
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	var err error
 	var pm *matter.PageMatter
@@ -85,7 +85,7 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 	if pg, ctx, info, eid, handled = f.PrepareRenderFileEditor(w, r); handled {
 		return
 	}
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if info.Tilde != "" {
 		if info.Tilde != "draft" || !info.HasDraft {

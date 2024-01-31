@@ -19,10 +19,10 @@ import (
 	"strings"
 
 	"github.com/go-corelibs/slices"
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request"
 )
@@ -36,7 +36,7 @@ type multiFactor struct {
 }
 
 func (f *CFeature) enforceMultiFactors(claims *feature.CSiteAuthClaims, w http.ResponseWriter, r *http.Request) (handled bool) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	// setup and enforce multi-factor requirements
 	if f.numFactorsRequired > 0 {
 		count := claims.GetAllFactors().Len()
@@ -111,7 +111,7 @@ func (f *CFeature) ProcessChallengeRequest(w http.ResponseWriter, r *http.Reques
 
 	var handled bool
 	var redirect string
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if nonce := request.SafeQueryFormValue(r, ChallengeNonceName); nonce != "" {
 		// challenge form present

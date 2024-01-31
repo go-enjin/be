@@ -21,8 +21,8 @@ import (
 	"os"
 	"path/filepath"
 
-	bePath "github.com/go-enjin/be/pkg/path"
 	"github.com/go-corelibs/slices"
+	bePath "github.com/go-enjin/be/pkg/path"
 )
 
 func (f *FileSystem) realpath(path string) (out string) {

@@ -20,17 +20,17 @@ import (
 
 	"github.com/mrz1836/go-sanitize"
 
+	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
 	bePkgEditor "github.com/go-enjin/be/pkg/editor"
 	berrs "github.com/go-enjin/be/pkg/errors"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
 func (f *CFeature) opCreateUser(form beContext.Context, r *http.Request) {
 	eid := userbase.GetCurrentEID(r)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if !userbase.CurrentUserCan(r, f.Action("create", "user")) {
 		log.WarnRF(r, "user %q attempted to create a new user without permission!", eid)

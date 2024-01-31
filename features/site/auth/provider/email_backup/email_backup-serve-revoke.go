@@ -17,10 +17,10 @@ package email_backup
 import (
 	"net/http"
 
+	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request"
 	"github.com/go-enjin/be/pkg/userbase"
@@ -36,7 +36,7 @@ func (f *CFeature) ServeRevokePage(settingsPath string, saf feature.SiteAuthFeat
 
 	var err error
 	eid := userbase.GetCurrentEID(r)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	ctx := beContext.Context{
 		"FeatureInfo": f.SiteFeatureInfo(r),

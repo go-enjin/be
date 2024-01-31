@@ -20,19 +20,18 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-enjin/golang-org-x-text/language"
-
+	cllang "github.com/go-corelibs/lang"
 	"github.com/go-corelibs/slices"
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
-	"github.com/go-enjin/be/pkg/lang/catalog"
 	"github.com/go-enjin/be/pkg/log"
 )
 
 func (f *CFeature) OpRetakeValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
-	//printer := lang.GetPrinterFromRequest(r)
+	//printer := message.GetPrinter(r)
 	//if info.Locked {
 	//	err = errors.New(printer.Sprintf("Cannot take over editing, locale is locked by another user"))
 	//}
@@ -41,7 +40,7 @@ func (f *CFeature) OpRetakeValidate(r *http.Request, pg feature.Page, ctx, form 
 
 func (f *CFeature) OpRetakeHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *editor.File, eid string) (redirect string) {
 	//log.DebugRF(r, "retake editing: info=%#+v; form=%#+v", info, form)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	if err := f.LockLocale(eid, info.FSID, info.Code); err != nil {
 		log.ErrorRF(r, "error locking %v locale for editing by others: %v", info.FSID+"/"+info.Code, err)
 		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error taking over editing: %[1]s`, err.Error()))
@@ -56,7 +55,7 @@ func (f *CFeature) OpRetakeHandler(r *http.Request, pg feature.Page, ctx context
 }
 
 func (f *CFeature) OpUnlockValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("Cannot unlock, locale is locked by another user"))
 	}
@@ -65,7 +64,7 @@ func (f *CFeature) OpUnlockValidate(r *http.Request, pg feature.Page, ctx, form 
 
 func (f *CFeature) OpUnlockHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *editor.File, eid string) (redirect string) {
 	//log.DebugRF(r, "unlock editing: info=%#+v; form=%#+v", info, form)
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	if err := f.UnlockLocales(info.FSID, info.Code); err != nil {
 		log.ErrorRF(r, "error unlocking %v locale for editing by others: %v", info.FSID+"/"+info.Code, err)
 		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`error unlocking locale for editing by others: %[1]s`, err.Error()))
@@ -80,7 +79,7 @@ func (f *CFeature) OpUnlockHandler(r *http.Request, pg feature.Page, ctx context
 }
 
 func (f *CFeature) OpCancelValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("Cannot cancel, locale is locked by another user"))
 	}
@@ -101,7 +100,7 @@ func (f *CFeature) OpCancelHandler(r *http.Request, pg feature.Page, ctx context
 }
 
 func (f *CFeature) OpCommitValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("Cannot save changes, locale is locked by another user"))
 	}
@@ -111,7 +110,7 @@ func (f *CFeature) OpCommitValidate(r *http.Request, pg feature.Page, ctx, form 
 func (f *CFeature) OpCommitHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *editor.File, eid string) (redirect string) {
 	//log.DebugRF(r, "commit editing: info=%#+v; form=%#+v", info, form)
 	translations, _ := form["tx"].(map[string]interface{})
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	var err error
 	var ld *LocaleData
@@ -137,7 +136,7 @@ func (f *CFeature) OpCommitHandler(r *http.Request, pg feature.Page, ctx context
 }
 
 func (f *CFeature) OpPublishValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("Cannot publish, locale is locked by another user"))
 	}
@@ -148,7 +147,7 @@ func (f *CFeature) OpPublishHandler(r *http.Request, pg feature.Page, ctx contex
 	//log.DebugRF(r, "publish editing: info=%#+v; form=%#+v", info, form)
 
 	translations, _ := form["tx"].(map[string]interface{})
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	var err error
 	var ld *LocaleData
@@ -189,7 +188,7 @@ func (f *CFeature) OpPublishHandler(r *http.Request, pg feature.Page, ctx contex
 }
 
 func (f *CFeature) OpDeleteValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("Cannot delete draft changes, locale is locked by another user"))
 	}
@@ -212,7 +211,7 @@ func (f *CFeature) OpDeleteHandler(r *http.Request, pg feature.Page, ctx context
 }
 
 func (f *CFeature) OpChangeValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("Cannot change, locale is locked by another user"))
 	}
@@ -229,7 +228,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context
 	var ld *LocaleData
 
 	translations, _ := form["tx"].(map[string]interface{})
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	mountPoints := f.FindMountPoints(info.FSID, info.Code)
 
 	if ld, err = f.ReadDraftLocales(info.FSID, info.Code, mountPoints, false); err != nil {
@@ -359,7 +358,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context
 		} else if key, _ = form["add-translation-case."+tag.String()+"."+shasum].(string); key == "" {
 			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incomplete form submission`))
 			return
-		} else if key = catalog.ParsePluralCaseKey(key); key == "" {
+		} else if key = cllang.ParsePluralCaseKey(key); key == "" {
 			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`invalid plural translation case key`))
 			return
 		}
@@ -394,7 +393,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context
 		} else if key, _ = form["delete-translation-case."+tag.String()+"."+shasum+"."+strconv.Itoa(idx)].(string); key == "" {
 			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`incomplete form submission`))
 			return
-		} else if key = catalog.ParsePluralCaseKey(key); key == "" {
+		} else if key = cllang.ParsePluralCaseKey(key); key == "" {
 			f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`invalid plural translation case key`))
 			return
 		} else if key == "other" {
@@ -494,7 +493,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context
 }
 
 func (f *CFeature) OpSearchValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
-	//printer := lang.GetPrinterFromRequest(r)
+	//printer := message.GetPrinter(r)
 	//if searchQuery, _ := form["search.query"]; searchQuery == "" {
 	//	err = errors.New(printer.Sprintf("missing search query"))
 	//}
@@ -504,7 +503,7 @@ func (f *CFeature) OpSearchValidate(r *http.Request, pg feature.Page, ctx, form 
 func (f *CFeature) OpSearchHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *editor.File, eid string) (redirect string) {
 	//log.DebugRF(r, "searching: info=%#+v; form=%#+v", info, form)
 	//translations, _ := form["tx"].(map[string]interface{})
-	//printer := lang.GetPrinterFromRequest(r)
+	//printer := message.GetPrinter(r)
 	//
 	//var searchQuery string
 	//if searchQuery, _ = form["search.query"].(string); searchQuery == "" {

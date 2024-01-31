@@ -22,13 +22,11 @@ import (
 
 	"github.com/iancoleman/strcase"
 
-	"github.com/go-enjin/golang-org-x-text/message"
-
 	"github.com/go-corelibs/slices"
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	bePath "github.com/go-enjin/be/pkg/path"
@@ -67,7 +65,7 @@ func (f *CFeature) NotifyErrors(eid string, printer *message.Printer, errs map[s
 }
 
 func (f *CFeature) OpChangeValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("Cannot make changes, file is locked by another user"))
 	} else if _, present := form["matter"]; !present {
@@ -83,7 +81,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx, form c
 		return
 	}
 
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	var err error
 	var pm *matter.PageMatter
@@ -238,7 +236,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx, form c
 }
 
 func (f *CFeature) OpFileCommitValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("%[1]s is locked by another user, cannot make changes", info.Name))
 	} else if _, present := form["matter"]; !present {
@@ -250,7 +248,7 @@ func (f *CFeature) OpFileCommitValidate(r *http.Request, pg feature.Page, ctx, f
 }
 
 func (f *CFeature) OpFileCommitHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (redirect string) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	var err error
 	var pm *matter.PageMatter
@@ -304,7 +302,7 @@ func (f *CFeature) OpFileCommitHandler(r *http.Request, pg feature.Page, ctx, fo
 }
 
 func (f *CFeature) OpFilePublishValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("%[1]s is locked by another user, cannot publish changes", info.Name))
 	}
@@ -313,7 +311,7 @@ func (f *CFeature) OpFilePublishValidate(r *http.Request, pg feature.Page, ctx, 
 
 func (f *CFeature) OpFilePublishHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (redirect string) {
 	var err error
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	var pm *matter.PageMatter
 	if pm, err = f.ReadDraftPage(info); err != nil {
@@ -382,7 +380,7 @@ func (f *CFeature) OpFilePublishHandler(r *http.Request, pg feature.Page, ctx, f
 
 func (f *CFeature) OpFileDeleteHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (redirect string) {
 
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if lockedBy, locked := f.IsEditorFileLocked(info.FSID, info.FilePath()); locked && eid != lockedBy {
 		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("Cannot delete, file is locked by another user"))
@@ -430,7 +428,7 @@ func (f *CFeature) OpFileDeleteHandler(r *http.Request, pg feature.Page, ctx, fo
 }
 
 func (f *CFeature) OpFileIndexValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
-	//printer := lang.GetPrinterFromRequest(r)
+	//printer := message.GetPrinter(r)
 	//if info.Locked {
 	//	err = errors.New(printer.Sprintf("%[1]s is locked by another user, cannot republish changes", info.Name))
 	//}
@@ -438,7 +436,7 @@ func (f *CFeature) OpFileIndexValidate(r *http.Request, pg feature.Page, ctx, fo
 }
 
 func (f *CFeature) OpFileIndexHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (redirect string) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if lockedBy, locked := f.IsEditorFileLocked(info.FSID, info.FilePath()); locked && eid != lockedBy {
 		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("Cannot index, file is locked by another user"))
@@ -466,7 +464,7 @@ func (f *CFeature) OpFileIndexHandler(r *http.Request, pg feature.Page, ctx, for
 }
 
 func (f *CFeature) OpFileDeIndexValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
-	//printer := lang.GetPrinterFromRequest(r)
+	//printer := message.GetPrinter(r)
 	//if info.Locked {
 	//	err = errors.New(printer.Sprintf("%[1]s is locked by another user, cannot republish changes", info.Name))
 	//}
@@ -474,7 +472,7 @@ func (f *CFeature) OpFileDeIndexValidate(r *http.Request, pg feature.Page, ctx, 
 }
 
 func (f *CFeature) OpFileDeIndexHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (redirect string) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if lockedBy, locked := f.IsEditorFileLocked(info.FSID, info.FilePath()); locked && eid != lockedBy {
 		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf("Cannot remove index, file is locked by another user"))
@@ -500,7 +498,7 @@ func (f *CFeature) OpFileTranslateHandler(r *http.Request, pg feature.Page, ctx,
 		return
 	}
 
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if _, _, err := f.InfoRenderCheck(info); err != nil {
 		f.Editor.Site().PushErrorNotice(eid, true, printer.Sprintf(`cannot translate broken pages`))
@@ -577,7 +575,7 @@ func (f *CFeature) OpFileTranslateHandler(r *http.Request, pg feature.Page, ctx,
 }
 
 func (f *CFeature) OpPageCreateValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
-	//printer := lang.GetPrinterFromRequest(r)
+	//printer := message.GetPrinter(r)
 	//if info.Locked {
 	//	err = errors.New(printer.Sprintf("%[1]s is locked by another user, cannot republish changes", info.Name))
 	//}
@@ -585,7 +583,7 @@ func (f *CFeature) OpPageCreateValidate(r *http.Request, pg feature.Page, ctx, f
 }
 
 func (f *CFeature) OpPageCreateHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (redirect string) {
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 	dstUri, dstFormat, dstArchetype, dstInfo, dstFS, dstMP, dstExists, stop := f.ParseCreatePageForm(r, pg, ctx, form, info, eid, &redirect)
 	if stop {
 		return

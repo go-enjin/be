@@ -20,7 +20,7 @@ import (
 
 	"github.com/maruel/natural"
 
-	"github.com/go-enjin/golang-org-x-text/message"
+	"github.com/go-corelibs/x-text/message"
 
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"

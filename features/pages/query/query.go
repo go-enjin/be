@@ -81,7 +81,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *CFeature) MakePageContextFields(r *http.Request) (fields context.Fields) {
-	//printer := lang.GetPrinterFromRequest(r)
+	//printer := message.GetPrinter(r)
 	fields = context.Fields{
 		"query": {
 			Key:    "query",

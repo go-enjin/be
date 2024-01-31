@@ -18,7 +18,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-corelibs/x-text/language"
 )
 
 func MakeLangCodePath(code, dirs string) (dirsPath string) {

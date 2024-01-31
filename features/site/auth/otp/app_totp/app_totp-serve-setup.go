@@ -25,10 +25,10 @@ import (
 	"github.com/yeqown/go-qrcode/writer/standard"
 
 	"github.com/go-corelibs/slices"
+	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request"
 	"github.com/go-enjin/be/pkg/strings"
@@ -51,7 +51,7 @@ func (f *CFeature) ProcessSetupPage(saf feature.SiteAuthFeature, w http.Response
 
 	var err error
 	var provision, secret string
-	printer := lang.GetPrinterFromRequest(r)
+	printer := message.GetPrinter(r)
 
 	if submit := request.SafeQueryFormValue(r, "submit"); submit == "cancel" {
 		// cancel is just resetting form values with a reload
