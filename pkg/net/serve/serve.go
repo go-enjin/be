@@ -23,8 +23,8 @@ import (
 )
 
 const (
-	ServeStatusResponseKey request.Key = "ServeStatusResponse"
-	CacheControlKey        request.Key = "Cache-Control"
+	StatusResponseKey request.Key = "ServeStatusResponse"
+	CacheControlKey   request.Key = "Cache-Control"
 )
 
 func StatusHasBody(status int) (allowed bool) {
@@ -44,12 +44,12 @@ func GetCacheControl(r *http.Request) (value string) {
 }
 
 func SetServeStatus(status int, r *http.Request) (modified *http.Request) {
-	modified = r.Clone(context.WithValue(r.Context(), ServeStatusResponseKey, status))
+	modified = r.Clone(context.WithValue(r.Context(), StatusResponseKey, status))
 	return
 }
 
 func GetServeStatus(r *http.Request) (status int) {
-	if v, ok := r.Context().Value(ServeStatusResponseKey).(int); ok {
+	if v, ok := r.Context().Value(StatusResponseKey).(int); ok {
 		status = v
 	} else {
 		status = http.StatusOK
