@@ -23,7 +23,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-enjin/be/pkg/maths"
+	"github.com/go-corelibs/maths"
 )
 
 var (

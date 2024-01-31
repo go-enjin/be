@@ -19,7 +19,7 @@ import (
 	"encoding/gob"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/maths"
+	"github.com/go-corelibs/maths"
 )
 
 type typedNil struct {

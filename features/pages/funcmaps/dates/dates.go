@@ -23,9 +23,9 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/maths"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/maths"
 )
 
 var _ Feature = (*CFeature)(nil)

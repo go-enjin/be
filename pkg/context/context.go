@@ -28,7 +28,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/go-enjin/be/pkg/maps"
-	"github.com/go-enjin/be/pkg/maths"
+	"github.com/go-corelibs/maths"
 	clStrings "github.com/go-corelibs/strings"
 )
 
