@@ -19,19 +19,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-enjin/be/pkg/cli/env"
+	"github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/cli/run"
 	bePath "github.com/go-enjin/be/pkg/path"
 )
 
 func Which() (gitBin string) {
-	paths := env.GetPaths()
-	for _, path := range paths {
-		if gitBin = path + "/git"; bePath.IsFile(gitBin) {
-			return
-		}
-	}
-	gitBin = ""
+	gitBin = path.Which("git")
 	return
 }
 
@@ -110,11 +104,11 @@ func Status() (status string, ok bool) {
 }
 
 func Cmd(argv ...string) (stdout, stderr string, status int, err error) {
-	return run.Cmd("git", argv...)
+	return run.Cmd(Which(), argv...)
 }
 
 func Exe(argv ...string) (status int, err error) {
-	return run.Exe("git", argv...)
+	return run.Exe(Which(), argv...)
 }
 
 func MakeReleaseVersion() (release string) {
