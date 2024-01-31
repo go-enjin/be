@@ -9,8 +9,8 @@ import (
 
 	"github.com/maruel/natural"
 
-	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-corelibs/slices"
+	"github.com/go-enjin/be/pkg/maps"
 )
 
 type Policy interface {

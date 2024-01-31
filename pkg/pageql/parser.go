@@ -22,8 +22,8 @@ import (
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/maruel/natural"
 
-	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-corelibs/slices"
+	"github.com/go-enjin/be/pkg/maps"
 )
 
 // TODO: sort out errors with: `(.Title != m!(?i)thing!)` statements, use different regexp open/close markers (ie: ~ or / instead of !)

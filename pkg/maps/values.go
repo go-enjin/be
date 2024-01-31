@@ -22,8 +22,8 @@ import (
 
 	"github.com/iancoleman/strcase"
 
-	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-corelibs/slices"
+	"github.com/go-enjin/be/pkg/log"
 	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 

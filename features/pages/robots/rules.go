@@ -19,8 +19,8 @@ package robots
 import (
 	"strings"
 
-	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-corelibs/slices"
+	"github.com/go-enjin/be/pkg/log"
 )
 
 type RuleGroup interface {
