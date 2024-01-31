@@ -15,25 +15,15 @@
 package lang
 
 import (
-	"context"
-	"net/http"
 	"strings"
 
-	"github.com/go-enjin/golang-org-x-text/language"
-	"github.com/go-enjin/golang-org-x-text/message"
-	"github.com/go-enjin/golang-org-x-text/message/catalog"
-
-	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/log"
-	bePath "github.com/go-enjin/be/pkg/path"
-	"github.com/go-enjin/be/pkg/request"
+	"github.com/go-corelibs/x-text/language"
 )
 
 const (
-	LanguageTag     request.Key = "language-tag"
-	LanguagePrinter request.Key = "language-printer"
-	LanguageDefault request.Key = "language-default"
-	PrinterKey      string      = "LangPrinter"
+	// PrinterKey is used with pkg/context.Context to provide language printer
+	// facilities to funcmap features
+	PrinterKey string = "LangPrinter"
 )
 
 func ParseLangPath(p string) (tag language.Tag, modified string, ok bool) {
@@ -55,72 +45,5 @@ func ParseLangPath(p string) (tag language.Tag, modified string, ok bool) {
 			ok = true
 		}
 	}
-	return
-}
-
-func SetTag(r *http.Request, tag language.Tag) (modified *http.Request) {
-	modified = r.Clone(context.WithValue(r.Context(), LanguageTag, tag))
-	return
-}
-
-func GetTag(r *http.Request) (tag language.Tag) {
-	if p, ok := r.Context().Value(LanguageTag).(language.Tag); ok {
-		tag = p
-	} else if p, ok := r.Context().Value(LanguageDefault).(language.Tag); ok {
-		tag = p
-	} else {
-		tag = language.Und
-		log.ErrorDF(1, "request missing language tag and default language, defaulting to Undefined")
-	}
-	return
-}
-
-func NewCatalogPrinter(lang string, c catalog.Catalog) (tag language.Tag, printer *message.Printer) {
-	var err error
-	if tag, err = language.Parse(lang); err != nil {
-		tag = language.Und
-		printer = message.NewPrinter(language.Und, message.Catalog(c))
-		log.ErrorDF(1, "error parsing language: %v - %v, defaulting to Undefined", lang, err)
-	} else {
-		printer = message.NewPrinter(tag, message.Catalog(c))
-	}
-	return
-}
-
-func GetPrinterFromRequest(r *http.Request) (printer *message.Printer) {
-	if p, ok := r.Context().Value(LanguagePrinter).(*message.Printer); ok {
-		printer = p
-	} else if tag, ok := r.Context().Value(LanguageDefault).(language.Tag); ok {
-		printer = message.NewPrinter(tag)
-	} else {
-		log.TraceDF(1, "request missing language printer, defaulting to Undefined")
-		printer = message.NewPrinter(language.Und)
-	}
-	return
-}
-
-func TagInTags(needle language.Tag, haystack ...language.Tag) (found bool) {
-	for _, tag := range haystack {
-		if found = language.Compare(needle, tag); found {
-			return
-		}
-	}
-	return
-}
-
-func TagInTagSlices(needle language.Tag, haystacks ...[]language.Tag) (found bool) {
-	for _, haystack := range haystacks {
-		for _, tag := range haystack {
-			if found = language.Compare(needle, tag); found {
-				return
-			}
-		}
-	}
-	return
-}
-
-func NonPageRequested(r *http.Request) (isNonPage bool) {
-	path := forms.TrimQueryParams(r.URL.Path)
-	isNonPage = bePath.Ext(path) != ""
 	return
 }

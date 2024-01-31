@@ -17,7 +17,7 @@ package lang
 import (
 	"net/http"
 
-	"github.com/go-enjin/golang-org-x-text/language"
+	"github.com/go-corelibs/x-text/language"
 )
 
 type Mode interface {

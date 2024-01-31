@@ -20,12 +20,12 @@ import (
 
 	"github.com/maruel/natural"
 
-	"github.com/go-enjin/golang-org-x-text/feature/plural"
-	"github.com/go-enjin/golang-org-x-text/language"
-	"github.com/go-enjin/golang-org-x-text/message/catalog"
+	"github.com/go-corelibs/lang"
+	"github.com/go-corelibs/x-text/feature/plural"
+	"github.com/go-corelibs/x-text/language"
+	"github.com/go-corelibs/x-text/message/catalog"
 
 	beFs "github.com/go-enjin/be/pkg/fs"
-	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -71,10 +71,10 @@ func (c *CCatalog) AddLocalesFromJsonBytes(tag language.Tag, src string, content
 	}
 
 	var err error
-	var gt *GoText
+	var gt *lang.GoText
 	var parsed language.Tag
 
-	if gt, parsed, err = ParseGoText(contents); err != nil {
+	if gt, parsed, err = lang.ParseGoText(contents); err != nil {
 		log.ErrorF("error parsing gotext.json: [%v] %v - %v", tag, src, err)
 		return
 	}
