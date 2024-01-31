@@ -28,7 +28,7 @@ import (
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/maps"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -207,10 +207,10 @@ func (f *CFeature[MakeTypedFeature]) GetMountedPoints() (mountPoints feature.Mou
 }
 
 func (f *CFeature[MakeTypedFeature]) FindPathMountPoint(path string) (mps feature.MountPoints) {
-	path = bePath.CleanWithSlash(path)
+	path = clPath.CleanWithSlash(path)
 	// log.WarnDF(1, "finding path mount for: %v", path)
 	for _, point := range maps.SortedKeyLengths(f.MountPoints) {
-		if path == point || strings.HasPrefix(path, bePath.CleanWithSlashes(point)) {
+		if path == point || strings.HasPrefix(path, clPath.CleanWithSlashes(point)) {
 			// log.WarnDF(1, "%v has %v prefix", path, point)
 			mps = append(mps, f.MountPoints[point]...)
 		}
@@ -225,14 +225,14 @@ func (f *CFeature[MakeTypedFeature]) Exists(path string) (present bool) {
 	tag := language.Und
 	defLang := f.Enjin.SiteDefaultLanguage()
 
-	uri = bePath.CleanWithSlash(path)
+	uri = clPath.CleanWithSlash(path)
 	if t, m, ok := lang.ParseLangPath(uri); ok {
 		tag = t
 		modified = m
 		uri = modified
 	}
 
-	undSrc := bePath.CleanWithSlash(uri)
+	undSrc := clPath.CleanWithSlash(uri)
 
 	switch {
 

@@ -21,7 +21,7 @@ import (
 
 	"github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/cli/run"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 func Which() (gitBin string) {
@@ -35,17 +35,17 @@ func IsRepo() (within bool) {
 
 func FindDotGit() (dotGit string) {
 	var err error
-	if bePath.IsDir(".git") {
-		if dotGit, err = bePath.Abs(".git"); err != nil {
+	if clPath.IsDir(".git") {
+		if dotGit, err = clPath.Abs(".git"); err != nil {
 			dotGit = ".git"
 			return
 		}
 		return
 	}
-	wd := bePath.Pwd()
+	wd := clPath.Pwd()
 	parts := strings.Split(wd, "/")
 	for idx := len(parts) - 1; idx >= 0; idx-- {
-		if dotGit = strings.Join(parts[0:idx], "/") + "/.git"; bePath.IsDir(dotGit) {
+		if dotGit = strings.Join(parts[0:idx], "/") + "/.git"; clPath.IsDir(dotGit) {
 			return
 		}
 	}

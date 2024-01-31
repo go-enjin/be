@@ -25,7 +25,7 @@ import (
 
 	"github.com/yookoala/gofast"
 
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 // TODO: figure out fix for wp urls including index.php, ie: `/index.php/category/slug...`
@@ -78,12 +78,12 @@ func (fs *phpFS) Router() gofast.Middleware {
 			// If accessing a directory, try accessing document index file
 
 			docRootFileName := filepath.Join(fs.DocRoot, fastcgiScriptName)
-			if bePath.IsDir(docRootFileName) {
+			if clPath.IsDir(docRootFileName) {
 				fastcgiScriptName = filepath.Join(docRootFileName, fs.DirIndex)
-				if !bePath.IsFile(fastcgiScriptName) {
+				if !clPath.IsFile(fastcgiScriptName) {
 					fastcgiScriptName = filepath.Join(fs.DocRoot, fs.DirIndex)
 				}
-			} else if bePath.IsFile(docRootFileName) {
+			} else if clPath.IsFile(docRootFileName) {
 				fastcgiScriptName = docRootFileName
 			}
 

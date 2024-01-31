@@ -29,7 +29,7 @@ import (
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 func init() {
@@ -85,7 +85,7 @@ func ParsePageMatter(origin string, path string, created, updated time.Time, raw
 	if modified, _, ok := editor.ParseEditorWorkFile(path); ok {
 		path = modified
 	}
-	path = bePath.CleanWithSlash(path)
+	path = clPath.CleanWithSlash(path)
 	cleaned := cllang.PruneTranslatorComments(string(raw))
 
 	var ctx beContext.Context

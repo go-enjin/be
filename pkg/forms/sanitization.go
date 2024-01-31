@@ -21,7 +21,7 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"golang.org/x/net/html"
 
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 // TrimQueryParams truncates the given string at the first question mark character
@@ -59,7 +59,7 @@ func StrictClean(input string) (cleaned string) {
 // CleanRequestPath splits the given path into segments, using StrictClean on each segment while reassembling the
 // cleaned output as an absolute file path (has a leading slash character)
 func CleanRequestPath(path string) (cleaned string) {
-	if path = bePath.TrimSlashes(TrimQueryParams(path)); path == "" {
+	if path = clPath.TrimSlashes(TrimQueryParams(path)); path == "" {
 		return "/"
 	}
 	for _, segment := range strings.Split(path, "/") {

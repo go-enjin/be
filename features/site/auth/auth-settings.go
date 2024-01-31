@@ -18,7 +18,7 @@ import (
 	"net/http"
 
 	"github.com/go-enjin/be/pkg/feature"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/request"
 )
 
@@ -63,15 +63,15 @@ func (f *CFeature) MakeServeSiteSettingsPanel(settingsPath string, order []strin
 			return
 		}
 
-		if bePath.MatchExact(r.URL.Path, settingsPath) {
+		if clPath.MatchExact(r.URL.Path, settingsPath) {
 			// serve page for user to select a specific auth settings panel
 			f.ServeSettingsPanelSelectorPage(settingsPath, w, r)
 			return
 		}
 
-		if suffix, match := bePath.MatchCut(r.URL.Path, settingsPath); match {
+		if suffix, match := clPath.MatchCut(r.URL.Path, settingsPath); match {
 			for _, prefix := range order {
-				if bePath.MatchExact(suffix, prefix) {
+				if clPath.MatchExact(suffix, prefix) {
 					if h, ok := lookup[prefix]; ok {
 						h(w, r)
 						return
@@ -92,7 +92,7 @@ func (f *CFeature) MakeHandleSiteSettingsPanel(settingsPath string, order []stri
 			return
 		}
 
-		if bePath.MatchExact(r.URL.Path, settingsPath) {
+		if clPath.MatchExact(r.URL.Path, settingsPath) {
 			// serve page for user to select a specific auth settings panel
 			_ = r.ParseForm()
 			if r.Method == http.MethodPost && r.Form.Has(SettingsNonceName) && request.SafeQueryFormValue(r, "submit") != "cancel" {
@@ -103,9 +103,9 @@ func (f *CFeature) MakeHandleSiteSettingsPanel(settingsPath string, order []stri
 			return
 		}
 
-		if suffix, match := bePath.MatchCut(r.URL.Path, settingsPath); match {
+		if suffix, match := clPath.MatchCut(r.URL.Path, settingsPath); match {
 			for _, prefix := range order {
-				if bePath.MatchExact(suffix, prefix) {
+				if clPath.MatchExact(suffix, prefix) {
 					if h, ok := lookup[prefix]; ok {
 						h(w, r)
 						return

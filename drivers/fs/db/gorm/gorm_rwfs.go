@@ -25,7 +25,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -84,7 +84,7 @@ func (f *DBFileSystem) MakeDirAll(path string, _ os.FileMode) (err error) {
 	} else {
 		tx := f.tableScopedOrTx()
 		realpath := f.realpath(path)
-		parents := bePath.ParseParentPaths(realpath)
+		parents := clPath.ParseParentPaths(realpath)
 		for _, parent := range parents {
 			entry = &File{
 				Path:    parent,
@@ -134,7 +134,7 @@ func (f *DBFileSystem) RemoveAll(path string) (err error) {
 func (f *DBFileSystem) WriteFile(path string, data []byte, _ os.FileMode) (err error) {
 	//f.Lock()
 	//defer f.Unlock()
-	if dirPath := bePath.Dir(path); dirPath != "" {
+	if dirPath := clPath.Dir(path); dirPath != "" {
 		_ = f.MakeDirAll(dirPath, 0)
 	}
 	realpath := f.realpath(path)
@@ -179,7 +179,7 @@ func (f *DBFileSystem) ChangeTimes(path string, created, updated time.Time) (err
 func (f *DBFileSystem) WritePageMatter(pm *matter.PageMatter) (err error) {
 	//f.Lock()
 	//defer f.Unlock()
-	if dirPath := bePath.Dir(pm.Path); dirPath != "" {
+	if dirPath := clPath.Dir(pm.Path); dirPath != "" {
 		_ = f.MakeDirAll(dirPath, 0)
 	}
 	realpath := f.realpath(pm.Path)

@@ -22,11 +22,11 @@ import (
 
 	"gorm.io/gorm"
 
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 func (f *DBFileSystem) realpath(path string) (out string) {
-	out = bePath.SafeConcatRelPath(f.path, path)
+	out = clPath.SafeConcatRelPath(f.path, path)
 	out = strings.TrimPrefix(out, "./")
 	out = strings.TrimPrefix(out, "/")
 	return

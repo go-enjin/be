@@ -23,9 +23,9 @@ import (
 
 	"github.com/maruel/natural"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/hash/sha"
-	bePath "github.com/go-enjin/be/pkg/path"
 )
 
 var (
@@ -104,21 +104,21 @@ func (m ShaMap) CheckSumsIntegrity() (err error) {
 }
 
 func SlugsumsPresent() (ok bool) {
-	slugsums := bePath.FindFileRelativeToPwd(SumsName)
+	slugsums := clPath.FindFileRelativeToPwd(SumsName)
 	return slugsums != ""
 }
 
 func SlugfilePresent() (ok bool) {
-	slugfile := bePath.FindFileRelativeToPwd(FileName)
+	slugfile := clPath.FindFileRelativeToPwd(FileName)
 	return slugfile != ""
 }
 
 func ReadSlugsums() (slugMap ShaMap, err error) {
 	slugMap = make(ShaMap)
-	slugsums := bePath.FindFileRelativeToPwd(SumsName)
+	slugsums := clPath.FindFileRelativeToPwd(SumsName)
 	if slugsums != "" {
 		var data []byte
-		if data, err = bePath.ReadFile(slugsums); err != nil {
+		if data, err = clPath.ReadFile(slugsums); err != nil {
 			return
 		}
 		content := string(data)
@@ -131,10 +131,10 @@ func ReadSlugsums() (slugMap ShaMap, err error) {
 }
 
 func ReadSlugfile() (paths []string, err error) {
-	slugfile := bePath.FindFileRelativeToPwd(FileName)
+	slugfile := clPath.FindFileRelativeToPwd(FileName)
 	if slugfile != "" {
 		var data []byte
-		if data, err = bePath.ReadFile(slugfile); err != nil {
+		if data, err = clPath.ReadFile(slugfile); err != nil {
 			return
 		}
 		content := string(data)
@@ -175,10 +175,10 @@ func BuildSlugMapIgnoring(files ...string) (slugMap ShaMap, err error) {
 		return
 	}
 	var topFiles, topDirs []string
-	if topFiles, err = bePath.ListFiles("."); err != nil {
+	if topFiles, err = clPath.ListFiles(".", true); err != nil {
 		return
 	}
-	if topDirs, err = bePath.ListDirs("."); err != nil {
+	if topDirs, err = clPath.ListDirs(".", true); err != nil {
 		return
 	}
 	slugMap = make(ShaMap)
@@ -211,7 +211,7 @@ func BuildSlugMapIgnoring(files ...string) (slugMap ShaMap, err error) {
 				}
 				if rx.MatchString(dir) {
 					var subPaths []string
-					if subPaths, err = bePath.FindAllFiles(dir, false); err != nil {
+					if subPaths, err = clPath.ListAllFiles(dir, false); err != nil {
 						return
 					}
 					for _, subPath := range subPaths {
@@ -223,15 +223,15 @@ func BuildSlugMapIgnoring(files ...string) (slugMap ShaMap, err error) {
 			}
 			continue
 		}
-		if bePath.IsFile(path) {
+		if clPath.IsFile(path) {
 			if slugMap[path], err = sha.FileHash64(path); err != nil {
 				return
 			}
 			continue
 		}
-		if bePath.IsDir(path) {
+		if clPath.IsDir(path) {
 			var subPaths []string
-			if subPaths, err = bePath.FindAllFiles(path, false); err != nil {
+			if subPaths, err = clPath.ListAllFiles(path, false); err != nil {
 				return
 			}
 			for _, subPath := range subPaths {
@@ -253,7 +253,7 @@ func BuildFileMap() (fileMap map[string]string, err error) {
 		return
 	}
 	var paths []string
-	if paths, err = bePath.FindAllFiles(wd, true); err != nil {
+	if paths, err = clPath.ListAllFiles(wd, true); err != nil {
 		return
 	}
 	fileMap = make(ShaMap)
@@ -261,16 +261,16 @@ func BuildFileMap() (fileMap map[string]string, err error) {
 		if isRestrictedPath(path) {
 			continue
 		}
-		path = bePath.TrimRelativeToRoot(path, wd)
-		if bePath.IsFile(path) {
+		path = clPath.TrimRelativeToRoot(path, wd)
+		if clPath.IsFile(path) {
 			if fileMap[path], err = sha.FileHash64(path); err != nil {
 				return
 			}
 			continue
 		}
-		if bePath.IsDir(path) {
+		if clPath.IsDir(path) {
 			var subPaths []string
-			if subPaths, err = bePath.FindAllFiles(path, true); err != nil {
+			if subPaths, err = clPath.ListAllFiles(path, true); err != nil {
 				return
 			}
 			for _, subPath := range subPaths {
@@ -309,7 +309,7 @@ func FinalizeSlugfile(force bool) (slugsums string, removed []string, err error)
 		// for each file present
 		if _, ok := slugMap[file]; !ok {
 			// removing those not present in the slug map
-			bePath.ChmodAll(file)
+			_ = clPath.ChmodAll(file)
 			if err = os.Remove(file); err != nil {
 				err = fmt.Errorf("error removing file: %v - %v", file, err)
 				return
@@ -327,7 +327,7 @@ func FinalizeSlugfile(force bool) (slugsums string, removed []string, err error)
 	}
 
 	var all []string
-	if all, err = bePath.FindAllDirs(".", true); err != nil {
+	if all, err = clPath.ListAllFiles(".", true); err != nil {
 		err = fmt.Errorf("error finding all dirs: %v", err)
 		return
 	}
@@ -337,7 +337,7 @@ func FinalizeSlugfile(force bool) (slugsums string, removed []string, err error)
 
 	var unaccounted []string
 	for _, dir := range all {
-		dir = bePath.TrimDotSlash(dir)
+		dir = clPath.TrimDotSlash(dir)
 		dl := len(dir)
 		accounted := false
 		for file := range slugMap {
@@ -355,8 +355,8 @@ func FinalizeSlugfile(force bool) (slugsums string, removed []string, err error)
 	}
 
 	for _, dir := range unaccounted {
-		if bePath.IsDir(dir) {
-			bePath.ChmodAll(dir)
+		if clPath.IsDir(dir) {
+			clPath.ChmodAll(dir)
 			if err = os.RemoveAll(dir); err != nil {
 				err = fmt.Errorf("error removing dir: %v - %v", dir, err)
 				return
@@ -401,10 +401,10 @@ func ValidateSlugsumsComplete() (slugMap, fileMap ShaMap, imposters, extraneous,
 
 func WriteSlugfile(argv ...string) (slugfile string, err error) {
 	var files []string
-	wd, _ := bePath.Abs(bePath.Pwd())
+	wd, _ := clPath.Abs(clPath.Pwd())
 	for _, arg := range argv {
-		absArg, _ := bePath.Abs(arg)
-		relArg := bePath.TrimRelativeToRoot(absArg, wd)
+		absArg, _ := clPath.Abs(arg)
+		relArg := clPath.TrimRelativeToRoot(absArg, wd)
 		if relArg == "" || relArg[0] == '/' {
 			err = fmt.Errorf("external file paths not allowed: %v", arg)
 			return

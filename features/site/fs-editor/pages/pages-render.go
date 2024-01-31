@@ -24,7 +24,7 @@ import (
 	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/path"
+	"github.com/go-corelibs/path"
 	"github.com/go-enjin/be/types/page"
 	"github.com/go-enjin/be/types/page/matter"
 )

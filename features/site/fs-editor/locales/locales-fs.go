@@ -29,7 +29,7 @@ import (
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
 	beMime "github.com/go-enjin/be/pkg/mime"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -349,7 +349,7 @@ func (f *CFeature) IsLocaleLocked(fsid, code string) (locked bool, eid string, e
 	}
 
 	locales := f.Enjin.SiteLocales()
-	check := "/" + bePath.TrimSlashes(code)
+	check := "/" + clPath.TrimSlashes(code)
 	for mount, mountPoints := range found.GetMountedPoints() {
 		if mount == check {
 			for _, mountPoint := range mountPoints {
@@ -392,7 +392,7 @@ func (f *CFeature) LockLocale(eid, fsid, code string) (err error) {
 	}
 
 	locales := f.Enjin.SiteLocales()
-	check := "/" + bePath.TrimSlashes(code)
+	check := "/" + clPath.TrimSlashes(code)
 	for mount, mountPoints := range found.GetMountedPoints() {
 		if mount == check {
 			for _, mountPoint := range mountPoints {
@@ -435,7 +435,7 @@ func (f *CFeature) UnlockLocales(fsid, code string) (err error) {
 	}
 
 	locales := f.Enjin.SiteLocales()
-	check := "/" + bePath.TrimSlashes(code)
+	check := "/" + clPath.TrimSlashes(code)
 	for mount, mountPoints := range found.GetMountedPoints() {
 		if mount == check {
 			for _, mountPoint := range mountPoints {

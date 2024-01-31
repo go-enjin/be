@@ -25,7 +25,7 @@ import (
 	beErrors "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/signals"
 	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/pkg/userbase"
@@ -39,7 +39,7 @@ func (f *CFeature) makeUserPath(eid string) (path string) {
 
 func (f *CFeature) ListUsers(r *http.Request, pg, numPerPage int, sortDesc bool) (list []feature.User, total int) {
 	for _, file := range f.MountPoints.ListFiles("/user") {
-		eid := bePath.Base(file)
+		eid := clPath.Base(file)
 		if au, err := f.getUser(eid); err == nil {
 			list = append(list, au)
 		} else {

@@ -28,6 +28,7 @@ var (
 	ErrBadCookie             = errors.New("bad cookie")
 	ErrBadRequest            = errors.New("bad request")
 	ErrExistsAlready         = errors.New("exists already")
+	ErrDirNotFound           = errors.New("directory not found")
 	ErrFileNotFound          = errors.New("file not found")
 	ErrUserNotFound          = errors.New("user not found")
 	ErrGroupNotFound         = errors.New("group not found")

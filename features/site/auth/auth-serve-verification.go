@@ -23,7 +23,7 @@ import (
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/request"
 )
 
@@ -56,8 +56,8 @@ func (f *CFeature) enforceVerifications(claims *feature.CSiteAuthClaims, w http.
 	verifyTarget := claims.Context.String(gVerifyingTargetKey, "")
 	if verifyTarget != "" {
 		var proceed bool
-		if _, proceed = bePath.MatchCut(r.URL.Path, f.SiteAuthSignInPath()); !proceed {
-			if _, proceed = bePath.MatchCut(r.URL.Path, gVerifyingTargetKey); !proceed {
+		if _, proceed = clPath.MatchCut(r.URL.Path, f.SiteAuthSignInPath()); !proceed {
+			if _, proceed = clPath.MatchCut(r.URL.Path, gVerifyingTargetKey); !proceed {
 				claims.Context.DeleteKeys(gVerifyTargetKey, gVerifyingTargetKey)
 			}
 		}

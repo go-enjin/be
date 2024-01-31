@@ -34,7 +34,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/site"
 )
@@ -272,13 +272,13 @@ func (f *CFeature) SetVerifiedDuration(duration time.Duration) MakeFeature {
 
 func (f *CFeature) SetRoutePaths(signIn, signOut, challenge string) MakeFeature {
 	if signIn != "" {
-		f.signInPath = bePath.CleanWithSlash(signIn)
+		f.signInPath = clPath.CleanWithSlash(signIn)
 	}
 	if signOut != "" {
-		f.signOutPath = bePath.CleanWithSlash(signOut)
+		f.signOutPath = clPath.CleanWithSlash(signOut)
 	}
 	if challenge != "" {
-		f.challengePath = bePath.CleanWithSlash(challenge)
+		f.challengePath = clPath.CleanWithSlash(challenge)
 	}
 	return f
 }
@@ -317,10 +317,10 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	f.mfb.BuildSiteIncluding(b)
 
 	if f.signInPath != "" {
-		f.signInPath = "/" + bePath.TrimSlashes(f.signInPath)
+		f.signInPath = "/" + clPath.TrimSlashes(f.signInPath)
 	}
 	if f.signOutPath != "" {
-		f.signOutPath = "/" + bePath.TrimSlashes(f.signOutPath)
+		f.signOutPath = "/" + clPath.TrimSlashes(f.signOutPath)
 	}
 
 	category := f.KebabTag

@@ -36,7 +36,7 @@ import (
 	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/pages"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/types/page"
 )
 
@@ -363,7 +363,7 @@ func (f *CFeature) FindRedirection(url string) (p feature.Page) {
 	//defer f.RUnlock()
 
 	theme, _ := f.Enjin.GetTheme()
-	url = bePath.CleanWithSlash(url)
+	url = clPath.CleanWithSlash(url)
 
 	if shasum := kvs.GetValue[string](f.redirectionsBucket, url); shasum != "" {
 		if stub := f.getPageStub(f.pageStubsBucket, shasum); stub != nil {
@@ -381,7 +381,7 @@ func (f *CFeature) FindTranslations(url string) (pages []feature.Page) {
 	//f.RLock()
 	//defer f.RUnlock()
 
-	url = bePath.CleanWithSlash(url)
+	url = clPath.CleanWithSlash(url)
 
 	if shasums := kvs.GetFlatList[string](f.translatedByBucket, url); len(shasums) > 0 {
 		for _, shasum := range shasums {
@@ -411,7 +411,7 @@ func (f *CFeature) FindPage(r *http.Request, tag language.Tag, url string) (p fe
 	//f.RLock()
 	//defer f.RUnlock()
 	var err error
-	url = bePath.CleanWithSlash(url)
+	url = clPath.CleanWithSlash(url)
 
 	if tag == language.Und {
 		if p, err = f.Lookup(f.Enjin.SiteDefaultLanguage(), url); err == nil {
@@ -429,7 +429,7 @@ func (f *CFeature) Lookup(tag language.Tag, path string) (pg feature.Page, err e
 	//f.RLock()
 	//defer f.RUnlock()
 
-	path = bePath.CleanWithSlash(path)
+	path = clPath.CleanWithSlash(path)
 
 	if id, ok := pages.ParsePermalink(path); ok {
 		var shasum string
@@ -475,7 +475,7 @@ func (f *CFeature) LookupPrefixed(prefix string) (pages []feature.Page) {
 	//f.RLock()
 	//defer f.RUnlock()
 
-	prefix = bePath.CleanWithSlash(prefix)
+	prefix = clPath.CleanWithSlash(prefix)
 
 	//allUrls := kvs.GetFlatList[string](f.allUrlsBucket, "all")
 	allUrls := f.allUrlsBucket.Keys("")

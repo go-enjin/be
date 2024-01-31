@@ -19,9 +19,9 @@ package themes
 import (
 	"fmt"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/drivers/fs/local"
 	"github.com/go-enjin/be/pkg/log"
-	bePath "github.com/go-enjin/be/pkg/path"
 )
 
 type ThemeLocalSupport interface {
@@ -35,7 +35,7 @@ type ThemeLocalSupport interface {
 }
 
 func (f *CFeature) loadLocalTheme(path string) (err error) {
-	if !bePath.IsDir(path) {
+	if !clPath.IsDir(path) {
 		err = fmt.Errorf("directory not found: %v", path)
 		return
 	}
@@ -51,7 +51,7 @@ func (f *CFeature) loadLocalTheme(path string) (err error) {
 	}
 	stub.themeFs = stub.rwfs
 
-	if staticPath := path + "/static"; bePath.IsDir(staticPath) {
+	if staticPath := path + "/static"; clPath.IsDir(staticPath) {
 		if stub.staticFs, err = local.New(f.Tag().String(), staticPath); err != nil {
 			stub.staticFs = nil
 			err = nil
@@ -76,7 +76,7 @@ func (f *CFeature) LocalTheme(path string) MakeFeature {
 func (f *CFeature) LocalThemes(path string) MakeFeature {
 	var err error
 	var paths []string
-	if paths, err = bePath.ListDirs(path); err != nil {
+	if paths, err = clPath.ListDirs(path, true); err != nil {
 		log.FatalF("error listing path: %v", err)
 		return nil
 	}

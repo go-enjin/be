@@ -18,7 +18,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/go-enjin/be/pkg/path"
+	"github.com/go-corelibs/path"
 )
 
 func UnZip(src, dst string) (out string, err error) {

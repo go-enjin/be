@@ -16,9 +16,9 @@
 
 package embed
 
-import bePath "github.com/go-enjin/be/pkg/path"
+import clPath "github.com/go-corelibs/path"
 
 func (f FileSystem) realpath(path string) (out string) {
-	out = bePath.SafeConcatRelPath(f.path, path)
+	out = clPath.SafeConcatRelPath(f.path, path)
 	return
 }

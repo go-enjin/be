@@ -27,7 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 func (f *CFeature) ServePreviewEditPage(pg feature.Page, ctx context.Context, w http.ResponseWriter, r *http.Request) {
@@ -74,7 +74,7 @@ func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
 	}
 
 	siteMenu := context.New()
-	basename := bePath.Base(info.File)
+	basename := clPath.Base(info.File)
 	menuName := strcase.ToCamel(basename)
 	siteMenu[menuName] = list.AsMenu()
 

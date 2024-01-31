@@ -27,7 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/types/theme/layouts"
 )
 
@@ -70,7 +70,7 @@ func New(origin, path string, themeFs, staticFs fs.FileSystem, autoload bool) (f
 func newTheme(origin, path string, themeFs, staticFs fs.FileSystem, autoload bool) (t *CTheme, err error) {
 	t = new(CTheme)
 	t.origin = origin
-	t.name = bePath.Base(path)
+	t.name = clPath.Base(path)
 	t.path = path
 	t.fs = themeFs
 	if staticFs != nil {
@@ -301,7 +301,7 @@ func (t *CTheme) Middleware(next http.Handler) http.Handler {
 				return
 			}
 		}
-		path := bePath.TrimSlashes(r.URL.Path)
+		path := clPath.TrimSlashes(r.URL.Path)
 		var err error
 		var data []byte
 		var mime string

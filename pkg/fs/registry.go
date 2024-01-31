@@ -19,7 +19,7 @@ import (
 	"sync"
 
 	"github.com/go-enjin/be/pkg/log"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 type RegistryLookup interface {
@@ -120,7 +120,7 @@ func (r *fsRegistry) ReadFile(path string) (data []byte, err error) {
 	r.RLock()
 	defer r.RUnlock()
 	for mount, systems := range r.known {
-		p := bePath.TrimPrefix(path, mount)
+		p := clPath.TrimPrefix(path, mount)
 		for _, f := range systems {
 			if f.Exists(p) {
 				data, err = f.ReadFile(p)
@@ -135,7 +135,7 @@ func (r *fsRegistry) FileExists(path string) (exists bool) {
 	r.RLock()
 	defer r.RUnlock()
 	for mount, systems := range r.known {
-		p := bePath.TrimPrefix(path, mount)
+		p := clPath.TrimPrefix(path, mount)
 		for _, f := range systems {
 			if exists = f.Exists(p); exists {
 				return
@@ -149,7 +149,7 @@ func (r *fsRegistry) FindFileShasum(path string) (shasum string, err error) {
 	r.RLock()
 	defer r.RUnlock()
 	for mount, systems := range r.known {
-		p := bePath.TrimPrefix(path, mount)
+		p := clPath.TrimPrefix(path, mount)
 		for _, f := range systems {
 			if shasum, err = f.Shasum(p); err == nil {
 				return
@@ -164,7 +164,7 @@ func (r *fsRegistry) FindFileSha256(path string) (shasum string, err error) {
 	r.RLock()
 	defer r.RUnlock()
 	for mount, systems := range r.known {
-		p := bePath.TrimPrefix(path, mount)
+		p := clPath.TrimPrefix(path, mount)
 		for _, f := range systems {
 			if shasum, err = f.Sha256(p); err == nil {
 				return
@@ -193,7 +193,7 @@ func (r *fsRegistry) ListFiles(path string) (files []string) {
 	r.RLock()
 	defer r.RUnlock()
 	for mount, systems := range r.known {
-		p := bePath.TrimPrefix(path, mount)
+		p := clPath.TrimPrefix(path, mount)
 		for _, f := range systems {
 			if found, ee := f.ListFiles(p); ee == nil {
 				files = append(files, found...)
@@ -207,7 +207,7 @@ func (r *fsRegistry) ListAllFiles(path string) (files []string) {
 	r.RLock()
 	defer r.RUnlock()
 	for mount, systems := range r.known {
-		p := bePath.TrimPrefix(path, mount)
+		p := clPath.TrimPrefix(path, mount)
 		for _, f := range systems {
 			if found, ee := f.ListAllFiles(p); ee == nil {
 				files = append(files, found...)
@@ -221,7 +221,7 @@ func (r *fsRegistry) ListDirs(path string) (dirs []string) {
 	r.RLock()
 	defer r.RUnlock()
 	for mount, systems := range r.known {
-		p := bePath.TrimPrefix(path, mount)
+		p := clPath.TrimPrefix(path, mount)
 		for _, f := range systems {
 			if found, ee := f.ListDirs(p); ee == nil {
 				dirs = append(dirs, found...)
@@ -235,7 +235,7 @@ func (r *fsRegistry) ListAllDirs(path string) (dirs []string) {
 	r.RLock()
 	defer r.RUnlock()
 	for mount, systems := range r.known {
-		p := bePath.TrimPrefix(path, mount)
+		p := clPath.TrimPrefix(path, mount)
 		for _, f := range systems {
 			if found, ee := f.ListAllDirs(p); ee == nil {
 				dirs = append(dirs, found...)

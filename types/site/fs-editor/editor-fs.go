@@ -28,7 +28,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	beMime "github.com/go-enjin/be/pkg/mime"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -275,11 +275,11 @@ func (f *CEditorFeature[MakeTypedFeature]) ProcessMountPointFile(r *http.Request
 	if ignored = code != "" && ef.Locale.String() != code; ignored {
 		// unwanted language
 		return
-	} else if trimmed := bePath.TrimSlashes(dirs); dirs != "" && ef.Path != trimmed && !strings.HasPrefix(ef.Path, trimmed+"/") {
+	} else if trimmed := clPath.TrimSlashes(dirs); dirs != "" && ef.Path != trimmed && !strings.HasPrefix(ef.Path, trimmed+"/") {
 		// unwanted directory
 		ignored = true
 		return
-	} else if hasValidExtension := f.EditAnyFileExtension || bePath.HasAnyExt(ef.File, f.EditingFileExtensions...); !hasValidExtension {
+	} else if hasValidExtension := f.EditAnyFileExtension || clPath.HasAnyExt(ef.File, f.EditingFileExtensions...); !hasValidExtension {
 		log.DebugRF(r, "ignoring file by extension: %v (not any of: %+v)", file, f.EditingFileExtensions)
 		ignored = true
 		return
@@ -376,7 +376,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ListFileSystemDirectories(r *http.Req
 						for _, dir := range found {
 							lt := language.Und
 							var topDir, dirPath string
-							if td := bePath.TopDirectory(dir); td != "" {
+							if td := clPath.TopDirectory(dir); td != "" {
 								topDir = td
 							} else {
 								topDir = dir

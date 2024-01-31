@@ -26,7 +26,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/hash/sha"
 	beMime "github.com/go-enjin/be/pkg/mime"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 func Sha256(path string, efs embed.FS) (shasum string, err error) {
@@ -74,7 +74,7 @@ func ListDirs(path string, efs embed.FS) (paths []string, err error) {
 	}
 	for _, info := range entries {
 		if info.IsDir() {
-			paths = append(paths, bePath.TrimSlashes(bePath.Join(path, info.Name())))
+			paths = append(paths, clPath.TrimSlashes(clPath.Join(path, info.Name())))
 		}
 	}
 	sort.Sort(natural.StringSlice(paths))
@@ -88,7 +88,7 @@ func ListFiles(path string, efs embed.FS) (paths []string, err error) {
 	}
 	for _, info := range entries {
 		if !info.IsDir() {
-			paths = append(paths, bePath.TrimSlashes(bePath.Join(path, info.Name())))
+			paths = append(paths, clPath.TrimSlashes(clPath.Join(path, info.Name())))
 		}
 	}
 	sort.Sort(natural.StringSlice(paths))
@@ -99,7 +99,7 @@ func ListAllDirs(path string, efs embed.FS) (paths []string, err error) {
 	var entries []os.DirEntry
 	if entries, err = efs.ReadDir(path); err == nil {
 		for _, info := range entries {
-			thisPath := bePath.TrimSlashes(bePath.Join(path, info.Name()))
+			thisPath := clPath.TrimSlashes(clPath.Join(path, info.Name()))
 			if info.IsDir() {
 				paths = append(paths, thisPath)
 				if subDirs, err := ListAllDirs(thisPath, efs); err == nil && len(subDirs) > 0 {
@@ -116,7 +116,7 @@ func ListAllFiles(path string, efs embed.FS) (paths []string, err error) {
 	var entries []os.DirEntry
 	if entries, err = efs.ReadDir(path); err == nil {
 		for _, info := range entries {
-			thisPath := bePath.TrimSlashes(bePath.Join(path, info.Name()))
+			thisPath := clPath.TrimSlashes(clPath.Join(path, info.Name()))
 			if !info.IsDir() {
 				paths = append(paths, thisPath)
 				continue

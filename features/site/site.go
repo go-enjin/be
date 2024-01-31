@@ -28,7 +28,7 @@ import (
 	uses_kvc "github.com/go-enjin/be/pkg/feature/uses-kvc"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -120,7 +120,7 @@ func (f *CFeature) Init(this interface{}) {
 }
 
 func (f *CFeature) SetSitePath(path string) MakeFeature {
-	f.sitePath = "/" + bePath.TrimSlashes(path)
+	f.sitePath = "/" + clPath.TrimSlashes(path)
 	return f
 }
 
@@ -258,7 +258,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	if ctx.IsSet(pathKey) {
 		if v := ctx.String(pathKey); v != "" {
 			if v = forms.StrictSanitize(v); v != "" {
-				if v = bePath.TrimSlashes(v); v != "" {
+				if v = clPath.TrimSlashes(v); v != "" {
 					f.sitePath = "/" + v
 				}
 			}

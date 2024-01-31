@@ -19,7 +19,7 @@ import (
 
 	"github.com/gabriel-vasile/mimetype"
 
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 const (
@@ -131,7 +131,7 @@ func FromExtension(extension string) (mime string, ok bool) {
 func FromPathOnly(path string) (mime string) {
 	if path == "" {
 		return
-	} else if a, b := bePath.ExtExt(path); b != "" && a == "tmpl" {
+	} else if a, b := clPath.ExtExt(path); b != "" && a == "tmpl" {
 		mime, _ = FromExtension(b)
 	} else if a != "" {
 		mime, _ = FromExtension(a)
@@ -141,10 +141,10 @@ func FromPathOnly(path string) (mime string) {
 
 // Mime returns the MIME type string of a local file
 func Mime(path string) (mime string) {
-	if bePath.IsDir(path) {
+	if clPath.IsDir(path) {
 		mime = DirectoryMimeType
 		return
-	} else if !bePath.IsFile(path) {
+	} else if !clPath.IsFile(path) {
 		return
 	} else if mime = FromPathOnly(path); mime != "" {
 		return

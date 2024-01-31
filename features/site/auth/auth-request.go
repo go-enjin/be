@@ -22,7 +22,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 func (f *CFeature) AuthenticateSiteRequest(w http.ResponseWriter, r *http.Request) (handled bool, modified *http.Request) {
@@ -30,7 +30,7 @@ func (f *CFeature) AuthenticateSiteRequest(w http.ResponseWriter, r *http.Reques
 	sitePath := f.Site().SitePath()
 	siteSignInPath := sitePath + f.signInPath
 	var signInRequested bool
-	if _, match := bePath.MatchCut(r.URL.Path, sitePath); !match {
+	if _, match := clPath.MatchCut(r.URL.Path, sitePath); !match {
 		// site auth features only operate within their actual site's path
 		return
 	} else if signInRequested = reqUri == siteSignInPath; signInRequested {

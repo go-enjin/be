@@ -32,7 +32,7 @@ import (
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/pages"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 var (
@@ -142,7 +142,7 @@ func (f *CFeature) Use(s feature.System) feature.MiddlewareFn {
 			}
 
 			if permalink, ok := f._parsePath(path); ok {
-				permalinkPath := bePath.CleanWithSlash(permalink)
+				permalinkPath := clPath.CleanWithSlash(permalink)
 
 				log.DebugF("permalink detected: %v", permalinkPath)
 

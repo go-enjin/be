@@ -26,7 +26,7 @@ import (
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 var (
@@ -46,7 +46,7 @@ type Layout struct {
 func NewLayout(path string, efs beFs.FileSystem) (layout feature.ThemeLayout, err error) {
 	l := new(Layout)
 	l.path = path
-	l.name = bePath.Base(path)
+	l.name = clPath.Base(path)
 	l.fileSystem = efs
 	l.cache = make(map[string]string)
 	if err = l.load(); err == nil {

@@ -19,7 +19,7 @@ import (
 	"strings"
 
 	"github.com/go-enjin/be/pkg/editor"
-	"github.com/go-enjin/be/pkg/path"
+	"github.com/go-corelibs/path"
 	"github.com/go-enjin/be/types/page/matter"
 )
 

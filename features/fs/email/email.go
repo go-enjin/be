@@ -33,7 +33,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
 	"github.com/go-enjin/be/pkg/maps"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -147,7 +147,7 @@ func (f *CFeature) ListTemplates() (names []string) {
 	unique := make(map[string]struct{})
 	for _, file := range f.MountPoints.ListFiles(".") {
 		if strings.HasSuffix(file, ".tmpl") {
-			file = bePath.Base(file)
+			file = clPath.Base(file)
 			if _, present := unique[file]; present {
 				unique[file] = struct{}{}
 			}
@@ -166,7 +166,7 @@ func (f *CFeature) HasTemplate(name string) (present bool) {
 
 func (f *CFeature) NewEmail(path string, bodyCtx beContext.Context) (message *gomail.Message, err error) {
 
-	basename := bePath.CleanWithSlash(path)
+	basename := clPath.CleanWithSlash(path)
 	basename = strings.TrimSuffix(path, ".tmpl")
 	basename = strings.TrimSuffix(path, ".html")
 

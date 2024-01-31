@@ -28,7 +28,7 @@ import (
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
 	beMinify "github.com/go-enjin/be/pkg/net/minify"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 const Tag feature.Tag = "outputs-minify"
@@ -128,7 +128,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *CFeature) CanTransform(mime string, r *http.Request) (ok bool) {
-	urlPath := bePath.TrimSlash(forms.TrimQueryParams(r.URL.Path))
+	urlPath := clPath.TrimSlash(forms.TrimQueryParams(r.URL.Path))
 	for idx, rx := range f.ignored {
 		ignore := false
 		if rx != nil {

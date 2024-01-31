@@ -26,15 +26,16 @@ import (
 	"sync"
 	"time"
 
+	berrs "github.com/go-enjin/be/pkg/errors"
 	times "github.com/go-enjin/github-com-djherbis-times"
 
+	clPath "github.com/go-corelibs/path"
+	clStrings "github.com/go-corelibs/strings"
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/gob"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
 	beMime "github.com/go-enjin/be/pkg/mime"
-	bePath "github.com/go-enjin/be/pkg/path"
-	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -56,10 +57,10 @@ type FileSystem struct {
 }
 
 func New(origin string, path string) (out *FileSystem, err error) {
-	if bePath.IsDir(path) {
+	if clPath.IsDir(path) {
 		if filepath.IsAbs(path) {
 			var relPath string
-			if relPath, err = filepath.Rel(bePath.Pwd(), path); err != nil {
+			if relPath, err = filepath.Rel(clPath.Pwd(), path); err != nil {
 				err = fmt.Errorf("unable to find relative path: %v - %v", path, err)
 				return
 			} else {
@@ -73,7 +74,7 @@ func New(origin string, path string) (out *FileSystem, err error) {
 		}
 		return
 	}
-	err = fmt.Errorf("error constructing FileSystem: %v - %v", bePath.ErrorDirNotFound, path)
+	err = fmt.Errorf("error constructing FileSystem: %v - %v", berrs.ErrDirNotFound, path)
 	return
 }
 
@@ -116,7 +117,7 @@ func (f *FileSystem) ListDirs(path string) (paths []string, err error) {
 	f.RLock()
 	defer f.RUnlock()
 
-	if paths, err = bePath.ListDirs(f.realpath(path)); err == nil {
+	if paths, err = clPath.ListDirs(f.realpath(path), true); err == nil {
 		paths = beFs.PruneRootFrom(f.root, paths)
 	}
 	return
@@ -126,7 +127,7 @@ func (f *FileSystem) ListFiles(path string) (paths []string, err error) {
 	f.RLock()
 	defer f.RUnlock()
 
-	if paths, err = bePath.ListFiles(f.realpath(path)); err == nil {
+	if paths, err = clPath.ListFiles(f.realpath(path), true); err == nil {
 		paths = beFs.PruneRootFrom(f.root, paths)
 	}
 	return
@@ -136,7 +137,7 @@ func (f *FileSystem) ListAllDirs(path string) (paths []string, err error) {
 	f.RLock()
 	defer f.RUnlock()
 
-	if paths, err = bePath.ListAllDirs(f.realpath(path)); err == nil {
+	if paths, err = clPath.ListAllDirs(f.realpath(path), true); err == nil {
 		paths = beFs.PruneRootFrom(f.root, paths)
 	}
 	return
@@ -146,7 +147,7 @@ func (f *FileSystem) ListAllFiles(path string) (paths []string, err error) {
 	f.RLock()
 	defer f.RUnlock()
 
-	if paths, err = bePath.ListAllFiles(f.realpath(path)); err == nil {
+	if paths, err = clPath.ListAllFiles(f.realpath(path), true); err == nil {
 		paths = beFs.PruneRootFrom(f.root, paths)
 	}
 	return
@@ -243,7 +244,7 @@ func (f *FileSystem) FindFilePath(prefix string, extensions ...string) (path str
 
 	realpath := f.realpath(prefix)
 	if filepath.Ext(realpath) != "" {
-		if bePath.IsFile(realpath) {
+		if clPath.IsFile(realpath) {
 			path = beFs.PruneRootFrom(f.root, realpath)
 			return
 		}
@@ -258,7 +259,7 @@ func (f *FileSystem) FindFilePath(prefix string, extensions ...string) (path str
 	}
 
 	for _, p := range paths {
-		if bePath.IsFile(p) {
+		if clPath.IsFile(p) {
 			path = beFs.PruneRootFrom(f.root, p)
 			return
 		}

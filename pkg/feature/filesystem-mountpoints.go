@@ -23,7 +23,7 @@ import (
 	"github.com/maruel/natural"
 
 	"github.com/go-enjin/be/pkg/fs"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 type CMountPoint struct {
@@ -120,7 +120,7 @@ func (m MountedPoints) HasRootOrAllOf(mounts ...string) (present bool) {
 
 // FindPathPoints returns a list of MountPoints which prefix match the given path
 func (m MountedPoints) FindPathPoints(path string) (mountPoints MountPoints) {
-	cleaned := bePath.CleanWithSlash(path)
+	cleaned := clPath.CleanWithSlash(path)
 	var roots MountPoints
 	for _, mount := range m.ListMounts() {
 		if mount == "/" {
@@ -140,7 +140,7 @@ func (m MountedPoints) FindPathPoints(path string) (mountPoints MountPoints) {
 // FindRWPathPoint finds the first read-write MountPoint matching the path given
 func (m MountedPoints) FindRWPathPoint(path string) (readWrite *CMountPoint) {
 	var mountPoints MountPoints
-	cleaned := bePath.CleanWithSlash(path)
+	cleaned := clPath.CleanWithSlash(path)
 	var roots MountPoints
 	for _, mount := range m.ListMounts() {
 		if mount == "/" {

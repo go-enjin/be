@@ -31,7 +31,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	beMime "github.com/go-enjin/be/pkg/mime"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -42,7 +42,7 @@ func (f *CFeature) FileExists(info *editor.File) (exists bool) {
 		if mpfTag == info.FSID {
 			for _, mountPoints := range mpf.GetMountedPoints() {
 				for _, mountPoint := range mountPoints {
-					if mount := bePath.TrimSlashes(mountPoint.Mount); mount != info.Code {
+					if mount := clPath.TrimSlashes(mountPoint.Mount); mount != info.Code {
 						continue
 					} else if mountPoint.ROFS.Exists(filePath) {
 						if mimeType, err := mountPoint.ROFS.MimeType(filePath); err == nil {
@@ -65,7 +65,7 @@ func (f *CFeature) ReadFile(info *editor.File) (data []byte, err error) {
 		if mpfTag == info.FSID {
 			for _, mountPoints := range mpf.GetMountedPoints() {
 				for _, mountPoint := range mountPoints {
-					if mount := bePath.TrimSlashes(mountPoint.Mount); mount != info.Code {
+					if mount := clPath.TrimSlashes(mountPoint.Mount); mount != info.Code {
 						continue
 					} else if mountPoint.ROFS.Exists(filePath) {
 						if data, err = mountPoint.ROFS.ReadFile(filePath); err == nil {
@@ -91,7 +91,7 @@ func (f *CFeature) WriteFile(info *editor.File, data []byte) (err error) {
 		if mpfTag == info.FSID {
 			for _, mountPoints := range mpf.GetMountedPoints() {
 				for _, mountPoint := range mountPoints {
-					if mount := bePath.TrimSlashes(mountPoint.Mount); mount != info.Code {
+					if mount := clPath.TrimSlashes(mountPoint.Mount); mount != info.Code {
 						continue
 					} else if mountPoint.RWFS != nil {
 						err = mountPoint.RWFS.WriteFile(filePath, data, 0664)
@@ -116,7 +116,7 @@ func (f *CFeature) RemoveFile(info *editor.File) (err error) {
 		if mpfTag == info.FSID {
 			for _, mountPoints := range mpf.GetMountedPoints() {
 				for _, mountPoint := range mountPoints {
-					if mount := bePath.TrimSlashes(mountPoint.Mount); mount != info.Code {
+					if mount := clPath.TrimSlashes(mountPoint.Mount); mount != info.Code {
 						continue
 					} else if mountPoint.ROFS.Exists(filePath) && mountPoint.RWFS != nil {
 						err = mountPoint.RWFS.Remove(filePath)
@@ -141,7 +141,7 @@ func (f *CFeature) RemoveDirectory(info *editor.File) (err error) {
 		if mpfTag == info.FSID {
 			for _, mountPoints := range mpf.GetMountedPoints() {
 				for _, mountPoint := range mountPoints {
-					if mount := bePath.TrimSlashes(mountPoint.Mount); mount != info.Code {
+					if mount := clPath.TrimSlashes(mountPoint.Mount); mount != info.Code {
 						continue
 					} else if mountPoint.RWFS != nil && mountPoint.RWFS.Exists(filePath) {
 						err = mountPoint.RWFS.Remove(filePath)
@@ -169,7 +169,7 @@ func (f *CFeature) PrepareEditableFile(r *http.Request, info *editor.File) (edit
 		mountedPoints := mpf.GetMountedPoints()
 		for _, point := range maps.SortedKeys(mountedPoints) {
 			for _, mountPoint := range mountedPoints[point] {
-				if mount := bePath.TrimSlashes(mountPoint.Mount); mount != info.Code {
+				if mount := clPath.TrimSlashes(mountPoint.Mount); mount != info.Code {
 					continue
 				} else if mountPoint.ROFS.Exists(info.EditPath()) {
 					if ef, ignored := f.SelfEditor().ProcessMountPointFile(r, printer, eid, mpf.BaseTag().String(), mpfTag, info.Code, info.Path, info.EditPath(), mountPoint, true); ignored {
@@ -216,7 +216,7 @@ func (f *CFeature) ListFileSystemLocales(fsid string) (list editor.Files) {
 			for _, mps := range mpf.GetMountedPoints() {
 				for _, mp := range mps {
 					if mp.Mount != "/" {
-						mount := strings.TrimSuffix(bePath.TrimSlashes(mp.Mount), "/static")
+						mount := strings.TrimSuffix(clPath.TrimSlashes(mp.Mount), "/static")
 						if _, present := unique[mount]; present {
 							continue
 						}
@@ -251,7 +251,7 @@ func (f *CFeature) ListFileSystemDirectories(r *http.Request, fsid, code, dirs s
 		if tag == fsid {
 			for _, mountPoints := range mpf.GetMountedPoints() {
 				for _, mountPoint := range mountPoints {
-					mount := bePath.TrimSlashes(mountPoint.Mount)
+					mount := clPath.TrimSlashes(mountPoint.Mount)
 					if code != mount {
 						continue
 					}
@@ -307,7 +307,7 @@ func (f *CFeature) ListFileSystemFiles(r *http.Request, fsid, code, dirs string)
 		if tag == fsid {
 			for _, mountPoints := range mpf.GetMountedPoints() {
 				for _, mountPoint := range mountPoints {
-					mount := bePath.TrimSlashes(mountPoint.Mount)
+					mount := clPath.TrimSlashes(mountPoint.Mount)
 					if code != mount {
 						continue
 					} else if _, present := unique[mount]; present {
@@ -343,7 +343,7 @@ func (f *CFeature) ProcessMountPointFile(r *http.Request, printer *message.Print
 		// ignore work-files
 		return
 	}
-	if trimmed := bePath.TrimSlashes(dirs); dirs != "" && ef.Path != trimmed && !strings.HasPrefix(ef.Path, trimmed+"/") {
+	if trimmed := clPath.TrimSlashes(dirs); dirs != "" && ef.Path != trimmed && !strings.HasPrefix(ef.Path, trimmed+"/") {
 		// unwanted directory
 		ignored = true
 		return

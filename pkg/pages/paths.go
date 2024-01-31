@@ -18,7 +18,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 func GetUrlPathSectionSlug(url string) (fullpath, path, section, slug string) {
@@ -26,12 +26,12 @@ func GetUrlPathSectionSlug(url string) (fullpath, path, section, slug string) {
 	if notPath = strings.HasPrefix(url, "!"); notPath {
 		url = url[1:]
 	}
-	fullpath = bePath.TrimSlashes(url)
+	fullpath = clPath.TrimSlashes(url)
 	fullpath = strings.ToLower(fullpath)
 	if path = filepath.Dir(fullpath); path == "." {
 		path = "/"
 	} else {
-		path = bePath.CleanWithSlash(path)
+		path = clPath.CleanWithSlash(path)
 	}
 	slug = filepath.Base(fullpath)
 	if parts := strings.Split(fullpath, "/"); len(parts) > 1 {

@@ -26,7 +26,7 @@ import (
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/menu"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 func (f *CFeature) OpChangeValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
@@ -218,7 +218,7 @@ func (f *CFeature) OpMenuCreateHandler(r *http.Request, pg feature.Page, ctx, fo
 	var err error
 	data := []byte("[]")
 
-	realName := bePath.Base(dstInfo.Name) + ".json"
+	realName := clPath.Base(dstInfo.Name) + ".json"
 	dstInfo.Name = realName
 	dstInfo.File = strings.Replace(dstInfo.File, dstInfo.Name, realName, 1)
 

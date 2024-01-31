@@ -19,7 +19,7 @@ import (
 	"io/fs"
 	"time"
 
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -48,12 +48,12 @@ func (w WrapFileSystem) CloneROFS() (cloned FileSystem) {
 }
 
 func (w WrapFileSystem) realpath(path string) (rp string) {
-	rp = bePath.SafeConcatRelPath(w.path, path)
+	rp = clPath.SafeConcatRelPath(w.path, path)
 	return
 }
 
 func (w WrapFileSystem) Name() (name string) {
-	name = bePath.SafeConcatRelPath(w.fs.Name(), w.path)
+	name = clPath.SafeConcatRelPath(w.fs.Name(), w.path)
 	return
 }
 

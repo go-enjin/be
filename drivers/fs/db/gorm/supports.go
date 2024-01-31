@@ -19,7 +19,7 @@ package gorm
 import (
 	"strings"
 
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 func sqlEscapeLIKE(input string) (escaped string) {
@@ -33,8 +33,8 @@ func isDirectChild(parent, path string) (is bool) {
 	if pLen > len(path) {
 		return
 	}
-	dir := bePath.Dir(path)
-	pDir := bePath.TrimSlash(parent)
+	dir := clPath.Dir(path)
+	pDir := clPath.TrimSlash(parent)
 	is = dir == pDir
 	return
 }

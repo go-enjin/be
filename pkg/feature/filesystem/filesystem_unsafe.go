@@ -21,7 +21,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 func (f *CFeature[MakeTypedFeature]) findPageMatterPathMount(path string) (realpath string, mountPoint *feature.CMountPoint, locale language.Tag, err error) {
@@ -33,14 +33,14 @@ func (f *CFeature[MakeTypedFeature]) findPageMatterPathMount(path string) (realp
 	tag := language.Und
 	defLang := f.Enjin.SiteDefaultLanguage()
 
-	uri = bePath.CleanWithSlash(path)
+	uri = clPath.CleanWithSlash(path)
 	if t, m, ok := lang.ParseLangPath(uri); ok {
 		tag = t
 		modified = m
 		uri = modified
 	}
 
-	undSrc := bePath.CleanWithSlash(uri)
+	undSrc := clPath.CleanWithSlash(uri)
 
 	switch {
 	case tag != language.Und:

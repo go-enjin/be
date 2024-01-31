@@ -16,19 +16,19 @@ package fs
 
 import (
 	"github.com/go-enjin/be/pkg/forms"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 func EnumerateCheckPaths(src string) (checkPaths []string) {
 	var extensions []string
-	if extn := bePath.Ext(src); extn != "" {
+	if extn := clPath.Ext(src); extn != "" {
 		switch extn {
 		case "css":
 			extensions = append(extensions, "scss", "sass", "css")
 		default:
 			extensions = append(extensions, extn)
 		}
-		trimPath := bePath.TrimExt(src)
+		trimPath := clPath.TrimExt(src)
 		for _, ext := range extensions {
 			checkPaths = append(checkPaths, trimPath+"."+ext)
 		}
@@ -40,8 +40,8 @@ func EnumerateCheckPaths(src string) (checkPaths []string) {
 
 func CheckForFileData(fs FileSystem, url, mount string) (data []byte, mime, path string, ok bool) {
 	p := forms.TrimQueryParams(url)
-	p = bePath.TrimPrefix(p, mount)
-	p = bePath.TrimSlashes(p)
+	p = clPath.TrimPrefix(p, mount)
+	p = clPath.TrimSlashes(p)
 	checkPaths := EnumerateCheckPaths(p)
 	var err error
 	for _, checkPath := range checkPaths {

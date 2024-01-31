@@ -24,7 +24,7 @@ import (
 	"strconv"
 
 	"github.com/go-enjin/be/pkg/log/filelogwriter"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 var CustomExeIndent string
@@ -98,8 +98,8 @@ func CmdWith(options *Options) (stdout, stderr string, status int, err error) {
 
 func CheckCmd(name string, argv ...string) (stdout string, stderr string, err error) {
 	var status int
-	exeBin := bePath.Which(name)
-	if exeBin == "" || !bePath.IsFile(exeBin) {
+	exeBin := clPath.Which(name)
+	if exeBin == "" || !clPath.IsFile(exeBin) {
 		err = fmt.Errorf("%v not found", exeBin)
 	} else if stdout, stderr, status, err = Cmd(exeBin, argv...); err == nil && status != 0 {
 		err = fmt.Errorf("%v exited with status: %d", exeBin, status)
@@ -109,8 +109,8 @@ func CheckCmd(name string, argv ...string) (stdout string, stderr string, err er
 
 func CheckExe(name string, argv ...string) (err error) {
 	var status int
-	exeBin := bePath.Which(name)
-	if exeBin == "" || !bePath.IsFile(exeBin) {
+	exeBin := clPath.Which(name)
+	if exeBin == "" || !clPath.IsFile(exeBin) {
 		err = fmt.Errorf("%v not found", exeBin)
 	} else if status, err = Exe(exeBin, argv...); err == nil && status != 0 {
 		err = fmt.Errorf("%v exited with status: %d", exeBin, status)

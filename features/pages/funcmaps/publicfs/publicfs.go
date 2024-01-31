@@ -25,7 +25,7 @@ import (
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	beMime "github.com/go-enjin/be/pkg/mime"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 var (
@@ -111,9 +111,9 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 			"trimPageFmt":    f.TrimPageFormat,
 			"parsePageFmt":   f.PageFormat,
 			"pageFormats":    f.ListPageFormats,
-			"basename":       bePath.Base,
-			"basepath":       bePath.BasePath,
-			"ext":            bePath.Ext,
+			"basename":       clPath.Base,
+			"basepath":       clPath.BasePath,
+			"ext":            clPath.Ext,
 		}
 	}
 	return

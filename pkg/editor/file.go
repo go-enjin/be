@@ -23,7 +23,7 @@ import (
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/mime"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 type File struct {
@@ -57,12 +57,12 @@ type File struct {
 }
 
 func ParseDirectory(fsid, filePath string) *File {
-	topDir := bePath.TopDirectory(filePath)
+	topDir := clPath.TopDirectory(filePath)
 	dirs := filePath
 	if dirs != "" && dirs[0] == '.' {
 		dirs = dirs[1:]
 	}
-	dirs = bePath.TrimSlashes(dirs)
+	dirs = clPath.TrimSlashes(dirs)
 
 	var locale language.Tag
 	if topDir == "" {
@@ -85,13 +85,13 @@ func ParseDirectory(fsid, filePath string) *File {
 }
 
 func ParseFile(fsid, filePath string) *File {
-	topDir := bePath.TopDirectory(filePath)
+	topDir := clPath.TopDirectory(filePath)
 	file := filepath.Base(filePath)
 	dirs := filepath.Dir(filePath)
 	if dirs != "" && dirs[0] == '.' {
 		dirs = dirs[1:]
 	}
-	dirs = bePath.TrimSlashes(dirs)
+	dirs = clPath.TrimSlashes(dirs)
 
 	var locale language.Tag
 	if topDir == "" {
@@ -99,7 +99,7 @@ func ParseFile(fsid, filePath string) *File {
 	} else if v, eee := language.Parse(topDir); eee != nil {
 		locale = language.Und
 		// dirs = strings.TrimPrefix(dirs, topDir)
-		// dirs = bePath.TrimSlashes(dirs)
+		// dirs = clPath.TrimSlashes(dirs)
 	} else if locale = v; dirs != locale.String() {
 		dirs = strings.TrimPrefix(dirs, locale.String()+"/")
 	} else {
@@ -141,12 +141,12 @@ func (f *File) DirectoryPath() (dirPath string) {
 }
 
 func (f *File) FileName() (name string) {
-	name = bePath.Base(f.File)
+	name = clPath.Base(f.File)
 	return
 }
 
 func (f *File) BaseName() (fileName string) {
-	fileName = bePath.Base(f.File)
+	fileName = clPath.Base(f.File)
 	return
 }
 
@@ -156,7 +156,7 @@ func (f *File) BaseNamePath() (filePath string) {
 		parts = append(parts, f.Path)
 	}
 	if f.File != "" {
-		parts = append(parts, bePath.Base(f.File))
+		parts = append(parts, clPath.Base(f.File))
 	}
 	filePath = strings.Join(parts, "/")
 	return
@@ -174,7 +174,7 @@ func (f *File) FilePath() (filePath string) {
 		}
 	}
 	if f.Path != "" && f.Path != "." && f.Path != "/" {
-		parts = append(parts, bePath.TrimSlashes(f.Path))
+		parts = append(parts, clPath.TrimSlashes(f.Path))
 	}
 	if f.File != "" {
 		parts = append(parts, f.File)
@@ -187,11 +187,11 @@ func (f *File) Url() (path string) {
 	if f.File == "" {
 		return
 	}
-	path = bePath.Dir(f.EditPath())
-	if basename := bePath.Base(f.File); basename != "~index" && basename != "" {
-		path = bePath.Dir(f.EditPath()) + "/" + basename
+	path = clPath.Dir(f.EditPath())
+	if basename := clPath.Base(f.File); basename != "~index" && basename != "" {
+		path = clPath.Dir(f.EditPath()) + "/" + basename
 	}
-	path = bePath.CleanWithSlash(path)
+	path = clPath.CleanWithSlash(path)
 	return
 }
 

@@ -19,7 +19,7 @@ import (
 
 	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/path"
+	"github.com/go-corelibs/path"
 )
 
 func (f *CFeature) MakePageArchetypeContextFields(r *http.Request, name string) (fields beContext.Fields) {

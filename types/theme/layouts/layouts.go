@@ -24,7 +24,7 @@ import (
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 var (
@@ -79,7 +79,7 @@ func (l *Layouts) loadTheme(tfs fs.FileSystem) (err error) {
 	}
 
 	for _, path := range paths {
-		name := bePath.Base(path)
+		name := clPath.Base(path)
 		if layout, e := NewLayout(path, tfs); e != nil {
 			err = fmt.Errorf("error creating new layout: %v - %v", path, e)
 			return

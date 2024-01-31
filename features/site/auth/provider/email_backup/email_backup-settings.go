@@ -19,7 +19,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 func (f *CFeature) SiteAuthSettingsPanel(settingsPath string, saf feature.SiteAuthFeature) (serve, handle http.HandlerFunc) {
@@ -32,7 +32,7 @@ func (f *CFeature) SiteAuthSettingsPanel(settingsPath string, saf feature.SiteAu
 func (f *CFeature) MakeServeSiteSettingsPanel(settingsPath string, saf feature.SiteAuthFeature) (serve http.HandlerFunc) {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		if _, ok := bePath.MatchCut(r.URL.Path, settingsPath); ok {
+		if _, ok := clPath.MatchCut(r.URL.Path, settingsPath); ok {
 			if allowed := f.Site().RequireVerification(settingsPath, w, r); !allowed {
 				return
 			}
@@ -54,7 +54,7 @@ func (f *CFeature) MakeServeSiteSettingsPanel(settingsPath string, saf feature.S
 func (f *CFeature) MakeHandleSiteSettingsPanel(settingsPath string, saf feature.SiteAuthFeature) (serve http.HandlerFunc) {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		if _, ok := bePath.MatchCut(r.URL.Path, settingsPath); ok {
+		if _, ok := clPath.MatchCut(r.URL.Path, settingsPath); ok {
 			if allowed := f.Site().RequireVerification(settingsPath, w, r); !allowed {
 				return
 			}

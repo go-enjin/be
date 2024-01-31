@@ -29,7 +29,7 @@ import (
 	uses_kvc "github.com/go-enjin/be/pkg/feature/uses-kvc"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/maps"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 var (
@@ -167,12 +167,12 @@ func (f *CFeature) InitUser(email string, group ...feature.Group) MakeFeature {
 }
 
 func (f *CFeature) SetUserPath(path string) MakeFeature {
-	f.userPath = bePath.CleanWithSlash(path)
+	f.userPath = clPath.CleanWithSlash(path)
 	return f
 }
 
 func (f *CFeature) SetGroupPath(path string) MakeFeature {
-	f.groupPath = bePath.CleanWithSlash(path)
+	f.groupPath = clPath.CleanWithSlash(path)
 	return f
 }
 

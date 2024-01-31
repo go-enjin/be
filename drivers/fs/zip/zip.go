@@ -29,12 +29,12 @@ import (
 
 	times "github.com/go-enjin/github-com-djherbis-times"
 
+	clPath "github.com/go-corelibs/path"
+	clStrings "github.com/go-corelibs/strings"
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/gob"
-	bePath "github.com/go-enjin/be/pkg/path"
 	bePathZip "github.com/go-enjin/be/pkg/path/zip"
-	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -187,7 +187,7 @@ func (f FileSystem) FindFilePath(prefix string, extensions ...string) (path stri
 
 	realpath := f.realpath(prefix)
 	if filepath.Ext(realpath) != "" {
-		if bePath.IsFile(realpath) {
+		if clPath.IsFile(realpath) {
 			path = beFs.PruneRootFrom(f.path, realpath)
 			return
 		}
@@ -202,7 +202,7 @@ func (f FileSystem) FindFilePath(prefix string, extensions ...string) (path stri
 	}
 
 	for _, p := range paths {
-		if bePath.IsFile(p) {
+		if clPath.IsFile(p) {
 			path = beFs.PruneRootFrom(f.path, p)
 			return
 		}

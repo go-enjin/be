@@ -35,7 +35,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 const Tag feature.Tag = "fs-menu"
@@ -186,7 +186,7 @@ func (f *CFeature) findAllMenus(tag language.Tag, bfs fs.FileSystem) (menus map[
 			log.TraceF("parsed %v lang from: %v", foundLang, filename)
 		}
 
-		name := bePath.Base(filename)
+		name := clPath.Base(filename)
 		var data []byte
 		if data, err = bfs.ReadFile(filename); err != nil {
 			err = fmt.Errorf("error reading filesystem: %v - %v", bfs.Name(), err)

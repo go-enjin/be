@@ -18,7 +18,7 @@ import (
 	"net/http"
 
 	"github.com/go-enjin/be/pkg/feature"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/request"
 	"github.com/go-enjin/be/pkg/userbase"
 )
@@ -43,7 +43,7 @@ func (f *CFeature) authEnjinProviderMiddleware(next http.Handler) (this http.Han
 func (f *CFeature) homePathMiddleware(next http.Handler) (this http.Handler) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if f.sitePath != "/" {
-			if _, match := bePath.MatchCut(r.URL.Path, f.sitePath); match {
+			if _, match := clPath.MatchCut(r.URL.Path, f.sitePath); match {
 				r = request.SetHomePath(r, f.sitePath)
 			}
 		}

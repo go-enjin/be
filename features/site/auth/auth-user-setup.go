@@ -17,9 +17,9 @@ package auth
 import (
 	"net/http"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/feature"
-	bePath "github.com/go-enjin/be/pkg/path"
 )
 
 func (f *CFeature) enforceUserSetupStages(claims *feature.CSiteAuthClaims, w http.ResponseWriter, r *http.Request) (handled bool) {
@@ -153,10 +153,10 @@ func (f *CFeature) enforceUserSetupStages(claims *feature.CSiteAuthClaims, w htt
 
 	siteAuthUrl := f.SiteAuthSignInPath()
 
-	if suffix, ok := bePath.MatchCut(r.URL.Path, siteAuthUrl); ok && suffix != "" {
+	if suffix, ok := clPath.MatchCut(r.URL.Path, siteAuthUrl); ok && suffix != "" {
 		// this isn't the top sign-in path, which means we're handling mfa setup
 		if f.numFactorsRequired > numFactorsRequiredReady {
-			if tagPath := bePath.TopPathName(suffix); tagPath != "" {
+			if tagPath := clPath.TopDirectory(suffix); tagPath != "" {
 				// serving a specific sub-path
 				tag := f.mfa.Features.Find(tagPath)
 				if handled = tag.IsNil(); handled {

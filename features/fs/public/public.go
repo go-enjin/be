@@ -35,7 +35,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/serve"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 var (
@@ -142,8 +142,8 @@ func (f *CFeature) UseDirIndex(indexFileName string) MakeFeature {
 }
 
 func (f *CFeature) ServeBasePath(prefix, index string) MakeFeature {
-	prefix = bePath.CleanWithSlashes(prefix)
-	f.basePaths[prefix] = bePath.CleanWithSlash(index)
+	prefix = clPath.CleanWithSlashes(prefix)
+	f.basePaths[prefix] = clPath.CleanWithSlash(index)
 	return f
 }
 
@@ -194,7 +194,7 @@ func (f *CFeature) ServePath(path string, s feature.System, w http.ResponseWrite
 	if v, ee := url.PathUnescape(path); ee == nil {
 		path = v
 	}
-	path = bePath.CleanWithSlash(path)
+	path = clPath.CleanWithSlash(path)
 
 	var data []byte
 	var mime string

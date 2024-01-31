@@ -28,7 +28,7 @@ import (
 
 	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/forms"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/pkg/values"
 )
@@ -304,7 +304,7 @@ func RelativeUrlParser(spec *Field, input interface{}) (parsed interface{}, err 
 		if t = strings.TrimSpace(t); t != "" {
 			var v *url.URL
 			if v, err = url.Parse(t); err == nil {
-				if p := bePath.TrimSlashes(v.Path); p != "" {
+				if p := clPath.TrimSlashes(v.Path); p != "" {
 					parsed = "/" + p
 				} else {
 					parsed = "/"

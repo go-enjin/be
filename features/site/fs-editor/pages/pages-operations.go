@@ -29,7 +29,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -217,7 +217,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx, form c
 	ctx.SetSpecific("Page", pm)
 	ctx.SetSpecific("Fields", fields)
 	ctx.SetSpecific("FieldErrors", errs)
-	ctx.SetSpecific("IsTmplPage", IsTmplPage(bePath.Ext(info.File)))
+	ctx.SetSpecific("IsTmplPage", IsTmplPage(clPath.Ext(info.File)))
 	editorName := f.SelfEditor().GetEditorKey()
 	filePath := info.EditFilePath()
 	pg.SetTitle(printer.Sprintf("Editing %[1]s: %[2]s", editorName, filePath))
@@ -287,7 +287,7 @@ func (f *CFeature) OpFileCommitHandler(r *http.Request, pg feature.Page, ctx, fo
 	ctx.SetSpecific("Page", pm)
 	ctx.SetSpecific("Fields", fields)
 	ctx.SetSpecific("FieldErrors", errs)
-	ctx.SetSpecific("IsTmplPage", IsTmplPage(bePath.Ext(info.File)))
+	ctx.SetSpecific("IsTmplPage", IsTmplPage(clPath.Ext(info.File)))
 	editorName := f.SelfEditor().GetEditorKey()
 	filePath := info.EditFilePath()
 	pg.SetTitle(printer.Sprintf("Editing %[1]s: %[2]s", editorName, filePath))
@@ -349,7 +349,7 @@ func (f *CFeature) OpFilePublishHandler(r *http.Request, pg feature.Page, ctx, f
 				ctx.SetSpecific("Page", pm)
 				ctx.SetSpecific("Fields", fields)
 				ctx.SetSpecific("FieldErrors", errs)
-				ctx.SetSpecific("IsTmplPage", IsTmplPage(bePath.Ext(info.File)))
+				ctx.SetSpecific("IsTmplPage", IsTmplPage(clPath.Ext(info.File)))
 				editorName := f.SelfEditor().GetEditorKey()
 				filePath := info.EditFilePath()
 				pg.SetTitle(printer.Sprintf("Editing %[1]s: %[2]s", editorName, filePath))
@@ -625,7 +625,7 @@ func (f *CFeature) OpPageCreateHandler(r *http.Request, pg feature.Page, ctx, fo
 		}
 	}
 
-	realName := bePath.Base(dstInfo.Name) + "." + format
+	realName := clPath.Base(dstInfo.Name) + "." + format
 	dstInfo.Name = realName
 	dstInfo.File = strings.Replace(dstInfo.File, dstInfo.Name, realName, 1)
 

@@ -23,7 +23,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 var _ Mode = (*PathMode)(nil)
@@ -63,7 +63,7 @@ func (p *PathMode) Name() (name string) {
 func (p *PathMode) ParsePathLang(path string) (tag language.Tag, trimmed string, ok bool) {
 	trimmed = path
 	tag = language.Und
-	parts := strings.Split(bePath.TrimSlashes(path), "/")
+	parts := strings.Split(clPath.TrimSlashes(path), "/")
 	if len(parts) >= 1 {
 		if pathTag, err := language.Parse(parts[0]); err == nil {
 			tag = pathTag

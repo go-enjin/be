@@ -31,7 +31,7 @@ import (
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 const (
@@ -128,7 +128,7 @@ func (f *CSiteFeature[M]) Startup(ctx *cli.Context) (err error) {
 	if ctx.IsSet(pathKey) {
 		if v := ctx.String(pathKey); v != "" {
 			if v = forms.StrictSanitize(strings.TrimSpace(v)); v != "" {
-				f.featureKey = bePath.TrimSlashes(strcase.ToKebab(v))
+				f.featureKey = clPath.TrimSlashes(strcase.ToKebab(v))
 			}
 		}
 	}

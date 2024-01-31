@@ -24,7 +24,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/mime"
-	"github.com/go-enjin/be/pkg/path"
+	"github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 

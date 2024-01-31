@@ -28,7 +28,7 @@ import (
 	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/serve"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 type service struct {
@@ -41,25 +41,25 @@ type service struct {
 }
 
 func (f *CFeature) newHandler(dirIndex, target, network, source string, envKeys []string) (s *service, err error) {
-	if target, err = bePath.Abs(target); err != nil {
+	if target, err = clPath.Abs(target); err != nil {
 		err = fmt.Errorf("abs target path error: %v", err)
 		return
 	}
 	if network == "auto" {
-		if bePath.IsFile(source) {
+		if clPath.IsFile(source) {
 			network = "unix"
 		} else {
 			network = "tcp"
 		}
 	}
 	var h gofast.Handler
-	if bePath.IsDir(target) {
+	if clPath.IsDir(target) {
 		h = gofast.NewHandler(
 			newPhpFS(dirIndex, target, envKeys)(gofast.BasicSession),
 			gofast.SimpleClientFactory(gofast.SimpleConnFactory(network, source)),
 		)
 		log.DebugF("fastcgi target is a directory: %v", target)
-	} else if bePath.IsFile(target) {
+	} else if clPath.IsFile(target) {
 		h = gofast.NewHandler(
 			gofast.NewFileEndpoint(target)(gofast.BasicSession),
 			gofast.SimpleClientFactory(gofast.SimpleConnFactory(network, source)),
@@ -94,7 +94,7 @@ func (s *service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	path := filepath.Join(s.Target, r.URL.Path)
-	if !strings.HasSuffix(path, ".php") && bePath.IsFile(path) {
+	if !strings.HasSuffix(path, ".php") && clPath.IsFile(path) {
 		http.ServeFile(w, r, path)
 		return
 	}

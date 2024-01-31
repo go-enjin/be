@@ -26,7 +26,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 var (
@@ -91,13 +91,13 @@ func (f *CFeature) Shutdown() {
 
 func ProcessActiveItems(m menu.Menu, r *http.Request) (modified menu.Menu, found bool) {
 	var path string
-	if path = bePath.TrimSlashes(r.URL.Path); path == "" {
+	if path = clPath.TrimSlashes(r.URL.Path); path == "" {
 		modified = m
 		return
 	}
 
 	isActive := func(href string) (active bool) {
-		trimmed := bePath.TrimSlashes(href)
+		trimmed := clPath.TrimSlashes(href)
 		active = path == trimmed || strings.HasPrefix(path, trimmed+"/")
 		return
 	}

@@ -24,7 +24,7 @@ import (
 	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 var (
@@ -95,9 +95,9 @@ func (f *CFeature) SetMount(path string) MakeFeature {
 }
 
 func (f *CFeature) SetDocRoot(path string) MakeFeature {
-	if bePath.IsDir(path) {
+	if clPath.IsDir(path) {
 		f.docroot = path
-	} else if bePath.IsFile(path) {
+	} else if clPath.IsFile(path) {
 		f.docroot = path
 	} else {
 		log.FatalDF(1, "path not found or not a directory: %v", path)

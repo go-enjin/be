@@ -22,11 +22,11 @@ import (
 	"path/filepath"
 
 	"github.com/go-corelibs/slices"
-	bePath "github.com/go-enjin/be/pkg/path"
+	clPath "github.com/go-corelibs/path"
 )
 
 func (f *FileSystem) realpath(path string) (out string) {
-	out = bePath.SafeConcatRelPath(f.root, path)
+	out = clPath.SafeConcatRelPath(f.root, path)
 	return
 }
 
