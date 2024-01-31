@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/go-corelibs/slices"
-	errors2 "github.com/go-enjin/be/pkg/errors"
+	beErrors "github.com/go-enjin/be/pkg/errors"
 )
 
 type ConcreteTag uint8
@@ -148,7 +148,7 @@ func UnmarshalConcrete[V string | []byte](input V) (value interface{}, err error
 	if size == 0 {
 		return
 	} else if size < 3 || data[0] != 'c' || data[1] != '\t' {
-		err = errors2.ErrDataTypeNotSupported
+		err = beErrors.ErrDataTypeNotSupported
 		return
 	}
 
@@ -170,10 +170,10 @@ func UnmarshalConcrete[V string | []byte](input V) (value interface{}, err error
 	}
 	var tag ConcreteTag
 	if i, ee := strconv.Atoi(tagString); ee != nil {
-		err = errors2.ErrDataTypeNotSupported
+		err = beErrors.ErrDataTypeNotSupported
 		return
 	} else if tag = ConcreteTag(i); !tag.Valid() {
-		err = errors2.ErrDataTypeNotSupported
+		err = beErrors.ErrDataTypeNotSupported
 		return
 	}
 
@@ -213,7 +213,7 @@ func UnmarshalConcrete[V string | []byte](input V) (value interface{}, err error
 	case CInterfaceSlice:
 		value, err = decoder[[]interface{}](data)
 	default:
-		err = errors2.ErrDataTypeNotSupported
+		err = beErrors.ErrDataTypeNotSupported
 		return
 	}
 
