@@ -17,8 +17,8 @@ package site
 import (
 	"net/http"
 
-	"github.com/go-enjin/be/pkg/feature"
 	clPath "github.com/go-corelibs/path"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/request"
 	"github.com/go-enjin/be/pkg/userbase"
 )

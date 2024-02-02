@@ -29,11 +29,11 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
+	clPath "github.com/go-corelibs/path"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
 	"github.com/go-enjin/be/pkg/maps"
-	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/types/page/matter"
 )
 

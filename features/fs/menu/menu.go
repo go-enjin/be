@@ -28,6 +28,7 @@ import (
 
 	"github.com/go-enjin/be/pkg/editor"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
 	"github.com/go-enjin/be/pkg/fs"
@@ -35,7 +36,6 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
-	clPath "github.com/go-corelibs/path"
 )
 
 const Tag feature.Tag = "fs-menu"

@@ -21,8 +21,8 @@ import (
 
 	"github.com/maruel/natural"
 
-	"github.com/go-enjin/be/pkg/regexps"
 	"github.com/go-corelibs/strings"
+	"github.com/go-enjin/be/pkg/regexps"
 )
 
 func ValuesSortedByKeys[K ~string, V interface{}](data map[K]V) (values []V) {

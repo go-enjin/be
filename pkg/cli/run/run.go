@@ -23,8 +23,8 @@ import (
 	"os/exec"
 	"strconv"
 
-	"github.com/go-enjin/be/pkg/log/filelogwriter"
 	clPath "github.com/go-corelibs/path"
+	"github.com/go-enjin/be/pkg/log/filelogwriter"
 )
 
 var CustomExeIndent string

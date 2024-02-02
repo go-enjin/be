@@ -26,13 +26,13 @@ import (
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/pages"
-	clPath "github.com/go-corelibs/path"
 )
 
 var (

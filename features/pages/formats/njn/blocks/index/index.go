@@ -28,6 +28,7 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/go-corelibs/slices"
+	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
@@ -35,7 +36,6 @@ import (
 	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/pages"
 	"github.com/go-enjin/be/pkg/request/argv"
-	clStrings "github.com/go-corelibs/strings"
 )
 
 // TODO: SearchWithin is way too heavy for quoted.fyi, does not use kws

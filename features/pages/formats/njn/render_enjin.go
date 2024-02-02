@@ -25,12 +25,12 @@ import (
 
 	"github.com/iancoleman/strcase"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
-	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/request/argv"
 )
 

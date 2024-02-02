@@ -15,8 +15,8 @@
 package fs
 
 import (
-	"github.com/go-enjin/be/pkg/forms"
 	clPath "github.com/go-corelibs/path"
+	"github.com/go-enjin/be/pkg/forms"
 )
 
 func EnumerateCheckPaths(src string) (checkPaths []string) {

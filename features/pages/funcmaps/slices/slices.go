@@ -27,13 +27,13 @@ import (
 	"github.com/maruel/natural"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/maths"
 	"github.com/go-corelibs/slices"
+	clStrings "github.com/go-corelibs/strings"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
-	"github.com/go-corelibs/maths"
-	clStrings "github.com/go-corelibs/strings"
 )
 
 var (

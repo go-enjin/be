@@ -22,6 +22,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/slices"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
@@ -29,7 +30,6 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
-	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/types/page/matter"
 )
 

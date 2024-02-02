@@ -23,6 +23,7 @@ import (
 	"github.com/Shopify/gomail"
 	"github.com/iancoleman/strcase"
 
+	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/features/site/auth"
 	"github.com/go-enjin/be/pkg/context"
@@ -30,7 +31,6 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request"
-	clStrings "github.com/go-corelibs/strings"
 )
 
 func (f *CFeature) SiteAuthSignInHandler(w http.ResponseWriter, r *http.Request, saf feature.SiteAuthFeature) (claims *feature.CSiteAuthClaims, redirect string, err error) {

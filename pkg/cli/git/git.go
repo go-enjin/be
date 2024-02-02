@@ -20,8 +20,8 @@ import (
 	"strings"
 
 	"github.com/go-corelibs/path"
-	"github.com/go-enjin/be/pkg/cli/run"
 	clPath "github.com/go-corelibs/path"
+	"github.com/go-enjin/be/pkg/cli/run"
 )
 
 func Which() (gitBin string) {

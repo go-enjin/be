@@ -18,8 +18,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/go-enjin/be/pkg/log"
 	clPath "github.com/go-corelibs/path"
+	"github.com/go-enjin/be/pkg/log"
 )
 
 type RegistryLookup interface {

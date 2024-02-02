@@ -21,12 +21,12 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
-	clPath "github.com/go-corelibs/path"
 )
 
 var (

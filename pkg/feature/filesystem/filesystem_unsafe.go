@@ -19,9 +19,9 @@ import (
 
 	"github.com/go-corelibs/x-text/language"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
-	clPath "github.com/go-corelibs/path"
 )
 
 func (f *CFeature[MakeTypedFeature]) findPageMatterPathMount(path string) (realpath string, mountPoint *feature.CMountPoint, locale language.Tag, err error) {

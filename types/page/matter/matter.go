@@ -25,11 +25,11 @@ import (
 
 	"github.com/go-enjin/be/pkg/editor"
 
+	clPath "github.com/go-corelibs/path"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
-	clPath "github.com/go-corelibs/path"
 )
 
 func init() {

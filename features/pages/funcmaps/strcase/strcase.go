@@ -23,9 +23,9 @@ import (
 	"github.com/go-corelibs/x-text/cases"
 	"github.com/go-corelibs/x-text/language"
 
+	clStrings "github.com/go-corelibs/strings"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	clStrings "github.com/go-corelibs/strings"
 )
 
 var (

@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-corelibs/path"
+	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/types/page/matter"
 )
 

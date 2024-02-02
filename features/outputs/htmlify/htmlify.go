@@ -24,12 +24,12 @@ import (
 	"github.com/yosssi/gohtml"
 	"golang.org/x/net/html"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/slices"
+	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
-	clPath "github.com/go-corelibs/path"
-	clStrings "github.com/go-corelibs/strings"
 )
 
 const Tag feature.Tag = "outputs-htmlify"

@@ -23,9 +23,9 @@ import (
 
 	"github.com/gabriel-vasile/mimetype"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
-	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/types/page/matter"
 )
 

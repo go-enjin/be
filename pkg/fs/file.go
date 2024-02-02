@@ -17,8 +17,8 @@ package fs
 import (
 	"os"
 
-	beMime "github.com/go-enjin/be/pkg/mime"
 	clPath "github.com/go-corelibs/path"
+	beMime "github.com/go-enjin/be/pkg/mime"
 )
 
 type File struct {

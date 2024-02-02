@@ -24,11 +24,11 @@ import (
 
 	"github.com/go-corelibs/x-text/language"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/maps"
-	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/types/page/matter"
 )
 

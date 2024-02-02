@@ -21,12 +21,12 @@ import (
 	"net/http"
 	"strings"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/menu"
-	clPath "github.com/go-corelibs/path"
 )
 
 func (f *CFeature) OpChangeValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {

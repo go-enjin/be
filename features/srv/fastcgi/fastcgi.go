@@ -21,10 +21,10 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	clPath "github.com/go-corelibs/path"
 )
 
 var (

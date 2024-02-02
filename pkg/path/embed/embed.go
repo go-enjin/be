@@ -24,9 +24,9 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/maruel/natural"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	beMime "github.com/go-enjin/be/pkg/mime"
-	clPath "github.com/go-corelibs/path"
 )
 
 func Sha256(path string, efs embed.FS) (shasum string, err error) {

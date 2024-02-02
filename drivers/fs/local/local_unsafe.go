@@ -21,8 +21,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/go-corelibs/slices"
 	clPath "github.com/go-corelibs/path"
+	"github.com/go-corelibs/slices"
 )
 
 func (f *FileSystem) realpath(path string) (out string) {

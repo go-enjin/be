@@ -22,10 +22,10 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/go-corelibs/slices"
+	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/maps"
-	clStrings "github.com/go-corelibs/strings"
 )
 
 type MakeFeature[M interface{}] interface {

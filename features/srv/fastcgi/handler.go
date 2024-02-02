@@ -25,10 +25,10 @@ import (
 
 	"github.com/yookoala/gofast"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/serve"
-	clPath "github.com/go-corelibs/path"
 )
 
 type service struct {

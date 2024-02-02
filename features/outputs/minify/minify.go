@@ -22,13 +22,13 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/slices"
 	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
 	beMinify "github.com/go-enjin/be/pkg/net/minify"
-	clPath "github.com/go-corelibs/path"
 )
 
 const Tag feature.Tag = "outputs-minify"

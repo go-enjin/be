@@ -25,9 +25,9 @@ import (
 	"strings"
 
 	"github.com/go-corelibs/slices"
+	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	clStrings "github.com/go-corelibs/strings"
 )
 
 func (re *RenderEnjin) PrepareErrorBlock(summary string, data ...interface{}) (block map[string]interface{}, err error) {

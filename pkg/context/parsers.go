@@ -26,11 +26,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/iancoleman/strcase"
 
-	"github.com/go-corelibs/slices"
-	"github.com/go-enjin/be/pkg/forms"
 	clPath "github.com/go-corelibs/path"
+	"github.com/go-corelibs/slices"
 	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-corelibs/values"
+	"github.com/go-enjin/be/pkg/forms"
 )
 
 var (

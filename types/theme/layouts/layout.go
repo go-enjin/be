@@ -22,11 +22,11 @@ import (
 
 	cllang "github.com/go-corelibs/lang"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/feature"
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
-	clPath "github.com/go-corelibs/path"
 )
 
 var (

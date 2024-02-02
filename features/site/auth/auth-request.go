@@ -20,9 +20,9 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
-	clPath "github.com/go-corelibs/path"
 )
 
 func (f *CFeature) AuthenticateSiteRequest(w http.ResponseWriter, r *http.Request) (handled bool, modified *http.Request) {

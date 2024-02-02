@@ -19,8 +19,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-corelibs/path"
+	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 

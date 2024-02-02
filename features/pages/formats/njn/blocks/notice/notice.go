@@ -21,8 +21,8 @@ import (
 	"html/template"
 	"strings"
 
-	"github.com/go-enjin/be/pkg/feature"
 	clStrings "github.com/go-corelibs/strings"
+	"github.com/go-enjin/be/pkg/feature"
 )
 
 const (

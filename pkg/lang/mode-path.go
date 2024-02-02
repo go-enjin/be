@@ -21,9 +21,9 @@ import (
 
 	"github.com/go-corelibs/x-text/language"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
-	clPath "github.com/go-corelibs/path"
 )
 
 var _ Mode = (*PathMode)(nil)

@@ -31,12 +31,12 @@ import (
 
 	times "github.com/go-enjin/github-com-djherbis-times"
 
+	clStrings "github.com/go-corelibs/strings"
 	beContext "github.com/go-enjin/be/pkg/context"
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/gob"
 	"github.com/go-enjin/be/pkg/hash/sha"
-	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/types/page/matter"
 )
 

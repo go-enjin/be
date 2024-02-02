@@ -22,8 +22,8 @@ import (
 
 	"github.com/maruel/natural"
 
-	"github.com/go-enjin/be/pkg/fs"
 	clPath "github.com/go-corelibs/path"
+	"github.com/go-enjin/be/pkg/fs"
 )
 
 type CMountPoint struct {

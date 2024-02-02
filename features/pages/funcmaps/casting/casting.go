@@ -24,10 +24,10 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	beContext "github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-corelibs/maths"
 	"github.com/go-corelibs/values"
+	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/feature"
 )
 
 var (

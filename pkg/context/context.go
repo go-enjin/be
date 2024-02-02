@@ -27,9 +27,9 @@ import (
 	"github.com/pelletier/go-toml/v2"
 	"gopkg.in/yaml.v3"
 
-	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-corelibs/maths"
 	clStrings "github.com/go-corelibs/strings"
+	"github.com/go-enjin/be/pkg/maps"
 )
 
 // Context is a wrapper around a map[string]interface{} structure which is used

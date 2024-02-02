@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	cllang "github.com/go-corelibs/lang"
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/editor"
@@ -29,7 +30,6 @@ import (
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
 	beMime "github.com/go-enjin/be/pkg/mime"
-	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 

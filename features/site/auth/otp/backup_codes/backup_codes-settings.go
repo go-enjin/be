@@ -17,9 +17,9 @@ package backup_codes
 import (
 	"net/http"
 
+	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	clPath "github.com/go-corelibs/path"
 )
 
 func (f *CFeature) SiteAuthSettingsPanel(settingsPath string, saf feature.SiteAuthFeature) (serve, handle http.HandlerFunc) {
