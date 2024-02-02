@@ -21,11 +21,11 @@ import (
 	"fmt"
 	textTemplate "text/template"
 
+	"github.com/go-corelibs/templates"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/templates"
 )
 
 func (f *CFeature) NewTextTemplateWith(t feature.Theme, name string, ctx context.Context) (tmpl *textTemplate.Template, err error) {
@@ -52,7 +52,7 @@ func (f *CFeature) NewTextTemplateWith(t feature.Theme, name string, ctx context
 	fm := f.Enjin.MakeFuncMap(ctx).AsTEXT()
 	tmpl = tmpl.Funcs(fm)
 
-	err = templates.AddTextParseTree(layoutsTmpl, tmpl)
+	err = templates.AddParseTree(layoutsTmpl, tmpl)
 	return
 }
 
@@ -111,7 +111,7 @@ func (f *CFeature) NewTextTemplateFromContext(t feature.Theme, view string, ctx 
 		}
 	}
 
-	if tt = templates.LookupTextTemplate(tmpl, lookups...); tt == nil {
+	if tt = templates.Lookup(tmpl, lookups...); tt == nil {
 		err = fmt.Errorf(
 			"%v theme template not found for: archetype=%v, type=%v, layout=%v, pageFormat=%v, lookups=%v",
 			t.Name(), archetype, pagetype, layoutName, pageFormat, lookups,
