@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-enjin/be/pkg/values"
+	"github.com/go-corelibs/values"
 )
 
 func IsMap(v interface{}) (ok bool) {

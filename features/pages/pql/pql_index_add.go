@@ -25,9 +25,9 @@ import (
 
 	"github.com/go-corelibs/x-text/language"
 
+	"github.com/go-corelibs/values"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/kvs"
-	"github.com/go-enjin/be/pkg/values"
 )
 
 func (f *CFeature) AddToIndex(stub *feature.PageStub, p feature.Page) (err error) {

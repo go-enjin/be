@@ -20,7 +20,7 @@ import (
 
 	"github.com/microcosm-cc/bluemonday"
 
-	"github.com/go-enjin/be/pkg/values"
+	"github.com/go-corelibs/values"
 )
 
 func StringMapParser(spec *Field, input interface{}) (parsed interface{}, err error) {

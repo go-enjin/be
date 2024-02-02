@@ -30,7 +30,7 @@ import (
 	"github.com/go-enjin/be/pkg/forms"
 	clPath "github.com/go-corelibs/path"
 	clStrings "github.com/go-corelibs/strings"
-	"github.com/go-enjin/be/pkg/values"
+	"github.com/go-corelibs/values"
 )
 
 var (

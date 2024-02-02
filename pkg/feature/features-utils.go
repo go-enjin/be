@@ -17,8 +17,8 @@ package feature
 import (
 	"fmt"
 
+	"github.com/go-corelibs/values"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/values"
 )
 
 func AsTyped[T interface{}](f Feature) (t T, ok bool) {

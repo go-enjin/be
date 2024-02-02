@@ -20,7 +20,7 @@ import (
 
 	"github.com/go-corelibs/x-text/language"
 
-	"github.com/go-enjin/be/pkg/values"
+	"github.com/go-corelibs/values"
 )
 
 func LanguageParser(spec *Field, input interface{}) (parsed interface{}, err error) {

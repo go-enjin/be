@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-enjin/be/pkg/values"
+	"github.com/go-corelibs/values"
 )
 
 func Cmp[T comparable](a, b interface{}) (same bool, err error) {
