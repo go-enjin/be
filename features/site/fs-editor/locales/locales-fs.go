@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	cllang "github.com/go-corelibs/lang"
+	clMime "github.com/go-corelibs/mime"
 	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
@@ -29,7 +30,6 @@ import (
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
-	beMime "github.com/go-enjin/be/pkg/mime"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -509,7 +509,7 @@ func (f *CFeature) ListLocales(r *http.Request) (list editor.Files) {
 					FSID:     fsid,
 					Name:     fsid,
 					ReadOnly: rw,
-					MimeType: beMime.DirectoryMimeType,
+					MimeType: clMime.DirectoryMimeType,
 				})
 			} else {
 				code := strings.TrimPrefix(mount, "/")
@@ -519,7 +519,7 @@ func (f *CFeature) ListLocales(r *http.Request) (list editor.Files) {
 					Code:     code,
 					Name:     code,
 					ReadOnly: rw,
-					MimeType: beMime.DirectoryMimeType,
+					MimeType: clMime.DirectoryMimeType,
 				})
 			}
 		}
@@ -543,7 +543,7 @@ func (f *CFeature) ListLocaleFileSystems(r *http.Request) (list editor.Files) {
 			FSBT:     mpf.BaseTag().String(),
 			FSID:     fsid,
 			Name:     fsid,
-			MimeType: beMime.DirectoryMimeType,
+			MimeType: clMime.DirectoryMimeType,
 			ReadOnly: mountedPoints.HasRWFS(),
 		}
 		info.HasDraft = f.HasDraftLocales(fsid, "")
@@ -575,7 +575,7 @@ func (f *CFeature) ListLocaleFileSystemLocales(r *http.Request, fsid string) (li
 				Code: code,
 				Name: code,
 				//Locale:   &language.Und, // above locales in path-space is Und
-				MimeType: beMime.DirectoryMimeType,
+				MimeType: clMime.DirectoryMimeType,
 				ReadOnly: !mountPoints.HasRWFS(),
 			}
 			info.HasDraft = f.HasDraftLocales(fsid, code)

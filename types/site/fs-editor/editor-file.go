@@ -20,6 +20,7 @@ import (
 
 	"golang.org/x/net/html"
 
+	clMime "github.com/go-corelibs/mime"
 	"github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
@@ -28,7 +29,6 @@ import (
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
-	beMime "github.com/go-enjin/be/pkg/mime"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -66,7 +66,7 @@ func (f *CEditorFeature[MakeTypedFeature]) PrepareRenderFileEditor(w http.Respon
 
 		info = editor.ParseFile(fsid, locale.String())
 		parts := strings.Split(info.Path, "/")
-		info.MimeType = beMime.DirectoryMimeType
+		info.MimeType = clMime.DirectoryMimeType
 		info.Code = code
 		info.Path = strings.Join(append(parts, info.File), "/")
 		info.Name = info.File
@@ -99,7 +99,7 @@ func (f *CEditorFeature[MakeTypedFeature]) PrepareRenderFileEditor(w http.Respon
 		}
 
 		parts := strings.Split(info.Path, "/")
-		info.MimeType = beMime.DirectoryMimeType
+		info.MimeType = clMime.DirectoryMimeType
 		info.Path = strings.Join(append(parts, info.File), "/")
 		info.Name = info.File
 		info.File = ""

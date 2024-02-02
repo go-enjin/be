@@ -24,9 +24,9 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/maruel/natural"
 
+	clMime "github.com/go-corelibs/mime"
 	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/hash/sha"
-	beMime "github.com/go-enjin/be/pkg/mime"
 )
 
 func Sha256(path string, efs embed.FS) (shasum string, err error) {
@@ -52,17 +52,17 @@ func Mime(path string, efs embed.FS) (mime string, err error) {
 	if data, err = efs.ReadFile(path); err != nil {
 		if err.Error() == "is a directory" {
 			err = nil
-			mime = beMime.DirectoryMimeType
+			mime = clMime.DirectoryMimeType
 		}
 		return
 	}
 
-	if mime = beMime.FromPathOnly(path); mime == "" {
+	if mime = clMime.FromPathOnly(path); mime == "" {
 		mime = mimetype.Detect(data).String()
 	}
 
 	if mime == "" {
-		mime = beMime.BinaryMimeType
+		mime = clMime.BinaryMimeType
 	}
 	return
 }

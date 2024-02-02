@@ -17,8 +17,8 @@ package fs
 import (
 	"os"
 
+	clMime "github.com/go-corelibs/mime"
 	clPath "github.com/go-corelibs/path"
-	beMime "github.com/go-enjin/be/pkg/mime"
 )
 
 type File struct {
@@ -38,7 +38,7 @@ func New(path string) (file *File, err error) {
 		Path: path,
 		Name: clPath.Base(path),
 		Extn: clPath.Ext(path),
-		Mime: beMime.Mime(path),
+		Mime: clMime.Mime(path),
 		Data: data,
 	}
 	return

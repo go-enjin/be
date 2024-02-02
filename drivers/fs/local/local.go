@@ -29,13 +29,13 @@ import (
 	berrs "github.com/go-enjin/be/pkg/errors"
 	times "github.com/go-enjin/github-com-djherbis-times"
 
+	clMime "github.com/go-corelibs/mime"
 	clPath "github.com/go-corelibs/path"
 	clStrings "github.com/go-corelibs/strings"
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/gob"
 	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
-	beMime "github.com/go-enjin/be/pkg/mime"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -172,7 +172,7 @@ func (f *FileSystem) ReadFile(path string) (content []byte, err error) {
 func (f *FileSystem) MimeType(path string) (mime string, err error) {
 	f.RLock()
 	defer f.RUnlock()
-	if mime = beMime.Mime(f.realpath(path)); mime == "" {
+	if mime = clMime.Mime(f.realpath(path)); mime == "" {
 		mime = "application/octet-stream"
 	}
 	return

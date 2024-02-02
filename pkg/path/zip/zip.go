@@ -24,8 +24,8 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/spkg/zipfs"
 
+	clMime "github.com/go-corelibs/mime"
 	"github.com/go-enjin/be/pkg/hash/sha"
-	beMime "github.com/go-enjin/be/pkg/mime"
 )
 
 func ReadDir(path string, zfs *zipfs.FileSystem) (entries []fs.DirEntry, err error) {
@@ -87,17 +87,17 @@ func Mime(path string, zfs *zipfs.FileSystem) (mime string, err error) {
 	if data, err = ReadFile(path, zfs); err != nil {
 		if err.Error() == "is a directory" {
 			err = nil
-			mime = beMime.DirectoryMimeType
+			mime = clMime.DirectoryMimeType
 		}
 		return
 	}
 
-	if mime = beMime.FromPathOnly(path); mime == "" {
+	if mime = clMime.FromPathOnly(path); mime == "" {
 		mime = mimetype.Detect(data).String()
 	}
 
 	if mime == "" {
-		mime = beMime.BinaryMimeType
+		mime = clMime.BinaryMimeType
 	}
 	return
 }

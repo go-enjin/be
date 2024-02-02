@@ -22,10 +22,10 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	clMime "github.com/go-corelibs/mime"
 	clPath "github.com/go-corelibs/path"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	beMime "github.com/go-enjin/be/pkg/mime"
 )
 
 var (
@@ -132,7 +132,7 @@ func (f *CFeature) DataUri(path string) (dataUri string) {
 	} else if encoded = base64.StdEncoding.EncodeToString(data); encoded == "" {
 		return
 	}
-	switch beMime.PruneCharset(mime) {
+	switch clMime.PruneCharset(mime) {
 	case "image/png":
 		dataUri = "data:image/png;base64," + encoded
 	case "image/jpg":

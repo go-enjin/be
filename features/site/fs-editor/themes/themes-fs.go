@@ -24,6 +24,7 @@ import (
 
 	"github.com/maruel/natural"
 
+	clMime "github.com/go-corelibs/mime"
 	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
@@ -31,7 +32,6 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
-	beMime "github.com/go-enjin/be/pkg/mime"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -46,7 +46,7 @@ func (f *CFeature) FileExists(info *editor.File) (exists bool) {
 						continue
 					} else if mountPoint.ROFS.Exists(filePath) {
 						if mimeType, err := mountPoint.ROFS.MimeType(filePath); err == nil {
-							if exists = mimeType != beMime.DirectoryMimeType; exists {
+							if exists = mimeType != clMime.DirectoryMimeType; exists {
 								return
 							}
 						}
@@ -201,7 +201,7 @@ func (f *CFeature) ListFileSystems() (list editor.Files) {
 			FSBT:     mpf.BaseTag().String(),
 			FSID:     mpf.Tag().String(),
 			Name:     mpf.Tag().String(),
-			MimeType: beMime.DirectoryMimeType,
+			MimeType: clMime.DirectoryMimeType,
 			ReadOnly: !readWrite,
 		})
 	}
@@ -227,7 +227,7 @@ func (f *CFeature) ListFileSystemLocales(fsid string) (list editor.Files) {
 							Code:     mount,
 							Name:     mount,
 							Locale:   &language.Und, // above locales in path-space is Und
-							MimeType: beMime.DirectoryMimeType,
+							MimeType: clMime.DirectoryMimeType,
 						})
 					}
 				}
@@ -278,7 +278,7 @@ func (f *CFeature) ListFileSystemDirectories(r *http.Request, fsid, code, dirs s
 								Path:     dir,
 								Name:     filepath.Base(dir),
 								Locale:   &language.Und,
-								MimeType: beMime.DirectoryMimeType,
+								MimeType: clMime.DirectoryMimeType,
 								ReadOnly: mountPoint.RWFS == nil,
 								Actions:  actions,
 							})
@@ -351,7 +351,7 @@ func (f *CFeature) ProcessMountPointFile(r *http.Request, printer *message.Print
 		log.ErrorRF(r, "error getting file stats: %v - %v", file, err)
 		ignored = true
 		return
-	} else if !beMime.IsPlainText(mimeType) {
+	} else if !clMime.IsPlainText(mimeType) {
 		log.DebugRF(r, "ignoring binary file: %v - %v", file, mimeType)
 		ignored = true
 		return

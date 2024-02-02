@@ -21,9 +21,9 @@ import (
 
 	"github.com/go-corelibs/x-text/language"
 
+	"github.com/go-corelibs/mime"
 	clPath "github.com/go-corelibs/path"
 	beContext "github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/mime"
 )
 
 type File struct {
