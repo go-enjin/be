@@ -31,10 +31,10 @@ import (
 
 	clMime "github.com/go-corelibs/mime"
 	clPath "github.com/go-corelibs/path"
+	sha "github.com/go-corelibs/shasum"
 	clStrings "github.com/go-corelibs/strings"
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/gob"
-	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/types/page/matter"
 )
@@ -182,7 +182,7 @@ func (f *FileSystem) Shasum(path string) (shasum string, err error) {
 	f.RLock()
 	defer f.RUnlock()
 
-	shasum, err = sha.FileHash10(f.realpath(path))
+	shasum, err = sha.BriefFile(f.realpath(path))
 	return
 }
 
@@ -190,7 +190,7 @@ func (f *FileSystem) Sha256(path string) (shasum string, err error) {
 	f.RLock()
 	defer f.RUnlock()
 
-	shasum, err = sha.FileHash256(f.realpath(path))
+	shasum, err = sha.File(f.realpath(path))
 	return
 }
 

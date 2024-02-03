@@ -24,7 +24,7 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 
 	clPath "github.com/go-corelibs/path"
-	"github.com/go-enjin/be/pkg/hash/sha"
+	sha "github.com/go-corelibs/shasum"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/types/page/matter"
 )
@@ -139,7 +139,7 @@ func (f *DBFileSystem) WriteFile(path string, data []byte, _ os.FileMode) (err e
 	}
 	realpath := f.realpath(path)
 	var shasum string
-	if shasum, err = sha.DataHash64(data); err != nil {
+	if shasum, err = sha.Sum256(data); err != nil {
 		return
 	}
 	mime := mimetype.Detect(data).String()
@@ -191,7 +191,7 @@ func (f *DBFileSystem) WritePageMatter(pm *matter.PageMatter) (err error) {
 	}
 
 	var shasum string
-	if shasum, err = sha.DataHash64(data); err != nil {
+	if shasum, err = sha.Sum256(data); err != nil {
 		return
 	}
 

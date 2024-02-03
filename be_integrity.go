@@ -20,9 +20,9 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/shasum"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
-	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/signals"
 	"github.com/go-enjin/be/pkg/slug"
@@ -75,8 +75,8 @@ func (e *Enjin) startupIntegrityChecks(ctx *cli.Context) (err error) {
 				log.InfoF(eicLogMsg("partial-pass", "slug integrity validated successfully"))
 				if ctx.IsSet("sums-integrity") {
 					globals.SumsIntegrity = strings.ToLower(ctx.String("sums-integrity"))
-					if !sha.RxShasum64.MatchString(globals.SumsIntegrity) {
-						err = eicFmtErr("invalid --sums-integrity value, must be 64 characters of [a-f0-9]")
+					if !shasum.Validate(globals.SumsIntegrity, shasum.Sha256Length) {
+						err = eicFmtErr("invalid --sums-integrity value, must be %d characters of [a-f0-9]", shasum.Sha256Length)
 						return
 					}
 				} else {

@@ -18,9 +18,9 @@ import (
 	"encoding/json"
 	"strings"
 
+	sha "github.com/go-corelibs/shasum"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
@@ -43,7 +43,7 @@ type User struct {
 }
 
 func NewUser(id, name, email, image string, ctx context.Context) (user *User) {
-	eid, _ := sha.DataHash10([]byte(id))
+	eid, _ := sha.BriefSum([]byte(id))
 	user = &User{
 		RID:     id,
 		EID:     eid,

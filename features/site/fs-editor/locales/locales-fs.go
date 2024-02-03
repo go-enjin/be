@@ -23,12 +23,12 @@ import (
 	cllang "github.com/go-corelibs/lang"
 	clMime "github.com/go-corelibs/mime"
 	clPath "github.com/go-corelibs/path"
+	sha "github.com/go-corelibs/shasum"
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
-	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/userbase"
 )
@@ -166,7 +166,7 @@ func (f *CFeature) ReadDraftLocales(fsid, code string, mountPoints feature.Mount
 	unique := make(map[string]struct{})
 	process := func(tag language.Tag, parsed *cllang.GoText) {
 		for _, msg := range parsed.Messages {
-			shasum, _ := sha.DataHash10(msg.Key)
+			shasum, _ := sha.BriefSum(msg.Key)
 			if _, present := ld.Data[shasum]; !present {
 				ld.Data[shasum] = make(map[language.Tag]*LocaleMessage)
 			}

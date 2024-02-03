@@ -14,8 +14,8 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	sha "github.com/go-corelibs/shasum"
 	beContext "github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/serve"
 	"github.com/go-enjin/be/pkg/request"
@@ -81,7 +81,7 @@ func (h *PolicyHandler) NewReportNonce() (nonce string) {
 	h.Lock()
 	defer h.Unlock()
 	unique, _ := uuid.NewV4()
-	nonce, _ = sha.DataHash10(unique.Bytes())
+	nonce, _ = sha.BriefSum(unique.Bytes())
 	h.reportNonces[nonce] = time.Now()
 	return
 }
@@ -131,7 +131,7 @@ func (h *PolicyHandler) GetRequestNonce(tag string, r *http.Request) (nonce stri
 		data = &m
 	}
 	unique, _ := uuid.NewV4()
-	nonce, _ = sha.DataHash64(unique.Bytes())
+	nonce, _ = sha.Sum256(unique.Bytes())
 	(*data)[tag] = nonce
 	modified = r.Clone(context.WithValue(r.Context(), RequestNonceDataTag, data))
 	return

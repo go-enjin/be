@@ -26,7 +26,7 @@ import (
 
 	clMime "github.com/go-corelibs/mime"
 	clPath "github.com/go-corelibs/path"
-	"github.com/go-enjin/be/pkg/hash/sha"
+	sha "github.com/go-corelibs/shasum"
 )
 
 func Sha256(path string, efs embed.FS) (shasum string, err error) {
@@ -34,7 +34,7 @@ func Sha256(path string, efs embed.FS) (shasum string, err error) {
 	if data, err = efs.ReadFile(path); err != nil {
 		return
 	}
-	shasum, err = sha.Hash256(data)
+	shasum, err = sha.Sum(data)
 	return
 }
 
@@ -43,7 +43,7 @@ func Shasum(path string, efs embed.FS) (shasum string, err error) {
 	if data, err = efs.ReadFile(path); err != nil {
 		return
 	}
-	shasum, err = sha.DataHash10(data)
+	shasum, err = sha.BriefSum(data)
 	return
 }
 

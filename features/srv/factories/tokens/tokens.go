@@ -19,10 +19,10 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	sha "github.com/go-corelibs/shasum"
 	"github.com/go-enjin/be/pkg/crypto"
 	"github.com/go-enjin/be/pkg/feature"
 	uses_kvc "github.com/go-enjin/be/pkg/feature/uses-kvc"
-	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
@@ -173,7 +173,7 @@ func (f *CFeature) verify(key, value string) (valid bool) {
 	var expiration time.Time
 	var tokenBucket, aliasBucket feature.KeyValueStore
 
-	aliasKey := sha.MustDataHash10(key)
+	aliasKey := sha.MustBriefSum(key)
 
 	if tokenBucket, err = f.KVC().Bucket(key); err != nil {
 		// TODO: is this a case to panic or just trace ignore?
@@ -201,7 +201,7 @@ func (f *CFeature) verify(key, value string) (valid bool) {
 			return
 		}
 	} else {
-		shasum = sha.MustDataHash10(value)
+		shasum = sha.MustBriefSum(value)
 	}
 
 	defer func() {
@@ -224,7 +224,7 @@ func (f *CFeature) get(key string, duration time.Duration) (value, shasum string
 		duration = f.duration
 	}
 
-	aliasKey := sha.MustDataHash10(key)
+	aliasKey := sha.MustBriefSum(key)
 
 	var err error
 	var tokenBucket, aliasBucket feature.KeyValueStore
@@ -235,7 +235,7 @@ func (f *CFeature) get(key string, duration time.Duration) (value, shasum string
 	}
 
 	value = f.randomValue()
-	shasum = sha.MustDataHash10(value)
+	shasum = sha.MustBriefSum(value)
 
 	maps.MakeTypedKey(key, f.tokens)
 	f.tokens[key][value] = time.Now().Add(duration)

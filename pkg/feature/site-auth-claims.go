@@ -17,8 +17,8 @@ package feature
 import (
 	"github.com/golang-jwt/jwt/v4"
 
+	sha "github.com/go-corelibs/shasum"
 	beContext "github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/hash/sha"
 )
 
 type CSiteAuthClaims struct {
@@ -129,13 +129,13 @@ func (c *CSiteAuthClaims) RevokeFactors(kebab string) {
 }
 
 func (c *CSiteAuthClaims) SetVerifiedFactor(target string, factor *CSiteAuthClaimsFactor) {
-	shasum := sha.MustDataHash10(target)
+	shasum := sha.MustBriefSum(target)
 	_ = c.Context.SetKV(".v."+shasum, factor)
 	return
 }
 
 func (c *CSiteAuthClaims) GetVerifiedFactor(target string) (factor *CSiteAuthClaimsFactor, ok bool) {
-	shasum := sha.MustDataHash10(target)
+	shasum := sha.MustBriefSum(target)
 	if v := c.Context.Get(".v." + shasum); v != nil {
 		if factor, ok = v.(*CSiteAuthClaimsFactor); ok {
 			return
@@ -149,7 +149,7 @@ func (c *CSiteAuthClaims) GetVerifiedFactor(target string) (factor *CSiteAuthCla
 }
 
 func (c *CSiteAuthClaims) RevokeVerifiedFactor(target string) {
-	shasum := sha.MustDataHash10(target)
+	shasum := sha.MustBriefSum(target)
 	c.Context.Delete(".v." + shasum)
 	return
 }

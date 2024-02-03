@@ -26,8 +26,8 @@ import (
 	"github.com/go-enjin/be/pkg/editor"
 
 	clPath "github.com/go-corelibs/path"
+	sha "github.com/go-corelibs/shasum"
 	beContext "github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 )
@@ -77,7 +77,7 @@ func NewPageMatter(origin string, path, body string, frontMatterType FrontMatter
 
 func ParsePageMatter(origin string, path string, created, updated time.Time, raw []byte) (pm *PageMatter, err error) {
 	var shasum string
-	if shasum, err = sha.DataHash10(raw); err != nil {
+	if shasum, err = sha.BriefSum(raw); err != nil {
 		err = fmt.Errorf("error hashing page data: %v", err)
 		return
 	}

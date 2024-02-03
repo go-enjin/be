@@ -38,7 +38,7 @@ type FileSystem interface {
 	MimeType(path string) (mime string, err error)
 	// Shasum returns the 10-character, lower-cased hex encoded shasum of the file
 	Shasum(path string) (shasum string, err error)
-	// Sha256 returns the complete sha256 (base64 encoded) hash of the file
+	// Sha256 returns the complete sha256 (hexadecimal encoded) hash of the file
 	Sha256(path string) (shasum string, err error)
 	FileCreated(path string) (created int64, err error)
 	LastModified(path string) (dateTime int64, err error)

@@ -24,8 +24,8 @@ import (
 
 	"github.com/go-corelibs/x-text/language"
 
+	sha "github.com/go-corelibs/shasum"
 	"github.com/go-enjin/be/pkg/globals"
-	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/pages"
 	"github.com/go-enjin/be/types/page/matter"
 )
@@ -98,7 +98,7 @@ func (p *CPage) SetPermalink(value string) (err error) {
 	if id, e := uuid.FromString(value); e != nil {
 		err = fmt.Errorf("error parsing permalink id: %v - %v", value, e)
 		return
-	} else if sum, ee := sha.DataHash10(id.Bytes()); ee != nil {
+	} else if sum, ee := sha.BriefSum(id.Bytes()); ee != nil {
 		err = fmt.Errorf("error getting permalink sha: %v - %v", id, ee)
 		return
 	} else {

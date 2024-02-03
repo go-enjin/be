@@ -18,13 +18,13 @@ import (
 	"net/http"
 
 	"github.com/go-corelibs/path"
+	sha "github.com/go-corelibs/shasum"
 	"github.com/go-corelibs/slices"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/crypto"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request"
 )
@@ -83,7 +83,7 @@ func (f *CFeature) ProcessSetupPage(saf feature.SiteAuthFeature, w http.Response
 					for i := 0; i < 10; i++ {
 						rv, ee := crypto.RandomValue(32)
 						berrs.Must(ee)
-						shasum := sha.MustDataHash10(rv)
+						shasum := sha.MustBriefSum(rv)
 						backupCodes = append(backupCodes, shasum)
 					}
 					berrs.Must(f.setNewSecretKey(backupCodes, r))

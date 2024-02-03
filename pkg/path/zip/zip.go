@@ -25,7 +25,7 @@ import (
 	"github.com/spkg/zipfs"
 
 	clMime "github.com/go-corelibs/mime"
-	"github.com/go-enjin/be/pkg/hash/sha"
+	sha "github.com/go-corelibs/shasum"
 )
 
 func ReadDir(path string, zfs *zipfs.FileSystem) (entries []fs.DirEntry, err error) {
@@ -69,7 +69,7 @@ func Shasum(path string, zfs *zipfs.FileSystem) (shasum string, err error) {
 	if data, err = ReadFile(path, zfs); err != nil {
 		return
 	}
-	shasum, err = sha.DataHash10(data)
+	shasum, err = sha.BriefSum(data)
 	return
 }
 
@@ -78,7 +78,7 @@ func Sha256(path string, zfs *zipfs.FileSystem) (shasum string, err error) {
 	if data, err = ReadFile(path, zfs); err != nil {
 		return
 	}
-	shasum, err = sha.Hash256(data)
+	shasum, err = sha.Sum(data)
 	return
 }
 

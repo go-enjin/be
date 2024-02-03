@@ -31,12 +31,12 @@ import (
 
 	times "github.com/go-enjin/github-com-djherbis-times"
 
+	sha "github.com/go-corelibs/shasum"
 	clStrings "github.com/go-corelibs/strings"
 	beContext "github.com/go-enjin/be/pkg/context"
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/gob"
-	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -306,7 +306,7 @@ func (f *DBFileSystem) Sha256(path string) (shasum string, err error) {
 	if file, err = f.getEntryUnsafe(path); err != nil {
 		return
 	} else if file.Mime != "" && file.Mime != InodeDirectoryMimeType {
-		shasum, err = sha.Hash256(file.Content)
+		shasum, err = sha.Sum(file.Content)
 	} else {
 		err = fs.ErrNotExist
 	}

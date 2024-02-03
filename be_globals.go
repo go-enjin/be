@@ -22,9 +22,9 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
+	sha "github.com/go-corelibs/shasum"
 	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/globals"
-	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -52,7 +52,7 @@ func init() {
 		var absPath string
 		if absPath, err = filepath.Abs(os.Args[0]); err != nil {
 			log.DebugF("absolute path error %v: %v", os.Args[0], err)
-		} else if globals.BinHash, err = sha.FileHash10(absPath); err != nil {
+		} else if globals.BinHash, err = sha.BriefFile(absPath); err != nil {
 			log.DebugF("sha hashing error %v: %v", os.Args[0], err)
 			globals.BinHash = "0000000000"
 		}

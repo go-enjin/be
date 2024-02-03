@@ -20,9 +20,9 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/urfave/cli/v2"
 
+	sha "github.com/go-corelibs/shasum"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/hash/sha"
 )
 
 const Tag feature.Tag = "pages-funcmaps-crypto"
@@ -90,18 +90,18 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 	fm = feature.FuncMap{
 		"newUUID":        uuid.NewV4,
 		"uuidFromString": uuid.FromString,
-		"byteHash10":     sha.DataHash10[[]byte],
-		"byteHash64":     sha.DataHash64[[]byte],
-		"dataHash10":     sha.DataHash10[string],
-		"dataHash64":     sha.DataHash64[string],
-		"shasum224":      sha.Shasum224[string],
-		"shasum256":      sha.Shasum256[string],
-		"shasum384":      sha.Shasum384[string],
-		"shasum512":      sha.Shasum512[string],
-		"shasum224b":     sha.Shasum224[[]byte],
-		"shasum256b":     sha.Shasum256[[]byte],
-		"shasum384b":     sha.Shasum384[[]byte],
-		"shasum512b":     sha.Shasum512[[]byte],
+		"byteHash10":     sha.BriefSum[[]byte],
+		"byteHash64":     sha.Sum256[[]byte],
+		"dataHash10":     sha.BriefSum[string],
+		"dataHash64":     sha.Sum256[string],
+		"shasum224":      sha.Sum224[string],
+		"shasum256":      sha.Sum256[string],
+		"shasum384":      sha.Sum384[string],
+		"shasum512":      sha.Sum512[string],
+		"shasum224b":     sha.Sum224[[]byte],
+		"shasum256b":     sha.Sum256[[]byte],
+		"shasum384b":     sha.Sum384[[]byte],
+		"shasum512b":     sha.Sum512[[]byte],
 	}
 	return
 }

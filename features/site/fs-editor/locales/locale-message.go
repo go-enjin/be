@@ -18,7 +18,7 @@ import (
 	"maps"
 
 	"github.com/go-corelibs/lang"
-	"github.com/go-enjin/be/pkg/hash/sha"
+	sha "github.com/go-corelibs/shasum"
 )
 
 type Select struct {
@@ -71,7 +71,7 @@ func (l *LocaleMessage) Copy() (cloned *LocaleMessage) {
 
 func ParseNewMessage(key, comment string) (m *LocaleMessage) {
 	replaced, labelled, placeholders := lang.ParseMessagePlaceholders(key)
-	shasum, _ := sha.DataHash10(key)
+	shasum, _ := sha.BriefSum(key)
 	m = &LocaleMessage{
 		ID:                labelled,
 		Key:               key,

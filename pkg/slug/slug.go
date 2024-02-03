@@ -24,8 +24,8 @@ import (
 	"github.com/maruel/natural"
 
 	clPath "github.com/go-corelibs/path"
+	sha "github.com/go-corelibs/shasum"
 	"github.com/go-enjin/be/pkg/globals"
-	"github.com/go-enjin/be/pkg/hash/sha"
 )
 
 var (
@@ -58,7 +58,7 @@ func (m ShaMap) SlugIntegrity() (shasum string, err error) {
 	for _, key := range keys {
 		content += fmt.Sprintf("%v %v\n", m[key], key)
 	}
-	shasum, err = sha.DataHash64([]byte(content))
+	shasum, err = sha.Sum(content)
 	return
 }
 
@@ -83,7 +83,7 @@ func (m ShaMap) SumsIntegrity() (shasum string, err error) {
 	for _, key := range m.Keys() {
 		content += fmt.Sprintf("%v %v\n", m[key], key)
 	}
-	shasum, err = sha.DataHash64([]byte(content))
+	shasum, err = sha.Sum(content)
 	return
 }
 
@@ -200,7 +200,7 @@ func BuildSlugMapIgnoring(files ...string) (slugMap ShaMap, err error) {
 					file = file[2:]
 				}
 				if rx.MatchString(file) {
-					if slugMap[file], err = sha.FileHash64(file); err != nil {
+					if slugMap[file], err = sha.File(file); err != nil {
 						return
 					}
 				}
@@ -215,7 +215,7 @@ func BuildSlugMapIgnoring(files ...string) (slugMap ShaMap, err error) {
 						return
 					}
 					for _, subPath := range subPaths {
-						if slugMap[subPath], err = sha.FileHash64(subPath); err != nil {
+						if slugMap[subPath], err = sha.File(subPath); err != nil {
 							return
 						}
 					}
@@ -224,7 +224,7 @@ func BuildSlugMapIgnoring(files ...string) (slugMap ShaMap, err error) {
 			continue
 		}
 		if clPath.IsFile(path) {
-			if slugMap[path], err = sha.FileHash64(path); err != nil {
+			if slugMap[path], err = sha.File(path); err != nil {
 				return
 			}
 			continue
@@ -235,7 +235,7 @@ func BuildSlugMapIgnoring(files ...string) (slugMap ShaMap, err error) {
 				return
 			}
 			for _, subPath := range subPaths {
-				if slugMap[subPath], err = sha.FileHash64(subPath); err != nil {
+				if slugMap[subPath], err = sha.File(subPath); err != nil {
 					return
 				}
 			}
@@ -263,7 +263,7 @@ func BuildFileMap() (fileMap map[string]string, err error) {
 		}
 		path = clPath.TrimRelativeToRoot(path, wd)
 		if clPath.IsFile(path) {
-			if fileMap[path], err = sha.FileHash64(path); err != nil {
+			if fileMap[path], err = sha.File(path); err != nil {
 				return
 			}
 			continue
@@ -274,7 +274,7 @@ func BuildFileMap() (fileMap map[string]string, err error) {
 				return
 			}
 			for _, subPath := range subPaths {
-				if fileMap[subPath], err = sha.FileHash64(subPath); err != nil {
+				if fileMap[subPath], err = sha.File(subPath); err != nil {
 					return
 				}
 			}

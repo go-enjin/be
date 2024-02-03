@@ -21,6 +21,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	clPath "github.com/go-corelibs/path"
+	sha "github.com/go-corelibs/shasum"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
 	"github.com/go-enjin/be/pkg/feature/signaling"
@@ -28,7 +29,6 @@ import (
 	uses_actions "github.com/go-enjin/be/pkg/feature/uses-actions"
 	uses_enjin_salt "github.com/go-enjin/be/pkg/feature/uses-enjin-salt"
 	uses_kvc "github.com/go-enjin/be/pkg/feature/uses-kvc"
-	"github.com/go-enjin/be/pkg/hash/sha"
 	"github.com/go-enjin/be/pkg/maps"
 )
 
@@ -277,6 +277,6 @@ func (f *CFeature) MakeRealID(email string) (rid string) {
 }
 
 func (f *CFeature) MakeEnjinID(rid string) (eid string) {
-	eid, _ = sha.DataHash10(f.enjinSalt.GetEnjinSalt() + rid)
+	eid, _ = sha.BriefSum(f.enjinSalt.GetEnjinSalt() + rid)
 	return
 }
