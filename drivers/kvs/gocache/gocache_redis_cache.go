@@ -18,6 +18,7 @@ package gocache
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -42,6 +43,7 @@ type cRedisCache struct {
 	this       *CFeature
 	name       string
 	client     *redis.Client
+	cluster    *redis.ClusterClient
 	buckets    map[string]*cRedisStore
 	lifeWindow time.Duration
 
@@ -79,12 +81,23 @@ func (c *cRedisCache) Build(b feature.Buildable) (err error) {
 
 func (c *cRedisCache) Startup(ctx *cli.Context) (err error) {
 	_, flagName := c.makeFlagName()
-	var options *redis.Options
 	if !ctx.IsSet(flagName) {
 		err = fmt.Errorf("required flag not present: --%v", flagName)
 		return
 	}
 	url := ctx.String(flagName)
+
+	if strings.Contains(url, "addr=") {
+		log.WarnF("detected redis-cluster URL")
+		var options *redis.ClusterOptions
+		if options, err = redis.ParseClusterURL(url); err != nil {
+			return
+		}
+		c.cluster = redis.NewClusterClient(options)
+		return
+	}
+
+	var options *redis.Options
 	if options, err = redis.ParseURL(url); err != nil {
 		return
 	}
@@ -93,8 +106,15 @@ func (c *cRedisCache) Startup(ctx *cli.Context) (err error) {
 }
 
 func (c *cRedisCache) Shutdown() {
-	if err := c.client.Close(); err != nil {
-		log.ErrorF("error closing %v redis client: %v", c.name, err)
+	if c.cluster != nil {
+		if err := c.cluster.Close(); err != nil {
+			log.ErrorF("error closing %v redis-cluster client: %v", c.name, err)
+		}
+	}
+	if c.client != nil {
+		if err := c.client.Close(); err != nil {
+			log.ErrorF("error closing %v redis client: %v", c.name, err)
+		}
 	}
 }
 
@@ -130,18 +150,23 @@ func (c *cRedisCache) AddBucket(name string) (kvs feature.KeyValueStore, err err
 		//err = BucketExists
 		return
 	}
-
 	var options []store.Option
 	if c.lifeWindow > 0 {
 		options = append(options, store.WithExpiration(c.lifeWindow))
 	}
-	redisStore := redis_store.NewRedis(c.client, options...)
+	var redisStore *redis_store.RedisStore
+	if c.cluster != nil {
+		redisStore = redis_store.NewRedis(c.cluster, options...)
+	} else if c.client != nil {
+		redisStore = redis_store.NewRedis(c.client, options...)
+	}
 	cacheManager := cache.New[string](redisStore)
 	c.buckets[name] = &cRedisStore{
-		tag:    c.this.Tag().Kebab(),
-		name:   name,
-		cache:  cacheManager,
-		client: c.client,
+		tag:     c.this.Tag().Kebab(),
+		name:    name,
+		cache:   cacheManager,
+		client:  c.client,
+		cluster: c.cluster,
 	}
 	kvs = c.buckets[name]
 	return

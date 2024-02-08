@@ -30,10 +30,11 @@ import (
 var _ feature.ExtendedKeyValueStore = (*cRedisStore)(nil)
 
 type cRedisStore struct {
-	tag    string
-	name   string
-	cache  *cache.Cache[string]
-	client *redis.Client
+	tag     string
+	name    string
+	cache   *cache.Cache[string]
+	client  *redis.Client
+	cluster *redis.ClusterClient
 }
 
 func (c *cRedisStore) MakeKey(prefix string) (key string) {
@@ -68,7 +69,7 @@ func (c *cRedisStore) Delete(key string) (err error) {
 }
 
 func (c *cRedisStore) DoScan(ctx context.Context, pattern string, fn DoScanRedisFn) {
-	iter := c.client.Scan(ctx, 0, pattern, 0).Iterator()
+	iter := c.Client().Scan(ctx, 0, pattern, 0).Iterator()
 	defer func() {
 		if err := iter.Err(); err != nil {
 			log.ErrorF("error scanning %q (%q) for range %q: %v", c.tag, c.name, pattern, err)
@@ -126,7 +127,7 @@ func (c *cRedisStore) Range(prefix string, fn feature.KeyValueStoreRangeFn) {
 	pattern := c.makePattern(prefix)
 	c.DoScan(ctx, pattern, func(iter *redis.ScanIterator) (stop bool) {
 		key := iter.Val()
-		if v := c.client.Get(ctx, key); v != nil {
+		if v := c.Client().Get(ctx, key); v != nil {
 			k := strings.TrimSuffix(key, bucket)
 			if stop = fn(k, []byte(v.Val())); stop {
 				return
@@ -143,10 +144,21 @@ type UnsafeRedisStore interface {
 
 	MakeKey(prefix string) (key string)
 	DoScan(ctx context.Context, pattern string, fn DoScanRedisFn)
-	Client() (client *redis.Client)
+	Client() (client UnsafeRedisClient)
 }
 
-func (c *cRedisStore) Client() (client *redis.Client) {
+type UnsafeRedisClient interface {
+	RandomKey(ctx context.Context) *redis.StringCmd
+	Do(ctx context.Context, args ...interface{}) *redis.Cmd
+	Get(ctx context.Context, key string) *redis.StringCmd
+	Scan(ctx context.Context, cursor uint64, match string, count int64) *redis.ScanCmd
+}
+
+func (c *cRedisStore) Client() (client UnsafeRedisClient) {
+	if c.cluster != nil {
+		client = c.cluster
+		return
+	}
 	client = c.client
 	return
 }
