@@ -478,8 +478,8 @@ func (f *CFeature) LookupPrefixed(prefix string) (pages []feature.Page) {
 	prefix = clPath.CleanWithSlash(prefix)
 
 	//allUrls := kvs.GetFlatList[string](f.allUrlsBucket, "all")
-	allUrls := f.allUrlsBucket.Keys("")
-	for _, url := range allUrls {
+	//allUrls := f.allUrlsBucket.Keys("")
+	for url := range f.allUrlsBucket.StreamKeys("", nil) {
 		if strings.HasPrefix(url, prefix) {
 			if shasums := kvs.GetFlatList[string](f.pageUrlsBucket, url); len(shasums) > 0 {
 				for _, shasum := range shasums {
