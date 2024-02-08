@@ -203,15 +203,19 @@ func New() (be *EnjinBuilder) {
 	return be
 }
 
-func (eb *EnjinBuilder) IncludeEnjin(enjins ...*EnjinBuilder) feature.Builder {
-	var checked []*EnjinBuilder
-	for _, enjin := range enjins {
-		for _, check := range checked {
-			if check.tag == enjin.tag {
-				log.FatalDF(1, "enjin tags must be unique")
+func (eb *EnjinBuilder) IncludeEnjin(enjins ...feature.Builder) feature.Builder {
+	checked := eb.enjins[:]
+	for _, builder := range enjins {
+		if enjin, ok := builder.(*EnjinBuilder); ok {
+			for _, check := range checked {
+				if check.tag == enjin.tag {
+					log.FatalDF(1, "enjin tags must be unique")
+				}
 			}
+			checked = append(checked, enjin)
+		} else {
+			log.FatalDF(1, "unexpected enjin type: %T", builder)
 		}
-		checked = append(checked, enjin)
 	}
 	eb.enjins = append(eb.enjins, checked...)
 	return eb
