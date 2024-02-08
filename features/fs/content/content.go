@@ -22,6 +22,7 @@ import (
 	"runtime/debug"
 	"time"
 
+	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/editor"
@@ -66,6 +67,10 @@ type MakeFeature interface {
 	// when the indexing is complete. The default is -1 which disables setting anything at all. The Go default GC
 	// percent is 100. See: https://tip.golang.org/doc/gc-guide for more detail on what this does.
 	SetStartupGC(percent int) MakeFeature
+
+	SetStartupIndexing(enabled bool) MakeFeature
+
+	SkipStartupIndexing(list ...feature.Tag) MakeFeature
 }
 
 type CFeature struct {
@@ -79,6 +84,9 @@ type CFeature struct {
 
 	indexProviders  []feature.PageIndexFeature
 	searchProviders []feature.SearchEnjinFeature
+
+	startupIndexing     bool
+	skipStartupIndexing feature.Tags
 
 	cache feature.KeyValueCache
 }
@@ -100,6 +108,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.gcPercent = DefaultGCPercent
+	f.startupIndexing = true
 }
 
 func (f *CFeature) AddToIndexProviders(tag ...feature.Tag) MakeFeature {
@@ -117,13 +126,47 @@ func (f *CFeature) SetStartupGC(percent int) MakeFeature {
 	return f
 }
 
+func (f *CFeature) SetStartupIndexing(enabled bool) MakeFeature {
+	f.startupIndexing = enabled
+	return f
+}
+
+func (f *CFeature) SkipStartupIndexing(list ...feature.Tag) MakeFeature {
+	f.skipStartupIndexing = f.skipStartupIndexing.Append(list...)
+	return f
+}
+
 func (f *CFeature) Make() Feature {
 	f.indexProviderTags = f.indexProviderTags.Unique()
 	f.searchProviderTags = f.searchProviderTags.Unique()
 	return f
 }
 
+func (f *CFeature) makeFlagName() (category, indexing, skip string) {
+	category = f.Tag().Kebab()
+	indexing = strcase.ToKebab(category + "-startup-indexing")
+	skip = strcase.ToKebab(category + "-skip-startup-indexing")
+	return
+}
+
 func (f *CFeature) Build(b feature.Buildable) (err error) {
+	category, indexingFlag, skipFlag := f.makeFlagName()
+	b.AddFlags(
+		&cli.BoolFlag{
+			Name:     indexingFlag,
+			Usage:    "toggle indexing content on startup",
+			EnvVars:  b.MakeEnvKeys(indexingFlag),
+			Value:    f.startupIndexing,
+			Category: category,
+		},
+		&cli.StringSliceFlag{
+			Name:     skipFlag,
+			Usage:    "skip indexing features on startup",
+			EnvVars:  b.MakeEnvKeys(skipFlag),
+			Value:    cli.NewStringSlice(f.skipStartupIndexing.Strings()...),
+			Category: category,
+		},
+	)
 	return
 }
 
@@ -170,11 +213,34 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 	f.searchProviderTags = searchProviderTags
 
+	_, indexingFlag, skipFlag := f.makeFlagName()
+	f.startupIndexing = ctx.Bool(indexingFlag)
+	for _, name := range ctx.StringSlice(skipFlag) {
+		tag := feature.Tag(name)
+		if f.indexProviderTags.Has(tag) || f.searchProviderTags.Has(tag) {
+			f.skipStartupIndexing = append(f.skipStartupIndexing, tag)
+			continue
+		}
+		err = fmt.Errorf("%v skip indexing feature not found: %v", f.Tag(), name)
+		return
+	}
+	var all bool
+	for _, tag := range append(f.indexProviderTags, f.searchProviderTags...) {
+		if all = f.skipStartupIndexing.Has(tag); !all {
+			break
+		}
+	}
+	if all && f.startupIndexing {
+		f.startupIndexing = false
+		log.WarnF("skipping all startup indexing")
+	}
 	return
 }
 
 func (f *CFeature) PostStartup(ctx *cli.Context) (err error) {
-	err = f.PopulateIndexes()
+	if f.startupIndexing {
+		err = f.PopulateIndexes()
+	}
 	return
 }
 
@@ -252,8 +318,11 @@ func (f *CFeature) PopulateIndexes() (err error) {
 
 						} else {
 
-							for idx, pip := range f.indexProviders {
-								tag := f.indexProviderTags[idx]
+							for _, pip := range f.indexProviders {
+								tag := pip.Tag()
+								if f.skipStartupIndexing.Has(tag) {
+									continue
+								}
 								pipStart := time.Now()
 								if eeeee := pip.AddToIndex(pmStub, pg); eeeee != nil {
 									log.ErrorF("error adding to page %q index: %v - %v", pip.Tag(), file, eeeee)
@@ -267,8 +336,11 @@ func (f *CFeature) PopulateIndexes() (err error) {
 								}
 							}
 
-							for idx, sep := range f.searchProviders {
-								tag := f.searchProviderTags[idx]
+							for _, sep := range f.searchProviders {
+								tag := sep.Tag()
+								if f.skipStartupIndexing.Has(tag) {
+									continue
+								}
 								sepStart := time.Now()
 								if eeeee := sep.AddToSearchIndex(pmStub, pg); eeeee != nil {
 									log.ErrorF("error adding to search %q index: %v - %v", sep.Tag(), file, eeeee)
