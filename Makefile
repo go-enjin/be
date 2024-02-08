@@ -21,28 +21,9 @@
 .PHONY: be-update local unlocal tidy
 .PHONY: deps fmt reportcard
 
-MAKEFILE_VERSION = v0.0.3
+MAKEFILE_VERSION = v0.0.4
 
 SHELL = /bin/bash
-
-GOPKG_KEYS := GOXT DJHT GOTS
-
-# Go-Enjin gotext package
-GOXT_GO_PACKAGE := github.com/go-enjin/golang-org-x-text
-GOXT_LOCAL_PATH := ../../../github.com/go-enjin/golang-org-x-text
-GOXT_LATEST_VER := v0.12.1-enjin.2
-
-# Go-Enjin times package
-DJHT_GO_PACKAGE := github.com/go-enjin/github-com-djherbis-times
-DJHT_LOCAL_PATH := ../../../github.com/go-enjin/github-com-djherbis-times
-
-## go-pkgz auth package
-#GPA_GO_PACKAGE := github.com/go-enjin/github-com-go-pkgz-auth
-#GPA_LOCAL_PATH := ../../../github.com/go-enjin/github-com-go-pkgz-auth
-
-# Go-Enjin text/scanner package
-GOTS_GO_PACKAGE := github.com/go-enjin/go-stdlib-text-scanner
-GOTS_LOCAL_PATH := ../../../github.com/go-enjin/go-stdlib-text-scanner
 
 GOLANG ?= 1.21.6
 GO_MOD ?= 1021
@@ -53,6 +34,91 @@ GOIMPORT_LOCALS += github.com/go-enjin
 
 _INTERNAL_BUILD_LOG_ := /dev/null
 #_INTERNAL_BUILD_LOG_ := ./build.log
+
+# Go-Enjin gotext package
+GOPKG_KEYS += GOXT
+GOXT_GO_PACKAGE := github.com/go-corelibs/x-text
+GOXT_LOCAL_PATH := ../../../github.com/go-corelibs/x-text
+
+# Go-Enjin times package
+GOPKG_KEYS += DJHT
+DJHT_GO_PACKAGE := github.com/go-enjin/github-com-djherbis-times
+DJHT_LOCAL_PATH := ../../../github.com/go-enjin/github-com-djherbis-times
+
+# Go-Enjin text/scanner package
+GOPKG_KEYS += GOTS
+GOTS_GO_PACKAGE := github.com/go-enjin/go-stdlib-text-scanner
+GOTS_LOCAL_PATH := ../../../github.com/go-enjin/go-stdlib-text-scanner
+
+# Go-CoreLibs packages
+
+GOPKG_KEYS += CL_ENV
+CL_ENV_GO_PACKAGE := github.com/go-corelibs/env
+CL_ENV_LOCAL_PATH := ../../go-corelibs/env
+
+GOPKG_KEYS += CL_LANG
+CL_LANG_GO_PACKAGE := github.com/go-corelibs/lang
+CL_LANG_LOCAL_PATH := ../../go-corelibs/lang
+
+GOPKG_KEYS += CL_MIME
+CL_MIME_GO_PACKAGE := github.com/go-corelibs/mime
+CL_MIME_LOCAL_PATH := ../../go-corelibs/mime
+
+GOPKG_KEYS += CL_PATH
+CL_PATH_GO_PACKAGE := github.com/go-corelibs/path
+CL_PATH_LOCAL_PATH := ../../go-corelibs/path
+
+GOPKG_KEYS += CL_SLICES
+CL_SLICES_GO_PACKAGE := github.com/go-corelibs/slices
+CL_SLICES_LOCAL_PATH := ../../go-corelibs/slices
+
+GOPKG_KEYS += CL_STRINGS
+CL_STRINGS_GO_PACKAGE := github.com/go-corelibs/strings
+CL_STRINGS_LOCAL_PATH := ../../go-corelibs/strings
+
+GOPKG_KEYS += CL_WORDS
+CL_WORDS_GO_PACKAGE := github.com/go-corelibs/words
+CL_WORDS_LOCAL_PATH := ../../go-corelibs/words
+
+GOPKG_KEYS += CL_X-TEXT
+CL_X-TEXT_GO_PACKAGE := github.com/go-corelibs/x-text
+CL_X-TEXT_LOCAL_PATH := ../../go-corelibs/x-text
+
+GOPKG_KEYS += CL_DIFF
+CL_DIFF_GO_PACKAGE := github.com/go-corelibs/diff
+CL_DIFF_LOCAL_PATH := ../../go-corelibs/diff
+
+GOPKG_KEYS += CL_FMTSTR
+CL_FMTSTR_GO_PACKAGE := github.com/go-corelibs/fmtstr
+CL_FMTSTR_LOCAL_PATH := ../../go-corelibs/fmtstr
+
+GOPKG_KEYS += CL_MAPS
+CL_MAPS_GO_PACKAGE := github.com/go-corelibs/maps
+CL_MAPS_LOCAL_PATH := ../../go-corelibs/maps
+
+GOPKG_KEYS += CL_MATHS
+CL_MATHS_GO_PACKAGE := github.com/go-corelibs/maths
+CL_MATHS_LOCAL_PATH := ../../go-corelibs/maths
+
+GOPKG_KEYS += CL_MIME
+CL_MIME_GO_PACKAGE := github.com/go-corelibs/mime
+CL_MIME_LOCAL_PATH := ../../go-corelibs/mime
+
+GOPKG_KEYS += CL_REPLACE
+CL_REPLACE_GO_PACKAGE := github.com/go-corelibs/replace
+CL_REPLACE_LOCAL_PATH := ../../go-corelibs/replace
+
+GOPKG_KEYS += CL_STRCASES
+CL_STRCASES_GO_PACKAGE := github.com/go-corelibs/strcases
+CL_STRCASES_LOCAL_PATH := ../../go-corelibs/strcases
+
+GOPKG_KEYS += CL_TEMPLATES
+CL_TEMPLATES_GO_PACKAGE := github.com/go-corelibs/templates
+CL_TEMPLATES_LOCAL_PATH := ../../go-corelibs/templates
+
+GOPKG_KEYS += CL_VALUES
+CL_VALUES_GO_PACKAGE := github.com/go-corelibs/values
+CL_VALUES_LOCAL_PATH := ../../go-corelibs/values
 
 all: help
 
