@@ -654,12 +654,6 @@
             "fuzzy": true
         },
         {
-            "id": "Redirecting",
-            "key": "Redirecting",
-            "message": "Redirecting",
-            "translation": "リダイレクト"
-        },
-        {
             "id": "Bad request",
             "key": "Bad request",
             "message": "Bad request",
@@ -722,6 +716,12 @@
             "translation": "ユーザーが見つかりません",
             "translatorComment": "Copied from source.",
             "fuzzy": true
+        },
+        {
+            "id": "Redirecting",
+            "key": "Redirecting",
+            "message": "Redirecting",
+            "translation": "リダイレクト"
         },
         {
             "id": "search form expired",

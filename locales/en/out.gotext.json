@@ -654,14 +654,6 @@
             "fuzzy": true
         },
         {
-            "id": "Redirecting",
-            "key": "Redirecting",
-            "message": "Redirecting",
-            "translation": "Redirecting",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "Bad request",
             "key": "Bad request",
             "message": "Bad request",
@@ -722,6 +714,14 @@
             "key": "User not found",
             "message": "User not found",
             "translation": "User not found",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Redirecting",
+            "key": "Redirecting",
+            "message": "Redirecting",
+            "translation": "Redirecting",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
