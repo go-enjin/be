@@ -1,6 +1,6 @@
 // Code generated with _scripts/bg-pkg-list.sh DO NOT EDIT.
 
-// Copyright (c) 2023  The Go-Enjin Authors
+// Copyright (c) 2024  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,14 +20,12 @@ func GoEnjinPackageList() (list []string) {
 	list = append(list,
 		"github.com/go-enjin/be",
 		"github.com/go-enjin/be/pkg/cli",
-		"github.com/go-enjin/be/pkg/cli/env",
 		"github.com/go-enjin/be/pkg/cli/git",
 		"github.com/go-enjin/be/pkg/cli/run",
 		"github.com/go-enjin/be/pkg/cli/tar",
 		"github.com/go-enjin/be/pkg/cli/zip",
 		"github.com/go-enjin/be/pkg/cmp",
 		"github.com/go-enjin/be/pkg/context",
-		"github.com/go-enjin/be/pkg/convert",
 		"github.com/go-enjin/be/pkg/crypto",
 		"github.com/go-enjin/be/pkg/deepcopy",
 		"github.com/go-enjin/be/pkg/editor",
@@ -47,9 +45,7 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/pkg/fs",
 		"github.com/go-enjin/be/pkg/globals",
 		"github.com/go-enjin/be/pkg/gob",
-		"github.com/go-enjin/be/pkg/hash/sha",
 		"github.com/go-enjin/be/pkg/indexing/search",
-		"github.com/go-enjin/be/pkg/ints",
 		"github.com/go-enjin/be/pkg/kvs",
 		"github.com/go-enjin/be/pkg/lang",
 		"github.com/go-enjin/be/pkg/lang/catalog",
@@ -57,9 +53,7 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/pkg/log/filelogwriter",
 		"github.com/go-enjin/be/pkg/maps",
 		"github.com/go-enjin/be/pkg/maps/kvm",
-		"github.com/go-enjin/be/pkg/maths",
 		"github.com/go-enjin/be/pkg/menu",
-		"github.com/go-enjin/be/pkg/mime",
 		"github.com/go-enjin/be/pkg/net",
 		"github.com/go-enjin/be/pkg/net/headers",
 		"github.com/go-enjin/be/pkg/net/headers/policy/csp",
@@ -71,7 +65,6 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/pkg/notify",
 		"github.com/go-enjin/be/pkg/pageql",
 		"github.com/go-enjin/be/pkg/pages",
-		"github.com/go-enjin/be/pkg/path",
 		"github.com/go-enjin/be/pkg/path/embed",
 		"github.com/go-enjin/be/pkg/path/zip",
 		"github.com/go-enjin/be/pkg/profiling",
@@ -80,14 +73,9 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/pkg/request/argv",
 		"github.com/go-enjin/be/pkg/search",
 		"github.com/go-enjin/be/pkg/signals",
-		"github.com/go-enjin/be/pkg/slices",
 		"github.com/go-enjin/be/pkg/slug",
 		"github.com/go-enjin/be/pkg/strings",
-		"github.com/go-enjin/be/pkg/strings/fmtsubs",
-		"github.com/go-enjin/be/pkg/strings/words",
-		"github.com/go-enjin/be/pkg/templates",
 		"github.com/go-enjin/be/pkg/userbase",
-		"github.com/go-enjin/be/pkg/values",
 		"github.com/go-enjin/be/features/fs/content",
 		"github.com/go-enjin/be/features/fs/email",
 		"github.com/go-enjin/be/features/fs/locale",
