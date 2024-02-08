@@ -15,6 +15,8 @@
 package feature
 
 import (
+	"context"
+
 	"github.com/urfave/cli/v2"
 )
 
@@ -59,4 +61,5 @@ type ExtendedKeyValueStore interface {
 	Size() (count int)
 	Keys(prefix string) (keys []string)
 	Range(prefix string, fn KeyValueStoreRangeFn)
+	StreamKeys(prefix string, ctx context.Context) (keys chan string)
 }
