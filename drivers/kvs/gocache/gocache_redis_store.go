@@ -27,7 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 )
 
-var _ feature.KeyValueStore = (*cRedisStore)(nil)
+var _ feature.ExtendedKeyValueStore = (*cRedisStore)(nil)
 
 type cRedisStore struct {
 	tag    string
@@ -100,6 +100,23 @@ func (c *cRedisStore) Keys(prefix string) (keys []string) {
 		keys = append(keys, key)
 		return
 	})
+	return
+}
+
+func (c *cRedisStore) StreamKeys(prefix string, ctx context.Context) (keys chan string) {
+	keys = make(chan string)
+	go func() {
+		if ctx == nil {
+			ctx = context.Background()
+		}
+		bucket := c.MakeKey("")
+		pattern := c.makePattern(prefix)
+		c.DoScan(ctx, pattern, func(iter *redis.ScanIterator) (stop bool) {
+			keys <- strings.TrimSuffix(iter.Val(), bucket)
+			return
+		})
+		close(keys)
+	}()
 	return
 }
 

@@ -17,6 +17,7 @@
 package gocache
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
@@ -26,7 +27,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 )
 
-var _ feature.KeyValueStore = (*cIMCacheStore)(nil)
+var _ feature.ExtendedKeyValueStore = (*cIMCacheStore)(nil)
 
 type cIMCacheStore struct {
 	cache *imcache.Sharded[string, []byte]
@@ -93,6 +94,26 @@ func (c *cIMCacheStore) Keys(prefix string) (keys []string) {
 			keys = append(keys, k)
 		}
 	}
+	return
+}
+
+func (c *cIMCacheStore) StreamKeys(prefix string, ctx context.Context) (keys chan string) {
+	keys = make(chan string)
+	go func() {
+		prefixLen := len(prefix)
+		for k := range c.cache.GetAll() {
+			if len(k) <= prefixLen && k[:prefixLen] == prefix {
+				keys <- k
+			}
+			select {
+			case <-ctx.Done():
+				close(keys)
+				return
+			default:
+			}
+		}
+		close(keys)
+	}()
 	return
 }
 

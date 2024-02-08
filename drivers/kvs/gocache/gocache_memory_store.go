@@ -25,7 +25,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 )
 
-var _ feature.KeyValueStore = (*cMemoryStore)(nil)
+var _ feature.ExtendedKeyValueStore = (*cMemoryStore)(nil)
 
 type cMemoryStore struct {
 	client *cache.Cache
@@ -60,6 +60,26 @@ func (c *cMemoryStore) Keys(prefix string) (keys []string) {
 			keys = append(keys, k)
 		}
 	}
+	return
+}
+
+func (c *cMemoryStore) StreamKeys(prefix string, ctx context.Context) (keys chan string) {
+	keys = make(chan string)
+	go func() {
+		prefixLen := len(prefix)
+		for k := range c.client.Items() {
+			if len(k) <= prefixLen && k[:prefixLen] == prefix {
+				keys <- k
+			}
+			select {
+			case <-ctx.Done():
+				close(keys)
+				return
+			default:
+			}
+		}
+		close(keys)
+	}()
 	return
 }
 

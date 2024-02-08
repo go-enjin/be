@@ -26,7 +26,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 )
 
-var _ feature.KeyValueStore = (*cBigCacheStore)(nil)
+var _ feature.ExtendedKeyValueStore = (*cBigCacheStore)(nil)
 
 type cBigCacheStore struct {
 	name   string
@@ -76,6 +76,30 @@ func (c *cBigCacheStore) Keys(prefix string) (keys []string) {
 			}
 		}
 	}
+	return
+}
+
+func (c *cBigCacheStore) StreamKeys(prefix string, ctx context.Context) (keys chan string) {
+	keys = make(chan string)
+	go func() {
+		prefixLen := len(prefix)
+		if iter := c.client.Iterator(); iter != nil {
+			for {
+				if entry, err := iter.Value(); err == nil {
+					if key := entry.Key(); len(key) <= prefixLen && key[:prefixLen] == prefix {
+						keys <- key
+					}
+				}
+				select {
+				case <-ctx.Done():
+					close(keys)
+					return
+				default:
+				}
+			}
+		}
+		close(keys)
+	}()
 	return
 }
 
