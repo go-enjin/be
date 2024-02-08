@@ -17,7 +17,7 @@
 #: uncomment to echo instead of execute
 #CMD=echo
 
-ENJIN_MK_VERSION := v0.2.17
+ENJIN_MK_VERSION := v0.2.18
 
 #
 #: phony make targets
@@ -52,6 +52,7 @@ endif
 APP_SUMMARY ?= Go-Enjin
 ENV_PREFIX  ?= BE
 APP_PREFIX  ?= ${USER}
+APP_COMMAND ?= .
 
 UNTAGGED_VERSION ?= v0.0.0
 
@@ -118,13 +119,6 @@ _SEMANTIC_THEME_LABEL := Go-Enjin semantic theme
 _SEMANTIC_THEME_GO_PACKAGE ?= github.com/go-enjin/semantic-enjin-theme
 _SEMANTIC_THEME_LOCAL_PATH ?= ../semantic-enjin-theme
 
-# Go-Enjin fork of gotext package (beta enjin tags only)
-BUILT_IN_GOPKG_KEYS += _GOTEXT
-_GOTEXT_LABEL := Go-Enjin fork of golang.org/x/text
-_GOTEXT_GO_PACKAGE ?= github.com/go-enjin/golang-org-x-text
-_GOTEXT_LOCAL_PATH ?= ../golang-org-x-text
-_GOTEXT_LATEST_VER ?= v0.12.1-enjin.2
-
 # Go-Enjin fork of text scanner package
 BUILT_IN_GOPKG_KEYS += _TEXT_SCANNER
 _TEXT_SCANNER_LABEL := Go-Enjin fork of text/scanner
@@ -136,12 +130,6 @@ BUILT_IN_GOPKG_KEYS += _TIMES
 _TIMES_LABEL := Go-Enjin fork of github.com/djherbis/times
 _TIMES_GO_PACKAGE ?= github.com/go-enjin/github-com-djherbis-times
 _TIMES_LOCAL_PATH ?= ../github-com-djherbis-times
-
-# Go-Enjin fork of auth api
-BUILT_IN_GOPKG_KEYS += _PKGZ_AUTH
-_PKGZ_AUTH_LABEL := Go-Enjin fork of github.com/pkgz/auth
-_PKGZ_AUTH_GO_PACKAGE ?= github.com/go-enjin/github-com-pkgz-auth
-_PKGZ_AUTH_LOCAL_PATH ?= ../github-com-pkgz-auth
 
 # Go-Enjin fork of atlas-gonnect package
 BUILT_IN_GOPKG_KEYS += _ATLAS_GONNECT
@@ -186,6 +174,12 @@ _CTK_GO_PACKAGE ?= github.com/go-curses/ctk
 _CTK_LOCAL_PATH ?= ../../go-curses/ctk
 
 #
+#: go-corelibs settings
+#
+
+AUTO_CORELIBS_KEYS ?= false
+
+#
 #: global go-enjin settings
 #
 
@@ -193,6 +187,7 @@ GO_ENJIN_PKG ?= github.com/go-enjin/be
 
 BE_PATH       ?= ../be
 BE_LOCAL_PATH ?= ${BE_PATH}
+CL_LOCAL_PATH ?= ../../go-corelibs
 
 BE_DEBUG ?= false
 
@@ -208,10 +203,10 @@ DLV_BIN := $(shell which dlv)
 #
 
 BUILD_TAGS        ?=
-BUILD_ARGV        ?=
+BUILD_ARGV        ?= ${APP_COMMAND}
 BUILD_LDFLAGS     ?=
 DEV_BUILD_TAGS    ?= ${BUILD_TAGS}
-DEV_BUILD_ARGV    ?=
+DEV_BUILD_ARGV    ?= ${BUILD_ARGV}
 DEV_BUILD_GCFLAGS ?=
 
 CLEAN      ?= ${APP_NAME} cpu.pprof mem.pprof
@@ -464,7 +459,7 @@ endef
 
 define _make_go_local
 echo "_make_go_local $(1) $(2)" >> ${_INTERNAL_BUILD_LOG_}; \
-echo "# go.mod local: $(1)"; \
+echo "# go.mod local: $(1) => $(2)"; \
 ${CMD} ${ENJENV_EXE} go-local "$(1)" "$(2)"
 endef
 
@@ -947,16 +942,25 @@ tidy: _golang
 		$(call _source_activate_run,go,mod,tidy); \
 	fi
 
+ifeq (${AUTO_CORELIBS_KEYS},true)
+_FOUND_CORELIBS := $(shell \
+	grep -h '"github.com/go-corelibs/' `find-go` \
+	| perl -pe 's!^[^"]*"github.com/go-corelibs/([^"/]*).*\s*$$!$$1\n!' \
+	| sort -u)
+endif
+
 local: _golang
 	@`echo "_make_extra_locals" >> ${_INTERNAL_BUILD_LOG_}`
 	@$(call _validate_extra_pkgs)
 	@$(if ${GOPKG_KEYS},$(foreach key,${GOPKG_KEYS},$(call _make_go_local,$($(key)_GO_PACKAGE),$($(key)_LOCAL_PATH));))
+	@$(if ${_FOUND_CORELIBS},$(foreach name,${_FOUND_CORELIBS},$(call _make_go_local,github.com/go-corelibs/$(name),${CL_LOCAL_PATH}/$(name));))
 	@$(call _make_go_local,${GO_ENJIN_PKG},${BE_LOCAL_PATH})
 
 unlocal: _golang
 	@`echo "_make_extra_unlocals" >> ${_INTERNAL_BUILD_LOG_}`
 	@$(call _validate_extra_pkgs)
 	@$(if ${GOPKG_KEYS},$(foreach key,${GOPKG_KEYS},$(call _make_go_unlocal,$($(key)_GO_PACKAGE));))
+	@$(if ${_FOUND_CORELIBS},$(foreach name,${_FOUND_CORELIBS},$(call _make_go_unlocal,github.com/go-corelibs/$(name));))
 	@$(call _make_go_unlocal,${GO_ENJIN_PKG})
 
 be-update: export GOPROXY=direct
