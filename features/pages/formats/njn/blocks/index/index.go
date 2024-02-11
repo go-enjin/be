@@ -363,14 +363,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	}
 
 	if r, hasReqInstance := re.RequestContext().Get("R").(*http.Request); hasReqInstance {
-		for _, p := range found {
-			fpcPgCtx := p.Context().Copy()
-			fpcPgCtx.SetSpecific("Content", p.Content())
-			for _, pcm := range f.Enjin.GetPageContextUpdaters() {
-				additions := pcm.UpdatePageContext(fpcPgCtx, r)
-				p.Context().Apply(additions)
-			}
-		}
+		f.Enjin.ApplyPageContextUpdaters(r, found...)
 	}
 
 	block["Results"] = found
