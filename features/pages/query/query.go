@@ -119,6 +119,7 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p feature.Page) (pg f
 				if matches, e := f.Enjin.CheckMatchQL(q); e != nil {
 					qErrors[camelKey] = e
 				} else {
+					f.Enjin.ApplyPageContextUpdaters(r, matches...)
 					qResults[camelKey] = matches
 				}
 			} else {
