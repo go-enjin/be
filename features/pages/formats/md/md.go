@@ -47,11 +47,15 @@ type Feature interface {
 }
 
 type MakeFeature interface {
+	SetMore(enabled bool) MakeFeature
+
 	Make() Feature
 }
 
 type CFeature struct {
 	feature.CFeature
+
+	more bool
 }
 
 func New() MakeFeature {
@@ -69,6 +73,11 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+}
+
+func (f *CFeature) SetMore(enabled bool) MakeFeature {
+	f.more = enabled
+	return f
 }
 
 func (f *CFeature) Make() Feature {
@@ -91,6 +100,11 @@ func (f *CFeature) Label() (label string) {
 }
 
 func (f *CFeature) Prepare(ctx context.Context, content string) (out context.Context, err error) {
+	if f.more {
+		if rendered := RenderExcerpt(content); rendered != "" {
+			ctx.SetSpecific("Excerpt", rendered)
+		}
+	}
 	return
 }
 

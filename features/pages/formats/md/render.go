@@ -17,13 +17,17 @@
 package md
 
 import (
+	"strings"
+
 	"github.com/gomarkdown/markdown"
 	mdHtml "github.com/gomarkdown/markdown/html"
 	mdParser "github.com/gomarkdown/markdown/parser"
 	"github.com/microcosm-cc/bluemonday"
+
+	"github.com/go-corelibs/slices"
 )
 
-func RenderMarkdown(content string) (text string) {
+func PreRenderMarkdown(content string) (parsedBytes []byte) {
 	normalizedNewlines := markdown.NormalizeNewlines([]byte(content))
 	extensions := mdParser.CommonExtensions |
 		mdParser.AutoHeadingIDs |
@@ -36,7 +40,26 @@ func RenderMarkdown(content string) (text string) {
 	mdHtmlFlags := mdHtml.CommonFlags | mdHtml.FootnoteReturnLinks
 	opts := mdHtml.RendererOptions{Flags: mdHtmlFlags}
 	pageRenderer := mdHtml.NewRenderer(opts)
-	parsedBytes := markdown.ToHTML(normalizedNewlines, pageParser, pageRenderer)
+	parsedBytes = markdown.ToHTML(normalizedNewlines, pageParser, pageRenderer)
+	return
+}
+
+func RenderExcerpt(content string) (excerpt string) {
+	parsedBytes := PreRenderMarkdown(content)
+	policy := bluemonday.StrictPolicy()
+	policy.AllowComments()
+	sane := policy.SanitizeBytes(parsedBytes)
+	plain := string(sane)
+	if before, middle, _, found := slices.CarveString(plain, "<!--", "-->"); found {
+		if strings.ToLower(strings.TrimSpace(middle)) == "more" {
+			excerpt = strings.TrimPrefix(before, "<p>")
+		}
+	}
+	return
+}
+
+func RenderMarkdown(content string) (text string) {
+	parsedBytes := PreRenderMarkdown(content)
 	sanitizedBytes := bluemonday.UGCPolicy().SanitizeBytes(parsedBytes)
 	text = string(sanitizedBytes)
 	return
