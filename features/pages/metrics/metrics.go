@@ -44,6 +44,7 @@ const Tag feature.Tag = "page-metrics"
 
 type Feature interface {
 	feature.Feature
+	feature.PageContextUpdater
 	feature.PageContextModifier
 }
 
