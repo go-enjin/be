@@ -25,7 +25,6 @@ import (
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-corelibs/x-text/message/catalog"
-
 	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/fs"
@@ -187,6 +186,7 @@ type Internals interface {
 	PageContextParsers() (parsers context.Parsers)
 	MakePageContextField(key string, r *http.Request) (field *context.Field, ok bool)
 	MakePageContextFields(r *http.Request) (fields context.Fields)
+	ApplyPageContextUpdaters(r *http.Request, pages ...Page)
 
 	GetFormatProviders() []PageFormatProvider
 	GetRequestFilters() []RequestFilter
