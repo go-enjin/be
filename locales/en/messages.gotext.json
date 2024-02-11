@@ -755,7 +755,23 @@
             "id": "{FastMinutes}-{SlowMinutes} minutes",
             "key": "%[1]d-%[2]d minutes",
             "message": "{FastMinutes}-{SlowMinutes} minutes",
-            "translation": "%[1]d-%[2]d minutes",
+            "translation": {
+                "select": {
+                    "arg": "FastMinutes",
+                    "feature": "plural",
+                    "cases": {
+                        "=0": {
+                            "msg": "less than a minute"
+                        },
+                        "=1": {
+                            "msg": "about a minute"
+                        },
+                        "other": {
+                            "msg": "%[1]d-%[2]d minutes"
+                        }
+                    }
+                }
+            },
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
