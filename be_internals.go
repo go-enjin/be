@@ -234,6 +234,17 @@ func (e *Enjin) PageContextParsers() (parsers context.Parsers) {
 	return
 }
 
+func (e *Enjin) ApplyPageContextUpdaters(r *http.Request, pages ...feature.Page) {
+	for _, p := range pages {
+		fpcPgCtx := p.Context().Copy()
+		fpcPgCtx.SetSpecific("Content", p.Content())
+		for _, pcm := range e.GetPageContextUpdaters() {
+			additions := pcm.UpdatePageContext(fpcPgCtx, r)
+			p.Context().Apply(additions)
+		}
+	}
+}
+
 func (e *Enjin) CreateNonce(key string) (value string) {
 	if e.eb.fNonceFactory != nil {
 		value = e.eb.fNonceFactory.CreateNonce(key)
