@@ -65,7 +65,9 @@ func NewProcessWith(input string, t feature.Theme, f feature.PageContextProvider
 		err = fmt.Errorf("pageql matcher process requires an enjin theme to be present")
 		return
 	}
-	matched, err = matcher.process()
+	if matched, err = matcher.process(); err != nil {
+		log.ErrorF("pageql matcher process error: %v", err)
+	}
 	return
 }
 
@@ -76,13 +78,13 @@ func (m *cMatcher) process() (matched []*feature.PageStub, err error) {
 		return
 	}
 	if m.stmnt.Limit != nil {
-		m.limit = *m.stmnt.Limit
+		m.limit = *m.stmnt.Limit.Int
 	}
 	if m.limit == 0 {
 		return
 	}
 	if m.stmnt.Offset != nil {
-		if m.offset = *m.stmnt.Offset; m.offset < 0 {
+		if m.offset = *m.stmnt.Offset.Int; m.offset < 0 {
 			m.offset = 0
 		}
 	}
@@ -127,7 +129,9 @@ func (m *cMatcher) process() (matched []*feature.PageStub, err error) {
 	}
 
 	if m.limit > 0 {
-		matched = matched[m.offset : m.offset+m.limit]
+		if end, size := m.offset+m.limit, len(matched); size > end {
+			matched = matched[m.offset:end]
+		}
 	}
 	return
 }
