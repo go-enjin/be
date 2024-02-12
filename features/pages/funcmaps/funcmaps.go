@@ -18,6 +18,7 @@ package funcmaps
 
 import (
 	"fmt"
+	"html/template"
 
 	"github.com/urfave/cli/v2"
 
@@ -185,7 +186,11 @@ func (f *CFeature) Shutdown() {
 }
 
 func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
-	fm = feature.FuncMap{}
+	fm = feature.FuncMap{
+		"renderContent": func(pageFormat, content string) (output template.HTML, err error) {
+			return f.renderContent(ctx, pageFormat, content)
+		},
+	}
 	for _, name := range maps.SortedKeys(f.static) {
 		fm[name] = f.static[name]
 	}
@@ -199,6 +204,21 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 		for _, name := range maps.SortedKeys(f.makers) {
 			fm[name] = f.makers[name](ctx)
 		}
+	}
+	return
+}
+
+func (f *CFeature) renderContent(ctx beContext.Context, pageFormat, content string) (output template.HTML, err error) {
+	t := f.Enjin.MustGetTheme()
+	if format := t.GetFormat(pageFormat); format != nil {
+		var redirect string
+		if output, redirect, err = format.Process(ctx, content); err == nil {
+			log.TraceF("page format success: %v", format.Name())
+		} else if redirect != "" {
+			log.DebugF("rendered content wanted to redirect to: %q", redirect)
+		}
+	} else {
+		err = fmt.Errorf("unsupported page format")
 	}
 	return
 }
