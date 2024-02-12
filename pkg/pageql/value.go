@@ -20,7 +20,8 @@ type Value struct {
 	ContextKey *string  `parser:"  ( '.' @Ident )" json:"context-key,omitempty"`
 	Regexp     *string  `parser:"| ( 'm' @Regexp )" json:"regexp,omitempty"`
 	String     *string  `parser:"| ( @String )" json:"string,omitempty"`
-	Number     *float64 `parser:"| ( @Number )" json:"number,omitempty"`
+	Int        *int     `parser:"| ( @Int )" json:"int,omitempty"`
+	Float      *float64 `parser:"| ( @Float )" json:"float,omitempty"`
 	Bool       *Boolean `parser:"| @( 'true' | 'false' )" json:"bool,omitempty"`
 	Nil        *Nil     `parser:"| @( 'nil' )" json:"nil,omitempty"`
 }
@@ -41,9 +42,13 @@ func (v *Value) Render() (clone *Value) {
 		text, _ = UnquoteString(text)
 		clone.String = &text
 	}
-	if v.Number != nil {
-		num := *v.Number
-		clone.Number = &num
+	if v.Int != nil {
+		num := *v.Int
+		clone.Int = &num
+	}
+	if v.Float != nil {
+		num := *v.Float
+		clone.Float = &num
 	}
 	if v.Bool != nil {
 		bl := *v.Bool

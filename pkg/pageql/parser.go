@@ -35,7 +35,6 @@ const (
 	Ident      = `\b([a-zA-Z][.a-zA-Z0-9]*)\b`
 	Int        = `\b(\d+)\b`
 	Float      = `\b(\d*\.\d+)\b`
-	Number     = `[-+]?\d*\.?\d+([eE][-+]?\d+)?`
 	String     = `'[^']*'|"[^"]*"`
 	Regexp     = `/(.+?)/|\!(.+?)\!|\@(.+?)\@|\~(.+?)\~`
 	Operators  = `==|=\~|\!=|\!\~|[.,()]`
@@ -47,9 +46,8 @@ var (
 	stmntLexer = lexer.MustSimple([]lexer.SimpleRule{
 		{Name: `Keyword`, Pattern: `(?i)\b(BY|ORDER|LIMIT|OFFSET|TRUE|FALSE|NULL|IS|NOT|AND|OR|IN|ASC|DSC|DESC)\b`},
 		{Name: `Ident`, Pattern: Ident},
-		{Name: `Number`, Pattern: Number},
-		{Name: `Float`, Pattern: Float},
 		{Name: `Int`, Pattern: Int},
+		{Name: `Float`, Pattern: Float},
 		{Name: `String`, Pattern: String},
 		{Name: `Regexp`, Pattern: Regexp},
 		{Name: `Operators`, Pattern: Operators},
@@ -66,9 +64,8 @@ var (
 	selLexer = lexer.MustSimple([]lexer.SimpleRule{
 		{Name: `Keyword`, Pattern: `(?i)\b(SELECT|COUNT|RANDOM|DISTINCT|WITHIN|BY|ORDER|LIMIT|OFFSET|TRUE|FALSE|NULL|IS|NOT|AND|OR|IN|ASC|DSC|DESC)\b`},
 		{Name: `Ident`, Pattern: Ident},
-		{Name: `Number`, Pattern: Number},
+		{Name: `Int`, Pattern: Int},
 		{Name: `Float`, Pattern: Float},
-		{Name: `Int`, Pattern: Number},
 		{Name: `String`, Pattern: String},
 		{Name: `Regexp`, Pattern: Regexp},
 		{Name: `Operators`, Pattern: Operators},
