@@ -22,8 +22,8 @@ import (
 
 type Statement struct {
 	Expression  *Expression `parser:"@@" json:"expressions,omitempty"`
-	Limit       *int        `parser:"( 'LIMIT' @Int )?" json:"limit,omitempty"`
-	Offset      *int        `parser:"( 'OFFSET' @Int )?" json:"offset,omitempty"`
+	Limit       *Value      `parser:"( 'LIMIT' @@ )?" json:"limit,omitempty"`
+	Offset      *Value      `parser:"( 'OFFSET' @@ )?" json:"offset,omitempty"`
 	OrderBy     *string     `parser:"( 'ORDER' 'BY' '.' @Ident )?" json:"order-by,omitempty"`
 	SortDir     *string     `parser:"( @'ASC' | @'DSC' | @'DESC' )?" json:"sort-dir,omitempty"`
 	ContextKeys []string    `parser:"" json:"context-keys,omitempty"`
