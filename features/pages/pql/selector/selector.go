@@ -47,7 +47,7 @@ type cSelector struct {
 }
 
 func NewProcessWith(input string, t feature.Theme, f feature.PageContextProvider) (selected map[string]interface{}, err error) {
-	matcher := &cSelector{
+	selector := &cSelector{
 		feat:   f,
 		theme:  t,
 		input:  input,
@@ -55,14 +55,15 @@ func NewProcessWith(input string, t feature.Theme, f feature.PageContextProvider
 		lookup: xsync.NewMapOf[map[interface{}][]string](),
 		count:  xsync.NewMapOf[uint64](),
 	}
-	if matcher.feat == nil {
-		err = fmt.Errorf("pageql matcher process requires a pagecache.PageContentProvider feature to be present")
+	if selector.feat == nil {
+		err = fmt.Errorf("pageql selector process requires a pagecache.PageContentProvider feature to be present")
 		return
-	} else if matcher.theme == nil {
-		err = fmt.Errorf("pageql matcher process requires an enjin theme to be present")
+	} else if selector.theme == nil {
+		err = fmt.Errorf("pageql selector process requires an enjin theme to be present")
 		return
+	} else if selected, err = selector.process(); err != nil {
+		log.ErrorF("pageql selector process error: %v", err)
 	}
-	selected, err = matcher.process()
 	return
 }
 
