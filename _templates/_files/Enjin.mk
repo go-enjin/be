@@ -17,7 +17,7 @@
 #: uncomment to echo instead of execute
 #CMD=echo
 
-ENJIN_MK_VERSION := v0.2.18
+ENJIN_MK_VERSION := v0.2.19
 
 #
 #: phony make targets
@@ -96,84 +96,6 @@ endif
 CONTENT_LOCALES_PATH  ?= ./locales-content
 
 #
-#: custom go.mod locals and be-update targets
-#
-
-GOPKG_KEYS ?=
-
-# Basic Enjin Theme
-BUILT_IN_GOPKG_KEYS += _BASIC_THEME
-_BASIC_THEME_LABEL := Go-Enjin basic theme
-_BASIC_THEME_GO_PACKAGE ?= github.com/go-enjin/basic-enjin-theme
-_BASIC_THEME_LOCAL_PATH ?= ../basic-enjin-theme
-
-# Default Enjin Theme
-BUILT_IN_GOPKG_KEYS += _DEFAULT_THEME
-_DEFAULT_THEME_LABEL := Go-Enjin default theme
-_DEFAULT_THEME_GO_PACKAGE ?= github.com/go-enjin/default-enjin-theme
-_DEFAULT_THEME_LOCAL_PATH ?= ../default-enjin-theme
-
-# Semantic Enjin Theme
-BUILT_IN_GOPKG_KEYS += _SEMANTIC_THEME
-_SEMANTIC_THEME_LABEL := Go-Enjin semantic theme
-_SEMANTIC_THEME_GO_PACKAGE ?= github.com/go-enjin/semantic-enjin-theme
-_SEMANTIC_THEME_LOCAL_PATH ?= ../semantic-enjin-theme
-
-# Go-Enjin fork of text scanner package
-BUILT_IN_GOPKG_KEYS += _TEXT_SCANNER
-_TEXT_SCANNER_LABEL := Go-Enjin fork of text/scanner
-_TEXT_SCANNER_GO_PACKAGE ?= github.com/go-enjin/go-stdlib-text-scanner
-_TEXT_SCANNER_LOCAL_PATH ?= ../go-stdlib-text-scanner
-
-# Go-Enjin fork of times package
-BUILT_IN_GOPKG_KEYS += _TIMES
-_TIMES_LABEL := Go-Enjin fork of github.com/djherbis/times
-_TIMES_GO_PACKAGE ?= github.com/go-enjin/github-com-djherbis-times
-_TIMES_LOCAL_PATH ?= ../github-com-djherbis-times
-
-# Go-Enjin fork of atlas-gonnect package
-BUILT_IN_GOPKG_KEYS += _ATLAS_GONNECT
-_ATLAS_GONNECT_LABEL := Go-Enjin fork of github.com/craftamap/atlas-gonnect
-_ATLAS_GONNECT_GO_PACKAGE ?= github.com/go-enjin/github-com-craftamap-atlas-gonnect
-_ATLAS_GONNECT_LOCAL_PATH ?= ../github-com-craftamap-atlas-gonnect
-
-# Go-Enjin sass output feature
-BUILT_IN_GOPKG_KEYS += _SASS_OUTPUTS
-_SASS_OUTPUTS_LABEL := Go-Enjin SASS outputs feature
-_SASS_OUTPUTS_GO_PACKAGE ?= github.com/go-enjin/features-outputs-sass
-_SASS_OUTPUTS_LOCAL_PATH ?= ../features-outputs-sass
-
-# Go-Enjin gonnectian feature
-BUILT_IN_GOPKG_KEYS += _GONNECTIAN
-_GONNECTIAN_LABEL := Go-Enjin Atlassian Connect feature
-_GONNECTIAN_GO_PACKAGE ?= github.com/go-enjin/features-gonnectian
-_GONNECTIAN_LOCAL_PATH ?= ../features-gonnectian
-
-# Go-Enjin gonnectian console feature
-BUILT_IN_GOPKG_KEYS += _GONNECTIAN_CONSOLE
-_GONNECTIAN_CONSOLE_LABEL := Go-Enjin Atlassian Connect console feature
-_GONNECTIAN_CONSOLE_GO_PACKAGE ?= github.com/go-enjin/features-consoles-gonnectian
-_GONNECTIAN_CONSOLE_LOCAL_PATH ?= ../features-consoles-gonnectian
-
-# Go-Enjin starter apt site
-BUILT_IN_GOPKG_KEYS += _STARTER_APT
-_STARTER_APT_LABEL := Go-Enjin starter APT (debian packaging) site
-_STARTER_APT_GO_PACKAGE ?= github.com/go-enjin/starter-apt-enjin
-_STARTER_APT_LOCAL_PATH ?= ../starter-apt-enjin
-
-# Go-Curses CDK
-BUILT_IN_GOPKG_KEYS += _CDK
-_CDK_LABEL := Go-Curses Development Kit
-_CDK_GO_PACKAGE ?= github.com/go-curses/cdk
-_CDK_LOCAL_PATH ?= ../../go-curses/cdk
-
-# Go-Curses CTK
-BUILT_IN_GOPKG_KEYS += _CTK
-_CTK_LABEL := Go-Curses Tool Kit
-_CTK_GO_PACKAGE ?= github.com/go-curses/ctk
-_CTK_LOCAL_PATH ?= ../../go-curses/ctk
-
-#
 #: go-corelibs settings
 #
 
@@ -187,7 +109,9 @@ GO_ENJIN_PKG ?= github.com/go-enjin/be
 
 BE_PATH       ?= ../be
 BE_LOCAL_PATH ?= ${BE_PATH}
+GE_LOCAL_PATH ?= ..
 CL_LOCAL_PATH ?= ../../go-corelibs
+GC_LOCAL_PATH ?= ../../go-curses
 
 BE_DEBUG ?= false
 
@@ -221,6 +145,83 @@ NODEJS ?=
 
 RELEASE_BUILD ?= false
 PRE_RELEASE_BUILD ?= false
+#
+#: custom go.mod locals and be-update targets
+#
+
+GOPKG_KEYS ?=
+
+# Basic Enjin Theme
+BUILT_IN_GOPKG_KEYS += _BASIC_THEME
+_BASIC_THEME_LABEL := Go-Enjin basic theme
+_BASIC_THEME_GO_PACKAGE ?= github.com/go-enjin/basic-enjin-theme
+_BASIC_THEME_LOCAL_PATH ?= ${GE_LOCAL_PATH}/basic-enjin-theme
+
+# Default Enjin Theme
+BUILT_IN_GOPKG_KEYS += _DEFAULT_THEME
+_DEFAULT_THEME_LABEL := Go-Enjin default theme
+_DEFAULT_THEME_GO_PACKAGE ?= github.com/go-enjin/default-enjin-theme
+_DEFAULT_THEME_LOCAL_PATH ?= ${GE_LOCAL_PATH}/default-enjin-theme
+
+# Semantic Enjin Theme
+BUILT_IN_GOPKG_KEYS += _SEMANTIC_THEME
+_SEMANTIC_THEME_LABEL := Go-Enjin semantic theme
+_SEMANTIC_THEME_GO_PACKAGE ?= github.com/go-enjin/semantic-enjin-theme
+_SEMANTIC_THEME_LOCAL_PATH ?= ${GE_LOCAL_PATH}/semantic-enjin-theme
+
+# Go-Enjin fork of text scanner package
+BUILT_IN_GOPKG_KEYS += _TEXT_SCANNER
+_TEXT_SCANNER_LABEL := Go-Enjin fork of text/scanner
+_TEXT_SCANNER_GO_PACKAGE ?= github.com/go-enjin/go-stdlib-text-scanner
+_TEXT_SCANNER_LOCAL_PATH ?= ${GE_LOCAL_PATH}/go-stdlib-text-scanner
+
+# Go-Enjin fork of times package
+BUILT_IN_GOPKG_KEYS += _TIMES
+_TIMES_LABEL := Go-Enjin fork of github.com/djherbis/times
+_TIMES_GO_PACKAGE ?= github.com/go-enjin/github-com-djherbis-times
+_TIMES_LOCAL_PATH ?= ${GE_LOCAL_PATH}/github-com-djherbis-times
+
+# Go-Enjin fork of atlas-gonnect package
+BUILT_IN_GOPKG_KEYS += _ATLAS_GONNECT
+_ATLAS_GONNECT_LABEL := Go-Enjin fork of github.com/craftamap/atlas-gonnect
+_ATLAS_GONNECT_GO_PACKAGE ?= github.com/go-enjin/github-com-craftamap-atlas-gonnect
+_ATLAS_GONNECT_LOCAL_PATH ?= ${GE_LOCAL_PATH}/github-com-craftamap-atlas-gonnect
+
+# Go-Enjin sass output feature
+BUILT_IN_GOPKG_KEYS += _SASS_OUTPUTS
+_SASS_OUTPUTS_LABEL := Go-Enjin SASS outputs feature
+_SASS_OUTPUTS_GO_PACKAGE ?= github.com/go-enjin/features-outputs-sass
+_SASS_OUTPUTS_LOCAL_PATH ?= ${GE_LOCAL_PATH}/features-outputs-sass
+
+# Go-Enjin gonnectian feature
+BUILT_IN_GOPKG_KEYS += _GONNECTIAN
+_GONNECTIAN_LABEL := Go-Enjin Atlassian Connect feature
+_GONNECTIAN_GO_PACKAGE ?= github.com/go-enjin/features-gonnectian
+_GONNECTIAN_LOCAL_PATH ?= ${GE_LOCAL_PATH}/features-gonnectian
+
+# Go-Enjin gonnectian console feature
+BUILT_IN_GOPKG_KEYS += _GONNECTIAN_CONSOLE
+_GONNECTIAN_CONSOLE_LABEL := Go-Enjin Atlassian Connect console feature
+_GONNECTIAN_CONSOLE_GO_PACKAGE ?= github.com/go-enjin/features-consoles-gonnectian
+_GONNECTIAN_CONSOLE_LOCAL_PATH ?= ${GE_LOCAL_PATH}/features-consoles-gonnectian
+
+# Go-Enjin starter apt site
+BUILT_IN_GOPKG_KEYS += _STARTER_APT
+_STARTER_APT_LABEL := Go-Enjin starter APT (debian packaging) site
+_STARTER_APT_GO_PACKAGE ?= github.com/go-enjin/starter-apt-enjin
+_STARTER_APT_LOCAL_PATH ?= ${GE_LOCAL_PATH}/starter-apt-enjin
+
+# Go-Curses CDK
+BUILT_IN_GOPKG_KEYS += _CDK
+_CDK_LABEL := Go-Curses Development Kit
+_CDK_GO_PACKAGE ?= github.com/go-curses/cdk
+_CDK_LOCAL_PATH ?= ${GC_LOCAL_PATH}/cdk
+
+# Go-Curses CTK
+BUILT_IN_GOPKG_KEYS += _CTK
+_CTK_LABEL := Go-Curses Tool Kit
+_CTK_GO_PACKAGE ?= github.com/go-curses/ctk
+_CTK_LOCAL_PATH ?= ${GC_LOCAL_PATH}/ctk
 
 #
 #: enjin preset helpers
@@ -1339,3 +1340,17 @@ ifeq (${MAKE_SOURCE_LOCALES},true)
 		${BE_PKG_LIST}
 	@$(call _prune_null_locales,locales)
 endif
+
+define _make_themes
+	for theme in themes/*; do \
+		pushd $${theme} > /dev/null; \
+		make $(1); \
+		popd > /dev/null; \
+	done
+endef
+
+build-themes:
+	@$(call _make_themes,build)
+
+release-themes:
+	@$(call _make_themes,release)
