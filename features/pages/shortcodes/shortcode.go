@@ -16,6 +16,8 @@
 
 package shortcodes
 
+// TODO: implement shortcode usage, synopsys and descriptions so that editor sites can inform the content editors better
+
 import (
 	beContext "github.com/go-enjin/be/pkg/context"
 )
