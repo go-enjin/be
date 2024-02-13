@@ -19,8 +19,9 @@ package shortcodes
 import (
 	"bytes"
 
-	scanner "github.com/go-enjin/go-stdlib-text-scanner"
 	"github.com/urfave/cli/v2"
+
+	scanner "github.com/go-enjin/go-stdlib-text-scanner"
 
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
@@ -107,6 +108,7 @@ func (f *CFeature) Defaults() MakeFeature {
 		CodeShortcode,
 		QuoteShortcode,
 		ImageShortcode,
+		FontAwesomeIconShortcode,
 	)
 	return f
 }
