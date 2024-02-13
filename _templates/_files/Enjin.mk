@@ -17,7 +17,7 @@
 #: uncomment to echo instead of execute
 #CMD=echo
 
-ENJIN_MK_VERSION := v0.2.19
+ENJIN_MK_VERSION := v0.2.20
 
 #
 #: phony make targets
@@ -471,7 +471,8 @@ ${CMD} ${ENJENV_EXE} go-unlocal "$(1)"
 endef
 
 define _make_extra_pkgs
-$(if ${GOPKG_KEYS},$(foreach key,${GOPKG_KEYS},$($(key)_GO_PACKAGE)@$(if $($(key)_LATEST_VER),$($(key)_LATEST_VER),latest)))
+$(if ${GOPKG_KEYS},$(foreach key,${GOPKG_KEYS},$($(key)_GO_PACKAGE)@$(if $($(key)_LATEST_VER),$($(key)_LATEST_VER),latest))) \
+$(if ${_FOUND_CORELIBS},$(foreach name,${_FOUND_CORELIBS},github.com/go-corelibs/$(name)@latest))
 endef
 
 define _make_console_names
