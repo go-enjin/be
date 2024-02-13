@@ -22,10 +22,10 @@ import (
 
 	"github.com/iancoleman/strcase"
 
+	"github.com/go-corelibs/htmlcss"
 	"github.com/go-corelibs/slices"
 	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/pkg/log"
-	beStrings "github.com/go-enjin/be/pkg/strings"
 )
 
 func ExtractBoolValue(v interface{}) (b bool) {
@@ -170,7 +170,7 @@ func ParseNjnFieldAttributes(field map[string]interface{}) (attributes map[strin
 			}
 
 		case []template.HTMLAttr:
-			if a, e := beStrings.ParseHtmlTagAttributes(attrs); e != nil {
+			if a, e := htmlcss.ParseHtmlTagAttributes(attrs); e != nil {
 				err = fmt.Errorf("error parsing html tag attributes: %v", e)
 				log.ErrorF("%v", err)
 				return
