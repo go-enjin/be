@@ -20,8 +20,6 @@ import (
 	"strings"
 
 	scanner "github.com/go-enjin/go-stdlib-text-scanner"
-
-	clStrings "github.com/go-corelibs/strings"
 )
 
 func slurpTo(scan *scanner.Scanner, to ...string) (text string, stop string) {
@@ -101,93 +99,30 @@ func parseOpeningTag(input string) (raw, name string, attributes *Attributes, ok
 	attributes = newAttributes()
 	raw = "[" + input + "]"
 
-	if ok = rxNameOnly.MatchString(input); ok {
+	var k, v, n string
+	var a *Attributes
+	if ok = IsToken(input); ok {
 		// [name]
 		name = strings.ToLower(input)
-
-	} else if ok = rxNameValue.MatchString(input); ok {
+	} else if k, v, ok = ParseKeyValue(input); ok {
 		// [name=value]
-		m := rxNameValue.FindAllStringSubmatch(input, 1)
-		name = strings.ToLower(m[0][1])
-		attributes.Set(name, clStrings.TrimQuotes(m[0][2]))
-
-	} else if ok = rxNameKeyValues.MatchString(input); ok {
-		// [name key=value...]
-		m := rxNameKeyValues.FindAllStringSubmatch(input, 1)
-		name = strings.ToLower(m[0][1])
-		if argv, keys := parseArgumentString(m[0][2]); len(keys) > 0 {
-			for _, key := range keys {
-				attributes.Set(strings.ToLower(key), argv[key])
-			}
-		}
-
+		name = strings.ToLower(k)
+		attributes.Set(name, v)
+	} else if n, a, ok = ParseTokenWithAttributes(input); ok {
+		// [name key=value ...]
+		name = n
+		attributes.Apply(a)
 	}
+
 	return
 }
 
 func parseClosingTag(input string) (raw, name string, ok bool) {
 	raw = "[/" + input + "]"
 
-	if ok = rxNameOnly.MatchString(input); ok {
+	if ok = IsToken(input); ok {
 		// [/name]
 		name = strings.ToLower(input)
-	}
-
-	return
-}
-
-func parseArgumentString(input string) (argv map[string]string, keys []string) {
-	argv = make(map[string]string)
-
-	findingKey := true
-	var openQuote uint8
-	var key, value string
-	for i := 0; i < len(input); i++ {
-		if findingKey {
-			if input[i] == ' ' {
-				continue
-			} else if input[i] == '=' {
-				findingKey = false
-			} else {
-				key += string(input[i])
-			}
-		} else {
-			if value == "" {
-				if input[i] == '"' || input[i] == '\'' {
-					openQuote = input[i]
-				} else {
-					value += string(input[i])
-				}
-			} else {
-				if openQuote > 0 {
-					if input[i] == openQuote {
-						openQuote = 0
-						findingKey = true
-						argv[key] = value
-						keys = append(keys, key)
-						key = ""
-						value = ""
-					} else {
-						value += string(input[i])
-					}
-				} else {
-					if input[i] == ' ' {
-						findingKey = true
-						argv[key] = value
-						keys = append(keys, key)
-						key = ""
-						value = ""
-					} else {
-						value += string(input[i])
-					}
-				}
-			}
-		}
-	}
-
-	if key != "" {
-		argv[key] = value
-		keys = append(keys, key)
 	}
 
 	return
