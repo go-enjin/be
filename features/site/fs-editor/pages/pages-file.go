@@ -71,6 +71,7 @@ func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
+	ctx.SetSpecific("ShowErrors", true)
 	f.ServePreviewEditPage(p, ctx, w, r)
 	return
 }
