@@ -15,6 +15,7 @@
 package theme
 
 import (
+	"fmt"
 	"net/http"
 	"sort"
 	"sync"
@@ -118,9 +119,10 @@ func (t *CTheme) Layouts() feature.ThemeLayouts {
 func (t *CTheme) GetConfig() (config *feature.ThemeConfig) {
 
 	if t.autoload {
-		if ctx, err := t.readToml(); err != nil {
-			log.ErrorF("error autoloading theme.toml: %v", err)
-			return
+		if ctx, ee := t.readToml(); ee != nil {
+			config = t.makeConfig(t.tomlCache.Copy())
+			config.Err = fmt.Errorf("error autoloading %s theme: %w", t.name, ee)
+			log.Error(config.Err)
 		} else {
 			config = t.makeConfig(ctx)
 		}
