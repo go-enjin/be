@@ -22,6 +22,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/values"
 	"github.com/go-enjin/be/features/pages/funcmaps/casting"
 	"github.com/go-enjin/be/features/pages/funcmaps/crypto"
 	"github.com/go-enjin/be/features/pages/funcmaps/dates"
@@ -189,6 +190,16 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 	fm = feature.FuncMap{
 		"renderContent": func(pageFormat, content string) (output template.HTML, err error) {
 			return f.renderContent(ctx, pageFormat, content)
+		},
+		"isValid": func(name string, data interface{}) (ok bool) {
+			_, ok = values.GetKeyedValue(name, data)
+			return
+		},
+		"boolVal": func(name string, data interface{}) (value bool) {
+			if v, ok := values.GetKeyedBool(name, data); ok {
+				value = v
+			}
+			return
 		},
 	}
 	for _, name := range maps.SortedKeys(f.static) {
