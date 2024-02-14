@@ -62,6 +62,8 @@ type ThemeConfig struct {
 	Supports ThemeSupports
 
 	Context context.Context
+
+	Err error
 }
 
 func (tc *ThemeConfig) Copy() (config *ThemeConfig) {
