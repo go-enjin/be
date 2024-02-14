@@ -17,7 +17,7 @@
 package shortcodes
 
 import (
-	"strings"
+	"fmt"
 
 	"github.com/go-corelibs/slices"
 )
@@ -35,12 +35,12 @@ func newAttributes() (attrs *Attributes) {
 	return
 }
 
-func (a *Attributes) Set(key string, value string) {
+func (a *Attributes) Set(key, value string) {
 	a.Keys = append(a.Keys, key)
 	a.Lookup[key] = value
 }
 
-func (a *Attributes) Append(key string, value string) {
+func (a *Attributes) Append(key, value string) {
 	if _, present := a.Lookup[key]; present {
 		a.Lookup[key] += value
 	} else {
@@ -50,7 +50,7 @@ func (a *Attributes) Append(key string, value string) {
 
 func (a *Attributes) String() (output string) {
 	for _, key := range a.Keys {
-		output += " " + key + `="` + strings.ReplaceAll(a.Lookup[key], `"`, `\"`) + `"`
+		output += fmt.Sprintf(` %s=%q`, key, a.Lookup[key])
 	}
 	return
 }
