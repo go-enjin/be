@@ -32,6 +32,12 @@ var (
 			classes := htmlcss.ParseClass(class)
 			styles := make(map[string]string)
 
+			if v, ok := node.Attributes.Lookup["fa-icon"]; ok && v != "" {
+				if _, ignore := node.Attributes.Lookup["name"]; !ignore {
+					node.Attributes.Set("name", v)
+				}
+			}
+
 			faParseFamilyStyle(node, classes)
 			faParseIconName(node, classes)
 			faParseIconSize(node, classes)
