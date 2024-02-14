@@ -82,7 +82,7 @@ func (f *CFeature) Init(this interface{}) {
 func (f *CFeature) Add(shortcodes ...Shortcode) MakeFeature {
 	for _, shortcode := range shortcodes {
 		if shortcode.RenderFn == nil && shortcode.InlineFn == nil {
-			log.DebugDF(1, "ignoring shortcode missing both .RenderFn or .InlineFn: %#+v", shortcode)
+			log.WarnDF(1, "ignoring shortcode - missing both .RenderFn and .InlineFn: %#+v", shortcode)
 			continue
 		}
 		f.known[shortcode.Name] = shortcode
