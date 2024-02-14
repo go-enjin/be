@@ -64,41 +64,44 @@ var (
 )
 
 func faParseFamilyStyle(node *Node, classes htmlcss.CssClass) {
-	family := ""
+	family, style := "", "solid"
+
 	if v, ok := node.Attributes.Lookup["family"]; ok {
-		v = strings.ToLower(v)
-		switch v {
+		switch v = strings.TrimPrefix(strings.ToLower(v), "fa-"); v {
 		case "sharp", "brands":
 			family = v
 		}
 	}
 
 	if vs, ok := node.Attributes.Lookup["style"]; ok {
-		vs = strings.ToLower(vs)
+		vs = strings.TrimPrefix(strings.ToLower(vs), "fa-")
 		switch family {
 		case "sharp":
 			switch vs {
 			case "solid", "regular", "light", "thin":
-				classes.Add("fa-sharp fa-" + vs)
+				style = vs
 			default:
-				classes.Add("fa-solid fa-" + vs)
 			}
 		case "brands":
-			classes.Add("fa-brands fa-" + vs)
 		default:
 			switch vs {
 			case "solid", "regular", "light", "thin", "duotone":
-				classes.Add("fa-" + vs)
-			default:
-				classes.Add("fa-solid")
+				style = vs
 			}
 		}
 	}
+
+	if family == "" {
+		classes.Add("fa-solid")
+	} else {
+		classes.Add("fa-" + family)
+	}
+	classes.Add("fa-" + style)
 }
 
 func faParseIconName(node *Node, classes htmlcss.CssClass) {
 	if vi, ok := node.Attributes.Lookup["name"]; ok {
-		if vi = strings.ToLower(vi); vi != "" {
+		if vi = strings.TrimPrefix(strings.ToLower(vi), "fa-"); vi != "" {
 			classes.Add("fa-" + vi)
 		}
 	}
@@ -106,7 +109,7 @@ func faParseIconName(node *Node, classes htmlcss.CssClass) {
 
 func faParseIconSize(node *Node, classes htmlcss.CssClass) {
 	if v, ok := node.Attributes.Lookup["size"]; ok {
-		v = strings.ToLower(v)
+		v = strings.TrimPrefix(strings.ToLower(v), "fa-")
 		switch v {
 		case "2xs", "xs", "sm", "lg", "xl", "2xl",
 			"1x", "2x", "3x", "4x", "5x", "6x", "7x", "8x", "9x", "10x":
@@ -125,13 +128,13 @@ func faParseFixedWidth(node *Node, classes htmlcss.CssClass) {
 
 func faParseFlipRotate(node *Node, classes htmlcss.CssClass, styles map[string]string) {
 	if v, ok := node.Attributes.Lookup["flip"]; ok {
-		v = strings.ToLower(v)
+		v = strings.TrimPrefix(strings.ToLower(v), "fa-flip-")
 		switch v {
 		case "horizontal", "vertical", "both":
 			classes.Add("fa-flip-" + v)
 		}
 	} else if v, ok := node.Attributes.Lookup["rotate"]; ok {
-		v = strings.ToLower(v)
+		v = strings.TrimPrefix(strings.ToLower(v), "fa-rotate-")
 		switch v {
 		case "90", "180", "270":
 			classes.Add("fa-rotate-" + v)
@@ -160,7 +163,7 @@ func faParseBorder(node *Node, classes htmlcss.CssClass, styles map[string]strin
 
 func faParsePull(node *Node, classes htmlcss.CssClass, styles map[string]string) {
 	if v, ok := node.Attributes.Lookup["pull"]; ok {
-		v = strings.ToLower(v)
+		v = strings.TrimPrefix(strings.ToLower(v), "fa-pull-")
 		switch v {
 		case "left", "right":
 			classes.Add("fa-pull-" + v)
