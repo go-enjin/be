@@ -220,7 +220,8 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 }
 
 func (f *CFeature) renderContent(ctx beContext.Context, pageFormat, content string) (output template.HTML, err error) {
-	t := f.Enjin.MustGetTheme()
+	var t feature.Theme
+	t, ctx = f._prepareFn(ctx)
 	if format := t.GetFormat(pageFormat); format != nil {
 		var redirect string
 		if output, redirect, err = format.Process(ctx, content); err == nil {
@@ -231,5 +232,19 @@ func (f *CFeature) renderContent(ctx beContext.Context, pageFormat, content stri
 	} else {
 		err = fmt.Errorf("unsupported page format")
 	}
+	return
+}
+
+func (f *CFeature) _prepareFn(input beContext.Context) (t feature.Theme, ctx beContext.Context) {
+	if input.Len() > 0 { // dynamic funcmap
+		ctx = input
+	} else { // static funcmap
+		ctx = f.Enjin.Context(nil)
+	}
+	var ok bool
+	if t, ok = ctx.Get("RequestTheme").(feature.Theme); ok {
+		return
+	}
+	t = f.Enjin.MustGetTheme()
 	return
 }
