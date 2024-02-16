@@ -17,8 +17,10 @@
 package funcmaps
 
 import (
+	"bytes"
 	"fmt"
 	"html/template"
+	"strings"
 
 	"github.com/urfave/cli/v2"
 
@@ -187,9 +189,18 @@ func (f *CFeature) Shutdown() {
 }
 
 func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
+	var ok bool
+	var partialsCache *fnPartialsCache
+	if partialsCache, ok = ctx.Get("~~partials-cache").(*fnPartialsCache); !ok {
+		partialsCache = &fnPartialsCache{}
+		ctx.SetSpecific("~~partials-cache", partialsCache)
+	}
 	fm = feature.FuncMap{
 		"renderContent": func(pageFormat, content string) (output template.HTML, err error) {
 			return f.renderContent(ctx, pageFormat, content)
+		},
+		"partials": func(name string, arg interface{}) (output template.HTML, err error) {
+			return f.partials(partialsCache, ctx, name, arg)
 		},
 		"isValid": func(name string, data interface{}) (ok bool) {
 			_, ok = values.GetKeyedValue(name, data)
@@ -246,5 +257,34 @@ func (f *CFeature) _prepareFn(input beContext.Context) (t feature.Theme, ctx beC
 		return
 	}
 	t = f.Enjin.MustGetTheme()
+	return
+}
+
+type fnPartialsCache struct {
+	tmpl *template.Template
+}
+
+func (f *CFeature) partials(cache *fnPartialsCache, ctx beContext.Context, name string, data interface{}) (output template.HTML, err error) {
+	var t feature.Theme
+	t, ctx = f._prepareFn(ctx)
+
+	if !strings.HasPrefix(name, "partials/") {
+		name = "partials/" + name
+	}
+	if !strings.HasSuffix(name, ".tmpl") {
+		name += ".tmpl"
+	}
+
+	var buf bytes.Buffer
+	if cache.tmpl == nil {
+		if cache.tmpl, err = t.NewHtmlTemplate(f.Enjin, "partial", ctx); err != nil {
+			return
+		}
+	}
+	if err = cache.tmpl.ExecuteTemplate(&buf, name, data); err != nil {
+		return
+	}
+
+	output = template.HTML(buf.String())
 	return
 }
