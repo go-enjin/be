@@ -100,6 +100,7 @@ func (f *CFeature) Render(t feature.Theme, view string, ctx beContext.Context) (
 func (f *CFeature) PrepareRenderPage(t feature.Theme, ctx beContext.Context, p feature.Page) (data htmlTemplate.HTML, redirect string, err error) {
 
 	ctx.Apply(p.Context().Copy())
+	ctx.Set("RequestTheme", t)
 	ctx.Set("Theme", t.GetConfig())
 
 	var output string
