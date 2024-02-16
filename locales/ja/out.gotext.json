@@ -922,6 +922,18 @@
             "fuzzy": true
         },
         {
+            "id": "Omit this page from tag indexing",
+            "key": "Omit this page from tag indexing",
+            "message": "Omit this page from tag indexing",
+            "translation": "Omit this page from tag indexing"
+        },
+        {
+            "id": "Space separated list of tag words",
+            "key": "Space separated list of tag words",
+            "message": "Space separated list of tag words",
+            "translation": "Space separated list of tag words"
+        },
+        {
             "id": "an unknown error occurred",
             "key": "an unknown error occurred",
             "message": "an unknown error occurred",

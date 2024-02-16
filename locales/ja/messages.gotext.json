@@ -755,8 +755,8 @@
             "message": "{FastMinutes}-{SlowMinutes} minutes",
             "translation": {
                 "select": {
-                    "arg": "FastMinutes",
                     "feature": "plural",
+                    "arg": "FastMinutes",
                     "cases": {
                         "other": {
                             "msg": "%[1]d-%[2]d分"
@@ -920,6 +920,18 @@
             "translation": "サイトマップでこのページの変更頻度を指定します",
             "translatorComment": "Copied from source.",
             "fuzzy": true
+        },
+        {
+            "id": "Omit this page from tag indexing",
+            "key": "Omit this page from tag indexing",
+            "message": "Omit this page from tag indexing",
+            "translation": "Omit this page from tag indexing"
+        },
+        {
+            "id": "Space separated list of tag words",
+            "key": "Space separated list of tag words",
+            "message": "Space separated list of tag words",
+            "translation": "Space separated list of tag words"
         },
         {
             "id": "an unknown error occurred",

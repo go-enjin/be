@@ -654,14 +654,6 @@
             "fuzzy": true
         },
         {
-            "id": "Redirecting",
-            "key": "Redirecting",
-            "message": "Redirecting",
-            "translation": "Redirecting",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "Bad request",
             "key": "Bad request",
             "message": "Bad request",
@@ -726,6 +718,14 @@
             "fuzzy": true
         },
         {
+            "id": "Redirecting",
+            "key": "Redirecting",
+            "message": "Redirecting",
+            "translation": "Redirecting",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "search form expired",
             "key": "search form expired",
             "message": "search form expired",
@@ -757,8 +757,8 @@
             "message": "{FastMinutes}-{SlowMinutes} minutes",
             "translation": {
                 "select": {
-                    "arg": "FastMinutes",
                     "feature": "plural",
+                    "arg": "FastMinutes",
                     "cases": {
                         "=0": {
                             "msg": "less than a minute"
@@ -926,6 +926,22 @@
             "key": "Specify the change frequency for this page in the sitemap",
             "message": "Specify the change frequency for this page in the sitemap",
             "translation": "Specify the change frequency for this page in the sitemap",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Omit this page from tag indexing",
+            "key": "Omit this page from tag indexing",
+            "message": "Omit this page from tag indexing",
+            "translation": "Omit this page from tag indexing",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Space separated list of tag words",
+            "key": "Space separated list of tag words",
+            "message": "Space separated list of tag words",
+            "translation": "Space separated list of tag words",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
