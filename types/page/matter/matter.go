@@ -126,17 +126,23 @@ func ParsePageMatter(origin string, path string, created, updated time.Time, raw
 	}
 
 	for _, key := range []string{"created", "updated", "deleted"} {
-		if v := ctx.String(key, ""); v != "" {
-			if t, e := beContext.ParseTimeStructure(v); e == nil {
-				ctx.SetSpecific(key, t)
-				switch key {
-				case "created":
-					created = t
-				case "updated":
-					updated = t
+		var t time.Time
+		if t = ctx.Time(key, time.Time{}); t.Unix() == 0 {
+			if v := ctx.String(key, ""); v != "" {
+				var e error
+				if t, e = beContext.ParseTimeStructure(v); e != nil {
+					log.ErrorF("error parsing page matter .%s timestamp: %v", key, e)
+					continue
 				}
-			} else {
-				log.ErrorF("error parsing page matter .%s timestamp: %v", key, e)
+			}
+		}
+		if t.Unix() > 0 {
+			ctx.SetSpecific(key, t)
+			switch key {
+			case "created":
+				created = t
+			case "updated":
+				updated = t
 			}
 		}
 	}
