@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	"github.com/blevesearch/bleve/v2/mapping"
+	"github.com/urfave/cli/v2"
 
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
@@ -128,15 +129,6 @@ func (f *CFeature) Init(this interface{}) {
 	f.fields = make(map[feature.NjnClass]map[string]feature.EnjinField)
 	f.blocks = make(map[feature.NjnClass]map[string]feature.EnjinBlock)
 	f.stringtags = make([]string, 0)
-}
-
-func (f *CFeature) Setup(enjin feature.Internals) {
-	f.CFeature.Setup(enjin)
-	for _, blocks := range f.blocks {
-		for _, block := range blocks {
-			block.Setup(enjin)
-		}
-	}
 }
 
 func (f *CFeature) AddField(field feature.EnjinField) MakeFeature {
@@ -247,6 +239,28 @@ func (f *CFeature) Defaults() MakeFeature {
 
 func (f *CFeature) Make() Feature {
 	return f
+}
+
+func (f *CFeature) Setup(enjin feature.Internals) {
+	f.CFeature.Setup(enjin)
+	for _, blocks := range f.blocks {
+		for _, block := range blocks {
+			block.Setup(enjin)
+		}
+	}
+}
+
+func (f *CFeature) PostStartup(ctx *cli.Context) (err error) {
+	for _, blocks := range f.blocks {
+		for _, block := range blocks {
+			if psf, ok := block.This().(feature.PostStartupFeature); ok {
+				if err = psf.PostStartup(ctx); err != nil {
+					return
+				}
+			}
+		}
+	}
+	return
 }
 
 func (f *CFeature) Name() (name string) {
