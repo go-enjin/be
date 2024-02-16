@@ -93,13 +93,13 @@ func ParseFile(fsid, filePath string) *File {
 	}
 	dirs = clPath.TrimSlashes(dirs)
 
+	code := topDir
 	var locale language.Tag
 	if topDir == "" {
+		code = "und"
 		locale = language.Und
 	} else if v, eee := language.Parse(topDir); eee != nil {
 		locale = language.Und
-		// dirs = strings.TrimPrefix(dirs, topDir)
-		// dirs = clPath.TrimSlashes(dirs)
 	} else if locale = v; dirs != locale.String() {
 		dirs = strings.TrimPrefix(dirs, locale.String()+"/")
 	} else {
@@ -123,7 +123,7 @@ func ParseFile(fsid, filePath string) *File {
 
 	return &File{
 		FSID:     fsid,
-		Code:     topDir,
+		Code:     code,
 		Path:     dirs,
 		File:     file,
 		Name:     name,
