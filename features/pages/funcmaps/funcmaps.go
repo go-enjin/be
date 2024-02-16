@@ -37,7 +37,7 @@ import (
 	"github.com/go-enjin/be/features/pages/funcmaps/publicfs"
 	"github.com/go-enjin/be/features/pages/funcmaps/slices"
 	"github.com/go-enjin/be/features/pages/funcmaps/strcase"
-	"github.com/go-enjin/be/features/pages/funcmaps/strings"
+	fmStrings "github.com/go-enjin/be/features/pages/funcmaps/strings"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
@@ -121,7 +121,7 @@ func (f *CFeature) Defaults() MakeFeature {
 		publicfs.New().Make(),
 		slices.New().Make(),
 		strcase.New().Make(),
-		strings.New().Make(),
+		fmStrings.New().Make(),
 		lo.New().Make(),
 	)
 	return f
