@@ -19,6 +19,8 @@ package formats
 import (
 	"strings"
 
+	"github.com/urfave/cli/v2"
+
 	"github.com/go-enjin/be/features/pages/formats/html"
 	"github.com/go-enjin/be/features/pages/formats/json"
 	"github.com/go-enjin/be/features/pages/formats/md"
@@ -112,6 +114,18 @@ func (f *CFeature) Setup(enjin feature.Internals) {
 			this.Setup(enjin)
 		}
 	}
+}
+
+func (f *CFeature) PostStartup(ctx *cli.Context) (err error) {
+	for _, key := range maps.SortedKeys(f.formats) {
+		format := f.formats[key]
+		if psf, ok := format.This().(feature.PostStartupFeature); ok {
+			if err = psf.PostStartup(ctx); err != nil {
+				return
+			}
+		}
+	}
+	return
 }
 
 func (f *CFeature) ListFormats() (names []string) {
