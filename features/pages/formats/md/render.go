@@ -37,7 +37,7 @@ func PreRenderMarkdown(content string) (parsedBytes []byte) {
 		mdParser.FencedCode |
 		mdParser.OrderedListStart
 	pageParser := mdParser.NewWithExtensions(extensions)
-	mdHtmlFlags := mdHtml.CommonFlags | mdHtml.FootnoteReturnLinks
+	mdHtmlFlags := mdHtml.FootnoteReturnLinks
 	opts := mdHtml.RendererOptions{Flags: mdHtmlFlags}
 	pageRenderer := mdHtml.NewRenderer(opts)
 	parsedBytes = markdown.ToHTML(normalizedNewlines, pageParser, pageRenderer)
