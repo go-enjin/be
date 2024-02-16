@@ -29,12 +29,12 @@ require (
 	github.com/go-corelibs/maps v1.1.0
 	github.com/go-corelibs/maths v1.0.1
 	github.com/go-corelibs/mime v1.0.0
-	github.com/go-corelibs/path v1.2.0
+	github.com/go-corelibs/path v1.3.0
 	github.com/go-corelibs/shasum v1.0.0
 	github.com/go-corelibs/slices v1.3.0
-	github.com/go-corelibs/strings v1.1.2
+	github.com/go-corelibs/strings v1.4.0
 	github.com/go-corelibs/templates v1.0.0
-	github.com/go-corelibs/values v1.0.0
+	github.com/go-corelibs/values v1.1.0
 	github.com/go-corelibs/words v1.0.1
 	github.com/go-corelibs/x-text v0.14.1
 	github.com/go-curses/cdk v0.5.22
@@ -69,8 +69,8 @@ require (
 	github.com/yeqown/go-qrcode/writer/standard v1.2.2
 	github.com/yookoala/gofast v0.8.0
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
-	golang.ngrok.com/ngrok v1.8.0
-	golang.ngrok.com/ngrok/log/logrus v0.0.0-20240131162834-d82702ea0264
+	golang.ngrok.com/ngrok v1.8.1
+	golang.ngrok.com/ngrok/log/logrus v0.0.0-20240212161800-4d959c47e21f
 	golang.org/x/net v0.21.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/datatypes v1.2.0
@@ -183,4 +183,5 @@ require (
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
