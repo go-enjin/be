@@ -23,6 +23,7 @@ import (
 	mdHtml "github.com/gomarkdown/markdown/html"
 	mdParser "github.com/gomarkdown/markdown/parser"
 	"github.com/microcosm-cc/bluemonday"
+	"golang.org/x/net/html"
 
 	"github.com/go-corelibs/slices"
 )
@@ -53,6 +54,9 @@ func RenderExcerpt(content string) (excerpt string) {
 	if before, middle, _, found := slices.CarveString(plain, "<!--", "-->"); found {
 		if strings.ToLower(strings.TrimSpace(middle)) == "more" {
 			excerpt = strings.TrimPrefix(before, "<p>")
+			excerpt = html.UnescapeString(excerpt)
+			excerpt = strings.ReplaceAll(excerpt, "\n", " ")
+			excerpt = strings.TrimSpace(excerpt)
 		}
 	}
 	return
