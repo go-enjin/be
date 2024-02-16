@@ -290,10 +290,6 @@ func (f *CFeature) PostStartup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	f.CFeature.Shutdown()
-}
-
 func (f *CFeature) UserActions() (list feature.Actions) {
 	list = feature.Actions{
 		f.Action("access", "site"),

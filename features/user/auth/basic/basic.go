@@ -430,10 +430,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	return
-}
-
 func (f *CFeature) makeAuthenticator(realm string) (authenticator *auth.BasicAuth) {
 	authenticator = auth.NewBasicAuthenticator(realm, f.getUserSecret)
 	if authenticator.Headers == nil {

@@ -124,10 +124,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	f.CFeature.Shutdown()
-}
-
 func (f *CFeature) makeKey(k string) (key string) {
 	key = f.KebabTag + "__" + k
 	return

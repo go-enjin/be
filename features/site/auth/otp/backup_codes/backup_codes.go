@@ -111,10 +111,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	f.CFeature.Shutdown()
-}
-
 func (f *CFeature) SetupSiteAuthProvider(saf feature.SiteAuthFeature) {
 	f.saf = saf
 	return

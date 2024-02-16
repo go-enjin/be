@@ -138,10 +138,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-
-}
-
 func (f *CFeature) GetGoogleGtmId(ctx context.Context) (gtmCode string) {
 	var ctxGtmCode string
 	if ctx != nil {

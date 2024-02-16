@@ -156,10 +156,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	f.CFeature.Shutdown()
-}
-
 func (f *CFeature) SiteFeatureInfo(r *http.Request) (info *feature.CSiteFeatureInfo) {
 	printer := message.GetPrinter(r)
 	info = feature.NewSiteFeatureInfo(

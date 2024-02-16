@@ -155,10 +155,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	f.CFeature.Shutdown()
-}
-
 func (f *CFeature) RewriteRequest(w http.ResponseWriter, r *http.Request) (modified *http.Request) {
 	if address, err := beNet.ParseIpFromRequest(r); err == nil {
 		modified = r

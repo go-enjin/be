@@ -77,10 +77,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	f.CFeature.Shutdown()
-}
-
 func (f *CFeature) NewSyncLocker(tag feature.Tag, key string, store feature.KeyValueStore) (l feature.SyncLocker) {
 	l = newSpinLocker(store, tag, key, -1, -1)
 	return

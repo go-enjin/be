@@ -93,10 +93,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	return
-}
-
 func (f *CFeature) AddLocales(c pkgLangCatalog.Catalog) {
 	tag := f.Enjin.SiteDefaultLanguage()
 	c.AddCatalog(f.catalogs...)

@@ -205,10 +205,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	f.CFeature.Shutdown()
-}
-
 func (f *CFeature) ServiceInfo() (scheme, listen string, port int) {
 	port = -1
 	if f.tunnel != nil {

@@ -137,10 +137,6 @@ func (f *CSiteFeature[M]) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CSiteFeature[M]) Shutdown() {
-	f.CFeature.Shutdown()
-}
-
 func (f *CSiteFeature[M]) UserActions() (actions feature.Actions) {
 	actions = feature.Actions{
 		f.Action("access", "feature"),

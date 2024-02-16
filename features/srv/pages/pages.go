@@ -84,10 +84,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-
-}
-
 func (f *CFeature) RoutePage(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	tag := message.GetTag(r)

@@ -110,10 +110,6 @@ func (f *CFeature) SetupSiteFeature(s feature.Site) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	f.CFeature.Shutdown()
-}
-
 func (f *CFeature) UserActions() (actions feature.Actions) {
 	actions = feature.Actions{
 		f.Action("access", "feature"),

@@ -75,10 +75,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	f.CFeature.Shutdown()
-}
-
 func (f *CFeature) RequestLogger(ctx feature.LoggerContext) (err error) {
 	if f.combined {
 		writeCombinedLog(log.InfoWriter(), ctx)

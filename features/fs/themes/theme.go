@@ -140,10 +140,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	return
-}
-
 func (f *CFeature) AddLocales(c catalog.Catalog) {
 	defTag := f.Enjin.SiteDefaultLanguage()
 	for _, t := range f.loaded {

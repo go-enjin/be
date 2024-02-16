@@ -95,10 +95,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	return
-}
-
 func (f *CFeature) HasEmailAccount(account string) (present bool) {
 	f.RLock()
 	defer f.RUnlock()

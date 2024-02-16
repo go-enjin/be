@@ -126,10 +126,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	f.CFeature.Shutdown()
-}
-
 // VerifyNonce will return true if the nonce is valid and consume the nonce in the process
 func (f *CFeature) VerifyNonce(key, value string) (valid bool) {
 	valid = f.verify(f.makeKey(key), value)

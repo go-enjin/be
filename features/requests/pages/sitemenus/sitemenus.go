@@ -85,10 +85,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	f.CFeature.Shutdown()
-}
-
 func ProcessActiveItems(m menu.Menu, r *http.Request) (modified menu.Menu, found bool) {
 	var path string
 	if path = clPath.TrimSlashes(r.URL.Path); path == "" {

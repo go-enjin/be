@@ -90,10 +90,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	return
-}
-
 func (f *CFeature) GetMenus(tag language.Tag) (found map[string]menu.Menu) {
 	found = make(map[string]menu.Menu)
 

@@ -109,10 +109,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-
-}
-
 func (f *CFeature) ServiceInfo() (scheme, listen string, port int) {
 	port = f.port
 	listen = f.listen

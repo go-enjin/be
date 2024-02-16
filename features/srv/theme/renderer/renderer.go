@@ -82,10 +82,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-
-}
-
 func (f *CFeature) Render(t feature.Theme, view string, ctx beContext.Context) (data []byte, err error) {
 
 	var tt *htmlTemplate.Template

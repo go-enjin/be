@@ -139,10 +139,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	return
-}
-
 func (f *CFeature) ListTemplates() (names []string) {
 	unique := make(map[string]struct{})
 	for _, file := range f.MountPoints.ListFiles(".") {

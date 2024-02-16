@@ -156,10 +156,6 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Shutdown() {
-	return
-}
-
 func (f *CFeature) GetUserSecret(id string) (hash string) {
 	f.RLock()
 	defer f.RUnlock()
