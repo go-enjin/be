@@ -21,6 +21,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/iancoleman/strcase"
 	"github.com/maruel/natural"
@@ -375,6 +376,24 @@ func (c Context) Uint64(key string, def uint64) uint64 {
 func (c Context) Float64(key string, def float64) float64 {
 	if v := c.Get(key); v != nil {
 		return maths.ToFloat64(v, def)
+	}
+	return def
+}
+
+func (c Context) Time(key string, def time.Time) time.Time {
+	if v := c.Get(key); v != nil {
+		if t, ok := v.(time.Time); ok {
+			return t
+		}
+	}
+	return def
+}
+
+func (c Context) Duration(key string, def time.Duration) time.Duration {
+	if v := c.Get(key); v != nil {
+		if t, ok := v.(time.Duration); ok {
+			return t
+		}
 	}
 	return def
 }
