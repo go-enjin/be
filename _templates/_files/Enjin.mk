@@ -17,7 +17,7 @@
 #: uncomment to echo instead of execute
 #CMD=echo
 
-ENJIN_MK_VERSION := v0.2.20
+ENJIN_MK_VERSION := v0.2.21
 
 #
 #: phony make targets
@@ -1249,8 +1249,8 @@ stop:
 							done; \
 							echo "# terminated: $${RP_TREE}"; \
 						else \
-							${CMD} kill -TERM $${RP} 2> /dev/null; \
-							echo "# terminated: $${RP}"; \
+							${CMD} kill -INT $${RP} 2> /dev/null; \
+							echo "# interrupted: $${RP}"; \
 						fi; \
 					fi; \
 				else \
@@ -1280,7 +1280,7 @@ profile.mem: build dev
 		echo "# <Enter> to load mem.pprof, <CTRL+c> to abort"; \
 		read JUNK; \
 		echo "# pprof service starting (:8080)"; \
-		bash -c 'set -m; ( go tool pprof -http=:8080 mem.pprof ) 2> /dev/null'; \
+		bash -c 'set -m; go tool pprof -http=:8080 mem.pprof'; \
 		echo ""; \
 		echo "# pprof service shutdown"; \
 	else \
@@ -1294,7 +1294,7 @@ profile.cpu: build dev
 		echo "# <Enter> to load cpu.pprof, <CTRL+c> to abort"; \
 		read JUNK; \
 		echo "# pprof service starting (:8080)"; \
-		bash -c 'set -m; ( go tool pprof -http=:8080 cpu.pprof ) 2> /dev/null'; \
+		bash -c 'set -m; go tool pprof -http=:8080 cpu.pprof'; \
 		echo ""; \
 		echo "# pprof service shutdown"; \
 	else \
