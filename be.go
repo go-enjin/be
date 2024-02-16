@@ -21,6 +21,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -28,10 +29,8 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-corelibs/x-text/language"
-	"github.com/go-enjin/be/pkg/profiling"
-
 	"github.com/go-corelibs/slices"
+	"github.com/go-corelibs/x-text/language"
 	"github.com/go-enjin/be/pkg/factories/nonces"
 	"github.com/go-enjin/be/pkg/factories/tokens"
 	"github.com/go-enjin/be/pkg/feature"
@@ -40,6 +39,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
+	"github.com/go-enjin/be/pkg/profiling"
 	"github.com/go-enjin/be/pkg/signals"
 )
 
@@ -398,11 +398,13 @@ func (e *Enjin) Shutdown() {
 		f.Shutdown()
 	}
 	e.Emit(signals.PostShutdownFeaturesPhase, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
-	if err := e.eb.fServiceListener.StopListening(); err != nil {
-		log.ErrorF("error stopping http listener: %v - %v", e.eb.fServiceListener.Tag(), err)
-	}
+	profiling.Stop()
 	e.Emit(signals.RootEnjinShutdown, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 	e.Notify("enjin shutdown complete")
-	profiling.Stop()
+	time.Sleep(250 * time.Millisecond)
+	// TODO: why/how is the http service listener actually ending the process abruptly?
+	if err := e.eb.fServiceListener.StopListening(); err != nil {
+		log.ErrorDF(1, "error stopping http listener: %v - %v", e.eb.fServiceListener.Tag(), err)
+	}
 	os.Exit(0)
 }
