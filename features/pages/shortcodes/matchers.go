@@ -21,6 +21,8 @@ import (
 	"strings"
 	"unicode"
 
+	"golang.org/x/net/html"
+
 	clStrings "github.com/go-corelibs/strings"
 )
 
@@ -71,6 +73,9 @@ func ParseKeyValue(input string) (key, value string, ok bool) {
 			after = strings.TrimSpace(after)
 			if ok = after != ""; ok {
 				value = clStrings.TrimQuotes(after)
+				if len(value) >= 10 && strings.HasPrefix(value, "&#34;") && strings.HasSuffix(value, "&#34;") {
+					value = after[6 : len(after)-6]
+				}
 			}
 		}
 	}
@@ -89,6 +94,7 @@ func searchForSpaceUntilEquals(input []rune) (ok bool) {
 }
 
 func SplitTokenAttributes(input string) (pairs []string) {
+	input = html.UnescapeString(input)
 	s := &struct {
 		open   bool
 		closer rune
