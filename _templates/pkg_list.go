@@ -159,6 +159,8 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/features/pages/shortcodes",
 		"github.com/go-enjin/be/features/pages/sitemap",
 		"github.com/go-enjin/be/features/pages/status",
+		"github.com/go-enjin/be/features/pages/tagcloud",
+		"github.com/go-enjin/be/features/pages/tagcloud/njn-tagcloud",
 		"github.com/go-enjin/be/features/requests/cloudflare",
 		"github.com/go-enjin/be/features/requests/deny",
 		"github.com/go-enjin/be/features/requests/headers/proxy",
