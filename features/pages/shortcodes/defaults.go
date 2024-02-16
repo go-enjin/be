@@ -277,4 +277,34 @@ var (
 			return
 		},
 	}
+
+	FigureShortcode = Shortcode{
+		Name: "figure",
+		InlineFn: func(node *Node, ctx beContext.Context) (output string) {
+			var src, alt, caption string
+			if v, ok := node.Attributes.Lookup["src"]; ok {
+				src = strings.ReplaceAll(v, `\"`, `"`)
+			}
+			if v, ok := node.Attributes.Lookup["alt"]; ok {
+				alt = strings.ReplaceAll(v, `\"`, `"`)
+			}
+			if v, ok := node.Attributes.Lookup["caption"]; ok {
+				caption = strings.ReplaceAll(v, `\"`, `"`)
+			}
+			if alt == "" {
+				if caption != "" {
+					alt = caption
+				} else {
+					alt = "image alt text missing"
+				}
+			}
+			output += `<figure>`
+			output += fmt.Sprintf(`<a href="%s" target="_blank">`, src)
+			output += fmt.Sprintf(`<img src="%s"/>`, src)
+			output += `</a>`
+			output += `<figcaption>` + caption + `</figcaption>`
+			output += `</figure>`
+			return
+		},
+	}
 )

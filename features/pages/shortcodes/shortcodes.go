@@ -108,6 +108,7 @@ func (f *CFeature) Defaults() MakeFeature {
 		CodeShortcode,
 		QuoteShortcode,
 		ImageShortcode,
+		FigureShortcode,
 		FontAwesomeIconShortcode,
 	)
 	return f
