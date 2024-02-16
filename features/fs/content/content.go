@@ -31,6 +31,7 @@ import (
 	uses_actions "github.com/go-enjin/be/pkg/feature/uses-actions"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/signals"
 	"github.com/go-enjin/be/types/page"
 )
 
@@ -350,6 +351,12 @@ func (f *CFeature) PopulateIndexes() (err error) {
 								}
 							}
 
+							caiStart := time.Now()
+							f.Enjin.Emit(signals.ContentAddIndexing, f.Tag().String(), file, theme, pmStub, pg)
+							if caiTime := time.Now().Sub(caiStart); caiTime.Milliseconds() > 25 {
+								batchTrack["signaling"] += caiTime
+							}
+
 							total += 1
 							batchTotal += 1
 
@@ -421,6 +428,8 @@ func (f *CFeature) AddIndexing(filePath string) {
 							}
 						}
 
+						f.Enjin.Emit(signals.ContentAddIndexing, f.Tag().String(), filePath, theme, stub, p)
+
 					}
 
 					return
@@ -458,6 +467,8 @@ func (f *CFeature) RemoveIndexing(filePath string) {
 								log.ErrorF("error removing page indexing: %v - %v", p.Url(), err)
 							}
 						}
+
+						f.Enjin.Emit(signals.ContentRemoveIndexing, f.Tag().String(), filePath, theme, stub, p)
 
 					}
 
