@@ -21,18 +21,18 @@ require (
 	github.com/foomo/htpasswd v0.0.0-20200116085101-e3a90e78da9c
 	github.com/frustra/bbcode v0.0.0-20201127003707-6ef347fbe1c8
 	github.com/gabriel-vasile/mimetype v1.4.3
-	github.com/go-chi/chi/v5 v5.0.11
+	github.com/go-chi/chi/v5 v5.0.12
 	github.com/go-chi/hostrouter v0.2.0
 	github.com/go-corelibs/env v1.1.1
 	github.com/go-corelibs/htmlcss v1.0.0
-	github.com/go-corelibs/lang v0.1.0
+	github.com/go-corelibs/lang v0.2.0
 	github.com/go-corelibs/maps v1.1.0
 	github.com/go-corelibs/maths v1.0.1
 	github.com/go-corelibs/mime v1.0.0
 	github.com/go-corelibs/path v1.3.0
 	github.com/go-corelibs/shasum v1.0.0
-	github.com/go-corelibs/slices v1.3.0
-	github.com/go-corelibs/strings v1.4.0
+	github.com/go-corelibs/slices v1.4.0
+	github.com/go-corelibs/strings v1.5.1
 	github.com/go-corelibs/templates v1.0.0
 	github.com/go-corelibs/values v1.1.0
 	github.com/go-corelibs/words v1.0.1
@@ -60,7 +60,7 @@ require (
 	github.com/samber/lo v1.39.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spkg/zipfs v0.7.1
-	github.com/tdewolff/minify/v2 v2.20.16
+	github.com/tdewolff/minify/v2 v2.20.17
 	github.com/tg123/go-htpasswd v1.2.2
 	github.com/urfave/cli/v2 v2.27.1
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
@@ -165,7 +165,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/stvp/go-udp-testing v0.0.0-20201019212854-469649b16807 // indirect
-	github.com/tdewolff/parse/v2 v2.7.11 // indirect
+	github.com/tdewolff/parse/v2 v2.7.12 // indirect
 	github.com/weppos/publicsuffix-go v0.30.1 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/yeqown/reedsolomon v1.0.0 // indirect
