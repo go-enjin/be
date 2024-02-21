@@ -20,9 +20,8 @@ import (
 	"strings"
 	"sync"
 
-	cllang "github.com/go-corelibs/lang"
-
 	clPath "github.com/go-corelibs/path"
+	"github.com/go-corelibs/tmplstr"
 	"github.com/go-enjin/be/pkg/feature"
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
@@ -82,7 +81,7 @@ func (l *Layout) load() (err error) {
 			}
 
 			//l.lastMods[entryName] = lastMod
-			l.cache[entryName] = cllang.PruneTranslatorComments(string(data))
+			l.cache[entryName] = tmplstr.RemoveTemplateComments(string(data))
 
 			log.TraceF("cached %v layout %v data: %v", l.name, entryName, entryPath)
 		}
