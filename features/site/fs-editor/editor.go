@@ -194,7 +194,9 @@ func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
 }
 
 func (f *CFeature) MakePageContextFields(r *http.Request) (fields beContext.Fields) {
+	tag := message.GetTag(r)
 	printer := message.GetPrinter(r)
+
 	fields = beContext.Fields{
 		"title": {
 			Key:      "title",
@@ -292,9 +294,17 @@ func (f *CFeature) MakePageContextFields(r *http.Request) (fields beContext.Fiel
 			Input:    "checkbox",
 			Format:   "bool",
 		},
+		"redirect": {
+			Key:      "redirect",
+			Tab:      "page",
+			Label:    printer.Sprintf("list of %s URL paths that redirect back to this page", tag),
+			Category: "file",
+			Weight:   100,
+			Input:    "text",
+			Format:   "string-slice",
+		},
 	}
 
-	tag := message.GetTag(r)
 	if f.Enjin.SiteDefaultLanguage().String() != tag.String() {
 		fields["translates"] = &beContext.Field{
 			Key:      "translates",
