@@ -22,10 +22,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-curses/cdk/lib/math"
 	"github.com/gofrs/uuid"
 	"github.com/iancoleman/strcase"
 
+	"github.com/go-corelibs/maths"
 	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/slices"
 	clStrings "github.com/go-corelibs/strings"
@@ -185,13 +185,13 @@ func NumberPercentParser(spec *Field, input interface{}) (parsed interface{}, er
 		if t = strings.TrimSpace(t); t != "" {
 			var v int
 			if v, err = strconv.Atoi(t); err == nil {
-				parsed = math.ClampI(v, 0, 100)
+				parsed = maths.Clamp(v, 0, 100)
 			}
 		}
 	case int:
-		parsed = math.ClampI(t, 0, 100)
+		parsed = maths.Clamp(t, 0, 100)
 	case float64:
-		parsed = math.ClampI(int(t), 0, 100)
+		parsed = maths.Clamp(int(t), 0, 100)
 	default:
 		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
@@ -226,13 +226,13 @@ func DecimalPercentParser(spec *Field, input interface{}) (parsed interface{}, e
 		if t = strings.TrimSpace(t); t != "" {
 			var v float64
 			if v, err = strconv.ParseFloat(t, 64); err == nil {
-				parsed = math.ClampF(v, 0.0, 1.0)
+				parsed = maths.Clamp(v, 0.0, 1.0)
 			}
 		}
 	case int:
-		parsed = math.ClampF(float64(t), 0.0, 1.0)
+		parsed = maths.Clamp(float64(t), 0.0, 1.0)
 	case float64:
-		parsed = math.ClampF(t, 0.0, 1.0)
+		parsed = maths.Clamp(t, 0.0, 1.0)
 	default:
 		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
 	}
