@@ -1,0 +1,46 @@
+// Copyright (c) 2024  The Go-Enjin Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package menulinks
+
+import (
+	"github.com/go-corelibs/x-text/message"
+	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/menu"
+)
+
+var (
+	// LandingPageMenuItemFn is a preset MenuItemFn which provides a new-tab
+	// link to the root path of the current domain
+	//
+	// LandingPageMenuItemFn does not require any permissions, however if any
+	// are required, simply wrap LandingPageMenuItemFn within an inline func
+	// and return the modified the results
+	//
+	//   .AddItemFuncs(func(printer *message.Printer) (item *menu.Item, permissions feature.Actions) {
+	//       item, _ = LandingPageMenuItemFn
+	//       item.Icon = "fa-solid fa-dumpster-fire"
+	//       permissions = feature.NewAction(subject, verb, details...)
+	//       return
+	//   }
+	LandingPageMenuItemFn = func(printer *message.Printer) (item *menu.Item, permissions feature.Actions) {
+		item = &menu.Item{
+			Text:   printer.Sprintf("open the website landing page in a new tab"),
+			Href:   "/",
+			Target: "_blank",
+			Icon:   "fa-solid fa-arrow-up-right-from-square",
+		}
+		return
+	}
+)
