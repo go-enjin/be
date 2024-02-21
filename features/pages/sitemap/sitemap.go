@@ -21,12 +21,14 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/urfave/cli/v2"
 	"golang.org/x/net/html"
 
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
+	"github.com/go-enjin/be/pkg/signals"
 
 	"github.com/go-corelibs/slices"
 	"github.com/go-corelibs/values"
@@ -38,7 +40,13 @@ import (
 )
 
 var (
+	// DefaultRoutePath is the URL path used to route sitemap feed requests
+	DefaultRoutePath = "/sitemap.xml"
+
 	DefaultChangeFreq = "never"
+
+	DefaultSitemapSchemaUrl = "http://www.sitemaps.org/schemas/sitemap/0.9"
+
 	ChangeFreqOptions = []string{"always", "hourly", "daily", "weekly", "monthly", "yearly", "never"}
 )
 
@@ -61,6 +69,7 @@ type Feature interface {
 
 type MakeFeature interface {
 	SetDomain(domain string) MakeFeature
+	SetRoutePath(path string) MakeFeature
 
 	Make() Feature
 }
@@ -68,7 +77,11 @@ type MakeFeature interface {
 type CFeature struct {
 	feature.CFeature
 
-	domain string
+	domain    string
+	routePath string
+
+	cache      map[string]feature.Page
+	cacheMutex *sync.RWMutex
 }
 
 func New() MakeFeature {
@@ -86,6 +99,9 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
+	f.routePath = DefaultRoutePath
+	f.cache = make(map[string]feature.Page)
+	f.cacheMutex = &sync.RWMutex{}
 }
 
 func (f *CFeature) SetDomain(domain string) MakeFeature {
@@ -93,15 +109,32 @@ func (f *CFeature) SetDomain(domain string) MakeFeature {
 	return f
 }
 
+func (f *CFeature) SetRoutePath(path string) MakeFeature {
+	if !strings.HasPrefix(path, "/") {
+		log.FatalDF(1, ".SetRoutePath requires an absolute path (must start with a \"/\")")
+	}
+	f.routePath = path
+	return f
+}
+
 func (f *CFeature) Make() Feature {
 	if f.domain != "" && !strings.HasPrefix(f.domain, "http://") && !strings.HasPrefix(f.domain, "https://") {
-		log.FatalDF(1, "http:// or https:// required for sitemap domain setting")
+		log.FatalDF(1, ".SetDomain requires an http:// or https:// schema")
+	}
+	if f.routePath == "" {
+		log.FatalDF(1, ".SetRoutePath cannot be empty")
 	}
 	return f
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
 	return
+}
+
+func (f *CFeature) Setup(enjin feature.Internals) {
+	f.CFeature.Setup(enjin)
+	enjin.Connect(signals.ContentAddIndexing, f.Tag().String(), f.addPageIndexingFn)
+	enjin.Connect(signals.ContentRemoveIndexing, f.Tag().String(), f.removePageIndexingFn)
 }
 
 func (f *CFeature) Startup(ctx *cli.Context) (err error) {
@@ -171,7 +204,7 @@ func (f *CFeature) MakePageContextFields(r *http.Request) (fields context.Fields
 }
 
 func (f *CFeature) Apply(s feature.System) (err error) {
-	s.Router().Get("/sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
+	s.Router().Get(f.routePath, func(w http.ResponseWriter, r *http.Request) {
 		langMode := f.Enjin.SiteLanguageMode()
 		defaultTag := f.Enjin.SiteDefaultLanguage()
 
@@ -183,7 +216,8 @@ func (f *CFeature) Apply(s feature.System) (err error) {
 		spec, _ := f.Enjin.MakePageContextField("sitemap-change-freq", r)
 
 		pages := make(map[string]feature.Page)
-		for _, found := range f.Enjin.FindPages("/") {
+		f.cacheMutex.RLock()
+		for _, found := range f.cache {
 			if ignored, ok := found.Context().Boolean("SitemapIgnored"); !ok || (ok && !ignored) {
 				priority := found.Context().Float64("SitemapPriority", 0.5)
 				found.Context().SetSpecific("SitemapPriority", priority)
@@ -210,10 +244,11 @@ func (f *CFeature) Apply(s feature.System) (err error) {
 				pages[fullUrl] = found
 			}
 		}
+		f.cacheMutex.RUnlock()
 
 		var contents string
 		contents += `<?xml version="1.0" encoding="UTF-8"?>` + "\n"
-		contents += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">` + "\n"
+		contents += `<urlset xmlns="` + DefaultSitemapSchemaUrl + `">` + "\n"
 
 		for _, fullUrl := range maps.SortedKeys(pages) {
 			pg := pages[fullUrl]
