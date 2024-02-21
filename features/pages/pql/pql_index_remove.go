@@ -49,6 +49,13 @@ func (f *CFeature) RemoveFromIndex(stub *feature.PageStub, p feature.Page) (err 
 		if err = f.removeIndexForRedirections(pShasum, redirects); err != nil {
 			return
 		}
+		for _, redirect := range redirects {
+			if err = f.removeIndexForTranslatedBy(redirect, pShasum); err != nil {
+				return
+			} else if err = f.removeIndexForTranslations(pLangTag, pShasum, redirect); err != nil {
+				return
+			}
+		}
 	}
 
 	if err = f.removeIndexForTranslatedBy(pUrl, pShasum); err != nil {

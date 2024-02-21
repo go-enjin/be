@@ -55,6 +55,13 @@ func (f *CFeature) AddToIndex(stub *feature.PageStub, p feature.Page) (err error
 		if err = f.addIndexForRedirections(pShasum, redirects); err != nil {
 			return
 		}
+		for _, redirect := range redirects {
+			if err = f.addIndexForTranslatedBy(redirect, pShasum); err != nil {
+				return
+			} else if err = f.addIndexForTranslations(pLangTag, pShasum, redirect); err != nil {
+				return
+			}
+		}
 	}
 
 	if err = f.addIndexForTranslatedBy(pUrl, pShasum); err != nil {
