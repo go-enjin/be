@@ -20,14 +20,12 @@ import (
 	"fmt"
 	"time"
 
-	cllang "github.com/go-corelibs/lang"
-	"github.com/go-corelibs/x-text/language"
-
-	"github.com/go-enjin/be/pkg/editor"
-
 	clPath "github.com/go-corelibs/path"
 	sha "github.com/go-corelibs/shasum"
+	"github.com/go-corelibs/tmplstr"
+	"github.com/go-corelibs/x-text/language"
 	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 )
@@ -86,7 +84,7 @@ func ParsePageMatter(origin string, path string, created, updated time.Time, raw
 		path = modified
 	}
 	path = clPath.CleanWithSlash(path)
-	cleaned := cllang.PruneTranslatorComments(string(raw))
+	cleaned := tmplstr.RemoveTemplateComments(string(raw))
 
 	var ctx beContext.Context
 	matter, content, matterType := ParseContent(cleaned)
