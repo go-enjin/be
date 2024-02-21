@@ -32,60 +32,54 @@ import (
 
 func (f *CFeature) RemoveFromIndex(stub *feature.PageStub, p feature.Page) (err error) {
 
-	//start := time.Now()
-	//defer func() {
-	//	if err == nil {
-	//		log.DebugF("%v indexed page %v in %v", f.Tag(), p.Url(), time.Now().Sub(start).String())
-	//	}
-	//}()
-
 	f.Lock()
 	defer f.Unlock()
-	//isDefaultLocale := p.LanguageTag() == f.Enjin.SiteDefaultLanguage()
 
-	if v := f.getPageStub(f.pageStubsBucket, p.Shasum()); v == nil {
-		//log.WarnF("page stub already indexed: %v", p.Shasum())
+	pUrl, pShasum, pLangTag := p.Url(), p.Shasum(), p.LanguageTag()
+
+	if v := f.getPageStub(f.pageStubsBucket, pShasum); v == nil {
 		return
-	} else if err = f.removeIndexForPageStub(p.Shasum()); err != nil {
+	} else if err = f.removeIndexForPageStub(pShasum); err != nil {
 		return
-	} else if err = f.removeIndexForPageUrl(p.Url(), p.Shasum()); err != nil {
+	} else if err = f.removeIndexForPageUrl(pUrl, pShasum); err != nil {
 		return
 	}
 
 	if redirects := p.Redirections(); len(redirects) > 0 {
-		if err = f.removeIndexForRedirections(p.Shasum(), redirects); err != nil {
+		if err = f.removeIndexForRedirections(pShasum, redirects); err != nil {
 			return
 		}
 	}
 
-	if err = f.removeIndexForTranslatedBy(p.Url(), p.Shasum()); err != nil {
+	if err = f.removeIndexForTranslatedBy(pUrl, pShasum); err != nil {
 		return
-	} else if err = f.removeIndexForTranslations(p.LanguageTag(), p.Shasum(), p.Url()); err != nil {
+	} else if err = f.removeIndexForTranslations(pLangTag, pShasum, pUrl); err != nil {
 		return
 	}
 	if p.Translates() != "" {
-		if err = f.removeIndexForTranslations(p.LanguageTag(), p.Shasum(), p.Translates()); err != nil {
+		if err = f.removeIndexForTranslations(pLangTag, pShasum, p.Translates()); err != nil {
 			return
 		}
 	}
 
-	if p.Permalink() != uuid.Nil {
+	if permalink := p.Permalink(); permalink != uuid.Nil {
 		// long-form root permalink
 		permalinkUrl := "/" + p.Permalink().String()
-		if err = f.removeIndexForPageUrl(permalinkUrl, p.Shasum()); err != nil {
+		if err = f.removeIndexForPageUrl(permalinkUrl, pShasum); err != nil {
 			return
-		} else if err = f.removeIndexForTranslations(p.LanguageTag(), p.Shasum(), permalinkUrl); err != nil {
+		} else if err = f.removeIndexForTranslations(pLangTag, pShasum, permalinkUrl); err != nil {
 			return
-		} else if err = f.removeIndexForPermalink(p.Permalink().String(), p.Shasum()); err != nil {
+		} else if err = f.removeIndexForPermalink(p.Permalink().String(), pShasum); err != nil {
 			return
 		}
 		// short-form root permalink
-		permalinkUrl = "/" + p.PermalinkSha()
-		if err = f.removeIndexForPageUrl(permalinkUrl, p.Shasum()); err != nil {
+		permalinkSha := p.PermalinkSha()
+		permalinkUrl = "/" + permalinkSha
+		if err = f.removeIndexForPageUrl(permalinkUrl, pShasum); err != nil {
 			return
-		} else if err = f.removeIndexForTranslations(p.LanguageTag(), p.Shasum(), permalinkUrl); err != nil {
+		} else if err = f.removeIndexForTranslations(pLangTag, pShasum, permalinkUrl); err != nil {
 			return
-		} else if err = f.removeIndexForPermalink(p.PermalinkSha(), p.Shasum()); err != nil {
+		} else if err = f.removeIndexForPermalink(permalinkSha, pShasum); err != nil {
 			return
 		}
 	}
@@ -117,18 +111,18 @@ func (f *CFeature) RemoveFromIndex(stub *feature.PageStub, p feature.Page) (err 
 			int, int8, int16, int32, int64,
 			uint, uint8, uint16, uint32, uint64,
 			time.Time, time.Duration:
-			if err = f.removeIndexForPageContextValue(pCtxKey, p.Shasum(), t); err != nil {
+			if err = f.removeIndexForPageContextValue(pCtxKey, pShasum, t); err != nil {
 				return
 			}
 			//case []string:
 			//	for _, tv := range t {
-			//		if err = f.removeIndexForPageContextValue(pCtxKey, p.Shasum(), tv); err != nil {
+			//		if err = f.removeIndexForPageContextValue(pCtxKey, pShasum, tv); err != nil {
 			//			return
 			//		}
 			//	}
 			//case []interface{}:
 			//	for _, tv := range t {
-			//		if err = f.removeIndexForPageContextValue(pCtxKey, p.Shasum(), tv); err != nil {
+			//		if err = f.removeIndexForPageContextValue(pCtxKey, pShasum, tv); err != nil {
 			//			return
 			//		}
 			//	}

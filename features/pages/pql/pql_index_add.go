@@ -36,63 +36,56 @@ func (f *CFeature) AddToIndex(stub *feature.PageStub, p feature.Page) (err error
 		return
 	}
 
-	//start := time.Now()
-	//defer func() {
-	//	if err == nil {
-	//		log.DebugF("%v indexed page %v in %v", f.Tag(), p.Url(), time.Now().Sub(start).String())
-	//	}
-	//}()
-
 	f.Lock()
 	defer f.Unlock()
-	//isDefaultLocale := p.LanguageTag() == f.Enjin.SiteDefaultLanguage()
 
 	// TODO: figure out a slightly more unique constraint than .Shasum(); copies can have the same shasums!
 
-	//if v := f.getPageStub(f.pageStubsBucket, p.Shasum()); v != nil {
-	if kvs.IsSet(f.pageStubsBucket, p.Shasum()) {
-		//log.WarnF("page stub already indexed: %v", p.Shasum())
+	pUrl, pShasum, pLangTag := p.Url(), p.Shasum(), p.LanguageTag()
+
+	if kvs.IsSet(f.pageStubsBucket, pShasum) {
 		return
-	} else if err = f.addIndexForPageStub(p.Shasum(), stub); err != nil {
+	} else if err = f.addIndexForPageStub(pShasum, stub); err != nil {
 		return
-	} else if err = f.addIndexForPageUrl(p.Url(), p.Shasum()); err != nil {
+	} else if err = f.addIndexForPageUrl(pUrl, pShasum); err != nil {
 		return
 	}
 
 	if redirects := p.Redirections(); len(redirects) > 0 {
-		if err = f.addIndexForRedirections(p.Shasum(), redirects); err != nil {
+		if err = f.addIndexForRedirections(pShasum, redirects); err != nil {
 			return
 		}
 	}
 
-	if err = f.addIndexForTranslatedBy(p.Url(), p.Shasum()); err != nil {
+	if err = f.addIndexForTranslatedBy(pUrl, pShasum); err != nil {
 		return
-	} else if err = f.addIndexForTranslations(p.LanguageTag(), p.Shasum(), p.Url()); err != nil {
+	} else if err = f.addIndexForTranslations(pLangTag, pShasum, pUrl); err != nil {
 		return
 	}
 	if p.Translates() != "" {
-		if err = f.addIndexForTranslations(p.LanguageTag(), p.Shasum(), p.Translates()); err != nil {
+		if err = f.addIndexForTranslations(pLangTag, pShasum, p.Translates()); err != nil {
 			return
 		}
 	}
 
-	if p.Permalink() != uuid.Nil {
+	if permalink := p.Permalink(); permalink != uuid.Nil {
 		// long-form root permalink
-		permalinkUrl := "/" + p.Permalink().String()
-		if err = f.addIndexForPageUrl(permalinkUrl, p.Shasum()); err != nil {
+		permalinkUrl := "/" + permalink.String()
+		if err = f.addIndexForPageUrl(permalinkUrl, pShasum); err != nil {
 			return
-		} else if err = f.addIndexForTranslations(p.LanguageTag(), p.Shasum(), permalinkUrl); err != nil {
+		} else if err = f.addIndexForTranslations(pLangTag, pShasum, permalinkUrl); err != nil {
 			return
-		} else if err = f.addIndexForPermalink(p.Permalink().String(), p.Shasum()); err != nil {
+		} else if err = f.addIndexForPermalink(permalink.String(), pShasum); err != nil {
 			return
 		}
 		// short-form root permalink
-		permalinkUrl = "/" + p.PermalinkSha()
-		if err = f.addIndexForPageUrl(permalinkUrl, p.Shasum()); err != nil {
+		permalinkSha := p.PermalinkSha()
+		permalinkUrl = "/" + permalinkSha
+		if err = f.addIndexForPageUrl(permalinkUrl, pShasum); err != nil {
 			return
-		} else if err = f.addIndexForTranslations(p.LanguageTag(), p.Shasum(), permalinkUrl); err != nil {
+		} else if err = f.addIndexForTranslations(pLangTag, pShasum, permalinkUrl); err != nil {
 			return
-		} else if err = f.addIndexForPermalink(p.PermalinkSha(), p.Shasum()); err != nil {
+		} else if err = f.addIndexForPermalink(permalinkSha, pShasum); err != nil {
 			return
 		}
 	}
@@ -106,7 +99,6 @@ func (f *CFeature) AddToIndex(stub *feature.PageStub, p feature.Page) (err error
 		included[key] = struct{}{}
 	}
 
-	shasum := p.Shasum()
 	for pCtxKey, pCtxValue := range p.Context() {
 
 		kebab := strcase.ToKebab(pCtxKey)
@@ -125,18 +117,18 @@ func (f *CFeature) AddToIndex(stub *feature.PageStub, p feature.Page) (err error
 			int, int8, int16, int32, int64,
 			uint, uint8, uint16, uint32, uint64,
 			time.Time, time.Duration:
-			if err = f.addIndexForPageContextValue(pCtxKey, shasum, t); err != nil {
+			if err = f.addIndexForPageContextValue(pCtxKey, pShasum, t); err != nil {
 				return
 			}
 		case []string:
 			for _, tv := range t {
-				if err = f.addIndexForPageContextValue(pCtxKey, p.Shasum(), tv); err != nil {
+				if err = f.addIndexForPageContextValue(pCtxKey, pShasum, tv); err != nil {
 					return
 				}
 			}
 		case []interface{}:
 			for _, tv := range t {
-				if err = f.addIndexForPageContextValue(pCtxKey, p.Shasum(), tv); err != nil {
+				if err = f.addIndexForPageContextValue(pCtxKey, pShasum, tv); err != nil {
 					return
 				}
 			}
