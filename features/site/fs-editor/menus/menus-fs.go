@@ -44,17 +44,17 @@ func (f *CFeature) UpdateFileInfo(info *editor.File, r *http.Request) {
 	if info.Path != "" {
 		info.Indicators = append(info.Indicators, &editor.Indicator{
 			Icon:    "danger fa-solid fa-circle-xmark",
-			Message: printer.Sprintf(`%[1]s ignores all menus in sub-directories`, t.Name()),
+			Message: printer.Sprintf(`menus in sub-directories are not supported at this time`, t.Name()),
 		})
 	} else if supported.Has(info.BaseName()) {
 		info.Indicators = append(info.Indicators, &editor.Indicator{
 			Icon:    "important fa-solid fa-circle-check",
-			Message: printer.Sprintf(`%[1]s renders this menu`, t.Name()),
+			Message: printer.Sprintf(`the %[1]s theme renders this menu`, t.Name()),
 		})
 	} else {
 		info.Indicators = append(info.Indicators, &editor.Indicator{
 			Icon:    "caution fa-solid fa-circle-xmark",
-			Message: printer.Sprintf(`%[1]s ignores this menu`, t.Name()),
+			Message: printer.Sprintf(`the %[1]s theme ignores this menu`, t.Name()),
 		})
 	}
 	if info.HasDraft {
