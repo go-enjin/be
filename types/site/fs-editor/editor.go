@@ -341,7 +341,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ParseCopyMoveTranslateForm(r *http.Re
 	}
 
 	fsid = forms.StrictCleanKebabValue(fsid)
-	fileName = forms.StrictCleanKebabValue(fileName)
+	fileName = forms.StrictCleanKebabFile(fileName)
 	if filePath = forms.KebabRelativePath(filePath); filePath != "" {
 		fullPath = filePath + "/" + fileName
 	} else {
