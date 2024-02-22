@@ -117,7 +117,7 @@ func (f *CFeature) MakePageContextFields(r *http.Request) (fields context.Fields
 			Tab:          "page",
 			Label:        printer.Sprintf("Set this page's permalink"),
 			Category:     "file",
-			Weight:       10,
+			Weight:       54,
 			Input:        "text",
 			Format:       "uuid",
 			DefaultValue: id.String(),
