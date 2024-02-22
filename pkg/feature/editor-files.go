@@ -1,4 +1,4 @@
-// Copyright (c) 2023  The Go-Enjin Authors
+// Copyright (c) 2024  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package editor
+package feature
 
 import (
 	"sort"
@@ -20,9 +20,9 @@ import (
 	"github.com/maruel/natural"
 )
 
-type Files []*EditorFile
+type EditorFiles []*EditorFile
 
-func (l Files) Sort() (sorted Files) {
+func (l EditorFiles) Sort() (sorted EditorFiles) {
 	sorted = append(sorted, l...)
 	sort.Slice(sorted, func(i, j int) (less bool) {
 		switch {
@@ -43,7 +43,7 @@ func (l Files) Sort() (sorted Files) {
 	return
 }
 
-func (l Files) Find(fsid, filePath string) (f *EditorFile) {
+func (l EditorFiles) Find(fsid, filePath string) (f *EditorFile) {
 	for _, i := range l {
 		if i.FSID == fsid && i.FilePath() == filePath {
 			f = i

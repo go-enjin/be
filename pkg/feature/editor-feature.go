@@ -23,7 +23,6 @@ import (
 	"github.com/go-corelibs/x-text/message"
 
 	beContext "github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/types/page/matter"
@@ -47,57 +46,57 @@ type EditorFeature interface {
 	ParseEditorUrlParams(r *http.Request) (fsid, code, file string, locale *language.Tag)
 	ServePreparedEditPage(pg Page, ctx beContext.Context, w http.ResponseWriter, r *http.Request)
 
-	UpdatePathInfo(info *editor.File, r *http.Request)
-	UpdateFileInfo(info *editor.File, r *http.Request)
-	UpdateFileInfoForEditing(info *editor.File, r *http.Request)
-	PrepareEditableFile(r *http.Request, info *editor.File) (editFile *editor.File)
+	UpdatePathInfo(info *EditorFile, r *http.Request)
+	UpdateFileInfo(info *EditorFile, r *http.Request)
+	UpdateFileInfoForEditing(info *EditorFile, r *http.Request)
+	PrepareEditableFile(r *http.Request, info *EditorFile) (editFile *EditorFile)
 
-	ListFileSystems() (list editor.Files)
-	ListFileSystemLocales(fsid string) (list editor.Files)
-	ListFileSystemDirectories(r *http.Request, fsid, code, dirs string) (list editor.Files)
-	ListFileSystemFiles(r *http.Request, fsid, code, dirs string) (list editor.Files)
-	ProcessMountPointFile(r *http.Request, printer *message.Printer, eid, mpfBTag, mpfTag, code, dirs, file string, mountPoint *CMountPoint, draftWork bool) (ef *editor.File, ignored bool)
+	ListFileSystems() (list EditorFiles)
+	ListFileSystemLocales(fsid string) (list EditorFiles)
+	ListFileSystemDirectories(r *http.Request, fsid, code, dirs string) (list EditorFiles)
+	ListFileSystemFiles(r *http.Request, fsid, code, dirs string) (list EditorFiles)
+	ProcessMountPointFile(r *http.Request, printer *message.Printer, eid, mpfBTag, mpfTag, code, dirs, file string, mountPoint *CMountPoint, draftWork bool) (ef *EditorFile, ignored bool)
 
 	LockEditorFile(eid, fsid, filePath string) (err error)
 	IsEditorFileLocked(fsid, filePath string) (eid string, locked bool)
 	UnLockEditorFile(fsid, filePath string) (err error)
 
-	FileExists(info *editor.File) (exists bool)
-	ReadFile(info *editor.File) (data []byte, err error)
-	WriteFile(info *editor.File, data []byte) (err error)
-	RemoveFile(info *editor.File) (err error)
-	RemoveDirectory(info *editor.File) (err error)
+	FileExists(info *EditorFile) (exists bool)
+	ReadFile(info *EditorFile) (data []byte, err error)
+	WriteFile(info *EditorFile, data []byte) (err error)
+	RemoveFile(info *EditorFile) (err error)
+	RemoveDirectory(info *EditorFile) (err error)
 
-	DraftExists(info *editor.File) (present bool)
-	ReadDraft(info *editor.File) (contents []byte, err error)
-	ReadDraftMatter(info *editor.File) (pm *matter.PageMatter, err error)
-	WriteDraft(info *editor.File, contents []byte) (err error)
-	RemoveDraft(info *editor.File) (err error)
-	PublishDraft(info *editor.File) (err error)
+	DraftExists(info *EditorFile) (present bool)
+	ReadDraft(info *EditorFile) (contents []byte, err error)
+	ReadDraftMatter(info *EditorFile) (pm *matter.PageMatter, err error)
+	WriteDraft(info *EditorFile, contents []byte) (err error)
+	RemoveDraft(info *EditorFile) (err error)
+	PublishDraft(info *EditorFile) (err error)
 
 	RenderFileBrowser(w http.ResponseWriter, r *http.Request)
 	RenderFileEditor(w http.ResponseWriter, r *http.Request)
 	ReceiveFileEditorChanges(w http.ResponseWriter, r *http.Request)
 
-	OpFileUnlockHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string)
-	OpFileRetakeHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string)
-	OpFileDeleteValidate(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (err error)
-	OpFileDeleteHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string)
-	OpFileCommitValidate(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (err error)
-	OpFileCommitHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string)
-	OpFilePublishValidate(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (err error)
-	OpFilePublishHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string)
-	OpFileCancelValidate(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (err error)
-	OpFileCancelHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string)
-	OpFileMoveValidate(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (err error)
-	OpFileMoveHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string)
-	OpFileCopyValidate(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (err error)
-	OpFileCopyHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string)
-	OpFileTranslateValidate(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (err error)
-	OpFileTranslateHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string)
+	OpFileUnlockHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (redirect string)
+	OpFileRetakeHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (redirect string)
+	OpFileDeleteValidate(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (err error)
+	OpFileDeleteHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (redirect string)
+	OpFileCommitValidate(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (err error)
+	OpFileCommitHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (redirect string)
+	OpFilePublishValidate(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (err error)
+	OpFilePublishHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (redirect string)
+	OpFileCancelValidate(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (err error)
+	OpFileCancelHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (redirect string)
+	OpFileMoveValidate(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (err error)
+	OpFileMoveHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (redirect string)
+	OpFileCopyValidate(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (err error)
+	OpFileCopyHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (redirect string)
+	OpFileTranslateValidate(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (err error)
+	OpFileTranslateHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (redirect string)
 
-	OpPathDeleteValidate(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (err error)
-	OpPathDeleteHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string)
+	OpPathDeleteValidate(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (err error)
+	OpPathDeleteHandler(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (redirect string)
 }
 
 type EditorMakeFeature[MakeTypedFeature interface{}] interface {

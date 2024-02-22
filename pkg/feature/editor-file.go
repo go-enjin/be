@@ -1,4 +1,4 @@
-// Copyright (c) 2023  The Go-Enjin Authors
+// Copyright (c) 2024  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,19 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package editor
+package feature
 
 import (
 	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/go-corelibs/x-text/language"
-	"github.com/go-enjin/be/pkg/feature"
-
 	"github.com/go-corelibs/mime"
 	clPath "github.com/go-corelibs/path"
+	"github.com/go-corelibs/x-text/language"
 	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/editor"
 )
 
 type EditorFile struct {
@@ -52,8 +51,8 @@ type EditorFile struct {
 	Created time.Time `json:"created"`
 	Updated time.Time `json:"updated"`
 
-	Actions    Actions    `json:"actions"`
-	Indicators Indicators `json:"indicators,omitempty"`
+	Actions    editor.Actions    `json:"actions"`
+	Indicators editor.Indicators `json:"indicators,omitempty"`
 
 	Context beContext.Context `json:"-"`
 }
@@ -86,7 +85,7 @@ func ParseDirectory(fsid, filePath string) *EditorFile {
 	}
 }
 
-func ParseFile(fsid, filePath string, t feature.Theme) *EditorFile {
+func ParseFile(fsid, filePath string, t Theme) *EditorFile {
 	topDir := clPath.TopDirectory(filePath)
 	file := filepath.Base(filePath)
 	dirs := filepath.Dir(filePath)
@@ -111,7 +110,7 @@ func ParseFile(fsid, filePath string, t feature.Theme) *EditorFile {
 	var name string
 	var tilde string
 	if file != "" {
-		if v, wf, ok := ParseEditorWorkFile(file); ok {
+		if v, wf, ok := editor.ParseEditorWorkFile(file); ok {
 			tilde = wf.String()
 			name = filepath.Base(v)
 			file = v
@@ -125,7 +124,7 @@ func ParseFile(fsid, filePath string, t feature.Theme) *EditorFile {
 
 	var base string
 	if pf, match := t.MatchFormat(name); pf != nil {
-		base = strings.TrimPrefix(name, "."+match)
+		base = strings.TrimSuffix(name, "."+match)
 	} else {
 		base = name
 	}
@@ -364,8 +363,8 @@ func (f *EditorFile) Clone() (file *EditorFile) {
 		Binary:     f.Binary,
 		Created:    time.UnixMicro(f.Created.UnixMicro()),
 		Updated:    time.UnixMicro(f.Updated.UnixMicro()),
-		Actions:    append(Actions{}, f.Actions...),
-		Indicators: append(Indicators{}, f.Indicators...),
+		Actions:    append(editor.Actions{}, f.Actions...),
+		Indicators: append(editor.Indicators{}, f.Indicators...),
 	}
 	return
 }
