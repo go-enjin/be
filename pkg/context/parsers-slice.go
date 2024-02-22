@@ -44,3 +44,33 @@ func StringSliceParser(spec *Field, input interface{}) (parsed interface{}, err 
 	parsed = cleaned
 	return
 }
+
+func UrlPathSliceParser(spec *Field, input interface{}) (parsed interface{}, err error) {
+	strict := bluemonday.StrictPolicy()
+	var cleaned []string
+	switch t := input.(type) {
+	case []string:
+		for _, dv := range t {
+			cleaned = append(cleaned, strict.Sanitize(strings.TrimSpace(dv)))
+		}
+	case []interface{}:
+		for _, v := range t {
+			if str, ok := v.(string); ok {
+				cleaned = append(cleaned, strict.Sanitize(strings.TrimSpace(str)))
+			}
+		}
+	default:
+		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
+		return
+	}
+	for i := 0; i < len(cleaned); i++ {
+		var v string
+		if v, err = parseUrlPath(cleaned[i]); err != nil {
+			return
+		} else {
+			cleaned[i] = v
+		}
+	}
+	parsed = cleaned
+	return
+}

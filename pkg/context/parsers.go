@@ -48,8 +48,9 @@ var (
 		"email":           EmailParser,
 		"path":            PathParser,
 		"url":             UrlParser,
-		"url-path":        RelativeUrlParser,
-		"relative-url":    RelativeUrlParser,
+		"url-path":        UrlPathParser,
+		"url-path-slice":  UrlPathSliceParser,
+		"relative-url":    UrlPathParser,
 		"time":            TimeParser,
 		"date":            DateParser,
 		"date-time":       DateTimeParser,
@@ -297,21 +298,33 @@ func UrlParser(spec *Field, input interface{}) (parsed interface{}, err error) {
 	return
 }
 
-func RelativeUrlParser(spec *Field, input interface{}) (parsed interface{}, err error) {
+func parseUrlPath(input string) (parsed string, err error) {
+	if input = strings.TrimSpace(input); input != "" {
+		var v *url.URL
+		if v, err = url.Parse(input); err == nil {
+			if p := clPath.TrimSlashes(v.Path); p != "" {
+				parsed = "/" + p
+			} else {
+				parsed = "/"
+			}
+		}
+	}
+	return
+}
+
+func UrlPathParser(spec *Field, input interface{}) (parsed interface{}, err error) {
 	if list, ok := input.([]string); ok && len(list) > 0 {
 		input = list[0]
 	}
 	switch t := input.(type) {
 	case string:
-		if t = strings.TrimSpace(t); t != "" {
-			var v *url.URL
-			if v, err = url.Parse(t); err == nil {
-				if p := clPath.TrimSlashes(v.Path); p != "" {
-					parsed = "/" + p
-				} else {
-					parsed = "/"
-				}
+		var v string
+		if v, err = parseUrlPath(t); err == nil {
+			if v == "" {
+				parsed = "/"
+				return
 			}
+			parsed = v
 		}
 	default:
 		err = errors.New(spec.Printer.Sprintf("unsupported type: %[1]s", values.TypeOf(input)))
