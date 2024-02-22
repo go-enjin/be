@@ -36,10 +36,11 @@ var (
 	//   }
 	LandingPageMenuItemFn = func(printer *message.Printer) (item *menu.Item, permissions feature.Actions) {
 		item = &menu.Item{
-			Text:   printer.Sprintf("open the website landing page in a new tab"),
+			Text:   printer.Sprintf("View Website"),
+			Title:  printer.Sprintf("open the website landing page in a new tab"),
 			Href:   "/",
 			Target: "_blank",
-			Icon:   "fa-solid fa-arrow-up-right-from-square",
+			Icon:   "fa-solid fa-arrow-up-right-from-square fa-fw",
 		}
 		return
 	}
