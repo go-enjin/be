@@ -24,6 +24,7 @@ type EditItem struct {
 	Text   string `json:"text"`
 	Href   string `json:"href,omitempty"`
 	Lang   string `json:"lang,omitempty"`
+	Title  string `json:"title,omitempty"`
 	Target string `json:"target,omitempty"`
 
 	Icon   string `json:"icon,omitempty"`
@@ -33,6 +34,8 @@ type EditItem struct {
 	Active bool `json:"active,omitempty"`
 
 	SubMenu EditMenu `json:"sub-menu,omitempty"`
+
+	Hidden string `json:"hidden,omitempty"`
 
 	Context context.Context `json:"context,omitempty"`
 
