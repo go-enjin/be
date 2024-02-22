@@ -312,7 +312,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ServePreparedEditPage(pg feature.Page
 	f.Editor.Site().ServePreparedPage(pg, ctx, f.Editor.SiteFeatureTheme(), w, r)
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) ParseCopyMoveTranslateForm(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *bePkgEditor.File, eid string, redirect *string) (srcUri, dstUri string, dstInfo *bePkgEditor.File, srcFS, dstFS feature.FileSystemFeature, srcMP, dstMP *feature.CMountPoint, srcExists, dstExists bool, stop bool) {
+func (f *CEditorFeature[MakeTypedFeature]) ParseCopyMoveTranslateForm(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string, redirect *string) (srcUri, dstUri string, dstInfo *feature.EditorFile, srcFS, dstFS feature.FileSystemFeature, srcMP, dstMP *feature.CMountPoint, srcExists, dstExists bool, stop bool) {
 	printer := message.GetPrinter(r)
 
 	var param string
@@ -371,7 +371,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ParseCopyMoveTranslateForm(r *http.Re
 		return
 	}
 
-	dstInfo = bePkgEditor.ParseFile(fsid, dstPath)
+	dstInfo = feature.ParseFile(fsid, dstPath, t)
 
 	for _, efs := range f.EditingFileSystems {
 		if !dstExists && efs.Tag().String() == dstInfo.FSID {

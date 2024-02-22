@@ -24,7 +24,6 @@ import (
 	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
@@ -41,7 +40,7 @@ func (f *CFeature) ServePreviewEditPage(pg feature.Page, ctx context.Context, w 
 func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
 	var pg feature.Page
 	var ctx context.Context
-	var info *editor.File
+	var info *feature.EditorFile
 	var handled bool
 	var eid string
 	if pg, ctx, info, eid, handled = f.PrepareRenderFileEditor(w, r); handled {
@@ -125,7 +124,7 @@ func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
 func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 	var pg feature.Page
 	var ctx context.Context
-	var info *editor.File
+	var info *feature.EditorFile
 	var err error
 	var eid string
 	var handled bool

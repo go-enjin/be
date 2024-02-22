@@ -32,8 +32,9 @@ import (
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
-func (f *CEditorFeature[MakeTypedFeature]) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Request) (pg feature.Page, ctx context.Context, info *editor.File, currentUser string, handled bool) {
+func (f *CEditorFeature[MakeTypedFeature]) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Request) (pg feature.Page, ctx context.Context, info *feature.EditorFile, currentUser string, handled bool) {
 
+	t := f.Enjin.MustGetTheme()
 	currentUser = userbase.GetCurrentEID(r)
 	printer := message.GetPrinter(r)
 
@@ -64,7 +65,7 @@ func (f *CEditorFeature[MakeTypedFeature]) PrepareRenderFileEditor(w http.Respon
 			return
 		}
 
-		info = editor.ParseFile(fsid, locale.String())
+		info = feature.ParseFile(fsid, locale.String(), t)
 		parts := strings.Split(info.Path, "/")
 		info.MimeType = clMime.DirectoryMimeType
 		info.Code = code
@@ -85,7 +86,7 @@ func (f *CEditorFeature[MakeTypedFeature]) PrepareRenderFileEditor(w http.Respon
 		f.RenderFileBrowser(w, r)
 		handled = true
 		return
-	} else if info = editor.ParseFile(fsid, filePath); info == nil {
+	} else if info = feature.ParseFile(fsid, filePath, t); info == nil {
 		log.ErrorRF(r, "parsed file is nil: fsid=%q, filePath=%q", fsid, filePath)
 		//f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+fsid+"/"+code, w, r)
 		f.RenderFileBrowser(w, r)
@@ -159,7 +160,7 @@ func (f *CEditorFeature[MakeTypedFeature]) RenderFileEditor(w http.ResponseWrite
 
 	var pg feature.Page
 	var ctx context.Context
-	var info *editor.File
+	var info *feature.EditorFile
 	var handled bool
 	var eid string
 	if pg, ctx, info, eid, handled = f.PrepareRenderFileEditor(w, r); handled {
@@ -196,7 +197,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ReceiveFileEditorChanges(w http.Respo
 	var err error
 	var pg feature.Page
 	var ctx context.Context
-	var info *editor.File
+	var info *feature.EditorFile
 	var handled bool
 	var eid string
 	if pg, ctx, info, eid, handled = f.PrepareRenderFileEditor(w, r); handled {

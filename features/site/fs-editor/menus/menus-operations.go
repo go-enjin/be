@@ -29,7 +29,7 @@ import (
 	"github.com/go-enjin/be/pkg/menu"
 )
 
-func (f *CFeature) OpChangeValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
+func (f *CFeature) OpChangeValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string) (err error) {
 	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("%[1]s is locked by another user, cannot make changes", info.Name))
@@ -39,7 +39,7 @@ func (f *CFeature) OpChangeValidate(r *http.Request, pg feature.Page, ctx, form 
 	return
 }
 
-func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (redirect string) {
+func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string) (redirect string) {
 	printer := message.GetPrinter(r)
 
 	_, target := feature.ParseEditorOpKey(r.PostFormValue("submit"))
@@ -93,7 +93,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx, form c
 	return
 }
 
-func (f *CFeature) OpFileCommitValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
+func (f *CFeature) OpFileCommitValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string) (err error) {
 	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("%[1]s is locked by another user, cannot make changes", info.Name))
@@ -103,7 +103,7 @@ func (f *CFeature) OpFileCommitValidate(r *http.Request, pg feature.Page, ctx, f
 	return
 }
 
-func (f *CFeature) OpFileCommitHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (redirect string) {
+func (f *CFeature) OpFileCommitHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string) (redirect string) {
 	printer := message.GetPrinter(r)
 	var parsed menu.EditMenu
 	if v, ok := form["menu"].([]interface{}); ok {
@@ -129,7 +129,7 @@ func (f *CFeature) OpFileCommitHandler(r *http.Request, pg feature.Page, ctx, fo
 	return
 }
 
-func (f *CFeature) OpFilePublishValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
+func (f *CFeature) OpFilePublishValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string) (err error) {
 	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = fmt.Errorf("%s", printer.Sprintf("%[1]s is locked by another user, cannot publish changes", info.Name))
@@ -137,7 +137,7 @@ func (f *CFeature) OpFilePublishValidate(r *http.Request, pg feature.Page, ctx, 
 	return
 }
 
-func (f *CFeature) OpFilePublishHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (redirect string) {
+func (f *CFeature) OpFilePublishHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string) (redirect string) {
 	var err error
 	printer := message.GetPrinter(r)
 
@@ -188,7 +188,7 @@ func (f *CFeature) OpFilePublishHandler(r *http.Request, pg feature.Page, ctx, f
 	return
 }
 
-func (f *CFeature) OpMenuCreateValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
+func (f *CFeature) OpMenuCreateValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string) (err error) {
 	//printer := message.GetPrinter(r)
 	//if info.Locked {
 	//	err = errors.New(printer.Sprintf("%[1]s is locked by another user, cannot republish changes", info.Name))
@@ -196,7 +196,7 @@ func (f *CFeature) OpMenuCreateValidate(r *http.Request, pg feature.Page, ctx, f
 	return
 }
 
-func (f *CFeature) OpMenuCreateHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (redirect string) {
+func (f *CFeature) OpMenuCreateHandler(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string) (redirect string) {
 	printer := message.GetPrinter(r)
 	dstUri, dstInfo, dstFS, dstMP, dstExists, stop := f.ParseCreateMenuForm(r, pg, ctx, form, info, eid, &redirect)
 	if stop {

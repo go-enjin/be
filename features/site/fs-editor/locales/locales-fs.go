@@ -459,7 +459,7 @@ func (f *CFeature) UnlockLocales(fsid, code string) (err error) {
 	return
 }
 
-func (f *CFeature) UpdatePathInfo(info *editor.File, r *http.Request) {
+func (f *CFeature) UpdatePathInfo(info *feature.EditorFile, r *http.Request) {
 	// page-level actions (floating bottom-right button menu actions)
 	printer := message.GetPrinter(r)
 
@@ -471,7 +471,7 @@ func (f *CFeature) UpdatePathInfo(info *editor.File, r *http.Request) {
 	return
 }
 
-func (f *CFeature) UpdateFileInfo(info *editor.File, r *http.Request) {
+func (f *CFeature) UpdateFileInfo(info *feature.EditorFile, r *http.Request) {
 	// browser row actions and editing page
 	//f.CEditorFeature.UpdateFileInfo(info, r)
 	printer := message.GetPrinter(r)
@@ -493,18 +493,18 @@ func (f *CFeature) UpdateFileInfo(info *editor.File, r *http.Request) {
 	info.Actions = info.Actions.Sort()
 }
 
-func (f *CFeature) ListLocales(r *http.Request) (list editor.Files) {
+func (f *CFeature) ListLocales(r *http.Request) (list feature.EditorFiles) {
 	//eid := userbase.GetCurrentEID(r)
 	for _, mpf := range f.EditingFileSystems {
 		bt := mpf.BaseTag().String()
 		fsid := mpf.Tag().String()
 		mountedPoints := mpf.GetMountedPoints()
 
-		var infos []*editor.File
+		var infos []*feature.EditorFile
 		for mount, mountPoints := range mountedPoints {
 			rw := mountPoints.HasRWFS()
 			if mount == "/" {
-				infos = append(infos, &editor.File{
+				infos = append(infos, &feature.EditorFile{
 					FSBT:     bt,
 					FSID:     fsid,
 					Name:     fsid,
@@ -513,7 +513,7 @@ func (f *CFeature) ListLocales(r *http.Request) (list editor.Files) {
 				})
 			} else {
 				code := strings.TrimPrefix(mount, "/")
-				infos = append(infos, &editor.File{
+				infos = append(infos, &feature.EditorFile{
 					FSBT:     bt,
 					FSID:     fsid,
 					Code:     code,
@@ -534,12 +534,12 @@ func (f *CFeature) ListLocales(r *http.Request) (list editor.Files) {
 	return
 }
 
-func (f *CFeature) ListLocaleFileSystems(r *http.Request) (list editor.Files) {
+func (f *CFeature) ListLocaleFileSystems(r *http.Request) (list feature.EditorFiles) {
 	eid := userbase.GetCurrentEID(r)
 	for _, mpf := range f.EditingFileSystems {
 		fsid := mpf.Tag().String()
 		mountedPoints := mpf.GetMountedPoints()
-		info := &editor.File{
+		info := &feature.EditorFile{
 			FSBT:     mpf.BaseTag().String(),
 			FSID:     fsid,
 			Name:     fsid,
@@ -562,14 +562,14 @@ func (f *CFeature) ListLocaleFileSystems(r *http.Request) (list editor.Files) {
 	return
 }
 
-func (f *CFeature) ListLocaleFileSystemLocales(r *http.Request, fsid string) (list editor.Files) {
+func (f *CFeature) ListLocaleFileSystemLocales(r *http.Request, fsid string) (list feature.EditorFiles) {
 	eid := userbase.GetCurrentEID(r)
 	unique := map[string]struct{}{}
 	if found := f.FindFS(fsid); found != nil {
 		for mount, mountPoints := range found.GetMountedPoints() {
 			code := strings.TrimPrefix(mount, "/")
 			unique[mount] = struct{}{}
-			info := &editor.File{
+			info := &feature.EditorFile{
 				FSBT: found.BaseTag().String(),
 				FSID: fsid,
 				Code: code,

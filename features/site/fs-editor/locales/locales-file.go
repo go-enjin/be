@@ -34,7 +34,7 @@ import (
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
-func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Request) (pg feature.Page, ctx context.Context, info *editor.File, eid string, mountPoints feature.MountPoints, handled bool) {
+func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Request) (pg feature.Page, ctx context.Context, info *feature.EditorFile, eid string, mountPoints feature.MountPoints, handled bool) {
 
 	eid = userbase.GetCurrentEID(r)
 	printer := message.GetPrinter(r)
@@ -50,7 +50,7 @@ func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	info = editor.ParseFile(fsid, code)
+	info = feature.ParseFile(fsid, code, f.Enjin.MustGetTheme())
 	info.Code = code
 	info.File = ""
 	info.HasDraft = f.HasDraftLocales(fsid, code)
@@ -147,7 +147,7 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 	var handled bool
 	//var eid string
 	var mountPoints feature.MountPoints
-	var info *editor.File
+	var info *feature.EditorFile
 
 	eid := userbase.GetCurrentEID(r)
 	fsid := chi.URLParam(r, "fsid")
@@ -296,7 +296,7 @@ func (f *CFeature) ReceiveFileEditorChanges(w http.ResponseWriter, r *http.Reque
 	var err error
 	var pg feature.Page
 	var ctx context.Context
-	var info *editor.File
+	var info *feature.EditorFile
 	var handled bool
 	var eid string
 	if pg, ctx, info, eid, _, handled = f.PrepareRenderFileEditor(w, r); handled {

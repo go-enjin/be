@@ -20,7 +20,6 @@ import (
 	"github.com/go-corelibs/mime"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/userbase"
@@ -52,7 +51,7 @@ func (f *CFeature) RenderFileBrowser(w http.ResponseWriter, r *http.Request) {
 	ctx.SetSpecific("EditFSID", fsid)
 	ctx.SetSpecific("EditLang", code)
 
-	info := &editor.File{
+	info := &feature.EditorFile{
 		FSID:     fsid,
 		Code:     code,
 		MimeType: mime.DirectoryMimeType,
@@ -61,7 +60,7 @@ func (f *CFeature) RenderFileBrowser(w http.ResponseWriter, r *http.Request) {
 	ctx.SetSpecific("BrowseInfo", info)
 	ctx.SetSpecific("PageActions", info.Actions)
 
-	var files editor.Files
+	var files feature.EditorFiles
 
 	var titlePath string
 	if fsid == "" {
@@ -69,7 +68,7 @@ func (f *CFeature) RenderFileBrowser(w http.ResponseWriter, r *http.Request) {
 		files = append(files, f.ListLocaleFileSystems(r)...)
 	} else if code == "" {
 		titlePath = fsid
-		files = append(files, &editor.File{
+		files = append(files, &feature.EditorFile{
 			Name:     "..",
 			MimeType: mime.DirectoryMimeType,
 		})

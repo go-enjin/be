@@ -29,7 +29,7 @@ import (
 	"github.com/go-enjin/be/types/page/matter"
 )
 
-func (f *CFeature) FinalizeRenderFileEditor(r *http.Request, eid string, pg feature.Page, pm *matter.PageMatter, ctx context.Context, info *editor.File) (modified *http.Request, err error) {
+func (f *CFeature) FinalizeRenderFileEditor(r *http.Request, eid string, pg feature.Page, pm *matter.PageMatter, ctx context.Context, info *feature.EditorFile) (modified *http.Request, err error) {
 	printer := message.GetPrinter(r)
 
 	var p feature.Page

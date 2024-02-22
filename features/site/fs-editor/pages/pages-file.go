@@ -19,7 +19,6 @@ import (
 
 	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
-	bePkgEditor "github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/types/page"
@@ -28,7 +27,7 @@ import (
 
 func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
 	var ctx beContext.Context
-	var info *bePkgEditor.File
+	var info *feature.EditorFile
 	var handled bool
 	var eid string
 	if _, ctx, info, eid, handled = f.PrepareRenderFileEditor(w, r); handled {
@@ -79,7 +78,7 @@ func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
 func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 	var pg feature.Page
 	var ctx beContext.Context
-	var info *bePkgEditor.File
+	var info *feature.EditorFile
 	var err error
 	var eid string
 	var handled bool

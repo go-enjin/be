@@ -25,7 +25,7 @@ import (
 	"github.com/go-enjin/be/pkg/forms"
 )
 
-func (f *CFeature) ParseCreateMenuForm(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string, redirect *string) (dstUri string, dstInfo *editor.File, dstFS feature.FileSystemFeature, dstMP *feature.CMountPoint, dstExists bool, stop bool) {
+func (f *CFeature) ParseCreateMenuForm(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string, redirect *string) (dstUri string, dstInfo *feature.EditorFile, dstFS feature.FileSystemFeature, dstMP *feature.CMountPoint, dstExists bool, stop bool) {
 	printer := message.GetPrinter(r)
 
 	var err error
@@ -64,7 +64,7 @@ func (f *CFeature) ParseCreateMenuForm(r *http.Request, pg feature.Page, ctx, fo
 
 	dstPath = fileLocale.String() + "/" + fullPath
 	dstUri = fsid + "://" + dstPath
-	dstInfo = editor.ParseFile(fsid, dstPath)
+	dstInfo = feature.ParseFile(fsid, dstPath, f.Enjin.MustGetTheme())
 
 	for _, efs := range f.EditingFileSystems {
 		if efs.Tag().String() == dstInfo.FSID {

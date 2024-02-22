@@ -19,11 +19,11 @@ import (
 	"strings"
 
 	"github.com/go-corelibs/path"
-	"github.com/go-enjin/be/pkg/editor"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
-func (f *CEditorFeature[MakeTypedFeature]) DraftExists(info *editor.File) (present bool) {
+func (f *CEditorFeature[MakeTypedFeature]) DraftExists(info *feature.EditorFile) (present bool) {
 	checkPath := path.TrimSlashes(info.FilePath())
 	draftPath := checkPath + ".~draft"
 	for _, efs := range f.EditingFileSystems {
@@ -43,7 +43,7 @@ func (f *CEditorFeature[MakeTypedFeature]) DraftExists(info *editor.File) (prese
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) ReadDraft(info *editor.File) (contents []byte, err error) {
+func (f *CEditorFeature[MakeTypedFeature]) ReadDraft(info *feature.EditorFile) (contents []byte, err error) {
 	checkPath := path.TrimSlashes(info.FilePath())
 	var draftPath string
 	if strings.HasSuffix(checkPath, ".~draft") {
@@ -74,7 +74,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ReadDraft(info *editor.File) (content
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) ReadDraftMatter(info *editor.File) (pm *matter.PageMatter, err error) {
+func (f *CEditorFeature[MakeTypedFeature]) ReadDraftMatter(info *feature.EditorFile) (pm *matter.PageMatter, err error) {
 	checkPath := path.TrimSlashes(info.FilePath())
 	var draftPath string
 	if strings.HasSuffix(checkPath, ".~draft") {
@@ -102,7 +102,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ReadDraftMatter(info *editor.File) (p
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) WriteDraft(info *editor.File, contents []byte) (err error) {
+func (f *CEditorFeature[MakeTypedFeature]) WriteDraft(info *feature.EditorFile, contents []byte) (err error) {
 	checkPath := path.TrimSlashes(info.FilePath())
 	draftPath := checkPath + ".~draft"
 	for _, efs := range f.EditingFileSystems {
@@ -125,7 +125,7 @@ func (f *CEditorFeature[MakeTypedFeature]) WriteDraft(info *editor.File, content
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) RemoveDraft(info *editor.File) (err error) {
+func (f *CEditorFeature[MakeTypedFeature]) RemoveDraft(info *feature.EditorFile) (err error) {
 	if f.SelfEditor().DraftExists(info) {
 		checkPath := path.TrimSlashes(info.FilePath())
 		draftPath := checkPath + ".~draft"
@@ -150,7 +150,7 @@ func (f *CEditorFeature[MakeTypedFeature]) RemoveDraft(info *editor.File) (err e
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) PublishDraft(info *editor.File) (err error) {
+func (f *CEditorFeature[MakeTypedFeature]) PublishDraft(info *feature.EditorFile) (err error) {
 	if f.SelfEditor().DraftExists(info) {
 		checkPath := path.TrimSlashes(info.FilePath())
 		draftPath := checkPath + ".~draft"

@@ -15,15 +15,15 @@
 package pages
 
 import (
-	"github.com/go-enjin/be/pkg/editor"
+	"github.com/go-enjin/be/pkg/feature"
 )
 
-func (f *CFeature) HasIndexing(info *editor.File) (indexed bool) {
+func (f *CFeature) HasIndexing(info *feature.EditorFile) (indexed bool) {
 	indexed = f.Enjin.FindPageStub(info.Shasum) != nil
 	return
 }
 
-func (f *CFeature) AddIndexing(info *editor.File) {
+func (f *CFeature) AddIndexing(info *feature.EditorFile) {
 	for _, pfs := range f.pageFileSystems {
 		if pfs.Tag().String() == info.FSID {
 			pfs.AddIndexing(info.FilePath())
@@ -32,7 +32,7 @@ func (f *CFeature) AddIndexing(info *editor.File) {
 	}
 }
 
-func (f *CFeature) RemoveIndexing(info *editor.File) {
+func (f *CFeature) RemoveIndexing(info *feature.EditorFile) {
 	for _, pfs := range f.pageFileSystems {
 		if pfs.Tag().String() == info.FSID {
 			pfs.RemoveIndexing(info.FilePath())

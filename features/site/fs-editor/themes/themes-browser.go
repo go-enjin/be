@@ -22,7 +22,6 @@ import (
 	"github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/userbase"
@@ -58,7 +57,7 @@ func (f *CFeature) RenderFileBrowser(w http.ResponseWriter, r *http.Request) {
 	ctx.SetSpecific("EditCode", code)
 	ctx.SetSpecific("EditPath", filePath)
 
-	info := &editor.File{
+	info := &feature.EditorFile{
 		FSID:     fsid,
 		Code:     code,
 		Path:     filePath,
@@ -68,7 +67,7 @@ func (f *CFeature) RenderFileBrowser(w http.ResponseWriter, r *http.Request) {
 	ctx.SetSpecific("BrowseInfo", info)
 	ctx.SetSpecific("PageActions", info.Actions)
 
-	var files editor.Files
+	var files feature.EditorFiles
 
 	var titlePath string
 	if fsid == "" {
@@ -76,14 +75,14 @@ func (f *CFeature) RenderFileBrowser(w http.ResponseWriter, r *http.Request) {
 		files = append(files, f.SelfEditor().ListFileSystems()...)
 	} else if code == "" {
 		titlePath = fsid
-		files = append(files, &editor.File{
+		files = append(files, &feature.EditorFile{
 			Name:     "..",
 			MimeType: mime.DirectoryMimeType,
 		})
 		files = append(files, f.SelfEditor().ListFileSystemLocales(fsid)...)
 	} else if filePath == "" {
 		titlePath = fsid + "/" + code
-		files = append(files, &editor.File{
+		files = append(files, &feature.EditorFile{
 			FSID:     fsid,
 			Name:     "..",
 			MimeType: mime.DirectoryMimeType,
@@ -92,7 +91,7 @@ func (f *CFeature) RenderFileBrowser(w http.ResponseWriter, r *http.Request) {
 		files = append(files, f.SelfEditor().ListFileSystemFiles(r, fsid, code, "")...)
 	} else {
 		titlePath = fsid + "/" + code + "/" + filePath
-		files = append(files, &editor.File{
+		files = append(files, &feature.EditorFile{
 			FSID:     fsid,
 			Code:     code,
 			Path:     filepath.Dir(filePath),

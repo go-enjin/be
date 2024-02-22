@@ -32,7 +32,7 @@ import (
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
-func (f *CEditorFeature[MakeTypedFeature]) FileExists(info *editor.File) (exists bool) {
+func (f *CEditorFeature[MakeTypedFeature]) FileExists(info *feature.EditorFile) (exists bool) {
 	filePath := info.FilePath()
 	for _, mpf := range f.EditingFileSystems {
 		mpfTag := mpf.Tag().String()
@@ -55,7 +55,7 @@ func (f *CEditorFeature[MakeTypedFeature]) FileExists(info *editor.File) (exists
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) ReadFile(info *editor.File) (data []byte, err error) {
+func (f *CEditorFeature[MakeTypedFeature]) ReadFile(info *feature.EditorFile) (data []byte, err error) {
 	filePath := info.FilePath()
 	for _, mpf := range f.EditingFileSystems {
 		mpfTag := mpf.Tag().String()
@@ -77,7 +77,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ReadFile(info *editor.File) (data []b
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) WriteFile(info *editor.File, data []byte) (err error) {
+func (f *CEditorFeature[MakeTypedFeature]) WriteFile(info *feature.EditorFile, data []byte) (err error) {
 	if info.ReadOnly {
 		err = fmt.Errorf("file is read-only")
 		return
@@ -102,7 +102,7 @@ func (f *CEditorFeature[MakeTypedFeature]) WriteFile(info *editor.File, data []b
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) RemoveFile(info *editor.File) (err error) {
+func (f *CEditorFeature[MakeTypedFeature]) RemoveFile(info *feature.EditorFile) (err error) {
 	if info.ReadOnly {
 		err = fmt.Errorf("file is read-only")
 		return
@@ -127,7 +127,7 @@ func (f *CEditorFeature[MakeTypedFeature]) RemoveFile(info *editor.File) (err er
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) RemoveDirectory(info *editor.File) (err error) {
+func (f *CEditorFeature[MakeTypedFeature]) RemoveDirectory(info *feature.EditorFile) (err error) {
 	if info.ReadOnly {
 		err = fmt.Errorf("directory is read-only")
 		return
@@ -150,7 +150,7 @@ func (f *CEditorFeature[MakeTypedFeature]) RemoveDirectory(info *editor.File) (e
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) PrepareEditableFile(r *http.Request, info *editor.File) (editFile *editor.File) {
+func (f *CEditorFeature[MakeTypedFeature]) PrepareEditableFile(r *http.Request, info *feature.EditorFile) (editFile *feature.EditorFile) {
 	eid := userbase.GetCurrentEID(r)
 	printer := message.GetPrinter(r)
 
@@ -182,7 +182,7 @@ func (f *CEditorFeature[MakeTypedFeature]) PrepareEditableFile(r *http.Request, 
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) UpdatePathInfo(info *editor.File, r *http.Request) {
+func (f *CEditorFeature[MakeTypedFeature]) UpdatePathInfo(info *feature.EditorFile, r *http.Request) {
 	//eid := userbase.GetCurrentEID(r)
 	//printer := message.GetPrinter(r)
 	//if !info.ReadOnly {
@@ -192,7 +192,7 @@ func (f *CEditorFeature[MakeTypedFeature]) UpdatePathInfo(info *editor.File, r *
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) UpdateFileInfo(info *editor.File, r *http.Request) {
+func (f *CEditorFeature[MakeTypedFeature]) UpdateFileInfo(info *feature.EditorFile, r *http.Request) {
 	eid := userbase.GetCurrentEID(r)
 	printer := message.GetPrinter(r)
 
@@ -242,7 +242,7 @@ func (f *CEditorFeature[MakeTypedFeature]) UpdateFileInfo(info *editor.File, r *
 
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) UpdateFileInfoForEditing(info *editor.File, r *http.Request) {
+func (f *CEditorFeature[MakeTypedFeature]) UpdateFileInfoForEditing(info *feature.EditorFile, r *http.Request) {
 	printer := message.GetPrinter(r)
 	fileActions := info.Actions.Prune(editor.EditActionKey, editor.ViewActionKey, editor.UnlockActionKey)
 	//for idx := 0; idx < len(fileActions); idx++ {
@@ -264,8 +264,8 @@ func (f *CEditorFeature[MakeTypedFeature]) UpdateFileInfoForEditing(info *editor
 	info.Actions = info.Actions.Sort()
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) ProcessMountPointFile(r *http.Request, printer *message.Printer, eid, mpfBTag, mpfTag, code, dirs, file string, mountPoint *feature.CMountPoint, draftWork bool) (ef *editor.File, ignored bool) {
-	ef = editor.ParseFile(mpfTag, file)
+func (f *CEditorFeature[MakeTypedFeature]) ProcessMountPointFile(r *http.Request, printer *message.Printer, eid, mpfBTag, mpfTag, code, dirs, file string, mountPoint *feature.CMountPoint, draftWork bool) (ef *feature.EditorFile, ignored bool) {
+	ef = feature.ParseFile(mpfTag, file, f.Enjin.MustGetTheme())
 	ef.FSBT = mpfBTag
 	ef.MountPoint = mountPoint
 	if ignored = ef.Tilde != "" && (!draftWork || ef.Tilde != editor.DraftFile.String()); ignored {
@@ -302,7 +302,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ProcessMountPointFile(r *http.Request
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) ListFileSystems() (list editor.Files) {
+func (f *CEditorFeature[MakeTypedFeature]) ListFileSystems() (list feature.EditorFiles) {
 	for _, mpf := range f.EditingFileSystems {
 		var readWrite bool
 		for _, mps := range mpf.GetMountedPoints() {
@@ -312,7 +312,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ListFileSystems() (list editor.Files)
 				}
 			}
 		}
-		list = append(list, &editor.File{
+		list = append(list, &feature.EditorFile{
 			FSBT:     mpf.BaseTag().String(),
 			FSID:     mpf.Tag().String(),
 			Name:     mpf.Tag().String(),
@@ -324,7 +324,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ListFileSystems() (list editor.Files)
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) ListFileSystemLocales(fsid string) (list editor.Files) {
+func (f *CEditorFeature[MakeTypedFeature]) ListFileSystemLocales(fsid string) (list feature.EditorFiles) {
 	for _, mpf := range f.EditingFileSystems {
 		tag := mpf.Tag().String()
 		if tag == fsid {
@@ -333,7 +333,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ListFileSystemLocales(fsid string) (l
 					if found, err := mountPoint.ROFS.ListDirs("."); err == nil {
 						for _, dir := range found {
 							if lt, ee := language.Parse(dir); ee == nil {
-								list = append(list, &editor.File{
+								list = append(list, &feature.EditorFile{
 									FSBT:     mpf.BaseTag().String(),
 									FSID:     tag,
 									Code:     lt.String(),
@@ -344,7 +344,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ListFileSystemLocales(fsid string) (l
 								})
 							}
 						}
-						list = append(list, &editor.File{
+						list = append(list, &feature.EditorFile{
 							FSBT:     mpf.BaseTag().String(),
 							FSID:     tag,
 							Code:     language.Und.String(),
@@ -362,7 +362,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ListFileSystemLocales(fsid string) (l
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) ListFileSystemDirectories(r *http.Request, fsid, code, dirs string) (list editor.Files) {
+func (f *CEditorFeature[MakeTypedFeature]) ListFileSystemDirectories(r *http.Request, fsid, code, dirs string) (list feature.EditorFiles) {
 	printer := message.GetPrinter(r)
 	isUnd := code == language.Und.String()
 	dirsPath := editor.MakeLangCodePath(code, dirs)
@@ -402,7 +402,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ListFileSystemDirectories(r *http.Req
 									}
 								}
 							}
-							list = append(list, &editor.File{
+							list = append(list, &feature.EditorFile{
 								FSBT:     mpf.BaseTag().String(),
 								FSID:     tag,
 								Code:     code,
@@ -423,7 +423,7 @@ func (f *CEditorFeature[MakeTypedFeature]) ListFileSystemDirectories(r *http.Req
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) ListFileSystemFiles(r *http.Request, fsid, code, dirs string) (list editor.Files) {
+func (f *CEditorFeature[MakeTypedFeature]) ListFileSystemFiles(r *http.Request, fsid, code, dirs string) (list feature.EditorFiles) {
 	if fsid == "" {
 		return
 	}

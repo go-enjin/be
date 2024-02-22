@@ -21,10 +21,10 @@ import (
 	"strings"
 
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/editor"
+	"github.com/go-enjin/be/pkg/feature"
 )
 
-func (f *CFeature) makePaginationRedirect(info *editor.File, form context.Context) (redirect string) {
+func (f *CFeature) makePaginationRedirect(info *feature.EditorFile, form context.Context) (redirect string) {
 	var searchQuery string
 	var numPerPage, pageIndex = -1, -1
 	if v, ok := form["search.query"].(string); ok {

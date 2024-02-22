@@ -26,7 +26,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 )
 
-func (f *CEditorFeature[MakeTypedFeature]) OpFileUnlockHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string) {
+func (f *CEditorFeature[MakeTypedFeature]) OpFileUnlockHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (redirect string) {
 	if stop := f.Emit(feature.PreUnlockFileSignal, f.Tag().String(), r, pg, ctx, form, info, eid, &redirect); stop {
 		return
 	}
@@ -47,7 +47,7 @@ func (f *CEditorFeature[MakeTypedFeature]) OpFileUnlockHandler(r *http.Request, 
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) OpFileRetakeHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string) {
+func (f *CEditorFeature[MakeTypedFeature]) OpFileRetakeHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (redirect string) {
 	if stop := f.Emit(feature.PreRetakeFileSignal, f.Tag().String(), r, pg, ctx, form, info, eid, &redirect); stop {
 		return
 	}
@@ -62,7 +62,7 @@ func (f *CEditorFeature[MakeTypedFeature]) OpFileRetakeHandler(r *http.Request, 
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) OpFileDeleteValidate(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (err error) {
+func (f *CEditorFeature[MakeTypedFeature]) OpFileDeleteValidate(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (err error) {
 	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("%[1]s is locked by another user, cannot delete", info.Name))
@@ -70,7 +70,7 @@ func (f *CEditorFeature[MakeTypedFeature]) OpFileDeleteValidate(r *http.Request,
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) OpFileDeleteHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string) {
+func (f *CEditorFeature[MakeTypedFeature]) OpFileDeleteHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (redirect string) {
 	if stop := f.Emit(feature.PreDeleteFileSignal, f.Tag().String(), r, pg, ctx, form, info, eid, &redirect); stop {
 		return
 	}
@@ -108,7 +108,7 @@ func (f *CEditorFeature[MakeTypedFeature]) OpFileDeleteHandler(r *http.Request, 
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) OpPathDeleteValidate(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (err error) {
+func (f *CEditorFeature[MakeTypedFeature]) OpPathDeleteValidate(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (err error) {
 	printer := message.GetPrinter(r)
 	if foundFiles := f.SelfEditor().ListFileSystemFiles(r, info.FSID, info.Locale.String(), info.BaseNamePath()); len(foundFiles) > 0 {
 		err = errors.New(printer.Sprintf(`cannot delete "%[1]s": directory not empty`, info.Name))
@@ -118,7 +118,7 @@ func (f *CEditorFeature[MakeTypedFeature]) OpPathDeleteValidate(r *http.Request,
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) OpPathDeleteHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string) {
+func (f *CEditorFeature[MakeTypedFeature]) OpPathDeleteHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (redirect string) {
 	if stop := f.Emit(feature.PreDeletePathSignal, f.Tag().String(), r, pg, ctx, form, info, eid, &redirect); stop {
 		return
 	}
@@ -132,7 +132,7 @@ func (f *CEditorFeature[MakeTypedFeature]) OpPathDeleteHandler(r *http.Request, 
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) OpFileCommitValidate(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (err error) {
+func (f *CEditorFeature[MakeTypedFeature]) OpFileCommitValidate(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (err error) {
 	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("%[1]s is locked by another user, cannot make changes", info.Name))
@@ -142,7 +142,7 @@ func (f *CEditorFeature[MakeTypedFeature]) OpFileCommitValidate(r *http.Request,
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) OpFileCommitHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string) {
+func (f *CEditorFeature[MakeTypedFeature]) OpFileCommitHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (redirect string) {
 	if stop := f.Emit(feature.PreCommitFileSignal, f.Tag().String(), r, pg, ctx, form, info, eid, &redirect); stop {
 		return
 	}
@@ -165,7 +165,7 @@ func (f *CEditorFeature[MakeTypedFeature]) OpFileCommitHandler(r *http.Request, 
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) OpFilePublishValidate(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (err error) {
+func (f *CEditorFeature[MakeTypedFeature]) OpFilePublishValidate(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (err error) {
 	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("%[1]s is locked by another user, cannot publish changes", info.Name))
@@ -173,7 +173,7 @@ func (f *CEditorFeature[MakeTypedFeature]) OpFilePublishValidate(r *http.Request
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) OpFilePublishHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string) {
+func (f *CEditorFeature[MakeTypedFeature]) OpFilePublishHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (redirect string) {
 	if stop := f.Emit(feature.PrePublishFileSignal, f.Tag().String(), r, pg, ctx, form, info, eid, &redirect); stop {
 		return
 	}
@@ -215,7 +215,7 @@ func (f *CEditorFeature[MakeTypedFeature]) OpFilePublishHandler(r *http.Request,
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) OpFileCancelValidate(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (err error) {
+func (f *CEditorFeature[MakeTypedFeature]) OpFileCancelValidate(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (err error) {
 	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("file is locked by another user, cannot move"))
@@ -223,7 +223,7 @@ func (f *CEditorFeature[MakeTypedFeature]) OpFileCancelValidate(r *http.Request,
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) OpFileCancelHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string) {
+func (f *CEditorFeature[MakeTypedFeature]) OpFileCancelHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (redirect string) {
 	if stop := f.Emit(feature.PrePublishFileSignal, f.Tag().String(), r, pg, ctx, form, info, eid, &redirect); stop {
 		return
 	}
@@ -233,7 +233,7 @@ func (f *CEditorFeature[MakeTypedFeature]) OpFileCancelHandler(r *http.Request, 
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) OpFileMoveValidate(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (err error) {
+func (f *CEditorFeature[MakeTypedFeature]) OpFileMoveValidate(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (err error) {
 	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("file is locked by another user, cannot move"))
@@ -241,7 +241,7 @@ func (f *CEditorFeature[MakeTypedFeature]) OpFileMoveValidate(r *http.Request, p
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) OpFileMoveHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string) {
+func (f *CEditorFeature[MakeTypedFeature]) OpFileMoveHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (redirect string) {
 	if stop := f.Emit(feature.PreMoveFileSignal, f.Tag().String(), r, pg, ctx, form, info, eid, &redirect); stop {
 		return
 	}
@@ -313,11 +313,11 @@ func (f *CEditorFeature[MakeTypedFeature]) OpFileMoveHandler(r *http.Request, pg
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) OpFileCopyValidate(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (err error) {
+func (f *CEditorFeature[MakeTypedFeature]) OpFileCopyValidate(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (err error) {
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) OpFileCopyHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string) {
+func (f *CEditorFeature[MakeTypedFeature]) OpFileCopyHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (redirect string) {
 	if stop := f.Emit(feature.PreCopyFileSignal, f.Tag().String(), r, pg, ctx, form, info, eid, &redirect); stop {
 		return
 	}
@@ -380,7 +380,7 @@ func (f *CEditorFeature[MakeTypedFeature]) OpFileCopyHandler(r *http.Request, pg
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) OpFileTranslateValidate(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (err error) {
+func (f *CEditorFeature[MakeTypedFeature]) OpFileTranslateValidate(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (err error) {
 	//printer := message.GetPrinter(r)
 	//if info.Locked {
 	//	err = errors.New(printer.Sprintf("%[1]s is locked by another user, cannot republish changes", info.Name))
@@ -388,7 +388,7 @@ func (f *CEditorFeature[MakeTypedFeature]) OpFileTranslateValidate(r *http.Reque
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) OpFileTranslateHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *editor.File, eid string) (redirect string) {
+func (f *CEditorFeature[MakeTypedFeature]) OpFileTranslateHandler(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string) (redirect string) {
 	if stop := f.Emit(feature.PreTranslateFileActionSignal, f.Tag().String(), r, pg, ctx, form, info, eid, &redirect); stop {
 		return
 	}

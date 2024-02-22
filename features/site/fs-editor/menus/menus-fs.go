@@ -20,12 +20,13 @@ import (
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/editor"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
 )
 
-func (f *CFeature) UpdatePathInfo(info *editor.File, r *http.Request) {
+func (f *CFeature) UpdatePathInfo(info *feature.EditorFile, r *http.Request) {
 	// page-level actions (floating bottom-right button menu actions)
 	printer := message.GetPrinter(r)
 
@@ -36,7 +37,7 @@ func (f *CFeature) UpdatePathInfo(info *editor.File, r *http.Request) {
 	return
 }
 
-func (f *CFeature) UpdateFileInfo(info *editor.File, r *http.Request) {
+func (f *CFeature) UpdateFileInfo(info *feature.EditorFile, r *http.Request) {
 	f.CEditorFeature.UpdateFileInfo(info, r)
 	t := f.Enjin.MustGetTheme()
 	supported := t.GetConfig().Supports.Menus
@@ -64,7 +65,7 @@ func (f *CFeature) UpdateFileInfo(info *editor.File, r *http.Request) {
 	return
 }
 
-func (f *CFeature) UpdateFileInfoForEditing(info *editor.File, r *http.Request) {
+func (f *CFeature) UpdateFileInfoForEditing(info *feature.EditorFile, r *http.Request) {
 	// only on the editing page
 	f.CEditorFeature.UpdateFileInfoForEditing(info, r)
 	printer := message.GetPrinter(r)
@@ -90,7 +91,7 @@ func (f *CFeature) GetAllMenus() (allMenus map[language.Tag]map[string]menu.Menu
 	return
 }
 
-func (f *CFeature) GetTranslatedLocales(info *editor.File) (txs map[language.Tag]string) {
+func (f *CFeature) GetTranslatedLocales(info *feature.EditorFile) (txs map[language.Tag]string) {
 	txs = map[language.Tag]string{}
 	_, menuPath, _ := lang.ParseLangPath(info.FilePath())
 	defaultLocale := f.Enjin.SiteDefaultLanguage()
@@ -124,7 +125,7 @@ func (f *CFeature) GetTranslatedLocales(info *editor.File) (txs map[language.Tag
 	return
 }
 
-func (f *CFeature) GetUntranslatedLocales(info *editor.File) (locales []language.Tag) {
+func (f *CFeature) GetUntranslatedLocales(info *feature.EditorFile) (locales []language.Tag) {
 	_, menuPath, _ := lang.ParseLangPath(info.FilePath())
 	translated := map[language.Tag]struct{}{}
 	for _, ef := range f.EditingFileSystems {

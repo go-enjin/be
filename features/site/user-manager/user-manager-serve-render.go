@@ -70,7 +70,7 @@ func (f *CFeature) RenderUserManager(w http.ResponseWriter, r *http.Request) {
 				actions = append(actions, editor.MakeDeleteUser(printer, email))
 			}
 		}
-		uCtx.SetSpecific("Info", &editor.File{
+		uCtx.SetSpecific("Info", &feature.EditorFile{
 			FSBT:    su.BaseTag().Kebab(),
 			FSID:    su.Tag().Kebab(),
 			Code:    "user",

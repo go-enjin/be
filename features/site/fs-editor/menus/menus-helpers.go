@@ -19,13 +19,13 @@ import (
 	"net/http"
 
 	"github.com/go-corelibs/x-text/message"
-	"github.com/go-enjin/be/pkg/editor"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
-func (f *CFeature) ParseFormToDraft(list []interface{}, info *editor.File, r *http.Request) (parsed menu.EditMenu, redirect string) {
+func (f *CFeature) ParseFormToDraft(list []interface{}, info *feature.EditorFile, r *http.Request) (parsed menu.EditMenu, redirect string) {
 	eid := userbase.GetCurrentEID(r)
 	printer := message.GetPrinter(r)
 	if data, ee := json.Marshal(list); ee != nil {
@@ -42,7 +42,7 @@ func (f *CFeature) ParseFormToDraft(list []interface{}, info *editor.File, r *ht
 	return
 }
 
-func (f *CFeature) ParseDraftToMenu(parsed menu.EditMenu, info *editor.File, r *http.Request) (cleaned menu.Menu, redirect string) {
+func (f *CFeature) ParseDraftToMenu(parsed menu.EditMenu, info *feature.EditorFile, r *http.Request) (cleaned menu.Menu, redirect string) {
 	eid := userbase.GetCurrentEID(r)
 	printer := message.GetPrinter(r)
 	if data, ee := json.Marshal(parsed); ee != nil {

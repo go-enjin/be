@@ -35,7 +35,7 @@ import (
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
-func (f *CFeature) FileExists(info *editor.File) (exists bool) {
+func (f *CFeature) FileExists(info *feature.EditorFile) (exists bool) {
 	filePath := info.EditPath()
 	for _, mpf := range f.EditingFileSystems {
 		mpfTag := mpf.Tag().String()
@@ -58,7 +58,7 @@ func (f *CFeature) FileExists(info *editor.File) (exists bool) {
 	return
 }
 
-func (f *CFeature) ReadFile(info *editor.File) (data []byte, err error) {
+func (f *CFeature) ReadFile(info *feature.EditorFile) (data []byte, err error) {
 	filePath := info.EditPath()
 	for _, mpf := range f.EditingFileSystems {
 		mpfTag := mpf.Tag().String()
@@ -80,7 +80,7 @@ func (f *CFeature) ReadFile(info *editor.File) (data []byte, err error) {
 	return
 }
 
-func (f *CFeature) WriteFile(info *editor.File, data []byte) (err error) {
+func (f *CFeature) WriteFile(info *feature.EditorFile, data []byte) (err error) {
 	if info.ReadOnly {
 		err = fmt.Errorf("file is read-only")
 		return
@@ -105,7 +105,7 @@ func (f *CFeature) WriteFile(info *editor.File, data []byte) (err error) {
 	return
 }
 
-func (f *CFeature) RemoveFile(info *editor.File) (err error) {
+func (f *CFeature) RemoveFile(info *feature.EditorFile) (err error) {
 	if info.ReadOnly {
 		err = fmt.Errorf("file is read-only")
 		return
@@ -130,7 +130,7 @@ func (f *CFeature) RemoveFile(info *editor.File) (err error) {
 	return
 }
 
-func (f *CFeature) RemoveDirectory(info *editor.File) (err error) {
+func (f *CFeature) RemoveDirectory(info *feature.EditorFile) (err error) {
 	if info.ReadOnly {
 		err = fmt.Errorf("directory is read-only")
 		return
@@ -155,7 +155,7 @@ func (f *CFeature) RemoveDirectory(info *editor.File) (err error) {
 	return
 }
 
-func (f *CFeature) PrepareEditableFile(r *http.Request, info *editor.File) (editFile *editor.File) {
+func (f *CFeature) PrepareEditableFile(r *http.Request, info *feature.EditorFile) (editFile *feature.EditorFile) {
 	eid := userbase.GetCurrentEID(r)
 	printer := message.GetPrinter(r)
 
@@ -187,7 +187,7 @@ func (f *CFeature) PrepareEditableFile(r *http.Request, info *editor.File) (edit
 	return
 }
 
-func (f *CFeature) ListFileSystems() (list editor.Files) {
+func (f *CFeature) ListFileSystems() (list feature.EditorFiles) {
 	for _, mpf := range f.EditingFileSystems {
 		var readWrite bool
 		for _, mps := range mpf.GetMountedPoints() {
@@ -197,7 +197,7 @@ func (f *CFeature) ListFileSystems() (list editor.Files) {
 				}
 			}
 		}
-		list = append(list, &editor.File{
+		list = append(list, &feature.EditorFile{
 			FSBT:     mpf.BaseTag().String(),
 			FSID:     mpf.Tag().String(),
 			Name:     mpf.Tag().String(),
@@ -208,7 +208,7 @@ func (f *CFeature) ListFileSystems() (list editor.Files) {
 	return
 }
 
-func (f *CFeature) ListFileSystemLocales(fsid string) (list editor.Files) {
+func (f *CFeature) ListFileSystemLocales(fsid string) (list feature.EditorFiles) {
 	unique := map[string]struct{}{}
 	for _, mpf := range f.EditingFileSystems {
 		tag := mpf.Tag().String()
@@ -221,7 +221,7 @@ func (f *CFeature) ListFileSystemLocales(fsid string) (list editor.Files) {
 							continue
 						}
 						unique[mount] = struct{}{}
-						list = append(list, &editor.File{
+						list = append(list, &feature.EditorFile{
 							FSBT:     mpf.BaseTag().String(),
 							FSID:     tag,
 							Code:     mount,
@@ -241,7 +241,7 @@ func (f *CFeature) ListFileSystemLocales(fsid string) (list editor.Files) {
 	return
 }
 
-func (f *CFeature) ListFileSystemDirectories(r *http.Request, fsid, code, dirs string) (list editor.Files) {
+func (f *CFeature) ListFileSystemDirectories(r *http.Request, fsid, code, dirs string) (list feature.EditorFiles) {
 	printer := message.GetPrinter(r)
 	//dirsPath := editor.MakeLangCodePath(code, dirs)
 	dirsPath := dirs
@@ -271,7 +271,7 @@ func (f *CFeature) ListFileSystemDirectories(r *http.Request, fsid, code, dirs s
 									}
 								}
 							}
-							list = append(list, &editor.File{
+							list = append(list, &feature.EditorFile{
 								FSBT:     mpf.BaseTag().String(),
 								FSID:     tag,
 								Code:     mount,
@@ -292,7 +292,7 @@ func (f *CFeature) ListFileSystemDirectories(r *http.Request, fsid, code, dirs s
 	return
 }
 
-func (f *CFeature) ListFileSystemFiles(r *http.Request, fsid, code, dirs string) (list editor.Files) {
+func (f *CFeature) ListFileSystemFiles(r *http.Request, fsid, code, dirs string) (list feature.EditorFiles) {
 	if fsid == "" {
 		return
 	}
@@ -334,8 +334,8 @@ func (f *CFeature) ListFileSystemFiles(r *http.Request, fsid, code, dirs string)
 	return
 }
 
-func (f *CFeature) ProcessMountPointFile(r *http.Request, printer *message.Printer, eid, mpfBTag, mpfTag, code, dirs, file string, mountPoint *feature.CMountPoint, draftWork bool) (ef *editor.File, ignored bool) {
-	ef = editor.ParseFile(mpfTag, file)
+func (f *CFeature) ProcessMountPointFile(r *http.Request, printer *message.Printer, eid, mpfBTag, mpfTag, code, dirs, file string, mountPoint *feature.CMountPoint, draftWork bool) (ef *feature.EditorFile, ignored bool) {
+	ef = feature.ParseFile(mpfTag, file, f.Enjin.MustGetTheme())
 	ef.FSBT = mpfBTag
 	ef.Code = code
 	ef.MountPoint = mountPoint

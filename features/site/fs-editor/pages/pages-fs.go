@@ -26,7 +26,7 @@ import (
 	"github.com/go-enjin/be/types/page/matter"
 )
 
-func (f *CFeature) ReadDraftPage(info *editor.File) (pm *matter.PageMatter, err error) {
+func (f *CFeature) ReadDraftPage(info *feature.EditorFile) (pm *matter.PageMatter, err error) {
 	var data []byte
 	if info.HasDraft {
 		if data, err = f.SelfEditor().ReadDraft(info); err != nil {
@@ -39,7 +39,7 @@ func (f *CFeature) ReadDraftPage(info *editor.File) (pm *matter.PageMatter, err 
 	return
 }
 
-func (f *CFeature) WriteDraftPage(info *editor.File, pm *matter.PageMatter) (err error) {
+func (f *CFeature) WriteDraftPage(info *feature.EditorFile, pm *matter.PageMatter) (err error) {
 	var data []byte
 	if data, err = pm.Bytes(); err != nil {
 		return
@@ -48,7 +48,7 @@ func (f *CFeature) WriteDraftPage(info *editor.File, pm *matter.PageMatter) (err
 	return
 }
 
-func (f *CFeature) PublishDraftPage(info *editor.File) (err error) {
+func (f *CFeature) PublishDraftPage(info *feature.EditorFile) (err error) {
 
 	if f.SelfEditor().DraftExists(info) {
 
@@ -69,7 +69,7 @@ func (f *CFeature) PublishDraftPage(info *editor.File) (err error) {
 	return
 }
 
-func (f *CFeature) ReadPageMatter(info *editor.File) (pm *matter.PageMatter, err error) {
+func (f *CFeature) ReadPageMatter(info *feature.EditorFile) (pm *matter.PageMatter, err error) {
 	filePath := info.FilePath()
 	for _, mpf := range f.EditingFileSystems {
 		mpfTag := mpf.Tag().String()
@@ -93,7 +93,7 @@ func (f *CFeature) ReadPageMatter(info *editor.File) (pm *matter.PageMatter, err
 	return
 }
 
-func (f *CFeature) WritePage(info *editor.File, pm *matter.PageMatter) (err error) {
+func (f *CFeature) WritePage(info *feature.EditorFile, pm *matter.PageMatter) (err error) {
 	pm.Matter.Delete("~")
 	var data []byte
 	if data, err = pm.Bytes(); err != nil {
@@ -103,7 +103,7 @@ func (f *CFeature) WritePage(info *editor.File, pm *matter.PageMatter) (err erro
 	return
 }
 
-func (f *CFeature) RemovePage(info *editor.File, pm *matter.PageMatter) (err error) {
+func (f *CFeature) RemovePage(info *feature.EditorFile, pm *matter.PageMatter) (err error) {
 
 	f.RemoveIndexing(info)
 
@@ -114,7 +114,7 @@ func (f *CFeature) RemovePage(info *editor.File, pm *matter.PageMatter) (err err
 	return
 }
 
-func (f *CFeature) UpdatePathInfo(info *editor.File, r *http.Request) {
+func (f *CFeature) UpdatePathInfo(info *feature.EditorFile, r *http.Request) {
 	// page-level actions (floating bottom-right button menu actions)
 	printer := message.GetPrinter(r)
 
@@ -125,7 +125,7 @@ func (f *CFeature) UpdatePathInfo(info *editor.File, r *http.Request) {
 	return
 }
 
-func (f *CFeature) UpdateFileInfo(info *editor.File, r *http.Request) {
+func (f *CFeature) UpdateFileInfo(info *feature.EditorFile, r *http.Request) {
 	// browser row actions and editing page
 	f.CEditorFeature.UpdateFileInfo(info, r)
 	printer := message.GetPrinter(r)
@@ -143,7 +143,7 @@ func (f *CFeature) UpdateFileInfo(info *editor.File, r *http.Request) {
 	info.Actions = info.Actions.Sort()
 }
 
-func (f *CFeature) UpdateFileInfoForEditing(info *editor.File, r *http.Request) {
+func (f *CFeature) UpdateFileInfoForEditing(info *feature.EditorFile, r *http.Request) {
 	// only on the editing page
 	f.CEditorFeature.UpdateFileInfoForEditing(info, r)
 	printer := message.GetPrinter(r)
@@ -156,7 +156,7 @@ func (f *CFeature) UpdateFileInfoForEditing(info *editor.File, r *http.Request) 
 	return
 }
 
-func (f *CFeature) GetTranslatedLocales(info *editor.File) (translations map[language.Tag]string) {
+func (f *CFeature) GetTranslatedLocales(info *feature.EditorFile) (translations map[language.Tag]string) {
 	translations = map[language.Tag]string{}
 	if url := info.Url(); url != "" {
 		txs := f.Enjin.FindTranslations(url)
@@ -182,7 +182,7 @@ func (f *CFeature) GetTranslatedLocales(info *editor.File) (translations map[lan
 	return
 }
 
-func (f *CFeature) GetUntranslatedLocales(info *editor.File) (locales []language.Tag) {
+func (f *CFeature) GetUntranslatedLocales(info *feature.EditorFile) (locales []language.Tag) {
 
 	if url := info.Url(); url != "" {
 		txs := f.Enjin.FindTranslationUrls(url)

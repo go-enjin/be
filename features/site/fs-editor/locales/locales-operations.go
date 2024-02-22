@@ -25,12 +25,11 @@ import (
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/context"
-	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 )
 
-func (f *CFeature) OpRetakeValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
+func (f *CFeature) OpRetakeValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string) (err error) {
 	//printer := message.GetPrinter(r)
 	//if info.Locked {
 	//	err = errors.New(printer.Sprintf("Cannot take over editing, locale is locked by another user"))
@@ -38,7 +37,7 @@ func (f *CFeature) OpRetakeValidate(r *http.Request, pg feature.Page, ctx, form 
 	return
 }
 
-func (f *CFeature) OpRetakeHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *editor.File, eid string) (redirect string) {
+func (f *CFeature) OpRetakeHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *feature.EditorFile, eid string) (redirect string) {
 	//log.DebugRF(r, "retake editing: info=%#+v; form=%#+v", info, form)
 	printer := message.GetPrinter(r)
 	if err := f.LockLocale(eid, info.FSID, info.Code); err != nil {
@@ -54,7 +53,7 @@ func (f *CFeature) OpRetakeHandler(r *http.Request, pg feature.Page, ctx context
 	return
 }
 
-func (f *CFeature) OpUnlockValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
+func (f *CFeature) OpUnlockValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string) (err error) {
 	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("Cannot unlock, locale is locked by another user"))
@@ -62,7 +61,7 @@ func (f *CFeature) OpUnlockValidate(r *http.Request, pg feature.Page, ctx, form 
 	return
 }
 
-func (f *CFeature) OpUnlockHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *editor.File, eid string) (redirect string) {
+func (f *CFeature) OpUnlockHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *feature.EditorFile, eid string) (redirect string) {
 	//log.DebugRF(r, "unlock editing: info=%#+v; form=%#+v", info, form)
 	printer := message.GetPrinter(r)
 	if err := f.UnlockLocales(info.FSID, info.Code); err != nil {
@@ -78,7 +77,7 @@ func (f *CFeature) OpUnlockHandler(r *http.Request, pg feature.Page, ctx context
 	return
 }
 
-func (f *CFeature) OpCancelValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
+func (f *CFeature) OpCancelValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string) (err error) {
 	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("Cannot cancel, locale is locked by another user"))
@@ -86,7 +85,7 @@ func (f *CFeature) OpCancelValidate(r *http.Request, pg feature.Page, ctx, form 
 	return
 }
 
-func (f *CFeature) OpCancelHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *editor.File, eid string) (redirect string) {
+func (f *CFeature) OpCancelHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *feature.EditorFile, eid string) (redirect string) {
 	//log.DebugRF(r, "cancel editing: info=%#+v; form=%#+v", info, form)
 	if err := f.UnlockLocales(info.FSID, info.Code); err != nil {
 		log.ErrorRF(r, "error unlocking %v locale for editing by others: %v", info.FSID+"/"+info.Code, err)
@@ -99,7 +98,7 @@ func (f *CFeature) OpCancelHandler(r *http.Request, pg feature.Page, ctx context
 	return
 }
 
-func (f *CFeature) OpCommitValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
+func (f *CFeature) OpCommitValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string) (err error) {
 	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("Cannot save changes, locale is locked by another user"))
@@ -107,7 +106,7 @@ func (f *CFeature) OpCommitValidate(r *http.Request, pg feature.Page, ctx, form 
 	return
 }
 
-func (f *CFeature) OpCommitHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *editor.File, eid string) (redirect string) {
+func (f *CFeature) OpCommitHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *feature.EditorFile, eid string) (redirect string) {
 	//log.DebugRF(r, "commit editing: info=%#+v; form=%#+v", info, form)
 	translations, _ := form["tx"].(map[string]interface{})
 	printer := message.GetPrinter(r)
@@ -135,7 +134,7 @@ func (f *CFeature) OpCommitHandler(r *http.Request, pg feature.Page, ctx context
 	return
 }
 
-func (f *CFeature) OpPublishValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
+func (f *CFeature) OpPublishValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string) (err error) {
 	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("Cannot publish, locale is locked by another user"))
@@ -143,7 +142,7 @@ func (f *CFeature) OpPublishValidate(r *http.Request, pg feature.Page, ctx, form
 	return
 }
 
-func (f *CFeature) OpPublishHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *editor.File, eid string) (redirect string) {
+func (f *CFeature) OpPublishHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *feature.EditorFile, eid string) (redirect string) {
 	//log.DebugRF(r, "publish editing: info=%#+v; form=%#+v", info, form)
 
 	translations, _ := form["tx"].(map[string]interface{})
@@ -187,7 +186,7 @@ func (f *CFeature) OpPublishHandler(r *http.Request, pg feature.Page, ctx contex
 	return
 }
 
-func (f *CFeature) OpDeleteValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
+func (f *CFeature) OpDeleteValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string) (err error) {
 	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("Cannot delete draft changes, locale is locked by another user"))
@@ -195,7 +194,7 @@ func (f *CFeature) OpDeleteValidate(r *http.Request, pg feature.Page, ctx, form 
 	return
 }
 
-func (f *CFeature) OpDeleteHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *editor.File, eid string) (redirect string) {
+func (f *CFeature) OpDeleteHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *feature.EditorFile, eid string) (redirect string) {
 	//log.DebugRF(r, "delete editing: info=%#+v; form=%#+v", info, form)
 	mountPoints := f.FindMountPoints(info.FSID, info.Code)
 	f.DeleteDraftLocales(mountPoints)
@@ -210,7 +209,7 @@ func (f *CFeature) OpDeleteHandler(r *http.Request, pg feature.Page, ctx context
 	return
 }
 
-func (f *CFeature) OpChangeValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
+func (f *CFeature) OpChangeValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string) (err error) {
 	printer := message.GetPrinter(r)
 	if info.Locked {
 		err = errors.New(printer.Sprintf("Cannot change, locale is locked by another user"))
@@ -218,7 +217,7 @@ func (f *CFeature) OpChangeValidate(r *http.Request, pg feature.Page, ctx, form 
 	return
 }
 
-func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *editor.File, eid string) (redirect string) {
+func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *feature.EditorFile, eid string) (redirect string) {
 	//log.DebugRF(r, "change editing: info=%#+v; form=%#+v", info, form)
 	//if err := f.UnlockLocales(info.FSID, info.Code); err != nil {
 	//	log.ErrorRF(r, "error unlocking %v locale for editing by others: %v", info.FSID+"/"+info.Code, err)
@@ -492,7 +491,7 @@ func (f *CFeature) OpChangeHandler(r *http.Request, pg feature.Page, ctx context
 	return
 }
 
-func (f *CFeature) OpSearchValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string) (err error) {
+func (f *CFeature) OpSearchValidate(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string) (err error) {
 	//printer := message.GetPrinter(r)
 	//if searchQuery, _ := form["search.query"]; searchQuery == "" {
 	//	err = errors.New(printer.Sprintf("missing search query"))
@@ -500,7 +499,7 @@ func (f *CFeature) OpSearchValidate(r *http.Request, pg feature.Page, ctx, form 
 	return
 }
 
-func (f *CFeature) OpSearchHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *editor.File, eid string) (redirect string) {
+func (f *CFeature) OpSearchHandler(r *http.Request, pg feature.Page, ctx context.Context, form context.Context, info *feature.EditorFile, eid string) (redirect string) {
 	//log.DebugRF(r, "searching: info=%#+v; form=%#+v", info, form)
 	//translations, _ := form["tx"].(map[string]interface{})
 	//printer := message.GetPrinter(r)

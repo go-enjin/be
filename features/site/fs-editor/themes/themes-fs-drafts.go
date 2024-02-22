@@ -19,11 +19,11 @@ import (
 	"strings"
 
 	"github.com/go-corelibs/path"
-	"github.com/go-enjin/be/pkg/editor"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
-func (f *CFeature) DraftExists(info *editor.File) (present bool) {
+func (f *CFeature) DraftExists(info *feature.EditorFile) (present bool) {
 	checkPath := path.TrimSlashes(info.EditPath())
 	draftPath := checkPath + ".~draft"
 	for _, efs := range f.EditingFileSystems {
@@ -43,7 +43,7 @@ func (f *CFeature) DraftExists(info *editor.File) (present bool) {
 	return
 }
 
-func (f *CFeature) ReadDraft(info *editor.File) (contents []byte, err error) {
+func (f *CFeature) ReadDraft(info *feature.EditorFile) (contents []byte, err error) {
 	checkPath := path.TrimSlashes(info.EditPath())
 	var draftPath string
 	if strings.HasSuffix(checkPath, ".~draft") {
@@ -74,7 +74,7 @@ func (f *CFeature) ReadDraft(info *editor.File) (contents []byte, err error) {
 	return
 }
 
-func (f *CFeature) ReadDraftMatter(info *editor.File) (pm *matter.PageMatter, err error) {
+func (f *CFeature) ReadDraftMatter(info *feature.EditorFile) (pm *matter.PageMatter, err error) {
 	checkPath := path.TrimSlashes(info.EditPath())
 	var draftPath string
 	if strings.HasSuffix(checkPath, ".~draft") {
@@ -102,7 +102,7 @@ func (f *CFeature) ReadDraftMatter(info *editor.File) (pm *matter.PageMatter, er
 	return
 }
 
-func (f *CFeature) WriteDraft(info *editor.File, contents []byte) (err error) {
+func (f *CFeature) WriteDraft(info *feature.EditorFile, contents []byte) (err error) {
 	checkPath := path.TrimSlashes(info.EditPath())
 	draftPath := checkPath + ".~draft"
 	for _, efs := range f.EditingFileSystems {
@@ -125,7 +125,7 @@ func (f *CFeature) WriteDraft(info *editor.File, contents []byte) (err error) {
 	return
 }
 
-func (f *CFeature) RemoveDraft(info *editor.File) (err error) {
+func (f *CFeature) RemoveDraft(info *feature.EditorFile) (err error) {
 	if f.SelfEditor().DraftExists(info) {
 		checkPath := path.TrimSlashes(info.EditPath())
 		draftPath := checkPath + ".~draft"
@@ -150,7 +150,7 @@ func (f *CFeature) RemoveDraft(info *editor.File) (err error) {
 	return
 }
 
-func (f *CFeature) PublishDraft(info *editor.File) (err error) {
+func (f *CFeature) PublishDraft(info *feature.EditorFile) (err error) {
 	if f.SelfEditor().DraftExists(info) {
 		checkPath := path.TrimSlashes(info.EditPath())
 		draftPath := checkPath + ".~draft"

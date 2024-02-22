@@ -15,7 +15,6 @@
 package pages
 
 import (
-	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/types/page"
 	"github.com/go-enjin/be/types/page/matter"
@@ -27,7 +26,7 @@ func (f *CFeature) PageRenderCheck(p feature.Page) (err error) {
 	return
 }
 
-func (f *CFeature) InfoRenderCheck(info *editor.File) (p feature.Page, pm *matter.PageMatter, err error) {
+func (f *CFeature) InfoRenderCheck(info *feature.EditorFile) (p feature.Page, pm *matter.PageMatter, err error) {
 	if info.HasDraft {
 		if pm, err = f.ReadDraftMatter(info); err != nil {
 			return

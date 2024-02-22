@@ -31,8 +31,9 @@ import (
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
-func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Request) (pg feature.Page, ctx context.Context, info *editor.File, currentUser string, handled bool) {
+func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Request) (pg feature.Page, ctx context.Context, info *feature.EditorFile, currentUser string, handled bool) {
 
+	t := f.Enjin.MustGetTheme()
 	currentUser = userbase.GetCurrentEID(r)
 	printer := message.GetPrinter(r)
 
@@ -62,7 +63,7 @@ func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Reques
 			return
 		}
 
-		info = editor.ParseFile(fsid, code)
+		info = feature.ParseFile(fsid, code, t)
 		parts := strings.Split(info.Path, "/")
 		info.MimeType = clMime.DirectoryMimeType
 		info.Path = strings.Join(append(parts, info.File), "/")
@@ -76,7 +77,7 @@ func (f *CFeature) PrepareRenderFileEditor(w http.ResponseWriter, r *http.Reques
 		ctx.SetSpecific("FileInfo", info)
 		return
 
-	} else if info = editor.ParseFile(fsid, file); info == nil {
+	} else if info = feature.ParseFile(fsid, file, t); info == nil {
 		log.ErrorRF(r, "parsed file is nil: fsid=%q, file=%q", fsid, file)
 		//f.Enjin.ServeRedirect(f.SelfEditor().GetEditorPath()+"/"+fsid+"/"+code, w, r)
 		f.RenderFileBrowser(w, r)
@@ -142,7 +143,7 @@ func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 
 	var pg feature.Page
 	var ctx context.Context
-	var info *editor.File
+	var info *feature.EditorFile
 	var handled bool
 	var eid string
 	if pg, ctx, info, eid, handled = f.PrepareRenderFileEditor(w, r); handled {
@@ -179,7 +180,7 @@ func (f *CFeature) ReceiveFileEditorChanges(w http.ResponseWriter, r *http.Reque
 	var err error
 	var pg feature.Page
 	var ctx context.Context
-	var info *editor.File
+	var info *feature.EditorFile
 	var handled bool
 	var eid string
 	if pg, ctx, info, eid, handled = f.PrepareRenderFileEditor(w, r); handled {

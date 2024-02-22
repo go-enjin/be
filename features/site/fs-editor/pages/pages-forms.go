@@ -34,7 +34,7 @@ import (
 	"github.com/go-enjin/be/types/page/matter"
 )
 
-func (f *CFeature) ParseFormToDraft(pm *matter.PageMatter, fields context.Fields, form context.Context, info *editor.File, r *http.Request) (modified *matter.PageMatter, redirect string, errs map[string]error) {
+func (f *CFeature) ParseFormToDraft(pm *matter.PageMatter, fields context.Fields, form context.Context, info *feature.EditorFile, r *http.Request) (modified *matter.PageMatter, redirect string, errs map[string]error) {
 	var err error
 	eid := userbase.GetCurrentEID(r)
 	printer := message.GetPrinter(r)
@@ -120,7 +120,7 @@ func (f *CFeature) ParseFormToDraft(pm *matter.PageMatter, fields context.Fields
 	return
 }
 
-func (f *CFeature) ParseCreatePageForm(r *http.Request, pg feature.Page, ctx, form context.Context, info *editor.File, eid string, redirect *string) (dstUri, dstFormat, dstArchetype string, dstInfo *editor.File, dstFS feature.FileSystemFeature, dstMP *feature.CMountPoint, dstExists bool, stop bool) {
+func (f *CFeature) ParseCreatePageForm(r *http.Request, pg feature.Page, ctx, form context.Context, info *feature.EditorFile, eid string, redirect *string) (dstUri, dstFormat, dstArchetype string, dstInfo *feature.EditorFile, dstFS feature.FileSystemFeature, dstMP *feature.CMountPoint, dstExists bool, stop bool) {
 	printer := message.GetPrinter(r)
 
 	t := f.Enjin.MustGetTheme()
@@ -198,7 +198,7 @@ func (f *CFeature) ParseCreatePageForm(r *http.Request, pg feature.Page, ctx, fo
 
 	dstPath = fileLocale.String() + "/" + fullPath
 	dstUri = fsid + "://" + dstPath
-	dstInfo = editor.ParseFile(fsid, dstPath)
+	dstInfo = feature.ParseFile(fsid, dstPath, t)
 
 	for _, efs := range f.EditingFileSystems {
 		if efs.Tag().String() == dstInfo.FSID {
