@@ -84,6 +84,27 @@ func StrictCleanKebabValue(name string) (cleaned string) {
 	return
 }
 
+// StrictCleanKebabFile is the same as StrictCleanKebabValue except that it respects primary and secondary file
+// extensions
+func StrictCleanKebabFile(name string) (cleaned string) {
+	cleaned = StrictClean(name)
+	var extension string
+	if primary, secondary := clPath.ExtExt(cleaned); primary != "" && secondary != "" {
+		extension += primary + "." + secondary
+	} else if primary != "" {
+		extension += primary
+	} else if secondary != "" {
+		extension += secondary
+	}
+	if extension != "" {
+		cleaned = strings.TrimSuffix(cleaned, "."+extension)
+	}
+	cleaned = strings.ReplaceAll(cleaned, "/", "-")
+	cleaned = strcase.ToKebab(cleaned)
+	cleaned += "." + extension
+	return
+}
+
 // KebabRelativePath uses CleanRelativePath on the given string, splits it into path segments and renders each segment
 // in kebab-cased format
 //
