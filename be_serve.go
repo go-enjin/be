@@ -267,6 +267,12 @@ func (e *Enjin) ServePage(p feature.Page, w http.ResponseWriter, r *http.Request
 
 	pUrl := p.Url()
 
+	if p.IsRedirection(r.URL.Path) {
+		log.DebugRF(r, "redirecting from: %q, to: %q", r.URL.Path, pUrl)
+		e.ServeRedirect(pUrl, w, r)
+		return
+	}
+
 	if v, ok := r.Context().Value(gDenyUserAndAllowErrorPage).(bool); ok && v {
 		log.DebugRF(r, "bypassing all user access controls to show an error page of some sort: %v", pUrl)
 	} else {

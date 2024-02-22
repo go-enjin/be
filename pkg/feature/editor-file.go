@@ -20,13 +20,14 @@ import (
 	"time"
 
 	"github.com/go-corelibs/x-text/language"
+	"github.com/go-enjin/be/pkg/feature"
 
 	"github.com/go-corelibs/mime"
 	clPath "github.com/go-corelibs/path"
 	beContext "github.com/go-enjin/be/pkg/context"
 )
 
-type File struct {
+type EditorFile struct {
 	FSBT   string        `json:"fsbt"`
 	FSID   string        `json:"fsid"`
 	Code   string        `json:"code"`
@@ -37,6 +38,7 @@ type File struct {
 	MountPoint interface{} `json:"-"`
 	Tilde      string      `json:"-"`
 
+	Base     string `json:"base"`
 	Name     string `json:"name"`
 	Shasum   string `json:"shasum"`
 	MimeType string `json:"mimeType"`
@@ -56,7 +58,7 @@ type File struct {
 	Context beContext.Context `json:"-"`
 }
 
-func ParseDirectory(fsid, filePath string) *File {
+func ParseDirectory(fsid, filePath string) *EditorFile {
 	topDir := clPath.TopDirectory(filePath)
 	dirs := filePath
 	if dirs != "" && dirs[0] == '.' {
@@ -75,7 +77,7 @@ func ParseDirectory(fsid, filePath string) *File {
 		dirs = ""
 	}
 
-	return &File{
+	return &EditorFile{
 		FSID:     fsid,
 		Code:     topDir,
 		Path:     dirs,
@@ -84,7 +86,7 @@ func ParseDirectory(fsid, filePath string) *File {
 	}
 }
 
-func ParseFile(fsid, filePath string) *File {
+func ParseFile(fsid, filePath string, t feature.Theme) *EditorFile {
 	topDir := clPath.TopDirectory(filePath)
 	file := filepath.Base(filePath)
 	dirs := filepath.Dir(filePath)
@@ -121,11 +123,19 @@ func ParseFile(fsid, filePath string) *File {
 		name = filepath.Base(dirs)
 	}
 
-	return &File{
+	var base string
+	if pf, match := t.MatchFormat(name); pf != nil {
+		base = strings.TrimPrefix(name, "."+match)
+	} else {
+		base = name
+	}
+
+	return &EditorFile{
 		FSID:     fsid,
 		Code:     code,
 		Path:     dirs,
 		File:     file,
+		Base:     base,
 		Name:     name,
 		Tilde:    tilde,
 		Locale:   &locale,
@@ -133,24 +143,24 @@ func ParseFile(fsid, filePath string) *File {
 	}
 }
 
-func (f *File) DirectoryPath() (dirPath string) {
+func (f *EditorFile) DirectoryPath() (dirPath string) {
 	if f.Path != "" && f.Path != "." && f.Path != "/" {
 		dirPath = f.Path
 	}
 	return
 }
 
-func (f *File) FileName() (name string) {
-	name = clPath.Base(f.File)
+func (f *EditorFile) FileName() (name string) {
+	name = filepath.Base(f.File)
 	return
 }
 
-func (f *File) BaseName() (fileName string) {
+func (f *EditorFile) BaseName() (fileName string) {
 	fileName = clPath.Base(f.File)
 	return
 }
 
-func (f *File) BaseNamePath() (filePath string) {
+func (f *EditorFile) BaseNamePath() (filePath string) {
 	var parts []string
 	if f.Path != "" && f.Path != "." && f.Path != "/" {
 		parts = append(parts, f.Path)
@@ -162,7 +172,7 @@ func (f *File) BaseNamePath() (filePath string) {
 	return
 }
 
-func (f *File) FilePath() (filePath string) {
+func (f *EditorFile) FilePath() (filePath string) {
 	var parts []string
 	if value := f.Code; value != "" {
 		if f.Locale != nil {
@@ -183,7 +193,7 @@ func (f *File) FilePath() (filePath string) {
 	return
 }
 
-func (f *File) Url() (path string) {
+func (f *EditorFile) Url() (path string) {
 	if f.File == "" {
 		return
 	}
@@ -195,7 +205,7 @@ func (f *File) Url() (path string) {
 	return
 }
 
-func (f *File) EditPath() (filePath string) {
+func (f *EditorFile) EditPath() (filePath string) {
 	var parts []string
 	if f.Path != "" && f.Path != "/" {
 		parts = append(parts, f.Path)
@@ -207,7 +217,7 @@ func (f *File) EditPath() (filePath string) {
 	return
 }
 
-func (f *File) EditFilePath() (filePath string) {
+func (f *EditorFile) EditFilePath() (filePath string) {
 	var parts []string
 	if f.FSID != "" {
 		parts = append(parts, f.FSID)
@@ -229,7 +239,7 @@ func (f *File) EditFilePath() (filePath string) {
 	return
 }
 
-func (f *File) EditDirectoryPath() (directory string) {
+func (f *EditorFile) EditDirectoryPath() (directory string) {
 	var parts []string
 	if f.FSID != "" {
 		parts = append(parts, f.FSID)
@@ -246,7 +256,7 @@ func (f *File) EditDirectoryPath() (directory string) {
 	return
 }
 
-func (f *File) EditParentDirectoryPath() (directory string) {
+func (f *EditorFile) EditParentDirectoryPath() (directory string) {
 	var parts []string
 	if f.FSID != "" {
 		parts = append(parts, f.FSID)
@@ -263,14 +273,14 @@ func (f *File) EditParentDirectoryPath() (directory string) {
 	return
 }
 
-func (f *File) localeOrEmpty() (value string) {
+func (f *EditorFile) localeOrEmpty() (value string) {
 	if f.Locale != nil {
 		value = f.Locale.String()
 	}
 	return
 }
 
-func (f *File) CodeFilePath() (filePath string) {
+func (f *EditorFile) CodeFilePath() (filePath string) {
 	var parts []string
 	if f.Code != "" {
 		parts = append(parts, f.Code)
@@ -285,7 +295,7 @@ func (f *File) CodeFilePath() (filePath string) {
 	return
 }
 
-func (f *File) EditCodeFilePath() (filePath string) {
+func (f *EditorFile) EditCodeFilePath() (filePath string) {
 	var parts []string
 	if f.FSID != "" {
 		parts = append(parts, f.FSID)
@@ -303,7 +313,7 @@ func (f *File) EditCodeFilePath() (filePath string) {
 	return
 }
 
-func (f *File) EditCodeDirectoryPath() (directory string) {
+func (f *EditorFile) EditCodeDirectoryPath() (directory string) {
 	var parts []string
 	if f.FSID != "" {
 		parts = append(parts, f.FSID)
@@ -318,7 +328,7 @@ func (f *File) EditCodeDirectoryPath() (directory string) {
 	return
 }
 
-func (f *File) EditCodeParentDirectoryPath() (directory string) {
+func (f *EditorFile) EditCodeParentDirectoryPath() (directory string) {
 	var parts []string
 	if f.FSID != "" {
 		parts = append(parts, f.FSID)
@@ -333,9 +343,9 @@ func (f *File) EditCodeParentDirectoryPath() (directory string) {
 	return
 }
 
-func (f *File) Clone() (file *File) {
+func (f *EditorFile) Clone() (file *EditorFile) {
 	locale := *f.Locale
-	file = &File{
+	file = &EditorFile{
 		FSBT:       f.FSBT,
 		FSID:       f.FSID,
 		Code:       f.Code,

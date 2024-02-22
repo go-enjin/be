@@ -20,7 +20,7 @@ import (
 	"github.com/maruel/natural"
 )
 
-type Files []*File
+type Files []*EditorFile
 
 func (l Files) Sort() (sorted Files) {
 	sorted = append(sorted, l...)
@@ -43,7 +43,7 @@ func (l Files) Sort() (sorted Files) {
 	return
 }
 
-func (l Files) Find(fsid, filePath string) (f *File) {
+func (l Files) Find(fsid, filePath string) (f *EditorFile) {
 	for _, i := range l {
 		if i.FSID == fsid && i.FilePath() == filePath {
 			f = i
