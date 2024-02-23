@@ -191,9 +191,13 @@ func (f *CFeature) Shutdown() {
 func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 	var ok bool
 	var partialsCache *fnPartialsCache
-	if partialsCache, ok = ctx.Get("~~partials-cache").(*fnPartialsCache); !ok {
+	if len(ctx) > 0 {
+		if partialsCache, ok = ctx.Get("~~partials-cache").(*fnPartialsCache); !ok {
+			partialsCache = &fnPartialsCache{}
+			ctx.SetSpecific("~~partials-cache", partialsCache)
+		}
+	} else {
 		partialsCache = &fnPartialsCache{}
-		ctx.SetSpecific("~~partials-cache", partialsCache)
 	}
 	fm = feature.FuncMap{
 		"renderContent": func(pageFormat, content string) (output template.HTML, err error) {
