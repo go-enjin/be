@@ -23,7 +23,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/urfave/cli/v2"
 
-	"github.com/go-corelibs/x-text/language/display"
 	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
@@ -195,7 +194,7 @@ func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
 }
 
 func (f *CFeature) MakePageContextFields(r *http.Request) (fields beContext.Fields) {
-	tag := message.GetTag(r)
+	currentLang := message.GetTag(r)
 	printer := message.GetPrinter(r)
 
 	fields = beContext.Fields{
@@ -298,7 +297,7 @@ func (f *CFeature) MakePageContextFields(r *http.Request) (fields beContext.Fiel
 		"redirect": {
 			Key:      "redirect",
 			Tab:      "page",
-			Label:    printer.Sprintf("list of (%s) URL paths that redirect back to this page", display.Tag(tag)),
+			Label:    printer.Sprintf("List of URL paths that redirect back to this page"),
 			Category: "file",
 			Weight:   54,
 			Input:    "text",
@@ -306,7 +305,7 @@ func (f *CFeature) MakePageContextFields(r *http.Request) (fields beContext.Fiel
 		},
 	}
 
-	if f.Enjin.SiteDefaultLanguage().String() != tag.String() {
+	if f.Enjin.SiteDefaultLanguage().String() != currentLang.String() {
 		fields["translates"] = &beContext.Field{
 			Key:      "translates",
 			Tab:      "page",
