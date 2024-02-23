@@ -3054,24 +3054,6 @@
             "fuzzy": true
         },
         {
-            "id": "{Name} renders this menu",
-            "key": "%[1]s renders this menu",
-            "message": "{Name} renders this menu",
-            "translation": "%[1]s renders this menu",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "t.Name()"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
             "id": "{Name} ignores this menu",
             "key": "%[1]s ignores this menu",
             "message": "{Name} ignores this menu",

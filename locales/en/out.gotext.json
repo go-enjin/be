@@ -757,8 +757,8 @@
             "message": "{FastMinutes}-{SlowMinutes} minutes",
             "translation": {
                 "select": {
-                    "arg": "FastMinutes",
                     "feature": "plural",
+                    "arg": "FastMinutes",
                     "cases": {
                         "=0": {
                             "msg": "less than a minute"
@@ -1598,6 +1598,14 @@
             "key": "Omit this page from search indexing",
             "message": "Omit this page from search indexing",
             "translation": "Omit this page from search indexing",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "List of URL paths that redirect back to this page",
+            "key": "List of URL paths that redirect back to this page",
+            "message": "List of URL paths that redirect back to this page",
+            "translation": "List of URL paths that redirect back to this page",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -3036,10 +3044,28 @@
             "fuzzy": true
         },
         {
-            "id": "{Name} ignores all menus in sub-directories",
-            "key": "%[1]s ignores all menus in sub-directories",
-            "message": "{Name} ignores all menus in sub-directories",
-            "translation": "%[1]s ignores all menus in sub-directories",
+            "id": "menus in sub-directories are not supported at this time",
+            "key": "menus in sub-directories are not supported at this time",
+            "message": "menus in sub-directories are not supported at this time",
+            "translation": "menus in sub-directories are not supported at this time",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "t.Name()"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "the {Name} theme renders this menu",
+            "key": "the %[1]s theme renders this menu",
+            "message": "the {Name} theme renders this menu",
+            "translation": "the {Name} theme renders this menu",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3054,28 +3080,10 @@
             "fuzzy": true
         },
         {
-            "id": "{Name} renders this menu",
-            "key": "%[1]s renders this menu",
-            "message": "{Name} renders this menu",
-            "translation": "%[1]s renders this menu",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "t.Name()"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "{Name} ignores this menu",
-            "key": "%[1]s ignores this menu",
-            "message": "{Name} ignores this menu",
-            "translation": "%[1]s ignores this menu",
+            "id": "the {Name} theme ignores this menu",
+            "key": "the %[1]s theme ignores this menu",
+            "message": "the {Name} theme ignores this menu",
+            "translation": "the {Name} theme ignores this menu",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4034,6 +4042,30 @@
             "fuzzy": true
         },
         {
+            "id": "View Website",
+            "key": "View Website",
+            "message": "View Website",
+            "translation": "View Website",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "open the website landing page in a new tab",
+            "key": "open the website landing page in a new tab",
+            "message": "open the website landing page in a new tab",
+            "translation": "open the website landing page in a new tab",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "extra menus and top-level menu items",
+            "key": "extra menus and top-level menu items",
+            "message": "extra menus and top-level menu items",
+            "translation": "extra menus and top-level menu items",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Profile",
             "key": "Profile",
             "message": "Profile",
@@ -4255,14 +4287,6 @@
             "message": "User Manager",
             "translation": "User Manager",
             "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "it is of the form \"\u003cx\" where x is an integer that is larger than the argument.",
-            "key": "it is of the form \"\u003cx\" where x is an integer that is larger than the argument.",
-            "message": "it is of the form \"\u003cx\" where x is an integer that is larger than the argument.",
-            "translation": "it is of the form \"\u003cx\" where x is an integer that is larger than the argument.",
-            "translatorComment": "[from: layouts/partials/fs-editor/dialog/add-tx-case.tmpl]",
             "fuzzy": true
         }
     ]

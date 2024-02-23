@@ -3047,24 +3047,6 @@
             "fuzzy": true
         },
         {
-            "id": "{Name} renders this menu",
-            "key": "%[1]s renders this menu",
-            "message": "{Name} renders this menu",
-            "translation": "%[1]s はこのメニューをレンダリングします",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Name",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "t.Name()"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
             "id": "{Name} ignores this menu",
             "key": "%[1]s ignores this menu",
             "message": "{Name} ignores this menu",
@@ -3378,7 +3360,7 @@
             "id": "error parsing page-matter: \"{Err}\"",
             "key": "error parsing page-matter: \"%v\"",
             "message": "error parsing page-matter: \"{Err}\"",
-            "translation": "ページ事項の解析エラー: \"{Error}\"",
+            "translation": "ページ事項の解析エラー: \"%[1]v\"",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3396,7 +3378,7 @@
             "id": "error finalizing edit page: \"{Err}\"",
             "key": "error finalizing edit page: \"%v\"",
             "message": "error finalizing edit page: \"{Err}\"",
-            "translation": "編集ページの終了中にエラーが発生しました: \"{Error}\"",
+            "translation": "編集ページの終了中にエラーが発生しました: \"%[1]v\"",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3414,7 +3396,7 @@
             "id": "error decoding form body: \"{Err}\"",
             "key": "error decoding form body: \"%v\"",
             "message": "error decoding form body: \"{Err}\"",
-            "translation": "フォーム本文のデコードエラー: \"{Error}\"",
+            "translation": "フォーム本文のデコードエラー: \"%[1]v\"",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
