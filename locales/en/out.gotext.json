@@ -757,8 +757,8 @@
             "message": "{FastMinutes}-{SlowMinutes} minutes",
             "translation": {
                 "select": {
-                    "feature": "plural",
                     "arg": "FastMinutes",
+                    "feature": "plural",
                     "cases": {
                         "=0": {
                             "msg": "less than a minute"
@@ -4255,6 +4255,14 @@
             "message": "User Manager",
             "translation": "User Manager",
             "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "it is of the form \"\u003cx\" where x is an integer that is larger than the argument.",
+            "key": "it is of the form \"\u003cx\" where x is an integer that is larger than the argument.",
+            "message": "it is of the form \"\u003cx\" where x is an integer that is larger than the argument.",
+            "translation": "it is of the form \"\u003cx\" where x is an integer that is larger than the argument.",
+            "translatorComment": "[from: layouts/partials/fs-editor/dialog/add-tx-case.tmpl]",
             "fuzzy": true
         }
     ]

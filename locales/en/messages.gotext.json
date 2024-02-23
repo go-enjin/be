@@ -757,8 +757,8 @@
             "message": "{FastMinutes}-{SlowMinutes} minutes",
             "translation": {
                 "select": {
-                    "feature": "plural",
                     "arg": "FastMinutes",
+                    "feature": "plural",
                     "cases": {
                         "=0": {
                             "msg": "less than a minute"
