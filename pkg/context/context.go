@@ -389,7 +389,7 @@ func (c Context) Time(key string, def time.Time) time.Time {
 	return def
 }
 
-func (c Context) Duration(key string, def time.Duration) time.Duration {
+func (c Context) TimeDuration(key string, def time.Duration) time.Duration {
 	if v := c.Get(key); v != nil {
 		if t, ok := v.(time.Duration); ok {
 			return t
