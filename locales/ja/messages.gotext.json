@@ -1595,6 +1595,12 @@
             "fuzzy": true
         },
         {
+            "id": "List of URL paths that redirect back to this page",
+            "key": "List of URL paths that redirect back to this page",
+            "message": "List of URL paths that redirect back to this page",
+            "translation": "このページにリダイレクトするURLパスのリスト"
+        },
+        {
             "id": "Specify the original page on this site that this page translates",
             "key": "Specify the original page on this site that this page translates",
             "message": "Specify the original page on this site that this page translates",
@@ -3029,29 +3035,26 @@
             "fuzzy": true
         },
         {
-            "id": "{Name} ignores all menus in sub-directories",
-            "key": "%[1]s ignores all menus in sub-directories",
-            "message": "{Name} ignores all menus in sub-directories",
-            "translation": "%[1]s  はサブディレクトリ内のすべてのメニューを無視します",
-            "translatorComment": "Copied from source.",
+            "id": "menus in sub-directories are not supported at this time",
+            "key": "menus in sub-directories are not supported at this time",
+            "message": "menus in sub-directories are not supported at this time",
+            "translation": "サブディレクトリ内のメニューは、現時点ではサポートされていません",
             "placeholders": [
                 {
                     "id": "Name",
-                    "string": "%[1]s",
+                    "string": "%[1]v",
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "t.Name()"
                 }
-            ],
-            "fuzzy": true
+            ]
         },
         {
-            "id": "{Name} ignores this menu",
-            "key": "%[1]s ignores this menu",
-            "message": "{Name} ignores this menu",
-            "translation": "%[1]s はこのメニューを無視します",
-            "translatorComment": "Copied from source.",
+            "id": "the {Name} theme renders this menu",
+            "key": "the %[1]s theme renders this menu",
+            "message": "the {Name} theme renders this menu",
+            "translation": "%[1]sのテーマはこのメニューをレンダリングします",
             "placeholders": [
                 {
                     "id": "Name",
@@ -3061,8 +3064,23 @@
                     "argNum": 1,
                     "expr": "t.Name()"
                 }
-            ],
-            "fuzzy": true
+            ]
+        },
+        {
+            "id": "the {Name} theme ignores this menu",
+            "key": "the %[1]s theme ignores this menu",
+            "message": "the {Name} theme ignores this menu",
+            "translation": "%[1]s のテーマはこのメニューを無視します",
+            "placeholders": [
+                {
+                    "id": "Name",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "t.Name()"
+                }
+            ]
         },
         {
             "id": "error encoding form context: \"{Error}\"",
@@ -4009,6 +4027,24 @@
             "fuzzy": true
         },
         {
+            "id": "View Website",
+            "key": "View Website",
+            "message": "View Website",
+            "translation": "ウェブサイトを表示"
+        },
+        {
+            "id": "open the website landing page in a new tab",
+            "key": "open the website landing page in a new tab",
+            "message": "open the website landing page in a new tab",
+            "translation": "ウェブサイトのランディングページを新しいタブで開く"
+        },
+        {
+            "id": "extra menus and top-level menu items",
+            "key": "extra menus and top-level menu items",
+            "message": "extra menus and top-level menu items",
+            "translation": "追加メニューとトップレベルのメニュー項目"
+        },
+        {
             "id": "Profile",
             "key": "Profile",
             "message": "Profile",
@@ -4230,14 +4266,6 @@
             "message": "User Manager",
             "translation": "ユーザーマネージャー",
             "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "it is of the form \"\u003cx\" where x is an integer that is larger than the argument.",
-            "key": "it is of the form \"\u003cx\" where x is an integer that is larger than the argument.",
-            "message": "it is of the form \"\u003cx\" where x is an integer that is larger than the argument.",
-            "translation": "\"\u003cx\" は、x が引数よりも大きい整数である形式です。",
-            "translatorComment": "[from: layouts/partials/fs-editor/dialog/add-tx-case.tmpl]",
             "fuzzy": true
         }
     ]

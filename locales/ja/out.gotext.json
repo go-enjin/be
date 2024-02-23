@@ -755,8 +755,8 @@
             "message": "{FastMinutes}-{SlowMinutes} minutes",
             "translation": {
                 "select": {
-                    "feature": "plural",
                     "arg": "FastMinutes",
+                    "feature": "plural",
                     "cases": {
                         "=1": {
                             "msg": "１分"
@@ -1598,7 +1598,7 @@
             "id": "List of URL paths that redirect back to this page",
             "key": "List of URL paths that redirect back to this page",
             "message": "List of URL paths that redirect back to this page",
-            "translation": ""
+            "translation": "このページにリダイレクトするURLパスのリスト"
         },
         {
             "id": "Specify the original page on this site that this page translates",
@@ -3038,7 +3038,7 @@
             "id": "menus in sub-directories are not supported at this time",
             "key": "menus in sub-directories are not supported at this time",
             "message": "menus in sub-directories are not supported at this time",
-            "translation": "",
+            "translation": "サブディレクトリ内のメニューは、現時点ではサポートされていません",
             "placeholders": [
                 {
                     "id": "Name",
@@ -3054,7 +3054,7 @@
             "id": "the {Name} theme renders this menu",
             "key": "the %[1]s theme renders this menu",
             "message": "the {Name} theme renders this menu",
-            "translation": "",
+            "translation": "%[1]sのテーマはこのメニューをレンダリングします",
             "placeholders": [
                 {
                     "id": "Name",
@@ -3070,7 +3070,7 @@
             "id": "the {Name} theme ignores this menu",
             "key": "the %[1]s theme ignores this menu",
             "message": "the {Name} theme ignores this menu",
-            "translation": "",
+            "translation": "%[1]s のテーマはこのメニューを無視します",
             "placeholders": [
                 {
                     "id": "Name",
@@ -4030,19 +4030,19 @@
             "id": "View Website",
             "key": "View Website",
             "message": "View Website",
-            "translation": ""
+            "translation": "ウェブサイトを表示"
         },
         {
             "id": "open the website landing page in a new tab",
             "key": "open the website landing page in a new tab",
             "message": "open the website landing page in a new tab",
-            "translation": ""
+            "translation": "ウェブサイトのランディングページを新しいタブで開く"
         },
         {
             "id": "extra menus and top-level menu items",
             "key": "extra menus and top-level menu items",
             "message": "extra menus and top-level menu items",
-            "translation": ""
+            "translation": "追加メニューとトップレベルのメニュー項目"
         },
         {
             "id": "Profile",

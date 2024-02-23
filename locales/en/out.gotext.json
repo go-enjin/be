@@ -757,8 +757,8 @@
             "message": "{FastMinutes}-{SlowMinutes} minutes",
             "translation": {
                 "select": {
-                    "feature": "plural",
                     "arg": "FastMinutes",
+                    "feature": "plural",
                     "cases": {
                         "=0": {
                             "msg": "less than a minute"
@@ -3065,7 +3065,7 @@
             "id": "the {Name} theme renders this menu",
             "key": "the %[1]s theme renders this menu",
             "message": "the {Name} theme renders this menu",
-            "translation": "the {Name} theme renders this menu",
+            "translation": "the %[1]s theme renders this menu",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3083,7 +3083,7 @@
             "id": "the {Name} theme ignores this menu",
             "key": "the %[1]s theme ignores this menu",
             "message": "the {Name} theme ignores this menu",
-            "translation": "the {Name} theme ignores this menu",
+            "translation": "the %[1]s theme ignores this menu",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
