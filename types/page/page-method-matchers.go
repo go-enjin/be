@@ -19,7 +19,6 @@ import (
 
 	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/pageql"
 )
 
 func (p *CPage) Match(path string) (found string, ok bool) {
@@ -77,6 +76,6 @@ func (p *CPage) HasTranslation() (ok bool) {
 }
 
 func (p *CPage) MatchQL(query string) (ok bool, err error) {
-	ok, err = pageql.Match(query, p.fields.Context.Copy())
+	ok, err = p.fields.Context.MatchQL(query)
 	return
 }

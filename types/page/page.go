@@ -210,18 +210,23 @@ func NewPageFromStub(ps *feature.PageStub, formats feature.PageFormatProvider, e
 		log.ErrorF("error getting page last modified epoch: %v", err)
 	}
 
-	if p, err = New(ps.Origin, ps.Source, string(data), created, updated, formats, ps.EnjinCtx); err == nil {
+	if p, err = New(ps.Origin, ps.Source, string(data), created, updated, formats, enjinCtx); err == nil {
 		if language.Compare(p.LanguageTag(), language.Und) {
+			// this only happens if the page context fails to provide a non-undefined locale
+			// the ps.Fallback is set when creating the page stub, from the originally detected locale
 			p.SetLanguage(ps.Fallback)
 		}
 		if !strings.HasPrefix(p.Url(), "!") {
 			p.SetSlugUrl(filepath.Clean(ps.Point + p.Url()))
 		}
-		// log.DebugF("made page from %v stub: [%v] %v (%v)", s.FS.Name(), p.Language, s.Source, p.Url)
 	} else {
 		err = fmt.Errorf("error: new %v mount page %v - %v", ps.FS.Name(), ps.Source, err)
 	}
 	return
+}
+
+func (p *CPage) DeepCopy() interface{} {
+	return p.Copy()
 }
 
 func (p *CPage) Copy() (copy feature.Page) {
@@ -241,7 +246,6 @@ func (p *CPage) Copy() (copy feature.Page) {
 			Layout:       p.fields.Layout,
 			Section:      p.fields.Section,
 			Archetype:    p.fields.Archetype,
-			FrontMatter:  p.fields.FrontMatter,
 			Language:     p.fields.Language,
 			LanguageTag:  p.fields.LanguageTag,
 			Translates:   p.fields.Translates,
@@ -249,17 +253,17 @@ func (p *CPage) Copy() (copy feature.Page) {
 			PermalinkSha: p.fields.PermalinkSha,
 			Content:      p.fields.Content,
 			Formats:      p.fields.Formats,
-			Context:      context.New(),
 			CreatedAt:    p.fields.CreatedAt,
 			UpdatedAt:    p.fields.UpdatedAt,
 			DeletedAt:    p.fields.DeletedAt,
-			PageMatter:   p.fields.PageMatter.Copy(),
+			Context:      context.New(),              // fresh (ephemeral) context with every copy
+			PageMatter:   p.fields.PageMatter.Copy(), // this is the context copy that actually matters
+			FrontMatter:  p.fields.FrontMatter,       // this is the raw PageMatter
 		},
 		copied:  1,
 		mutable: p.mutable,
 	}
-	// log.WarnDF(1, "copied page: %v", p.Url)
-	_ = pg.initFrontMatter()
+	_ = pg.initFrontMatter() // rebuild the ephemeral context
 	copy = pg
 	return
 }
