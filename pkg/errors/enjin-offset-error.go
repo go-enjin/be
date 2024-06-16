@@ -31,84 +31,111 @@ var (
 	RxTemplateExecError  = regexp.MustCompile(`template: ([^:]+?):(\d+):(\d+):\s*executing\s*"[^"]+?"\s*at\s*<[^>]+?>:\s*(.+?)\s*$`)
 )
 
+func makeEnjinErrorSpan(unescaped string) (span string) {
+	return fmt.Sprintf(
+		`<span id="error" class="enjin-error pos">%s</span>`,
+		template.HTMLEscapeString(unescaped),
+	)
+}
+
 func NewEnjinOffsetError(title, err, content string, offset int64) (ee *EnjinError) {
 	ee = NewEnjinOffsetRangeError(title, err, content, offset, offset)
 	return
 }
 
-func NewEnjinOffsetRangeError(title, err, content string, offset, end int64) (ee *EnjinError) {
-	var found bool
-	var pos int64
-	var lines []string
-	isRange := offset < end
+func makePointError(content string, offset int64) (lines []string, row, column int) {
 
-	for _, line := range strings.Split(content, "\n") {
-		length := int64(len(line)) + 1
-		if !found && pos+length >= offset {
-			found = true
-			delta := maths.Floor(offset-pos-1, 0)
-			var escaped string
+	var pos int64 = 0
+	for idx, line := range strings.Split(content, "\n") {
+		var escaped string
+		eol := int64(len(line))
+		posEol := pos + eol
 
-			if isRange {
+		switch {
 
-				if length > 1 { // always a newline
-					escaped = template.HTMLEscapeString(line[:delta])
-					if delta < length {
-						escaped += `<span class="enjin-error pos">`
-						escaped += template.HTMLEscapeString(line[delta:])
-						escaped += `</span>`
-					} else {
-						// last character in the line
-						escaped += `<span class="enjin-error pos">&nbsp;</span>`
-					}
-				} else {
-					// last character in the line
-					escaped += `<span class="enjin-error pos">&nbsp;</span>`
-				}
-
+		case offset == pos:
+			// start of line or empty line
+			if eol == 1 {
+				// empty line
+				escaped += makeEnjinErrorSpan(" ")
 			} else {
-				// single character point
-				if length > 1 { // always a newline
-					escaped = template.HTMLEscapeString(line[:delta])
-					if delta < length {
-						escaped += `<span class="enjin-error pos">`
-						if length > 0 {
-							escaped += template.HTMLEscapeString(string(line[delta]))
-							escaped += `</span>`
-							escaped += template.HTMLEscapeString(line[delta+1:])
-						} else {
-							escaped += `&nbsp;`
-							escaped += `</span>`
-						}
-					} else {
-						// last character in the line
-						escaped += `<span class="enjin-error pos">&nbsp;</span>`
-					}
-				} else {
-					// last character in the line
-					escaped += `<span class="enjin-error pos">&nbsp;</span>`
-				}
+				escaped += makeEnjinErrorSpan(string(line[0]))
+				escaped += template.HTMLEscapeString(line[1:])
 			}
 
-			lines = append(lines, escaped)
-			var padding string
-			if delta >= 1 {
-				padding = strings.Repeat("&nbsp;", int(delta)-1)
-			}
-			if isRange {
-				lines = append(lines, padding+`<span id="json-error" class="enjin-error offset line"><i class="fa-solid fa-arrow-up"></i></span>`)
-			} else {
-				lines = append(lines, padding+`<span id="json-error" class="enjin-error offset"><i class="fa-solid fa-arrow-up"></i></span>`)
-			}
-		} else {
-			lines = append(lines, template.HTMLEscapeString(line))
+		case offset >= pos && offset < posEol:
+			// middle of line
+			delta := posEol - offset // -1 for the implied newline
+			row = idx + 1
+			column = int(delta)
+			escaped += template.HTMLEscapeString(line[:delta])
+			escaped += makeEnjinErrorSpan(string(line[delta]))
+			escaped += template.HTMLEscapeString(line[delta+1:])
+
+		case offset == posEol:
+			// end of line
+			escaped += template.HTMLEscapeString(line)
+			escaped += makeEnjinErrorSpan(" ")
+
+		default:
+			// not the error line
+			escaped = template.HTMLEscapeString(line)
 		}
-		pos += length
+
+		lines = append(lines, escaped)
+		pos += eol // line plus \n
+	}
+
+	return
+}
+
+func makeRangeError(content string, offset, end int64) (lines []string, row, column int) {
+	lines, row, column = makePointError(content, offset)
+	// TODO: implement makeRangeError for template error cases, makePointError is for json errors
+
+	// all non-error lines must be html escaped
+	//lines = append(lines, template.HTMLEscapeString(line))
+
+	//if length > 1 { // always a newline
+	//	escaped = template.HTMLEscapeString(line[:delta])
+	//	if delta < length {
+	//		escaped += `<span class="enjin-error pos">`
+	//		escaped += template.HTMLEscapeString(line[delta:])
+	//		escaped += `</span>`
+	//	} else {
+	//		// last character in the line
+	//		escaped += `<span class="enjin-error pos">&nbsp;</span>`
+	//	}
+	//} else {
+	//	// last character in the line
+	//	escaped += `<span class="enjin-error pos">&nbsp;</span>`
+	//}
+
+	return
+}
+
+func NewEnjinOffsetRangeError(title, err, content string, offset, end int64) (ee *EnjinError) {
+	var lines []string
+	var row, column int
+
+	if offset < end {
+		// ranged error
+		lines, row, column = makeRangeError(content, offset, end)
+	} else {
+		// position error
+		lines, row, column = makePointError(content, offset)
+	}
+
+	count := len(lines)
+	digits := strconv.Itoa(maths.IntegerLen(count))
+	format := `%` + digits + `d %s`
+	for i := 0; i < count; i++ {
+		lines[i] = fmt.Sprintf(format, i+1, lines[i])
 	}
 
 	ee = NewEnjinError(
 		title,
-		fmt.Sprintf(`<a class="enjin-error" href="#json-error">[%d] %v</a>`, offset, err),
+		fmt.Sprintf(`<a class="enjin-error" href="#error">[%d:%d:%d] %v</a>`, offset, row, column, err),
 		strings.Join(lines, "\n"),
 	)
 	return
