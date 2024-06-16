@@ -167,10 +167,8 @@ type Internals interface {
 	ReloadLocales()
 	HotReloading() (enabled bool)
 
-	DB(tag string) (db interface{}, err error)
-	MustDB(tag string) (db interface{})
-	SpecificDB(fTag Tag, tag string) (db interface{}, err error)
-	MustSpecificDB(fTag Tag, tag string) (db interface{})
+	DB(tag string) (db DataBase, err error)
+	MustDB(tag string) (db DataBase)
 
 	MakeFuncMap(ctx context.Context) (fm FuncMap)
 
@@ -200,7 +198,7 @@ type Internals interface {
 	GetOutputTransformers() []OutputTransformer
 	GetPageTypeProcessors() []PageTypeProcessor
 	GetServePathFeatures() []ServePathFeature
-	GetDatabases() []Database
+	GetDatabases() []DatabaseFeature
 	GetEmailSenders() []EmailSender
 	GetRequestModifiers() []RequestModifier
 	GetRequestRewriters() []RequestRewriter
