@@ -27,6 +27,7 @@ import (
 	"gorm.io/gorm/logger"
 
 	"github.com/go-corelibs/maps"
+	"github.com/go-enjin/be/pkg/dbi"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 )
@@ -39,21 +40,10 @@ var (
 )
 
 type Feature interface {
-	feature.Database
-}
-
-type CFeature struct {
-	feature.CFeature
-
-	flags map[string][]string
-	conns map[string]*gorm.DB
-
-	loggerConfig map[string]logger.Config
+	feature.DatabaseFeature
 }
 
 type MakeFeature interface {
-	Make() Feature
-
 	// AddConnection adds a new connection tag to the enjin and provides a
 	// pair of specific command-line connection flags
 	//
@@ -70,9 +60,36 @@ type MakeFeature interface {
 	// Note: given tag is always converted to lower-kebab-case format
 	AddConnection(tag string) MakeFeature
 
+	// AddConnectionWith is like AddConnection with specifying the underlying
+	// sql.DB and logger.Config settings via a buildable Config instance used
+	// when opening Gorm instances during startup
+	AddConnectionWith(tag string, c Config) MakeFeature
+
+	// SetPreset configures a new connection with a default dialect and URI
+	//
+	// Note: cli flags and environment variables override any presets
+	SetPreset(tag, dialect, uri string) MakeFeature
+
+	// SetPresetWith is like AddConnectionWith but with presets
+	SetPresetWith(tag, dialect, uri string, c Config) MakeFeature
+
+	// SetConfig specifies the db config for the connection tag
+	SetConfig(tag string, c Config) MakeFeature
+
 	// SetLogging configures the gorm.Config.Logger setting for the given
 	// connection, the default is to not log anything for all connections
 	SetLogging(connection string, level logger.LogLevel, slowThreshold time.Duration, ignoreRecordNotFound, parameterizedQueries bool) MakeFeature
+
+	Make() Feature
+}
+
+type CFeature struct {
+	feature.CFeature
+
+	flags  map[string][]string
+	cfg    map[string]*config
+	preset map[string]*preset
+	dbh    map[string]feature.DataBase
 }
 
 func New() MakeFeature {
@@ -91,29 +108,78 @@ func NewTagged(tag feature.Tag) MakeFeature {
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.flags = make(map[string][]string)
-	f.conns = make(map[string]*gorm.DB)
-	f.loggerConfig = make(map[string]logger.Config)
+	f.cfg = make(map[string]*config)
+	f.preset = make(map[string]*preset)
+	f.dbh = make(map[string]feature.DataBase)
 }
 
-func (f *CFeature) AddConnection(tag string) MakeFeature {
+func (f *CFeature) setConn(depth int, tag string, c Config) {
 	tag = strcase.ToKebab(tag)
 	if _, exists := f.flags[tag]; exists {
-		log.FatalDF(1, "a gorm connection already exists with the given tag: %v", tag)
+		log.FatalDF(depth+1, "connection exists already: %q", tag)
 	}
 	f.flags[tag] = append(f.flags[tag],
 		fmt.Sprintf("%v-%v-type", f.Tag().String(), tag),
 		fmt.Sprintf("%v-%v-uri", f.Tag().String(), tag),
 	)
+	f.cfg[tag] = c.make()
+}
+
+func (f *CFeature) setPreset(depth int, tag, dialect, uri string) (kebab string) {
+	kebab = strcase.ToKebab(tag)
+	f.setConn(depth+1, kebab, NewConfig())
+	if _, present := f.preset[kebab]; present {
+		log.FatalDF(depth+1, "preset exists already: %q", kebab)
+	} else if !gDialects.has(DialectName(dialect)) {
+		log.FatalDF(depth+1, "unknown dialect: %q", dialect)
+	}
+	f.preset[kebab] = &preset{
+		tag:  kebab,
+		name: DialectName(dialect),
+		uri:  uri,
+	}
+	return
+}
+
+func (f *CFeature) AddConnection(tag string) MakeFeature {
+	f.setConn(1, tag, NewConfig())
+	return f
+}
+
+func (f *CFeature) AddConnectionWith(tag string, c Config) MakeFeature {
+	f.setConn(1, tag, c)
+	return f
+}
+
+func (f *CFeature) SetPreset(tag, dialect, uri string) MakeFeature {
+	f.setPreset(1, tag, dialect, uri)
+	return f
+}
+
+func (f *CFeature) SetPresetWith(tag, dialect, uri string, c Config) MakeFeature {
+	kebab := f.setPreset(1, tag, dialect, uri)
+	f.cfg[kebab] = c.make()
+	return f
+}
+
+func (f *CFeature) SetConfig(tag string, c Config) MakeFeature {
+	kebab := strcase.ToKebab(tag)
+	if _, present := f.flags[kebab]; !present {
+		log.FatalDF(1, "unknown connection: %q", kebab)
+	}
+	f.cfg[kebab] = c.make()
 	return f
 }
 
 func (f *CFeature) SetLogging(connection string, level logger.LogLevel, slowThreshold time.Duration, ignoreRecordNotFound, parameterizedQueries bool) MakeFeature {
-	f.loggerConfig[connection] = logger.Config{
-		Colorful:                  false, // always disable color
-		LogLevel:                  level,
-		SlowThreshold:             slowThreshold,
-		IgnoreRecordNotFoundError: ignoreRecordNotFound,
-		ParameterizedQueries:      parameterizedQueries,
+	kebab := strcase.ToKebab(connection)
+	if cfg, present := f.cfg[kebab]; !present {
+		log.FatalDF(1, "%q connection not found", kebab)
+	} else {
+		cfg.logLevel = level
+		cfg.slowThreshold = slowThreshold
+		cfg.ignoreRecordNotFoundError = ignoreRecordNotFound
+		cfg.parameterizedQueries = parameterizedQueries
 	}
 	return f
 }
@@ -123,21 +189,20 @@ func (f *CFeature) Make() Feature {
 }
 
 func (f *CFeature) Build(b feature.Buildable) (err error) {
-	log.DebugDF(1, "building gorm db feature")
+	log.DebugDF(1, "building database feature")
 	fTag := f.Tag().String()
 	for tag, flags := range f.flags {
-		known := maps.SortedKeys(gKnownDialects)
 		b.AddFlags(
 			&cli.StringFlag{
 				Category: fTag,
 				Name:     flags[0],
-				Usage:    fmt.Sprintf("gorm db %v connection type %v", tag, known),
+				Usage:    fmt.Sprintf("%v connection type (supported: %v)", tag, gDialects.supports()),
 				EnvVars:  b.MakeEnvKeys(strcase.ToScreamingSnake(flags[0])),
 			},
 			&cli.StringFlag{
 				Category: fTag,
 				Name:     flags[1],
-				Usage:    fmt.Sprintf("gorm db %v connection URI", tag),
+				Usage:    fmt.Sprintf("%v connection URI", tag),
 				EnvVars:  b.MakeEnvKeys(strcase.ToScreamingSnake(flags[1])),
 			},
 		)
@@ -151,34 +216,62 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	}
 
 	for tag, flags := range f.flags {
+		var dbUri string
+		var dbType DialectName
+		var dialect *dbDialect
 		dbTypeFlag, dbUriFlag := flags[0], flags[1]
-		var dialect *gormDialect
 
-		var dbType string
-		if dbType = ctx.String(dbTypeFlag); dbType == "" {
-			err = fmt.Errorf("gorm db startup error: missing --%v", dbTypeFlag)
-			return
+		if p, ok := f.preset[tag]; ok {
+			// preset present, cli flags are optional
+			dbUri = p.uri
+			dbType = p.name
+			dialect = gDialects.get(p.name)
+
+			if ctx.IsSet(dbUriFlag) {
+				if uri := ctx.String(dbUriFlag); uri != "" {
+					dbUri = uri
+				}
+			}
+			if ctx.IsSet(dbTypeFlag) {
+				if name := ctx.Generic(dbTypeFlag).(DialectName); name != "" {
+					dbType = name
+				}
+			}
+
 		} else {
-			var known bool
-			if dialect, known = gKnownDialects[dbType]; !known {
-				err = fmt.Errorf("gorm db startup error: unknown type --%v=%q", dbTypeFlag, dbType)
+			// no preset, all cli flags are required
+			if dbUri = ctx.String(dbUriFlag); dbUri == "" {
+				err = fmt.Errorf("database startup error: %v - missing --%v", tag, dbUriFlag)
+				return
+			} else if dbType = DialectName(ctx.String(dbTypeFlag)); dbType == "" {
+				err = fmt.Errorf("database startup error: --%v is missing", dbTypeFlag)
+				return
+			} else if dialect = gDialects.get(dbType); dialect == nil {
+				err = fmt.Errorf("database startup error: unknown type --%v=%q", dbTypeFlag, dbType)
 				return
 			}
 		}
 
-		var uri string
-		if uri = ctx.String(dbUriFlag); uri == "" {
-			err = fmt.Errorf("gorm db startup error: %v - missing --%v", tag, dbUriFlag)
+		var ok bool
+		var cfg *config
+		var gormConfig = &gorm.Config{}
+		if cfg, ok = f.cfg[tag]; ok {
+			gormConfig.Logger = logger.New(log.PrefixedLogger("(db|"+string(dbType)+"|"+tag+") - "), cfg.loggerConfig())
+		}
+
+		// ensure that loc, parseTime and charset are set for the specific dialect
+		if dbUri, err = dbi.UpdateURI(dbUri, dialect.dbUriParams()); err != nil {
 			return
 		}
 
-		var gormConfig = &gorm.Config{}
-		if config, ok := f.loggerConfig[tag]; ok {
-			gormConfig.Logger = logger.New(log.PrefixedLogger("(db|"+dbType+"|"+tag+") - "), config)
+		var db *gorm.DB
+		if db, err = gorm.Open(dialect.openFn(dbUri), gormConfig); err != nil {
+			err = fmt.Errorf("database startup connection error: %v - %v", tag, err)
+			return
 		}
 
-		if f.conns[tag], err = gorm.Open(dialect.openFn(uri), gormConfig); err != nil {
-			err = fmt.Errorf("gorm db startup connection error: %v - %v", tag, err)
+		if f.dbh[tag], err = dbi.New(db); err != nil {
+			err = fmt.Errorf("dbi startup error: %v", err)
 			return
 		}
 
@@ -188,38 +281,36 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 }
 
 func (f *CFeature) Shutdown() {
-	for tag, conn := range f.conns {
-		if db, err := conn.DB(); err != nil {
-			log.DebugF("error getting gorm db: %v - %v", tag, err)
-		} else {
-			if err = db.Close(); err != nil {
-				log.ErrorF("error closing gorm db: %v - %v", tag, err)
+	for tag, dbh := range f.dbh {
+		if db := dbh.SqlDB(); db != nil {
+			if err := db.Close(); err != nil {
+				log.ErrorF("error closing database: %v - %v", tag, err)
 			} else {
-				log.InfoF("closed gorm db: %v", tag)
+				log.InfoF("closed database: %v", tag)
 			}
 		}
 	}
 }
 
 func (f *CFeature) ListDB() (tags []string) {
-	tags = maps.SortedKeys(f.conns)
+	tags = maps.SortedKeys(f.dbh)
 	return
 }
 
-func (f *CFeature) DB(tag string) (db interface{}, err error) {
-	if v, ok := f.conns[tag]; ok {
+func (f *CFeature) DB(tag string) (db feature.DataBase, err error) {
+	if v, ok := f.dbh[tag]; ok {
 		db = v
 		return
 	}
-	err = fmt.Errorf("gorm db connection %v not found", tag)
+	err = ErrConnectionNotFound
 	return
 }
 
-func (f *CFeature) MustDB(tag string) (db interface{}) {
-	if v, ok := f.conns[tag]; ok {
-		db = v
+func (f *CFeature) MustDB(tag string) (db feature.DataBase) {
+	var err error
+	if db, err = f.DB(tag); err == nil {
 		return
 	}
-	log.PanicDF(1, "gorm db connection %v not found", tag)
+	log.PanicDF(1, f.mkErr("MustDB", tag, err).Error())
 	return
 }

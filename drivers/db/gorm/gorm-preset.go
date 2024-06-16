@@ -1,6 +1,4 @@
-//go:build driver_db_gorm || drivers_db || gorm || all
-
-// Copyright (c) 2023  The Go-Enjin Authors
+// Copyright (c) 2024  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,13 +14,8 @@
 
 package gorm
 
-import "gorm.io/gorm"
-
-var (
-	gKnownDialects = make(map[string]*gormDialect)
-)
-
-type gormDialect struct {
-	dbType string
-	openFn func(dsn string) gorm.Dialector
+type preset struct {
+	tag  string
+	name DialectName
+	uri  string
 }

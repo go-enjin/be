@@ -1,6 +1,4 @@
-//go:build ((driver_db_gorm || drivers_db || gorm) && sqlite) || all
-
-// Copyright (c) 2023  The Go-Enjin Authors
+// Copyright (c) 2024  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,16 +15,14 @@
 package gorm
 
 import (
-	"gorm.io/driver/sqlite"
-
-	"github.com/go-corelibs/go-sqlbuilder/dialects"
+	"errors"
+	"fmt"
 )
 
-func init() {
-	gDialects.set(&dbDialect{
-		name:    "sqlite",
-		alias:   []DialectName{"sqlite3"},
-		openFn:  sqlite.Open,
-		dialect: dialects.Sqlite{},
-	})
+var (
+	ErrConnectionNotFound = errors.New("connection not found")
+)
+
+func (f *CFeature) mkErr(name, tag string, err error) error {
+	return fmt.Errorf("%q.%s(%s) error: %w", f.Tag(), name, tag, err)
 }

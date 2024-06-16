@@ -18,12 +18,15 @@ package gorm
 
 import (
 	"gorm.io/driver/mysql"
+
+	"github.com/go-corelibs/go-sqlbuilder/dialects"
 )
 
 func init() {
-	gKnownDialects["mysql"] = &gormDialect{
-		dbType: "mysql",
-		openFn: mysql.Open,
-	}
-	gKnownDialects["mariadb"] = gKnownDialects["mysql"]
+	gDialects.set(&dbDialect{
+		name:    "mysql",
+		alias:   []DialectName{"mariadb"},
+		openFn:  mysql.Open,
+		dialect: dialects.MySql{},
+	})
 }

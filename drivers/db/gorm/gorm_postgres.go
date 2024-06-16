@@ -18,12 +18,15 @@ package gorm
 
 import (
 	"gorm.io/driver/postgres"
+
+	"github.com/go-corelibs/go-sqlbuilder/dialects"
 )
 
 func init() {
-	gKnownDialects["postgres"] = &gormDialect{
-		dbType: "postgres",
-		openFn: postgres.Open,
-	}
-	gKnownDialects["pg"] = gKnownDialects["postgres"]
+	gDialects.set(&dbDialect{
+		name:    "postgres",
+		alias:   []DialectName{"postgresql", "pg"},
+		openFn:  postgres.Open,
+		dialect: dialects.Postgresql{},
+	})
 }
