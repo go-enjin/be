@@ -160,6 +160,10 @@ func (f *CFeature) GetPageTagCloud(shasum string) (tags feature.TagCloud) {
 	return
 }
 
+func (f *CFeature) ListPageContextFields() (kebabs []string) {
+	return []string{"no-tag-indexing", f.indexKey}
+}
+
 func (f *CFeature) MakePageContextFields(r *http.Request) (list page_fields.Fields) {
 	printer := message.GetPrinter(r)
 	list = page_fields.Fields{
@@ -206,6 +210,7 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p feature.Page) (pg f
 	}
 
 	t := f.Enjin.MustGetTheme()
+	ectx := f.Enjin.Context(r)
 	if word = forms.StrictSanitize(word); word != "" {
 		var ok bool
 		var tw *tagWord
@@ -218,7 +223,7 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p feature.Page) (pg f
 		var pages []*feature.CloudTagPage
 		for _, shasum := range tw.Shasums() {
 			if stub := f.Enjin.FindPageStub(shasum); stub != nil {
-				if found, err := page.NewPageFromStub(stub, t); err == nil {
+				if found, err := page.NewPageFromStub(stub, t, ectx); err == nil {
 					pages = append(pages, &feature.CloudTagPage{
 						Title:   found.Title(),
 						Url:     found.Url(),
