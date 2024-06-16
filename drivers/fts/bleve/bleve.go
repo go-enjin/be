@@ -19,6 +19,7 @@ package bleve
 import (
 	"fmt"
 	"net/url"
+	"strings"
 	"sync"
 
 	"github.com/blevesearch/bleve/v2"
@@ -28,12 +29,12 @@ import (
 	"golang.org/x/net/html"
 
 	"github.com/go-corelibs/x-text/language"
+	"github.com/go-enjin/be/pkg/rxps"
 
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
 	beIndexSearch "github.com/go-enjin/be/pkg/indexing/search"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/regexps"
 	beSearch "github.com/go-enjin/be/pkg/search"
 )
 
@@ -131,11 +132,12 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 	log.DebugF("performing site search: %v", input)
 
 	// handle user input `language:%v`
-	if regexps.RxLanguageKey.MatchString(input) {
-		m := regexps.RxLanguageKey.FindAllStringSubmatch(input, 1)
+	if m := rxps.RxLanguageKey.FindAllStringSubmatch(input, 1); len(m) > 0 {
+
 		if m[0][1] == "*" {
 			searchAll = true
-			input = regexps.RxLanguageKey.ReplaceAllString(input, "")
+			//input = rxps.RxLanguageKey.ReplaceAllString(input, rxp.Replace[string]{}.WithLiteral(""))
+			input = strings.Replace(input, m[0][0], "", 1)
 		} else if queryLangTag, eee := language.Parse(m[0][1]); eee != nil {
 			err = fmt.Errorf("invalid language")
 			return
@@ -151,7 +153,8 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 				return
 			}
 			inputWantsTag = queryLangTag
-			input = regexps.RxLanguageKey.ReplaceAllString(input, "")
+			//input = rxps.RxLanguageKey.ReplaceAllString(input, rxp.Replace[string]{}.WithLiteral(""))
+			input = strings.Replace(input, m[0][0], "", 1)
 		}
 	}
 
