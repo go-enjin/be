@@ -1,6 +1,6 @@
-//go:build driver_kws || drivers || all
+//go:build srv_kws || kws || all
 
-// Copyright (c) 2023  The Go-Enjin Authors
+// Copyright (c) 2024  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package kws
 
 import (
-	"regexp"
 	"sort"
 	"strings"
 
@@ -29,11 +28,11 @@ import (
 	"github.com/go-corelibs/x-text/language"
 	uses_kvc "github.com/go-enjin/be/pkg/feature/uses-kvc"
 	"github.com/go-enjin/be/pkg/kvs"
+	"github.com/go-enjin/be/pkg/rxps"
 
 	"github.com/go-enjin/be/pkg/feature"
 	indexingSearch "github.com/go-enjin/be/pkg/indexing/search"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/regexps"
 	"github.com/go-enjin/be/pkg/search"
 	"github.com/go-enjin/be/types/page"
 )
@@ -123,10 +122,15 @@ func (f *CFeature) UnsafeKeywords() (store feature.KeyValueStore) {
 	return
 }
 
-var RxKeywords = regexp.MustCompile(`([-+]?(?:` + regexps.KeywordPattern + `))`)
+func (f *CFeature) findWordShasums(word string) (shasums []string, ok bool) {
+	var err error
+	shasums = kvs.GetFlatList[string](f.keyword, word)
+	ok = err == nil
+	return
+}
 
 func (f *CFeature) PrepareSearch(tag language.Tag, input string) (query string) {
-	keywords := RxKeywords.FindAllString(input, -1)
+	keywords := rxps.RxKeywords.FindAllString(input, -1)
 	for idx, keyword := range keywords {
 		keyword = strings.ToLower(keyword)
 		if idx > 0 {
@@ -137,24 +141,15 @@ func (f *CFeature) PrepareSearch(tag language.Tag, input string) (query string) 
 	return
 }
 
-func (f *CFeature) findWordShasums(word string) (shasums []string, ok bool) {
-	var err error
-	shasums = kvs.GetFlatList[string](f.keyword, word)
-	ok = err == nil
-	return
-}
-
 func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (results *bleve.SearchResult, err error) {
 	f.RLock()
 	defer f.RUnlock()
-	var t feature.Theme
-	if t, err = f.Enjin.GetTheme(); err != nil {
-		return
-	}
+	t := f.Enjin.MustGetTheme()
+	ectx := f.Enjin.Context(nil)
 	langMode := f.Enjin.SiteLanguageMode()
 	fallback := f.Enjin.SiteDefaultLanguage()
 
-	keywords := RxKeywords.FindAllString(input, -1)
+	keywords := rxps.RxKeywords.FindAllString(input, -1)
 	mustWords, shouldWords, notWords := make(map[string]int), make(map[string]int), make(map[string]int)
 	for idx, keyword := range keywords {
 		if keyword = strings.ToLower(keyword); keyword != "" {
@@ -294,7 +289,7 @@ func (f *CFeature) PerformSearch(tag language.Tag, input string, size, pg int) (
 				maxScore = scores[shasum]
 			}
 			if count >= start && count < end {
-				if p, ee := page.NewPageFromStub(stub, t); ee == nil {
+				if p, ee := page.NewPageFromStub(stub, t, ectx); ee == nil {
 					id := langMode.ToUrl(fallback, p.LanguageTag(), p.Url())
 					hit := &bleveSearch.DocumentMatch{
 						Index:     id,
@@ -351,7 +346,7 @@ func (f *CFeature) AddToSearchIndex(stub *feature.PageStub, p feature.Page) (err
 	unique := make(map[string]struct{})
 
 	for _, content := range doc.GetContents() {
-		words := regexps.RxKeywords.FindAllString(content, -1)
+		words := rxps.RxFieldKey.FindAllString(content, -1)
 		for _, word := range words {
 			lcw := strings.ToLower(word)
 			if _, present := unique[lcw]; present {
