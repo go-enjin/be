@@ -20,8 +20,13 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/go-corelibs/rxp"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/regexps"
+)
+
+var (
+	rxHash10           = rxp.Pattern{}.Add(rxp.IsHash10())
+	rxAtLeastSixDigits = rxp.Pattern{}.Add(rxp.IsAtLeastSixDigits())
 )
 
 func QueryFormValue(r *http.Request, key string) (value string) {
@@ -66,8 +71,7 @@ func SafeQueryFormEmail(r *http.Request, key string) (address string) {
 
 func SafeQueryFormHash10(r *http.Request, key string) (shasum string) {
 	sanitized := forms.StrictSanitize(QueryFormValue(r, key))
-	if regexps.RxHash10.MatchString(sanitized) {
-		m := regexps.RxHash10.FindAllStringSubmatch(sanitized, 1)
+	if m := rxHash10.FindAllStringSubmatch(sanitized, 1); len(m) > 0 {
 		shasum = m[0][1]
 	}
 	return
@@ -75,8 +79,7 @@ func SafeQueryFormHash10(r *http.Request, key string) (shasum string) {
 
 func SafeQueryFormSixDigits(r *http.Request, key string) (digits string) {
 	sanitized := forms.StrictSanitize(QueryFormValue(r, key))
-	if regexps.RxAtLeastSixDigits.MatchString(sanitized) {
-		m := regexps.RxAtLeastSixDigits.FindAllStringSubmatch(sanitized, 1)
+	if m := rxAtLeastSixDigits.FindAllStringSubmatch(sanitized, 1); len(m) > 0 {
 		digits = m[0][1]
 	}
 	return
