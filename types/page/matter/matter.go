@@ -168,7 +168,7 @@ func (pm *PageMatter) Bytes() (data []byte, err error) {
 	switch pm.FrontMatterType {
 	case NoneMatter, JsonMatter:
 		data = append(data, "{{{\n"...)
-		if matter, err = pm.Matter.AsJSON(); err != nil {
+		if matter, err = pm.Matter.ToJSON(); err != nil {
 			return
 		}
 		// json front-matter must remove opening and closing braces
@@ -176,14 +176,14 @@ func (pm *PageMatter) Bytes() (data []byte, err error) {
 		data = append(data, "\n}}}\n"...)
 	case TomlMatter:
 		data = append(data, "+++\n"...)
-		if matter, err = pm.Matter.AsTOML(); err != nil {
+		if matter, err = pm.Matter.ToTOML(); err != nil {
 			return
 		}
 		data = append(data, matter...)
 		data = append(data, "\n+++\n"...)
 	case YamlMatter:
 		data = append(data, "---\n"...)
-		if matter, err = pm.Matter.AsYAML(); err != nil {
+		if matter, err = pm.Matter.ToYAML(); err != nil {
 			return
 		}
 		data = append(data, matter...)
