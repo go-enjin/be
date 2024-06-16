@@ -20,8 +20,6 @@ import (
 	"fmt"
 
 	"github.com/go-corelibs/x-text/language"
-
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/fs"
 )
 
@@ -35,17 +33,16 @@ type ValueStubPair struct {
 }
 
 type PageStub struct {
-	Origin   string            `json:"origin"`
-	FS       fs.FileSystem     `json:"fs"`
-	Point    string            `json:"point"`
-	Shasum   string            `json:"shasum"`
-	Source   string            `json:"source"`
-	Language language.Tag      `json:"language"`
-	Fallback language.Tag      `json:"fallback"`
-	EnjinCtx beContext.Context `json:"enjin-ctx"`
+	Origin   string        `json:"origin"`
+	FS       fs.FileSystem `json:"fs"`
+	Point    string        `json:"point"`
+	Shasum   string        `json:"shasum"`
+	Source   string        `json:"source"`
+	Language language.Tag  `json:"language"`
+	Fallback language.Tag  `json:"fallback"`
 }
 
-func NewPageStub(origin string, enjin beContext.Context, bfs fs.FileSystem, point, source, shasum string, fallback language.Tag) (s *PageStub) {
+func NewPageStub(origin string, bfs fs.FileSystem, point, source, shasum string, fallback language.Tag) (s *PageStub) {
 	s = &PageStub{
 		Origin:   origin,
 		FS:       bfs,
@@ -54,23 +51,27 @@ func NewPageStub(origin string, enjin beContext.Context, bfs fs.FileSystem, poin
 		Source:   source,
 		Language: fallback,
 		Fallback: fallback,
-		EnjinCtx: enjin,
 	}
 	return
 }
 
-type encodedPageStub struct {
-	Origin   string            `json:"origin"`
-	FS       string            `json:"fs"`
-	Point    string            `json:"point"`
-	Shasum   string            `json:"shasum"`
-	Source   string            `json:"source"`
-	Language string            `json:"language"`
-	Fallback string            `json:"fallback"`
-	EnjinCtx beContext.Context `json:"enjin-ctx"`
+func MakePageStub(data []byte) (s *PageStub, err error) {
+	s = &PageStub{}
+	err = s.Unmarshal(data)
+	return
 }
 
-func (ps *PageStub) MarshalBinary() (data []byte, err error) {
+type encodedPageStub struct {
+	Origin   string `json:"origin"`
+	FS       string `json:"fs"`
+	Point    string `json:"point"`
+	Shasum   string `json:"shasum"`
+	Source   string `json:"source"`
+	Language string `json:"language"`
+	Fallback string `json:"fallback"`
+}
+
+func (ps *PageStub) Marshal() (data []byte, err error) {
 	data, err = json.Marshal(encodedPageStub{
 		Origin:   ps.Origin,
 		FS:       ps.FS.ID(),
@@ -79,12 +80,11 @@ func (ps *PageStub) MarshalBinary() (data []byte, err error) {
 		Source:   ps.Source,
 		Language: ps.Language.String(),
 		Fallback: ps.Fallback.String(),
-		EnjinCtx: ps.EnjinCtx,
 	})
 	return
 }
 
-func (ps *PageStub) UnmarshalBinary(data []byte) (err error) {
+func (ps *PageStub) Unmarshal(data []byte) (err error) {
 	var es encodedPageStub
 	if err = json.Unmarshal(data, &es); err != nil {
 		return
@@ -95,11 +95,42 @@ func (ps *PageStub) UnmarshalBinary(data []byte) (err error) {
 	ps.Source = es.Source
 	ps.Language, _ = language.Parse(es.Language)
 	ps.Fallback, _ = language.Parse(es.Fallback)
-	ps.EnjinCtx = es.EnjinCtx
 	if f, ok := fs.GetFileSystem(es.FS); ok {
 		ps.FS = f
 	} else {
 		err = fmt.Errorf("filesystem not found: %v", es.FS)
 	}
 	return
+}
+
+func (ps *PageStub) MarshalJSON() (data []byte, err error) {
+	return ps.Marshal()
+}
+
+func (ps *PageStub) UnmarshalJSON(data []byte) (err error) {
+	return ps.Unmarshal(data)
+}
+
+func (ps *PageStub) MarshalBinary() (data []byte, err error) {
+	return ps.Marshal()
+}
+
+func (ps *PageStub) UnmarshalBinary(data []byte) (err error) {
+	return ps.Unmarshal(data)
+}
+
+func (ps *PageStub) Copy() *PageStub {
+	return &PageStub{
+		Origin:   ps.Origin,
+		FS:       ps.FS,
+		Point:    ps.Point,
+		Shasum:   ps.Shasum,
+		Source:   ps.Source,
+		Language: ps.Language,
+		Fallback: ps.Fallback,
+	}
+}
+
+func (ps *PageStub) DeepCopy() interface{} {
+	return ps.Copy()
 }
