@@ -26,7 +26,7 @@ func ErrorRF(r *http.Request, format string, argv ...interface{}) {
 
 func ErrorRDF(r *http.Request, depth int, format string, argv ...interface{}) {
 	depth += 1
-	logger.Errorf(prefixLogEntry(depth, format, r), argv...)
+	writeLogEntry(logger.Errorf, prefixLogEntry(depth, format, r), argv...)
 }
 
 func WarnRF(r *http.Request, format string, argv ...interface{}) {
@@ -35,7 +35,7 @@ func WarnRF(r *http.Request, format string, argv ...interface{}) {
 
 func WarnRDF(r *http.Request, depth int, format string, argv ...interface{}) {
 	depth += 1
-	logger.Warnf(prefixLogEntry(depth, format, r), argv...)
+	writeLogEntry(logger.Warnf, prefixLogEntry(depth, format, r), argv...)
 }
 
 func InfoRF(r *http.Request, format string, argv ...interface{}) {
@@ -44,7 +44,7 @@ func InfoRF(r *http.Request, format string, argv ...interface{}) {
 
 func InfoRDF(r *http.Request, depth int, format string, argv ...interface{}) {
 	depth += 1
-	logger.Infof(prefixLogEntry(depth, format, r), argv...)
+	writeLogEntry(logger.Infof, prefixLogEntry(depth, format, r), argv...)
 }
 
 func DebugRF(r *http.Request, format string, argv ...interface{}) {
@@ -53,7 +53,7 @@ func DebugRF(r *http.Request, format string, argv ...interface{}) {
 
 func DebugRDF(r *http.Request, depth int, format string, argv ...interface{}) {
 	depth += 1
-	logger.Debugf(prefixLogEntry(depth, format, r), argv...)
+	writeLogEntry(logger.Debugf, prefixLogEntry(depth, format, r), argv...)
 }
 
 func TraceRF(r *http.Request, format string, argv ...interface{}) {
@@ -62,7 +62,7 @@ func TraceRF(r *http.Request, format string, argv ...interface{}) {
 
 func TraceRDF(r *http.Request, depth int, format string, argv ...interface{}) {
 	depth += 1
-	logger.Tracef(prefixLogEntry(depth, format, r), argv...)
+	writeLogEntry(logger.Tracef, prefixLogEntry(depth, format, r), argv...)
 }
 
 func PanicRF(r *http.Request, format string, argv ...interface{}) {
@@ -71,7 +71,7 @@ func PanicRF(r *http.Request, format string, argv ...interface{}) {
 
 func PanicRDF(r *http.Request, depth int, format string, argv ...interface{}) {
 	depth += 1
-	logger.Panicf(prefixLogEntry(depth, format, r), argv...)
+	writeLogEntry(logger.Panicf, prefixLogEntry(depth, format, r), argv...)
 }
 
 func FatalRF(r *http.Request, format string, argv ...interface{}) {
@@ -80,5 +80,5 @@ func FatalRF(r *http.Request, format string, argv ...interface{}) {
 
 func FatalRDF(r *http.Request, depth int, format string, argv ...interface{}) {
 	depth += 1
-	logger.Fatalf(prefixLogEntry(depth, format, r), argv...)
+	writeLogEntry(logger.Fatalf, prefixLogEntry(depth, format, r), argv...)
 }

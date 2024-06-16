@@ -17,16 +17,33 @@ package log
 import (
 	"fmt"
 	"net/http"
-	"regexp"
 	"runtime"
 	"strings"
 
+	"github.com/go-corelibs/rxp"
 	"github.com/go-enjin/be/pkg/request"
 )
 
 var (
-	rxGoModuleVersion = regexp.MustCompile(`\@(.+?)/`)
-	rxInvalidFuncName = regexp.MustCompile(`^\s*(\d+|func\d+)\s*$`)
+	rxInvalidFuncName = rxp.Pattern{
+		rxp.Caret(),
+		rxp.S("*"),
+		rxp.Or(
+			rxp.D("+"),
+			rxp.Group(
+				rxp.Text("func"),
+				rxp.D("+"),
+			),
+			"c"),
+		rxp.S("*"),
+		rxp.Dollar(),
+	}
+
+	rxGoModuleVersion = rxp.Pattern{
+		rxp.Text("@"),
+		rxp.Text("/", "^", "+"),
+		rxp.Text("/"),
+	}
 )
 
 func getLogPrefix(depth int, r *http.Request) string {
@@ -35,7 +52,7 @@ func getLogPrefix(depth int, r *http.Request) string {
 	var line int
 	var ok bool
 	if _, file, line, ok = runtime.Caller(depth); ok {
-		file = rxGoModuleVersion.ReplaceAllString(file, "/")
+		file = rxGoModuleVersion.ReplaceAllString(file, rxp.Replace[string]{}.WithLiteral("/"))
 		for i := depth; i < 20; i++ {
 			if pc, _, _, ok := runtime.Caller(i); ok {
 				fn := runtime.FuncForPC(pc).Name()
