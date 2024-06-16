@@ -81,6 +81,10 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
+func (f *CFeature) ListPageContextFields() (kebabs []string) {
+	return []string{"query", "select"}
+}
+
 func (f *CFeature) MakePageContextFields(r *http.Request) (list page_fields.Fields) {
 	//printer := message.GetPrinter(r)
 	list = page_fields.Fields{
@@ -117,7 +121,7 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p feature.Page) (pg f
 			queryInput := ctxQueries[queryKey]
 			if q, ok := queryInput.(string); ok {
 				qInputs[camelKey] = q
-				if matches, e := f.Enjin.CheckMatchQL(q); e != nil {
+				if matches, e := f.Enjin.PerformQueryPages(r, q); e != nil {
 					qErrors[camelKey] = e
 				} else {
 					f.Enjin.ApplyPageContextUpdaters(r, matches...)
@@ -139,20 +143,20 @@ func (f *CFeature) ProcessRequestPageType(r *http.Request, p feature.Page) (pg f
 	if ctxSelects, ok := p.Context().Get("Select").(map[string]interface{}); ok {
 		sErrors := make(map[string]error)
 		sInputs := make(map[string]string)
-		sResults := make(map[string]interface{})
+		sResults := struct {
+			Keys []string
+			Rows []context.Context
+		}{}
+
 		for selectKey, selectInput := range ctxSelects {
 			camelKey := strcase.ToCamel(selectKey)
-			if q, ok := selectInput.(string); ok {
-				sInputs[camelKey] = q
-				if selected, ee := f.Enjin.CheckSelectQL(q); ee != nil {
+			if query, ok := selectInput.(string); ok {
+				sInputs[camelKey] = query
+				if columns, results, ee := f.Enjin.PerformLookup(query); ee != nil {
 					sErrors[camelKey] = ee
-				} else if len(selected) == 1 {
-					for _, only := range selected {
-						sResults[camelKey] = only
-						break
-					}
 				} else {
-					sResults[camelKey] = selected
+					sResults.Keys = columns
+					sResults.Rows = results
 				}
 			} else {
 				sErrors[camelKey] = fmt.Errorf("unexpected select context value structure: %T", selectInput)
