@@ -166,6 +166,10 @@ func (f *CFeature) ChangeFreqParser(spec *page_fields.Field, input interface{}) 
 	return
 }
 
+func (f *CFeature) ListPageContextFields() (kebabs []string) {
+	return []string{"sitemap-ignored", "sitemap-priority", "sitemap-change-freq"}
+}
+
 func (f *CFeature) MakePageContextFields(r *http.Request) (list page_fields.Fields) {
 	printer := message.GetPrinter(r)
 	list = page_fields.Fields{
