@@ -2,56 +2,6 @@
     "language": "en",
     "messages": [
         {
-            "id": "unsupported type: {TypeOfinput}",
-            "key": "unsupported type: %[1]s",
-            "message": "unsupported type: {TypeOfinput}",
-            "translation": "unsupported type: %[1]s",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "TypeOfinput",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "values.TypeOf(input)"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "not a time value",
-            "key": "not a time value",
-            "message": "not a time value",
-            "translation": "not a time value",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "not a date value",
-            "key": "not a date value",
-            "message": "not a date value",
-            "translation": "not a date value",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "not a datetime value",
-            "key": "not a datetime value",
-            "message": "not a datetime value",
-            "translation": "not a datetime value",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "not a boolean string value",
-            "key": "not a boolean string value",
-            "message": "not a boolean string value",
-            "translation": "not a boolean string value",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "View error",
             "key": "View error",
             "message": "View error",
@@ -590,6 +540,56 @@
             "fuzzy": true
         },
         {
+            "id": "unsupported type: {TypeOfinput}",
+            "key": "unsupported type: %[1]s",
+            "message": "unsupported type: {TypeOfinput}",
+            "translation": "unsupported type: %[1]s",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "TypeOfinput",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "values.TypeOf(input)"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "not a time value",
+            "key": "not a time value",
+            "message": "not a time value",
+            "translation": "not a time value",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "not a date value",
+            "key": "not a date value",
+            "message": "not a date value",
+            "translation": "not a date value",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "not a datetime value",
+            "key": "not a datetime value",
+            "message": "not a datetime value",
+            "translation": "not a datetime value",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "not a boolean string value",
+            "key": "not a boolean string value",
+            "message": "not a boolean string value",
+            "translation": "not a boolean string value",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Bad Request",
             "key": "Bad Request",
             "message": "Bad Request",
@@ -757,8 +757,8 @@
             "message": "{FastMinutes}-{SlowMinutes} minutes",
             "translation": {
                 "select": {
-                    "arg": "FastMinutes",
                     "feature": "plural",
+                    "arg": "FastMinutes",
                     "cases": {
                         "=0": {
                             "msg": "less than a minute"
