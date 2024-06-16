@@ -24,6 +24,7 @@ import (
 
 	clStrings "github.com/go-corelibs/strings"
 	beFsGormDB "github.com/go-enjin/be/drivers/fs/db/gorm"
+	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
 )
@@ -81,14 +82,8 @@ func (s CGormDBPathSupport[MakeTypedFeature]) initGormDBPathSupport(f *CFeature[
 
 func (s CGormDBPathSupport[MakeTypedFeature]) startupGormDBPathSupport(f *CFeature[MakeTypedFeature], ctx *cli.Context) (err error) {
 	for _, mgdb := range s._gormSupportBuild {
-		var ok bool
-		var db *gorm.DB
-		if v := f.Enjin.MustDB(mgdb.connection); v != nil {
-			if db, ok = v.(*gorm.DB); !ok {
-				err = fmt.Errorf("connection error: %v; expected *gorm.DB, found %T", mgdb.connection, v)
-				return
-			}
-		} else {
+		var db feature.DataBase
+		if db = f.Enjin.MustDB(mgdb.connection); db == nil {
 			err = fmt.Errorf("database connection not found: %v", mgdb.connection)
 			return
 		}
@@ -98,7 +93,7 @@ func (s CGormDBPathSupport[MakeTypedFeature]) startupGormDBPathSupport(f *CFeatu
 		}
 		var gfs *beFsGormDB.DBFileSystem
 		log.DebugF("mounting gorm db: mount=%v, path=%v, table=%v - %v", mgdb.mount, mgdb.path, table, mgdb.connection)
-		if gfs, err = beFsGormDB.New(f.Tag().String(), mgdb.path, table, mgdb.connection, db); err != nil {
+		if gfs, err = beFsGormDB.New(f.Tag().String(), mgdb.path, table, mgdb.connection, db.GormDB()); err != nil {
 			log.FatalF("error mounting gorm db: %v", err)
 		} else {
 			f.MountPathRWFS(mgdb.path, mgdb.mount, gfs)
