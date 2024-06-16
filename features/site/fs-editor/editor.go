@@ -193,6 +193,17 @@ func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
 	return
 }
 
+func (f *CFeature) ListPageContextFields() (kebabs []string) {
+	return []string{
+		"title", "description",
+		"type", "created", "updated", "layout",
+		"thumbnail-url", "thumbnail-alt",
+		"no-page-indexing", "no-search-indexing",
+		"redirect",
+		"translates",
+	}
+}
+
 func (f *CFeature) MakePageContextFields(r *http.Request) (list page_fields.Fields) {
 	currentLang := message.GetTag(r)
 	printer := message.GetPrinter(r)
