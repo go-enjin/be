@@ -21,12 +21,12 @@
 .PHONY: be-update local unlocal tidy
 .PHONY: deps fmt reportcard
 
-MAKEFILE_VERSION = v0.0.5
+MAKEFILE_VERSION = v0.0.6
 
 SHELL = /bin/bash
 
-GOLANG ?= 1.21.6
-GO_MOD ?= 1021
+GOLANG ?= 1.22.4
+GO_MOD ?= 1022
 
 GOIMPORT_LOCALS += github.com/go-corelibs
 GOIMPORT_LOCALS += github.com/go-curses
@@ -46,12 +46,36 @@ GOTS_GO_PACKAGE := github.com/go-enjin/go-stdlib-text-scanner
 GOTS_LOCAL_PATH := ../../../github.com/go-enjin/go-stdlib-text-scanner
 
 # Go-CoreLibs packages
-
 CL_LOCAL_PATH ?= ../../go-corelibs
 _FOUND_CORELIBS := $(shell \
 	grep -h '"github.com/go-corelibs/' `find-go` \
 	| perl -pe 's!^[^"]*"github.com/go-corelibs/([^"/]*).*\s*$$!$$1\n!' \
 	| sort -u \
+)
+
+# Unit testing
+CLEAN_FILES ?= coverage.{out,html} go_*.test
+GOTESTS_SKIP ?=
+_GOTEST_SKIP := $(shell \
+        echo "${GOTESTS_SKIP}" \
+                | perl -e '@s=();while(<>){s/^\s*(.+?)\s*$$/$$1/;chomp;push(@s,$$_);};print join("/",@s);' \
+)
+GOTESTS_ARGV ?= ./pkg/enjinql
+
+COVER_PROFILE ?= coverage.out
+COVER_MODE    ?= atomic
+COVER_PKG     ?= ${GOTESTS_ARGV}
+
+CONVEY_HOST    ?= 0.0.0.0
+CONVEY_PORT    ?= 8080
+CONVEY_POLL    ?= 500ms
+CONVEY_DEPTH   ?= -1
+CONVEY_BROWSER ?= false
+CONVEY_EXCLUDE ?=
+CONVEY_WORKDIR ?= .
+_CONVEY_EXCLUDED := $(shell \
+        echo "${CONVEY_EXCLUDE}" \
+                | perl -e '@s=();while(<>){s/^\s*(.+?)\s*$$/$$1/;chomp;push(@s,$$_);};print join(",",@s);' \
 )
 
 
@@ -286,3 +310,63 @@ reportcard:
 	  | while read LINE; do \
 	    echo "$${LINE}\n"; \
 	  done`
+
+clean:
+	@if [ -n "${CLEAN_FILES}" ]; then \
+		rm -fv "${CLEAN_FILES}"; \
+	fi
+
+test:
+	@if [ -n "${_GOTEST_SKIP}" ]; then \
+		${CMD} go test \
+			-race -v -tags='all' \
+			-skip "${_GOTEST_SKIP}" \
+			${GOTESTS_ARGV}; \
+	else \
+		${CMD} go test -race -v -tags='all' ${GOTESTS_ARGV}; \
+	fi
+
+coverage:
+	@if [ -n "${_GOTEST_SKIP}" ]; then \
+		${CMD} go test -race -v \
+			-skip "${_GOTEST_SKIP}" \
+			-coverprofile=${COVER_PROFILE} \
+			-covermode=${COVER_MODE} \
+			-coverpkg="${COVER_PKG}" \
+			-v ${GOTESTS_ARGV}; \
+	else \
+		${CMD} go test -race -v \
+			-coverprofile=${COVER_PROFILE} \
+			-covermode=${COVER_MODE} \
+			-coverpkg="${COVER_PKG}" \
+			${GOTESTS_ARGV}; \
+	fi
+	@go tool cover -html=${COVER_PROFILE} -o=coverage.html
+	@go tool cover -func=${COVER_PROFILE}
+
+goconvey:
+	@echo "# running goconvey (${CONVEY_HOST}:${CONVEY_PORT};@${CONVEY_POLL})"
+	@echo "# (press <CTRL+c> to stop)"
+	@if [ -n "${_CONVEY_EXCLUDED}" ]; then \
+		${CMD} goconvey \
+			-host=${CONVEY_HOST} \
+			-port=${CONVEY_PORT} \
+			-poll=${CONVEY_POLL} \
+			-depth=${CONVEY_DEPTH} \
+			-workDir=${CONVEY_WORKDIR} \
+			-launchBrowser=${CONVEY_BROWSER} \
+			-excludedDirs=${_CONVEY_EXCLUDED}; \
+	else \
+		${CMD} goconvey \
+			-host=${CONVEY_HOST} \
+			-port=${CONVEY_PORT} \
+			-poll=${CONVEY_POLL} \
+			-depth=${CONVEY_DEPTH} \
+			-workDir=${CONVEY_WORKDIR} \
+			-launchBrowser=${CONVEY_BROWSER}; \
+	fi
+
+gofmt:
+	@echo "# running gofmt/goimports ./..."
+	@find * -name "*.go" -print0 | xargs -0 \
+		goimports -w -local 'github.com/go-corelibs,github.com/go-curses,github.com/go-enjin'
