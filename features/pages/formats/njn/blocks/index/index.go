@@ -27,13 +27,13 @@ import (
 
 	"github.com/iancoleman/strcase"
 
+	"github.com/go-corelibs/enjinql"
 	"github.com/go-corelibs/slices"
 	clStrings "github.com/go-corelibs/strings"
+	"github.com/go-corelibs/values"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
-	"github.com/go-enjin/be/pkg/pageql"
 	"github.com/go-enjin/be/pkg/pages"
 	"github.com/go-enjin/be/pkg/request/argv"
 )
@@ -109,8 +109,8 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	}
 
 	numPerPage, pageIndex, pageNumber := 10, 0, 1
-	if v, ee := maps.ExtractIntValue("index-num-per-page", data); ee != nil {
-		err = ee
+	if v, ok := values.ExtractIntValue("index-num-per-page", data); !ok {
+		err = fmt.Errorf("unsupported value type for index-num-per-page key")
 		return
 	} else if v > 0 {
 		numPerPage = v
@@ -173,7 +173,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 	searchEnabled := false
 	searchNonceKey := fmt.Sprintf("index-block--%v--search-form", tag)
 	if check, ok := data["search-enabled"]; ok {
-		searchEnabled = maps.ExtractBoolValue(check)
+		searchEnabled, _ = values.ToBoolValue(check)
 	}
 
 	var argvBlockPresent bool
@@ -269,12 +269,12 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		return
 	}
 
-	if _, perr := pageql.CompileQuery(query); perr != nil {
-		err = fmt.Errorf("query error:\n%v", perr.Pretty())
+	if _, perr := enjinql.ParseSyntax(query); perr != nil {
+		err = fmt.Errorf("query error: %v", perr)
 		return
 	}
 
-	found := f.Enjin.MatchQL(query)
+	found, _ := f.Enjin.PerformQueryPages(reqArgv.Request, query)
 	totalFound := len(found)
 	found = filters.FilterPages(found)
 	totalFiltered := len(found)
@@ -293,7 +293,7 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 
 			searchRanked := true
 			if ranked, ok := data["search-ranked"]; ok {
-				searchRanked = maps.ExtractBoolValue(ranked)
+				searchRanked, _ = values.ToBoolValue(ranked)
 			}
 
 			if searchRanked {
