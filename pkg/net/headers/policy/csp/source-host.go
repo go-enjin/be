@@ -5,9 +5,9 @@
 package csp
 
 import (
-	"regexp"
 	"strings"
 
+	"github.com/go-corelibs/rxp"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -23,8 +23,41 @@ type HostSource struct {
 }
 
 var (
-	rxHostSource       = regexp.MustCompile(`^\s*([a-z0-9]+[-.a-z0-9]*:)?(?://)?([^:/\s]+)?(:\d+)?(/.+?)?\s*$`)
-	rxHostSourceDomain = regexp.MustCompile(`^\s*([a-zA-Z0-9][-a-zA-Z0-9]*\\.)+[A-Za-z]{2, 6}\s*$`)
+	//rxHostSource = `^\s*([a-z0-9]+[-.a-z0-9]*:)?(?://)?([^:/\s]+)?(:\d+)?(/.+?)?\s*$`
+	rxHostSource = rxp.Pattern{
+		rxp.Caret(),
+		rxp.S("*"),
+		rxp.Group("c", "??",
+			rxp.R("a-z0-9", "+"),
+			rxp.R("-.a-z0-9", "*"),
+			rxp.Text(":"),
+		),
+		rxp.Text("//", "??"),
+		rxp.R(":/ \t", "+", "?", "c"),
+		rxp.Group(
+			rxp.Text(":"),
+			rxp.D("+"),
+		),
+		rxp.Group("c", "?",
+			rxp.Text("/"),
+			rxp.Dot("+?"),
+		),
+		rxp.S("*"),
+		rxp.Dollar(),
+	}
+
+	//rxHostSourceDomain = `^\s*([a-zA-Z0-9][-a-zA-Z0-9*]*\\.)+[A-Za-z]{2,6}\s*$`
+	rxHostSourceDomain = rxp.Pattern{
+		rxp.Caret(),
+		rxp.Group("+", "c",
+			rxp.R("a-zA-Z0-9*"),
+			rxp.R("-a-zA-Z0-9*", "*"),
+			rxp.Text(`.`),
+		),
+		rxp.R("a-zA-Z", "{2,6}"),
+		rxp.S("*"),
+		rxp.Dollar(),
+	}
 )
 
 func ParseHostSource(input string) (s HostSource, ok bool) {

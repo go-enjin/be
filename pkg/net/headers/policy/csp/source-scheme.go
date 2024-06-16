@@ -6,9 +6,9 @@ package csp
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
+	"github.com/go-corelibs/rxp"
 	"github.com/go-enjin/be/pkg/log"
 )
 
@@ -19,7 +19,15 @@ const SchemeSourceType string = "scheme-source"
 type SchemeSource string
 
 var (
-	rxSchemeSource = regexp.MustCompile(`^\s*([a-z0-9][-+.a-z0-9]*):\s*$`)
+	//rxSchemeSource = `^\s*([a-z0-9][-+.a-z0-9]*):\s*$`
+	rxSchemeSource = rxp.Pattern{}.
+		Caret().S("*").
+		Group("c",
+			rxp.R("a-z0-9"),
+			rxp.R("-+.a-z0-9", "*"),
+		).
+		Text(":").S("*").
+		Dollar()
 )
 
 func ParseSchemeSource(input string) (s SchemeSource, ok bool) {

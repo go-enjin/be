@@ -255,10 +255,10 @@ func (h *PolicyHandler) ApplyHeaders(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Security-Policy", value)
 			// log.DebugF("setting request content security policy header: %v", value)
 		} else {
-			log.ErrorF("request with content security policy missing nonce: %#+v", policy)
+			log.WarnRF(r, "request with content security policy missing nonce: %s", policy.Value())
 		}
 	} else {
-		log.WarnF("request missing content security policy context")
+		log.WarnRF(r, "request missing content security policy context")
 	}
 }
 
