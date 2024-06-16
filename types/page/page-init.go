@@ -19,6 +19,7 @@ import (
 
 	"github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -101,7 +102,7 @@ func (p *CPage) parseContext(ctx context.Context) {
 	}
 
 	if created := ctx.String("Created", ""); created != "" {
-		if parsed, err := context.ParseTimeStructure(created); err == nil {
+		if parsed, err := page_fields.ParseTimeStructure(created); err == nil {
 			p.fields.CreatedAt = parsed
 			ctx.SetSpecific("Created", parsed)
 		} else {
@@ -112,7 +113,7 @@ func (p *CPage) parseContext(ctx context.Context) {
 	}
 
 	if updated := ctx.String("Updated", ""); updated != "" {
-		if parsed, err := context.ParseTimeStructure(updated); err == nil {
+		if parsed, err := page_fields.ParseTimeStructure(updated); err == nil {
 			p.fields.CreatedAt = parsed
 			ctx.SetSpecific("Updated", parsed)
 		} else {
@@ -123,7 +124,7 @@ func (p *CPage) parseContext(ctx context.Context) {
 	}
 
 	if deleted := ctx.String("Deleted", ""); deleted != "" {
-		if parsed, err := context.ParseTimeStructure(deleted); err == nil {
+		if parsed, err := page_fields.ParseTimeStructure(deleted); err == nil {
 			p.fields.DeletedAt.Time = parsed
 			p.fields.DeletedAt.Valid = true
 			ctx.SetSpecific("Deleted", parsed)

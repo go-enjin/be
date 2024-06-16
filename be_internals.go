@@ -20,6 +20,7 @@ import (
 
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 
 	"github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/feature"
@@ -150,22 +151,22 @@ func (e *Enjin) PublicUserActions() (actions feature.Actions) {
 	return
 }
 
-func (e *Enjin) MakePageContextField(key string, r *http.Request) (field *context.Field, ok bool) {
-	fields := context.Fields{}
+func (e *Enjin) MakePageContextField(key string, r *http.Request) (field *page_fields.Field, ok bool) {
+	list := page_fields.Fields{}
 
 	for _, fp := range e.GetPageContextFieldsProviders() {
 		for k, v := range fp.MakePageContextFields(r) {
-			if _, present := fields[k]; !present {
+			if _, present := list[k]; !present {
 				// no clobbering!
-				fields[k] = v
+				list[k] = v
 			}
 		}
 	}
 
-	if field, ok = fields[key]; ok {
+	if field, ok = list[key]; ok {
 		printer := message.GetPrinter(r)
 		parsers := e.PageContextParsers()
-		var fn context.Parser
+		var fn page_fields.Parser
 		if fn, ok = parsers[field.Format]; ok && fn != nil {
 			field.Parse = fn
 			field.Printer = printer
@@ -185,21 +186,21 @@ func (e *Enjin) MakePageContextField(key string, r *http.Request) (field *contex
 	return
 }
 
-func (e *Enjin) MakePageContextFields(r *http.Request) (fields context.Fields) {
-	fields = context.Fields{}
+func (e *Enjin) MakePageContextFields(r *http.Request) (list page_fields.Fields) {
+	list = page_fields.Fields{}
 
 	for _, fp := range e.GetPageContextFieldsProviders() {
 		for k, v := range fp.MakePageContextFields(r) {
-			if _, present := fields[k]; !present {
+			if _, present := list[k]; !present {
 				// no clobbering!
-				fields[k] = v
+				list[k] = v
 			}
 		}
 	}
 
 	printer := message.GetPrinter(r)
 	parsers := e.PageContextParsers()
-	for k, v := range fields {
+	for k, v := range list {
 		if fn := parsers[v.Format]; fn != nil {
 			v.Parse = fn
 			v.Printer = printer
@@ -211,16 +212,16 @@ func (e *Enjin) MakePageContextFields(r *http.Request) (fields context.Fields) {
 			}
 		} else {
 			log.ErrorRF(r, "%q field format not found: %q", k, v.Format)
-			delete(fields, k)
+			delete(list, k)
 		}
 	}
 
 	return
 }
 
-func (e *Enjin) PageContextParsers() (parsers context.Parsers) {
-	parsers = context.Parsers{} // return a copy, not the source
-	for k, fn := range context.DefaultParsers {
+func (e *Enjin) PageContextParsers() (parsers page_fields.Parsers) {
+	parsers = page_fields.Parsers{} // return a copy, not the source
+	for k, fn := range page_fields.DefaultParsers {
 		parsers[k] = fn
 	}
 	for _, fp := range e.GetPageContextParsersProviders() {

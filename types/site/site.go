@@ -25,13 +25,13 @@ import (
 
 	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/message"
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/signaling"
 	uses_actions "github.com/go-enjin/be/pkg/feature/uses-actions"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 )
 
 const (
@@ -224,7 +224,7 @@ func (f *CSiteFeature[M]) IsBackupProvider() (backup bool) {
 	return false
 }
 
-func (f *CSiteFeature[M]) SiteSettingsFields(r *http.Request) (fields beContext.Fields) {
+func (f *CSiteFeature[M]) SiteSettingsFields(r *http.Request) (fields page_fields.Fields) {
 	return
 }
 

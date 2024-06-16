@@ -18,6 +18,7 @@ import (
 	"html/template"
 
 	"github.com/go-corelibs/x-text/language"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 
 	"github.com/go-corelibs/context"
 	"github.com/go-corelibs/maps"
@@ -31,10 +32,10 @@ type ThemeAuthor struct {
 }
 
 type ThemeSupports struct {
-	Menus      MenuSupports              `json:"menus,omitempty"`
-	Layouts    []string                  `json:"layouts,omitempty"`
-	Locales    []language.Tag            `json:"locales,omitempty"`
-	Archetypes map[string]context.Fields `json:"archetypes,omitempty"`
+	Menus      MenuSupports                  `json:"menus,omitempty"`
+	Layouts    []string                      `json:"layouts,omitempty"`
+	Locales    []language.Tag                `json:"locales,omitempty"`
+	Archetypes map[string]page_fields.Fields `json:"archetypes,omitempty"`
 }
 
 type ThemeConfig struct {
@@ -87,7 +88,7 @@ func (tc *ThemeConfig) Copy() (config *ThemeConfig) {
 			Menus:      tc.Supports.Menus[:],
 			Layouts:    tc.Supports.Layouts[:],
 			Locales:    tc.Supports.Locales[:],
-			Archetypes: make(map[string]context.Fields),
+			Archetypes: make(map[string]page_fields.Fields),
 		},
 		Context: tc.Context.Copy(),
 	}

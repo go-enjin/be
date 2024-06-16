@@ -33,6 +33,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 	"github.com/go-enjin/be/pkg/request"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/site"
@@ -123,9 +124,9 @@ func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
 	return
 }
 
-func (f *CFeature) SiteSettings(r *http.Request) (settings map[string]beContext.Fields, order []string) {
+func (f *CFeature) SiteSettings(r *http.Request) (settings map[string]page_fields.Fields, order []string) {
 
-	settings = make(map[string]beContext.Fields)
+	settings = make(map[string]page_fields.Fields)
 	for _, sf := range f.Site().SiteFeatures() {
 		if fields := sf.SiteSettingsFields(r); fields.Len() > 0 {
 			settings[sf.SiteFeatureKey()] = fields
@@ -305,7 +306,7 @@ func (f *CFeature) ReceiveSettingsChanges(w http.ResponseWriter, r *http.Request
 	errs := make(map[string]error)
 	settings, settingGroups := f.SiteSettings(r)
 
-	lookup := func(key string) (field *beContext.Field, ok bool) {
+	lookup := func(key string) (field *page_fields.Field, ok bool) {
 		for _, group := range settingGroups {
 			if field, ok = settings[group].Lookup(key); ok {
 				return

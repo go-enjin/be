@@ -25,10 +25,10 @@ import (
 
 	"github.com/go-corelibs/maps"
 	"github.com/go-corelibs/x-text/message"
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	site_including "github.com/go-enjin/be/pkg/feature/site-including"
 	"github.com/go-enjin/be/pkg/menu"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/site"
 )
@@ -193,11 +193,11 @@ func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
 	return
 }
 
-func (f *CFeature) MakePageContextFields(r *http.Request) (fields beContext.Fields) {
+func (f *CFeature) MakePageContextFields(r *http.Request) (list page_fields.Fields) {
 	currentLang := message.GetTag(r)
 	printer := message.GetPrinter(r)
 
-	fields = beContext.Fields{
+	list = page_fields.Fields{
 		"title": {
 			Key:      "title",
 			Tab:      "page",
@@ -306,7 +306,7 @@ func (f *CFeature) MakePageContextFields(r *http.Request) (fields beContext.Fiel
 	}
 
 	if f.Enjin.SiteDefaultLanguage().String() != currentLang.String() {
-		fields["translates"] = &beContext.Field{
+		list["translates"] = &page_fields.Field{
 			Key:      "translates",
 			Tab:      "page",
 			Label:    printer.Sprintf("Specify the original page on this site that this page translates"),

@@ -33,6 +33,7 @@ import (
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/pages"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 )
 
 var (
@@ -108,10 +109,10 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) MakePageContextFields(r *http.Request) (fields context.Fields) {
+func (f *CFeature) MakePageContextFields(r *http.Request) (list page_fields.Fields) {
 	printer := message.GetPrinter(r)
 	id, _ := uuid.NewV4()
-	fields = context.Fields{
+	list = page_fields.Fields{
 		"permalink": {
 			Key:          "permalink",
 			Tab:          "page",

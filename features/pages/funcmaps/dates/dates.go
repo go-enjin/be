@@ -26,6 +26,7 @@ import (
 	clContext "github.com/go-corelibs/context"
 	"github.com/go-corelibs/maths"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 )
 
 var _ Feature = (*CFeature)(nil)
@@ -96,11 +97,11 @@ func DateFormat(input interface{}) (formatted string, err error) {
 	switch v := input.(type) {
 	case string:
 		var t time.Time
-		if t, err = beContext.ParseTimeStructure(v); err == nil {
-			formatted = t.Format(beContext.DateLayout)
+		if t, err = page_fields.ParseTimeStructure(v); err == nil {
+			formatted = t.Format(page_fields.DateLayout)
 		}
 	case time.Time:
-		formatted = v.Format(beContext.DateLayout)
+		formatted = v.Format(page_fields.DateLayout)
 	default:
 		err = fmt.Errorf("unsupported input type: %T", input)
 	}
@@ -111,11 +112,11 @@ func TimeFormat(input interface{}) (formatted string, err error) {
 	switch v := input.(type) {
 	case string:
 		var t time.Time
-		if t, err = beContext.ParseTimeStructure(v); err == nil {
-			formatted = t.Format(beContext.TimeLayout)
+		if t, err = page_fields.ParseTimeStructure(v); err == nil {
+			formatted = t.Format(page_fields.TimeLayout)
 		}
 	case time.Time:
-		formatted = v.Format(beContext.TimeLayout)
+		formatted = v.Format(page_fields.TimeLayout)
 	default:
 		err = fmt.Errorf("unsupported input type: %T", input)
 	}
@@ -126,11 +127,11 @@ func DateTimeFormat(input interface{}) (formatted string, err error) {
 	switch v := input.(type) {
 	case string:
 		var t time.Time
-		if t, err = beContext.ParseTimeStructure(v); err == nil {
-			formatted = t.Format(beContext.DateTimeLayout)
+		if t, err = page_fields.ParseTimeStructure(v); err == nil {
+			formatted = t.Format(page_fields.DateTimeLayout)
 		}
 	case time.Time:
-		formatted = v.Format(beContext.DateTimeLayout)
+		formatted = v.Format(page_fields.DateTimeLayout)
 	default:
 		err = fmt.Errorf("unsupported input type: %T", input)
 	}

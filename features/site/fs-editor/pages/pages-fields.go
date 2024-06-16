@@ -19,19 +19,19 @@ import (
 
 	"github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/message"
-	beContext "github.com/go-enjin/be/pkg/context"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 )
 
-func (f *CFeature) MakePageArchetypeContextFields(r *http.Request, name string) (fields beContext.Fields) {
+func (f *CFeature) MakePageArchetypeContextFields(r *http.Request, name string) (list page_fields.Fields) {
 
 	tc := f.Enjin.MustGetTheme().GetConfig()
-	fields = beContext.Fields{}
+	list = page_fields.Fields{}
 	basename := path.Base(name)
 
 	if found, ok := tc.Supports.Archetypes[basename]; ok {
 		// general fields for any format of archetype
 		for k, v := range found {
-			fields[k] = v
+			list[k] = v
 		}
 	}
 
@@ -39,23 +39,23 @@ func (f *CFeature) MakePageArchetypeContextFields(r *http.Request, name string) 
 		if found, ok := tc.Supports.Archetypes[name]; ok {
 			// fields for a specific archetype, clobbering generals
 			for k, v := range found {
-				fields[k] = v
+				list[k] = v
 			}
 		}
 	}
 
 	printer := message.GetPrinter(r)
 	parsers := f.Enjin.PageContextParsers()
-	fields.Init(printer, parsers)
+	list.Init(printer, parsers)
 	return
 }
 
-func (f *CFeature) MakePageContextFields(r *http.Request, archetype string) (fields beContext.Fields) {
-	fields = f.Enjin.MakePageContextFields(r)
+func (f *CFeature) MakePageContextFields(r *http.Request, archetype string) (list page_fields.Fields) {
+	list = f.Enjin.MakePageContextFields(r)
 	for k, v := range f.MakePageArchetypeContextFields(r, archetype) {
-		if _, present := fields[k]; !present {
+		if _, present := list[k]; !present {
 			// no clobbering allowed here
-			fields[k] = v
+			list[k] = v
 		}
 	}
 	return

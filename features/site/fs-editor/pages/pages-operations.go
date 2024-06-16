@@ -30,6 +30,7 @@ import (
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -46,7 +47,7 @@ func IsTmplPage(format string) (yes bool) {
 	return
 }
 
-func AreVariablesAllowed(key, format string, fields context.Fields) (allowed bool) {
+func AreVariablesAllowed(key, format string, fields page_fields.Fields) (allowed bool) {
 	if IsTmplPage(format) {
 		// allow custom fields
 		return true

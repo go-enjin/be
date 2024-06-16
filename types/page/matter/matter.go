@@ -28,6 +28,7 @@ import (
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 )
 
 func init() {
@@ -128,7 +129,7 @@ func ParsePageMatter(origin string, path string, created, updated time.Time, raw
 		if t = ctx.Time(key, time.Time{}); t.Unix() == 0 {
 			if v := ctx.String(key, ""); v != "" {
 				var e error
-				if t, e = beContext.ParseTimeStructure(v); e != nil {
+				if t, e = page_fields.ParseTimeStructure(v); e != nil {
 					log.ErrorF("error parsing page matter .%s timestamp: %v", key, e)
 					continue
 				}

@@ -18,6 +18,7 @@ import (
 	"net/http"
 
 	"github.com/go-corelibs/x-text/language"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 
 	"github.com/go-corelibs/context"
 )
@@ -56,12 +57,12 @@ type FileProvider interface {
 
 type PageContextParsersProvider interface {
 	Feature
-	PageContextParsers() (fields context.Parsers)
+	PageContextParsers() (fields page_fields.Parsers)
 }
 
 type PageContextFieldsProvider interface {
 	Feature
-	MakePageContextFields(r *http.Request) (fields context.Fields)
+	MakePageContextFields(r *http.Request) (fields page_fields.Fields)
 }
 
 type PageProvider interface {

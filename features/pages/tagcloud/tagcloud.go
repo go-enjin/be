@@ -40,10 +40,10 @@ import (
 
 	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/message"
-	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 	"github.com/go-enjin/be/pkg/request/argv"
 	"github.com/go-enjin/be/pkg/signals"
 	"github.com/go-enjin/be/types/page"
@@ -160,9 +160,9 @@ func (f *CFeature) GetPageTagCloud(shasum string) (tags feature.TagCloud) {
 	return
 }
 
-func (f *CFeature) MakePageContextFields(r *http.Request) (fields context.Fields) {
+func (f *CFeature) MakePageContextFields(r *http.Request) (list page_fields.Fields) {
 	printer := message.GetPrinter(r)
-	fields = context.Fields{
+	list = page_fields.Fields{
 		"no-tag-indexing": {
 			Key:      "no-tag-indexing",
 			Tab:      "page",

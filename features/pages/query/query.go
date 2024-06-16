@@ -27,6 +27,7 @@ import (
 	"github.com/go-corelibs/context"
 	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 )
 
 var (
@@ -80,9 +81,9 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) MakePageContextFields(r *http.Request) (fields context.Fields) {
+func (f *CFeature) MakePageContextFields(r *http.Request) (list page_fields.Fields) {
 	//printer := message.GetPrinter(r)
-	fields = context.Fields{
+	list = page_fields.Fields{
 		"query": {
 			Key:    "query",
 			Tab:    "query",

@@ -30,12 +30,12 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/pages/fields"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
-func (f *CFeature) ParseFormToDraft(pm *matter.PageMatter, fields fields.Fields, form context.Context, info *feature.EditorFile, r *http.Request) (modified *matter.PageMatter, redirect string, errs map[string]error) {
+func (f *CFeature) ParseFormToDraft(pm *matter.PageMatter, fields page_fields.Fields, form context.Context, info *feature.EditorFile, r *http.Request) (modified *matter.PageMatter, redirect string, errs map[string]error) {
 	var err error
 	eid := userbase.GetCurrentEID(r)
 	printer := message.GetPrinter(r)

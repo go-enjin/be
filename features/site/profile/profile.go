@@ -29,6 +29,7 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 	"github.com/go-enjin/be/pkg/request"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/site"
@@ -224,10 +225,10 @@ func (f *CFeature) SiteFeatureMenu(r *http.Request) (m menu.Menu) {
 	return
 }
 
-func (f *CFeature) SiteSettingsFields(r *http.Request) (fields beContext.Fields) {
+func (f *CFeature) SiteSettingsFields(r *http.Request) (list page_fields.Fields) {
 	printer := message.GetPrinter(r)
 
-	fields = beContext.Fields{
+	list = page_fields.Fields{
 		"display-name": {
 			Key:          "display-name",
 			Tab:          "user",
@@ -255,7 +256,7 @@ func (f *CFeature) SiteSettingsFields(r *http.Request) (fields beContext.Fields)
 			}
 		}
 
-		fields["profile-image"] = &beContext.Field{
+		list["profile-image"] = &page_fields.Field{
 			Key:          "profile-image",
 			Tab:          "user",
 			Label:        printer.Sprintf("Profile Image"),
@@ -283,7 +284,7 @@ func (f *CFeature) SiteSettingsFields(r *http.Request) (fields beContext.Fields)
 				labels[tag.String()] = name
 			}
 		}
-		fields["locale"] = &beContext.Field{
+		list["locale"] = &page_fields.Field{
 			Key:          "locale",
 			Tab:          "user",
 			Label:        printer.Sprintf("Locale"),

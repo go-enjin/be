@@ -32,6 +32,7 @@ import (
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 )
 
 type EnjinBase interface {
@@ -183,9 +184,9 @@ type Internals interface {
 	PublicUserActions() (actions Actions)
 	ValidateUserRequest(action Action, w http.ResponseWriter, r *http.Request) (valid bool)
 
-	PageContextParsers() (parsers context.Parsers)
-	MakePageContextField(key string, r *http.Request) (field *context.Field, ok bool)
-	MakePageContextFields(r *http.Request) (fields context.Fields)
+	PageContextParsers() (parsers page_fields.Parsers)
+	MakePageContextField(key string, r *http.Request) (field *page_fields.Field, ok bool)
+	MakePageContextFields(r *http.Request) (fields page_fields.Fields)
 	ApplyPageContextUpdaters(r *http.Request, pages ...Page)
 
 	GetFormatProviders() []PageFormatProvider

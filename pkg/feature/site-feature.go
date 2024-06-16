@@ -20,8 +20,8 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/go-corelibs/x-text/message"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/menu"
 )
@@ -58,7 +58,7 @@ type SiteFeature interface {
 	SetupSiteFeature(s Site) (err error)
 	RouteSiteFeature(r chi.Router)
 
-	SiteSettingsFields(r *http.Request) (fields beContext.Fields)
+	SiteSettingsFields(r *http.Request) (fields page_fields.Fields)
 	SiteSettingsPanel(settingsPath string) (serve, handle http.HandlerFunc)
 }
 

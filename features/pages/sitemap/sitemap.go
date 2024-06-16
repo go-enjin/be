@@ -28,11 +28,11 @@ import (
 
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 	"github.com/go-enjin/be/pkg/signals"
 
 	"github.com/go-corelibs/slices"
 	"github.com/go-corelibs/values"
-	"github.com/go-enjin/be/pkg/context"
 
 	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/pkg/feature"
@@ -144,14 +144,14 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) PageContextParsers() (parsers context.Parsers) {
-	parsers = context.Parsers{
+func (f *CFeature) PageContextParsers() (parsers page_fields.Parsers) {
+	parsers = page_fields.Parsers{
 		"sitemap-change-freq": f.ChangeFreqParser,
 	}
 	return
 }
 
-func (f *CFeature) ChangeFreqParser(spec *context.Field, input interface{}) (parsed interface{}, err error) {
+func (f *CFeature) ChangeFreqParser(spec *page_fields.Field, input interface{}) (parsed interface{}, err error) {
 	switch t := input.(type) {
 	case string:
 		t = strings.ToLower(t)
@@ -166,9 +166,9 @@ func (f *CFeature) ChangeFreqParser(spec *context.Field, input interface{}) (par
 	return
 }
 
-func (f *CFeature) MakePageContextFields(r *http.Request) (fields context.Fields) {
+func (f *CFeature) MakePageContextFields(r *http.Request) (list page_fields.Fields) {
 	printer := message.GetPrinter(r)
-	fields = context.Fields{
+	list = page_fields.Fields{
 		"sitemap-ignored": {
 			Key:          "sitemap-ignored",
 			Tab:          "page",

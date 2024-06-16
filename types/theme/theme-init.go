@@ -24,6 +24,7 @@ import (
 	"github.com/maruel/natural"
 
 	"github.com/go-corelibs/x-text/language"
+	"github.com/go-enjin/be/pkg/pages/page_fields"
 
 	"github.com/go-corelibs/context"
 	"github.com/go-corelibs/maps"
@@ -77,7 +78,7 @@ func (t *CTheme) makeConfig(ctx context.Context) (config *feature.ThemeConfig) {
 		FontawesomeLinks: make(map[string]string),
 		Context:          context.New(),
 		Supports: feature.ThemeSupports{
-			Archetypes: map[string]context.Fields{},
+			Archetypes: map[string]page_fields.Fields{},
 		},
 	}
 
@@ -106,9 +107,9 @@ func (t *CTheme) makeConfig(ctx context.Context) (config *feature.ThemeConfig) {
 					if list, ok := vv.(map[string]interface{}); ok {
 						for _, vvv := range list {
 							if item, ok := vvv.(map[string]interface{}); ok {
-								field := context.ParseField(item)
+								field := page_fields.ParseField(item)
 								if _, present := config.Supports.Archetypes[archetype]; !present {
-									config.Supports.Archetypes[archetype] = context.Fields{}
+									config.Supports.Archetypes[archetype] = page_fields.Fields{}
 								}
 								config.Supports.Archetypes[archetype][field.Key] = field
 							}
