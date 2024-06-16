@@ -98,13 +98,9 @@ type Service interface {
 	ServeStatusJSON(status int, v interface{}, w http.ResponseWriter, r *http.Request) (err error)
 	ServeData(data []byte, mime string, w http.ResponseWriter, r *http.Request)
 
-	MatchQL(query string) (pages []Page)
-	MatchStubsQL(query string) (stubs []*PageStub)
-	SelectQL(query string) (selected map[string]interface{})
-
-	CheckMatchQL(query string) (pages []Page, err error)
-	CheckMatchStubsQL(query string) (stubs []*PageStub, err error)
-	CheckSelectQL(query string) (selected map[string]interface{}, err error)
+	PerformQuery(r *http.Request, format string, argv ...interface{}) (stubs PageStubs, err error)
+	PerformQueryPages(r *http.Request, format string, argv ...interface{}) (pages Pages, err error)
+	PerformLookup(format string, argv ...interface{}) (columns []string, results []context.Context, err error)
 
 	FindPageStub(shasum string) (stub *PageStub)
 	FindPage(r *http.Request, tag language.Tag, url string) (p Page)
