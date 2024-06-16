@@ -17,12 +17,12 @@ package menus
 import (
 	"net/http"
 
+	"github.com/go-corelibs/maps"
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
-	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
 )
 
@@ -82,7 +82,7 @@ func (f *CFeature) GetAllMenus() (allMenus map[language.Tag]map[string]menu.Menu
 	allMenus = map[language.Tag]map[string]menu.Menu{}
 	for _, mp := range f.Enjin.GetMenuProviders() {
 		for locale, m := range mp.GetAllMenus() {
-			maps.MakeTypedKey(locale, allMenus)
+			maps.MakeTypedKey(allMenus, locale)
 			for name, mm := range m {
 				allMenus[locale][name] = mm
 			}

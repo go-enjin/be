@@ -20,6 +20,7 @@ import (
 	"github.com/mrz1836/go-sanitize"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/maps"
 	clPath "github.com/go-corelibs/path"
 	sha "github.com/go-corelibs/shasum"
 	"github.com/go-enjin/be/pkg/feature"
@@ -29,7 +30,6 @@ import (
 	uses_actions "github.com/go-enjin/be/pkg/feature/uses-actions"
 	uses_enjin_salt "github.com/go-enjin/be/pkg/feature/uses-enjin-salt"
 	uses_kvc "github.com/go-enjin/be/pkg/feature/uses-kvc"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 var (

@@ -25,7 +25,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-corelibs/maps"
 )
 
 func (f *DBFileSystem) GormTx() (tx *gorm.DB) {

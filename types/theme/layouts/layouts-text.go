@@ -18,10 +18,10 @@ import (
 	textTemplate "text/template"
 
 	"github.com/go-corelibs/context"
+	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 func (l *Layouts) NewTextTemplate(enjin feature.Internals, name string, ctx context.Context) (tmpl *textTemplate.Template, err error) {

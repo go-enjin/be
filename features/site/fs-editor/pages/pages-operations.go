@@ -23,13 +23,13 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/go-corelibs/context"
+	"github.com/go-corelibs/maps"
 	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/slices"
 	"github.com/go-corelibs/x-text/message"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/types/page/matter"
 )
 

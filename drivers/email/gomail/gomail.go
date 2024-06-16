@@ -26,10 +26,10 @@ import (
 	"github.com/mrz1836/go-sanitize"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 const Tag feature.Tag = "drivers-email-gomail"

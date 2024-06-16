@@ -24,9 +24,9 @@ import (
 	store_go_cache "github.com/eko/gocache/store/go_cache/v4"
 	"github.com/patrickmn/go-cache"
 
+	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 var _ feature.KeyValueCache = (*cMemoryCache)(nil)

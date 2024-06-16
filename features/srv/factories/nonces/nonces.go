@@ -22,11 +22,11 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/pkg/feature"
 	uses_kvc "github.com/go-enjin/be/pkg/feature/uses-kvc"
 	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 var (
@@ -199,7 +199,7 @@ func (f *CFeature) create(key string) (value string) {
 	}
 
 	value = f.randomValue()
-	maps.MakeTypedKey(key, f.nonces)
+	maps.MakeTypedKey(f.nonces, key)
 	f.nonces[key][value] = time.Now().Add(f.duration)
 	if err = kvs.SetMarshal(bucket, value, f.nonces[key][value]); err != nil {
 		panic(err)

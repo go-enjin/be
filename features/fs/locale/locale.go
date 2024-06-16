@@ -21,10 +21,10 @@ import (
 
 	"github.com/go-corelibs/x-text/message/catalog"
 
+	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
 	pkgLangCatalog "github.com/go-enjin/be/pkg/lang/catalog"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 const Tag feature.Tag = "fs-locale"

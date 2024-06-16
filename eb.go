@@ -25,6 +25,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-corelibs/context"
+	"github.com/go-corelibs/maps"
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
 	beCli "github.com/go-enjin/be/pkg/cli"
@@ -34,7 +35,6 @@ import (
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/headers"
 	"github.com/go-enjin/be/pkg/signals"
 )

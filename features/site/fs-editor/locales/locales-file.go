@@ -21,6 +21,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/go-corelibs/context"
+	"github.com/go-corelibs/maps"
 	"github.com/go-corelibs/slices"
 	"github.com/go-corelibs/words"
 	"github.com/go-corelibs/x-text/language"
@@ -29,7 +30,6 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/request/argv"
 	"github.com/go-enjin/be/pkg/userbase"
 )

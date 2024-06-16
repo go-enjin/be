@@ -25,12 +25,12 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
 	uses_actions "github.com/go-enjin/be/pkg/feature/uses-actions"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/signals"
 	"github.com/go-enjin/be/types/page"
 )

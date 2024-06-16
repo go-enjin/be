@@ -26,10 +26,10 @@ import (
 	"github.com/go-corelibs/x-text/language"
 
 	"github.com/go-corelibs/context"
+	"github.com/go-corelibs/maps"
 	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/types/theme/layouts"
 )

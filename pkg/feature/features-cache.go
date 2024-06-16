@@ -17,8 +17,8 @@ package feature
 import (
 	"fmt"
 
+	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 type FeaturesCache struct {
@@ -63,7 +63,7 @@ func (c *FeaturesCache) Add(f Feature) (err error) {
 }
 
 func (c *FeaturesCache) Tags() (list Tags) {
-	list = maps.TypedKeys(c.tags)
+	list = maps.Keys(c.tags)
 	return
 }
 

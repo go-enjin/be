@@ -23,11 +23,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/maps"
 	"github.com/go-corelibs/x-text/message"
 	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	site_including "github.com/go-enjin/be/pkg/feature/site-including"
-	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/site"

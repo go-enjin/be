@@ -21,6 +21,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/features/pages/formats/html"
 	"github.com/go-enjin/be/features/pages/formats/json"
 	"github.com/go-enjin/be/features/pages/formats/md"
@@ -30,7 +31,6 @@ import (
 	"github.com/go-enjin/be/features/pages/formats/tmpl"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 const Tag feature.Tag = "pages-formats"

@@ -20,7 +20,7 @@ import (
 	"github.com/go-corelibs/x-text/language"
 
 	"github.com/go-corelibs/context"
-	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/pkg/net/headers/policy/csp"
 	"github.com/go-enjin/be/pkg/net/headers/policy/permissions"
 )
@@ -79,7 +79,7 @@ func (tc *ThemeConfig) Copy() (config *ThemeConfig) {
 		RootStyles:            tc.RootStyles[:],
 		BlockStyles:           make(map[string][]template.CSS),
 		BlockThemes:           make(map[string]map[string]interface{}),
-		FontawesomeLinks:      maps.CopyBaseMap(tc.FontawesomeLinks),
+		FontawesomeLinks:      maps.CopyBaseType(tc.FontawesomeLinks),
 		FontawesomeClasses:    tc.FontawesomeClasses[:],
 		PermissionsPolicy:     tc.PermissionsPolicy[:],
 		ContentSecurityPolicy: tc.ContentSecurityPolicy,

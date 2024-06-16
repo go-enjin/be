@@ -21,11 +21,11 @@ import (
 
 	"github.com/iancoleman/strcase"
 
+	"github.com/go-corelibs/maps"
 	"github.com/go-corelibs/slices"
 	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 type MakeFeature[M interface{}] interface {
@@ -73,7 +73,7 @@ func (c *CSiteEnviron[M]) InitSiteEnviron(this interface{}, keysHelp ...string) 
 		for i := 0; i < count; i += 2 {
 			key := strcase.ToKebab(keysHelp[i])
 			help := clStrings.TrimQuotes(keysHelp[i+1])
-			maps.MakeTypedKey(key, c.siteEnvironData)
+			maps.MakeTypedKey(c.siteEnvironData, key)
 			c.siteEnvironHelp[key] = help
 		}
 	}
@@ -82,7 +82,7 @@ func (c *CSiteEnviron[M]) InitSiteEnviron(this interface{}, keysHelp ...string) 
 func (c *CSiteEnviron[M]) SetSiteEnviron(key, name, value string) M {
 	key = strcase.ToKebab(key)
 	name = strcase.ToKebab(name)
-	maps.MakeTypedKey(key, c.siteEnvironData)
+	maps.MakeTypedKey(c.siteEnvironData, key)
 	c.siteEnvironData[key][name] = value
 	t, _ := c.this.(M)
 	return t
@@ -107,7 +107,7 @@ func (c *CSiteEnviron[M]) StartupSiteEnviron() (err error) {
 					name := strings.TrimPrefix(key, envPrefix)
 					name = strcase.ToKebab(name)
 					value = clStrings.TrimQuotes(value)
-					maps.MakeTypedKey(keys[idx], c.siteEnvironData)
+					maps.MakeTypedKey(c.siteEnvironData, keys[idx])
 					c.siteEnvironData[keys[idx]][name] = value
 				}
 			}

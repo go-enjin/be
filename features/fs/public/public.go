@@ -27,6 +27,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/maps"
 	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
@@ -34,7 +35,6 @@ import (
 	uses_actions "github.com/go-enjin/be/pkg/feature/uses-actions"
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/net/serve"
 )
 

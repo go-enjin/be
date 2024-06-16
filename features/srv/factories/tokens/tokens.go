@@ -19,13 +19,13 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/maps"
 	sha "github.com/go-corelibs/shasum"
 	"github.com/go-enjin/be/pkg/crypto"
 	"github.com/go-enjin/be/pkg/feature"
 	uses_kvc "github.com/go-enjin/be/pkg/feature/uses-kvc"
 	"github.com/go-enjin/be/pkg/kvs"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 var (
@@ -233,7 +233,7 @@ func (f *CFeature) get(key string, duration time.Duration) (value, shasum string
 	value = f.randomValue()
 	shasum = sha.MustBriefSum(value)
 
-	maps.MakeTypedKey(key, f.tokens)
+	maps.MakeTypedKey(f.tokens, key)
 	f.tokens[key][value] = time.Now().Add(duration)
 	if err = kvs.SetMarshal(tokenBucket, value, f.tokens[key][value]); err != nil {
 		panic(err)

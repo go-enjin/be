@@ -34,9 +34,9 @@ import (
 	"github.com/go-corelibs/values"
 	"github.com/go-enjin/be/pkg/context"
 
+	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 var (

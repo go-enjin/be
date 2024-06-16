@@ -21,6 +21,7 @@ import (
 	"golang.org/x/net/html"
 
 	"github.com/go-corelibs/context"
+	"github.com/go-corelibs/maps"
 	clMime "github.com/go-corelibs/mime"
 	"github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/message"
@@ -28,7 +29,6 @@ import (
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 

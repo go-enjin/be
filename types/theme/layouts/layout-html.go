@@ -19,8 +19,8 @@ import (
 	htmlTemplate "html/template"
 
 	"github.com/go-corelibs/context"
+	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 func (l *Layout) NewHtmlTemplate(enjin feature.Internals, ctx context.Context) (tmpl *htmlTemplate.Template, err error) {

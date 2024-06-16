@@ -25,6 +25,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
+	"github.com/go-corelibs/maps"
 	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/slices"
 	"github.com/go-corelibs/x-text/message"
@@ -33,7 +34,6 @@ import (
 	site_environ "github.com/go-enjin/be/pkg/feature/site-environ"
 	site_including "github.com/go-enjin/be/pkg/feature/site-including"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/site"
@@ -556,7 +556,7 @@ func (f *CFeature) PostStartup(_ *cli.Context) (err error) {
 		}
 	}
 
-	log.InfoF("%v feature settings: %v", f.Tag(), maps.PrettyMap(map[string]interface{}{
+	log.InfoF("%v feature settings: %v", f.Tag(), maps.Dump(map[string]interface{}{
 		"sign-in-path":     f.signInPath,
 		"sign-out-path":    f.signOutPath,
 		"secure-cookies":   f.secureCookies,

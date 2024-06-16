@@ -23,7 +23,7 @@ import (
 	"github.com/samber/lo"
 
 	clContext "github.com/go-corelibs/context"
-	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-corelibs/maps"
 )
 
 type Dictionary map[string]interface{}
@@ -74,13 +74,13 @@ func (d Dictionary) SET(argv ...interface{}) (nop string, err error) {
 
 		case string:
 			// set top-level key
-			if err = beContext.SetKV(d, arg, argv[i+1]); err != nil {
+			if err = maps.SetKV(d, arg, argv[i+1]); err != nil {
 				return
 			}
 
 		case []string:
 			// slice is list of keys joined into a Deep-Key
-			if err = beContext.SetKV(d, "."+strings.Join(arg, "."), argv[i+1]); err != nil {
+			if err = maps.SetKV(d, "."+strings.Join(arg, "."), argv[i+1]); err != nil {
 				return
 			}
 
@@ -96,14 +96,14 @@ func (d Dictionary) SET(argv ...interface{}) (nop string, err error) {
 }
 
 func (d Dictionary) GET(key string, def ...interface{}) (value interface{}) {
-	if _, value = beContext.GetKV(d, key); value == nil && len(def) > 0 {
+	if _, value = maps.GetKV(d, key); value == nil && len(def) > 0 {
 		value = def[0]
 	}
 	return
 }
 
 func (d Dictionary) DELETE(key string) (nop string) {
-	beContext.DeleteKV(d, key)
+	maps.DeleteKV(d, key)
 	return
 }
 

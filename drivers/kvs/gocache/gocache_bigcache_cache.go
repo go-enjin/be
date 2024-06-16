@@ -25,9 +25,9 @@ import (
 	gocache "github.com/eko/gocache/lib/v4/cache"
 	store_go_cache "github.com/eko/gocache/store/bigcache/v4"
 
+	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 var _ feature.KeyValueCache = (*cBigCache)(nil)

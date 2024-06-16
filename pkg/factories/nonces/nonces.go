@@ -18,10 +18,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/pkg/crypto"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 var (
@@ -93,7 +93,7 @@ func (r *nonces) get(key string) (value string) {
 	r.Lock()
 	defer r.Unlock()
 	value = r.randomValue()
-	maps.MakeTypedKey(key, r.cache)
+	maps.MakeTypedKey(r.cache, key)
 	r.cache[key][value] = time.Now().Add(r.duration)
 	return
 }

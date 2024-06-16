@@ -20,12 +20,12 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	clContext "github.com/go-corelibs/context"
+	"github.com/go-corelibs/maps"
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
 	bePkgEditor "github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
-	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/pkg/menu"
 	"github.com/go-enjin/be/types/site"
 )

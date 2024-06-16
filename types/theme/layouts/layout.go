@@ -20,12 +20,12 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/go-corelibs/maps"
 	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/tmplstr"
 	"github.com/go-enjin/be/pkg/feature"
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 var (

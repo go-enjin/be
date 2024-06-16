@@ -4,7 +4,7 @@
 
 package permissions
 
-import "github.com/go-enjin/be/pkg/maps"
+import "github.com/go-corelibs/maps"
 
 type Policy interface {
 	Set(d Directive) Policy

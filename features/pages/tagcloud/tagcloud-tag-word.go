@@ -17,8 +17,8 @@ package tagcloud
 import (
 	"sync"
 
+	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 type tagWord struct {

@@ -18,11 +18,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-corelibs/maps"
 	sha "github.com/go-corelibs/shasum"
 	"github.com/go-enjin/be/pkg/crypto"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 var (
@@ -123,7 +123,7 @@ func (r *registry) get(key string, duration time.Duration) (value, shasum string
 	}
 	value = r.randomValue()
 	shasum, _ = sha.BriefSum(value)
-	maps.MakeTypedKey(key, r.cache)
+	maps.MakeTypedKey(r.cache, key)
 	r.cache[key][value] = instance{
 		value:   value,
 		shasum:  shasum,

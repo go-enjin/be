@@ -30,10 +30,10 @@ import (
 	"github.com/urfave/cli/v2"
 
 	clContext "github.com/go-corelibs/context"
+	"github.com/go-corelibs/maps"
 	clPath "github.com/go-corelibs/path"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
-	"github.com/go-enjin/be/pkg/maps"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
