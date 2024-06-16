@@ -103,7 +103,7 @@ type EnjinBuilder struct {
 	fOutputTransformers             []feature.OutputTransformer
 	fPageTypeProcessors             []feature.PageTypeProcessor
 	fServePathFeatures              []feature.ServePathFeature
-	fDatabases                      []feature.Database
+	fDatabases                      []feature.DatabaseFeature
 	fEmailSenders                   []feature.EmailSender
 	fRequestModifiers               []feature.RequestModifier
 	fRequestRewriters               []feature.RequestRewriter

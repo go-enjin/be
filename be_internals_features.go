@@ -62,7 +62,7 @@ func (e *Enjin) GetServePathFeatures() []feature.ServePathFeature {
 	return e.eb.fServePathFeatures
 }
 
-func (e *Enjin) GetDatabases() []feature.Database {
+func (e *Enjin) GetDatabases() []feature.DatabaseFeature {
 	return e.eb.fDatabases
 }
 

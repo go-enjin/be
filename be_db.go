@@ -22,7 +22,7 @@ import (
 	"github.com/go-enjin/be/pkg/log"
 )
 
-func (e *Enjin) DB(tag string) (db interface{}, err error) {
+func (e *Enjin) DB(tag string) (db feature.DataBase, err error) {
 	for _, fdb := range e.eb.fDatabases {
 		if slices.Within(tag, fdb.ListDB()) {
 			db, err = fdb.DB(tag)
@@ -33,28 +33,9 @@ func (e *Enjin) DB(tag string) (db interface{}, err error) {
 	return
 }
 
-func (e *Enjin) MustDB(tag string) (db interface{}) {
+func (e *Enjin) MustDB(tag string) (db feature.DataBase) {
 	var err error
 	if db, err = e.DB(tag); err != nil {
-		log.FatalDF(1, err.Error())
-	}
-	return
-}
-
-func (e *Enjin) SpecificDB(fTag feature.Tag, tag string) (db interface{}, err error) {
-	for _, fdb := range e.eb.fDatabases {
-		if fTag == fdb.Tag() {
-			db, err = fdb.DB(tag)
-			return
-		}
-	}
-	err = fmt.Errorf("db feature not found: %v", fTag)
-	return
-}
-
-func (e *Enjin) MustSpecificDB(fTag feature.Tag, tag string) (db interface{}) {
-	var err error
-	if db, err = e.SpecificDB(fTag, tag); err != nil {
 		log.FatalDF(1, err.Error())
 	}
 	return
