@@ -16,6 +16,7 @@ package pages
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/blevesearch/bleve/v2"
 	"github.com/blevesearch/bleve/v2/mapping"
@@ -23,15 +24,13 @@ import (
 
 	cllang "github.com/go-corelibs/lang"
 	"github.com/go-corelibs/x-text/language"
+	"github.com/go-enjin/be/pkg/rxps"
 
 	"github.com/go-enjin/be/pkg/feature"
 	indexing "github.com/go-enjin/be/pkg/indexing/search"
 	"github.com/go-enjin/be/pkg/lang"
-	"github.com/go-enjin/be/pkg/regexps"
 	"github.com/go-enjin/be/pkg/search"
 )
-
-// TODO: update SearchWithin to use pagecache.SearchEnjinFeature
 
 func SearchWithin(input string, numPerPage, pageNumber int, pages []feature.Page, defaultLang, tag language.Tag, langMode lang.Mode, pfp feature.PageFormatProvider) (matches map[string]feature.Page, results *bleve.SearchResult, err error) {
 	var locales []language.Tag
@@ -85,11 +84,11 @@ func SearchWithin(input string, numPerPage, pageNumber int, pages []feature.Page
 	inputWantsTag := defaultLang
 
 	// handle user input `language:%v`
-	if regexps.RxLanguageKey.MatchString(input) {
-		m := regexps.RxLanguageKey.FindAllStringSubmatch(input, 1)
+	if m := rxps.RxLanguageKey.FindAllStringSubmatch(input, 1); len(m) > 0 {
 		if m[0][1] == "*" {
 			searchAll = true
-			input = regexps.RxLanguageKey.ReplaceAllString(input, "")
+			//input = rxps.RxLanguageKey.ReplaceAllString(input, rxp.Replace[string]{}.WithLiteral(""))
+			input = strings.Replace(input, m[0][0], "", 1)
 		} else if queryLangTag, eee := language.Parse(m[0][1]); eee != nil {
 			err = fmt.Errorf("invalid language")
 			return
@@ -99,7 +98,8 @@ func SearchWithin(input string, numPerPage, pageNumber int, pages []feature.Page
 				return
 			}
 			inputWantsTag = queryLangTag
-			input = regexps.RxLanguageKey.ReplaceAllString(input, "")
+			//input = rxps.RxLanguageKey.ReplaceAllString(input, rxp.Replace[string]{}.WithLiteral(""))
+			input = strings.Replace(input, m[0][0], "", 1)
 		}
 	}
 
