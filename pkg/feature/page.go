@@ -94,4 +94,7 @@ type Page interface {
 	SetDeletedAt(at sql.NullTime)
 
 	Copy() (copy Page)
+
+	// DeepCopy fulfils the [deepcopy.Copyable] interface
+	DeepCopy() interface{}
 }
