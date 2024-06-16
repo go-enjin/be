@@ -21,10 +21,12 @@ import (
 	"strings"
 
 	clContext "github.com/go-corelibs/context"
+	"github.com/go-corelibs/rxp"
 )
 
 var (
-	rxNotEmpty = regexp.MustCompile(`(?msi)\S`)
+	//rxNotEmpty = `(?msi)\S`
+	rxNotEmpty = rxp.Pattern{}.S("^", "m", "s")
 )
 
 func BasicRenderFn(node *Node, ctx clContext.Context) (output string) {
