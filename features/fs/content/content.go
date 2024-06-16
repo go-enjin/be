@@ -80,11 +80,13 @@ type CFeature struct {
 
 	gcPercent int
 
-	indexProviderTags  feature.Tags
-	searchProviderTags feature.Tags
+	indexProviderTags    feature.Tags
+	indexingProviderTags feature.Tags
+	searchProviderTags   feature.Tags
 
-	indexProviders  []feature.PageIndexFeature
-	searchProviders []feature.SearchEnjinFeature
+	indexProviders    []feature.PageIndexFeature
+	indexingProviders []feature.PageIndexingFeature
+	searchProviders   []feature.SearchEnjinFeature
 
 	startupIndexing     bool
 	skipStartupIndexing feature.Tags
@@ -178,22 +180,31 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 
 	allFeatures := f.Enjin.Features().List()
 
+	var indexingProviderTags feature.Tags
+	for _, pif := range feature.FilterTyped[feature.PageIndexingFeature](allFeatures) {
+		if tag := pif.Tag(); f.indexProviderTags.Has(tag) {
+			f.indexProviderTags = f.indexProviderTags.Prune(tag)
+			f.indexingProviders = append(f.indexingProviders, pif)
+			indexingProviderTags = append(indexingProviderTags, tag)
+			log.DebugF("%v feature found indexing provider: %v", f.Tag(), tag)
+		} else {
+			log.WarnF("%v feature ignoring indexing provider: %v", f.Tag(), tag)
+		}
+	}
+
+	f.indexingProviderTags = indexingProviderTags // tags order matches providers order
+
 	var indexProviderTags feature.Tags
 	for _, pif := range feature.FilterTyped[feature.PageIndexFeature](allFeatures) {
-		tag := pif.Tag()
-		if f.indexProviderTags.Has(tag) {
+		if tag := pif.Tag(); f.indexProviderTags.Has(tag) {
 			f.indexProviders = append(f.indexProviders, pif)
 			indexProviderTags = append(indexProviderTags, tag)
 			log.DebugF("%v feature found index provider: %v", f.Tag(), tag)
 		} else {
-			log.DebugF("%v feature ignoring index provider: %v", f.Tag(), tag)
+			log.WarnF("%v feature ignoring index provider: %v", f.Tag(), tag)
 		}
 	}
-	if len(f.indexProviderTags) != len(indexProviderTags) {
-		err = fmt.Errorf("%v feature required %d index providers yet found only %d: %+v != %+v",
-			f.Tag(), len(f.indexProviderTags), len(indexProviderTags), f.indexProviderTags, indexProviderTags)
-		return
-	}
+
 	f.indexProviderTags = indexProviderTags // tags order matches providers order
 
 	var searchProviderTags feature.Tags
@@ -204,21 +215,17 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 			searchProviderTags = append(searchProviderTags, tag)
 			log.DebugF("%v feature found search provider: %v", f.Tag(), tag)
 		} else {
-			log.DebugF("%v feature ignoring search provider: %v", f.Tag(), tag)
+			log.WarnF("%v feature ignoring search provider: %v", f.Tag(), tag)
 		}
 	}
-	if len(f.searchProviderTags) != len(searchProviderTags) {
-		err = fmt.Errorf("%v feature required %d search providers yet found only %d: %+v != %+v",
-			f.Tag(), len(f.searchProviderTags), len(searchProviderTags), f.searchProviderTags, searchProviderTags)
-		return
-	}
+
 	f.searchProviderTags = searchProviderTags
 
 	_, indexingFlag, skipFlag := f.makeFlagName()
 	f.startupIndexing = ctx.Bool(indexingFlag)
 	for _, name := range ctx.StringSlice(skipFlag) {
 		tag := feature.Tag(name)
-		if f.indexProviderTags.Has(tag) || f.searchProviderTags.Has(tag) {
+		if f.indexingProviderTags.Has(tag) || f.indexProviderTags.Has(tag) || f.searchProviderTags.Has(tag) {
 			f.skipStartupIndexing = append(f.skipStartupIndexing, tag)
 			continue
 		}
@@ -226,7 +233,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		return
 	}
 	var all bool
-	for _, tag := range append(f.indexProviderTags, f.searchProviderTags...) {
+	for _, tag := range append(f.indexingProviderTags, append(f.indexProviderTags, f.searchProviderTags...)...) {
 		if all = f.skipStartupIndexing.Has(tag); !all {
 			break
 		}
@@ -254,7 +261,7 @@ func (f *CFeature) UserActions() (list feature.Actions) {
 
 func (f *CFeature) PopulateIndexes() (err error) {
 
-	if f.indexProviderTags.Len() == 0 && f.searchProviderTags.Len() == 0 {
+	if f.indexingProviderTags.Len() == 0 && f.indexProviderTags.Len() == 0 && f.searchProviderTags.Len() == 0 {
 		// early out with no work
 		log.WarnF("%v feature has not been given any index or search providers", f.Tag())
 		return
@@ -263,7 +270,7 @@ func (f *CFeature) PopulateIndexes() (err error) {
 	start := time.Now()
 	var total int
 
-	log.DebugF("%v feature adding pages to: %v", f.Tag(), append(f.indexProviderTags, f.searchProviderTags...))
+	log.DebugF("%v feature adding pages to: %v", f.Tag(), append(f.indexingProviderTags, append(f.indexProviderTags, f.searchProviderTags...)...))
 
 	var previousGOGC int
 	if f.gcPercent != -1 {
@@ -271,15 +278,17 @@ func (f *CFeature) PopulateIndexes() (err error) {
 	}
 
 	theme := f.Enjin.MustGetTheme()
+	ectx := f.Enjin.Context(nil)
 	for _, point := range maps.SortedKeyLengths(f.MountPoints) {
 		for _, mp := range f.MountPoints[point] {
 			if files, ee := mp.ROFS.ListAllFiles("."); ee == nil {
 
 				fileCount := len(files)
+				fileStartTime := time.Now()
 
 				batchTotal := 0
 				batchCount := 0
-				batchStart := time.Now()
+				batchStart := fileStartTime
 				prevBatch := time.Duration(0)
 
 				numBatches := 10
@@ -293,7 +302,6 @@ func (f *CFeature) PopulateIndexes() (err error) {
 					numBatches = 1
 				}
 				batchMax := fileCount / numBatches
-
 				batchTrack := make(map[feature.Tag]time.Duration)
 
 				for _, file := range files {
@@ -309,11 +317,30 @@ func (f *CFeature) PopulateIndexes() (err error) {
 
 					} else if pmStub, ok := pm.Stub.(*feature.PageStub); ok && pmStub != nil {
 
-						if pg, eeee := page.NewPageFromStub(pmStub, theme); eeee != nil {
+						if pg, eeee := page.NewPageFromStub(pmStub, theme, ectx); eeee != nil {
 
 							log.ErrorF("error making page from stub: %v - %v", file, eeee)
 
 						} else {
+
+							for _, pip := range f.indexingProviders {
+								tag := pip.Tag()
+								if f.skipStartupIndexing.Has(tag) {
+									continue
+								}
+								pipStart := time.Now()
+								var eeeee error
+								var report feature.PageIndexReport
+								if report, eeeee = pip.AddToIndexWithReport(pmStub, pg); eeeee != nil {
+									log.ErrorF("error adding to page %q index: %v - %v", pip.Tag(), file, eeeee)
+								} else {
+									// log.DebugF("%v indexed %v", pip.(feature.Feature).Tag(), pg.Url)
+								}
+								batchTrack[tag] += time.Now().Sub(pipStart)
+								for _, rtag := range maps.SortedKeys(report) {
+									batchTrack[tag+":"+rtag] += report[rtag]
+								}
+							}
 
 							for _, pip := range f.indexProviders {
 								tag := pip.Tag()
@@ -326,11 +353,7 @@ func (f *CFeature) PopulateIndexes() (err error) {
 								} else {
 									// log.DebugF("%v indexed %v", pip.(feature.Feature).Tag(), pg.Url)
 								}
-								if _, exists := batchTrack[tag]; exists {
-									batchTrack[tag] += time.Now().Sub(pipStart)
-								} else {
-									batchTrack[tag] = time.Now().Sub(pipStart)
-								}
+								batchTrack[tag] += time.Now().Sub(pipStart)
 							}
 
 							for _, sep := range f.searchProviders {
@@ -344,11 +367,7 @@ func (f *CFeature) PopulateIndexes() (err error) {
 								} else {
 									// log.DebugF("%v indexed %v", sep.(feature.Feature).Tag(), pg.Url)
 								}
-								if _, exists := batchTrack[tag]; exists {
-									batchTrack[tag] += time.Now().Sub(sepStart)
-								} else {
-									batchTrack[tag] = time.Now().Sub(sepStart)
-								}
+								batchTrack[tag] += time.Now().Sub(sepStart)
 							}
 
 							caiStart := time.Now()
@@ -369,12 +388,21 @@ func (f *CFeature) PopulateIndexes() (err error) {
 									trackSummary[k] = v.String()
 								}
 								delta := dur - prevBatch
+
+								totalTime := now.Sub(fileStartTime).Nanoseconds()
+								avgPerFile := totalTime / int64(total)
+								remainingFiles := int64(fileCount - total)
+								eta := time.Duration(remainingFiles * avgPerFile)
+								tSummary := fmt.Sprintf("%v", trackSummary)
+								tSummary = tSummary[3:] // trim "map" prefix
 								log.WarnF(
-									"%v indexed batch %d/%d (%d) in %v +%v (%d/%d in %v) - %+v",
+									"%v indexing eta: %v; batch %d/%d (%d) in %v +%v (%d/%d in %v) - %+v",
 									f.Tag(),
+									eta,
 									batchCount, numBatches, batchTotal, dur, delta,
 									total, fileCount, now.Sub(start),
-									trackSummary)
+									tSummary,
+								)
 								batchStart = now
 								batchTotal = 0
 								batchTrack = make(map[feature.Tag]time.Duration)
@@ -408,6 +436,7 @@ func (f *CFeature) AddIndexing(filePath string) {
 	}
 
 	theme := f.Enjin.MustGetTheme()
+	ectx := f.Enjin.Context(nil)
 	for _, point := range maps.SortedKeyLengths(f.MountPoints) {
 		for _, mp := range f.MountPoints[point] {
 
@@ -415,7 +444,7 @@ func (f *CFeature) AddIndexing(filePath string) {
 
 				if stub, ok := pm.Stub.(*feature.PageStub); ok && stub != nil {
 
-					if p, eeee := page.NewPageFromStub(stub, theme); eeee == nil {
+					if p, eeee := page.NewPageFromStub(stub, theme, ectx); eeee == nil {
 
 						for _, indexer := range f.searchProviders {
 							if err := indexer.AddToSearchIndex(stub, p); err != nil {
@@ -450,6 +479,7 @@ func (f *CFeature) RemoveIndexing(filePath string) {
 	}
 
 	theme := f.Enjin.MustGetTheme()
+	ectx := f.Enjin.Context(nil)
 	for _, point := range maps.SortedKeyLengths(f.MountPoints) {
 		for _, mp := range f.MountPoints[point] {
 
@@ -457,7 +487,7 @@ func (f *CFeature) RemoveIndexing(filePath string) {
 
 				if stub, ok := pm.Stub.(*feature.PageStub); ok && stub != nil {
 
-					if p, eeee := page.NewPageFromStub(stub, theme); eeee == nil {
+					if p, eeee := page.NewPageFromStub(stub, theme, ectx); eeee == nil {
 
 						for _, indexer := range f.searchProviders {
 							indexer.RemoveFromSearchIndex(stub, p)
