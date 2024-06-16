@@ -27,7 +27,7 @@ import (
 	"github.com/go-corelibs/x-text/language/display"
 	"github.com/go-corelibs/x-text/message"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
@@ -83,7 +83,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
+func (f *CFeature) MakeFuncMap(ctx clContext.Context) (fm feature.FuncMap) {
 	fm = feature.FuncMap{
 		"cmpLang": CmpLang,
 	}
@@ -98,7 +98,7 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 	return
 }
 
-func (f *CFeature) makeTranslations(ctx beContext.Context) interface{} {
+func (f *CFeature) makeTranslations(ctx clContext.Context) interface{} {
 	cache := map[string]feature.Pages{}
 	return func(url string) (translations feature.Pages) {
 		if _, cached := cache[url]; !cached {
@@ -109,7 +109,7 @@ func (f *CFeature) makeTranslations(ctx beContext.Context) interface{} {
 	}
 }
 
-func (f *CFeature) makeUnderscore(ctx beContext.Context) interface{} {
+func (f *CFeature) makeUnderscore(ctx clContext.Context) interface{} {
 	cache := map[string]string{}
 	return func(format string, argv ...interface{}) (translated string) {
 		var ok bool
@@ -134,7 +134,7 @@ func (f *CFeature) makeUnderscore(ctx beContext.Context) interface{} {
 	}
 }
 
-func (f *CFeature) makeUnderscoreUnderscore(ctx beContext.Context) interface{} {
+func (f *CFeature) makeUnderscoreUnderscore(ctx clContext.Context) interface{} {
 	return func(argvInput ...interface{}) (translated string, err error) {
 		r, _ := ctx.Get("R").(*http.Request)
 		targetLang, _ := ctx.Get("ReqLangTag").(language.Tag)
@@ -225,7 +225,7 @@ func (f *CFeature) makeUnderscoreUnderscore(ctx beContext.Context) interface{} {
 	}
 }
 
-func (f *CFeature) makeUnderscoreUnderscoreUnderscore(ctx beContext.Context) interface{} {
+func (f *CFeature) makeUnderscoreUnderscoreUnderscore(ctx clContext.Context) interface{} {
 	return func(argv ...string) (translated string, err error) {
 		targetLang, _ := ctx.Get("ReqLangTag").(language.Tag)
 		var targetPath string
@@ -264,7 +264,7 @@ func (f *CFeature) makeUnderscoreUnderscoreUnderscore(ctx beContext.Context) int
 	}
 }
 
-func (f *CFeature) makeUnderscoreTag(ctx beContext.Context) interface{} {
+func (f *CFeature) makeUnderscoreTag(ctx clContext.Context) interface{} {
 	return func(tagOrString interface{}) (name string, err error) {
 		var tag language.Tag
 		if tag, err = cllang.ParseTag(tagOrString); err != nil {
@@ -278,7 +278,7 @@ func (f *CFeature) makeUnderscoreTag(ctx beContext.Context) interface{} {
 	}
 }
 
-func (f *CFeature) makeUnderscoreUnderscoreTag(ctx beContext.Context) interface{} {
+func (f *CFeature) makeUnderscoreUnderscoreTag(ctx clContext.Context) interface{} {
 	return func(txInput, tagInput interface{}) (name string, err error) {
 		var tx, tag language.Tag
 		if tx, err = cllang.ParseTag(txInput); err != nil {

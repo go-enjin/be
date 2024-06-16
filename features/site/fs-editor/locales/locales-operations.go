@@ -20,11 +20,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-corelibs/context"
 	cllang "github.com/go-corelibs/lang"
 	"github.com/go-corelibs/slices"
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
-	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 )

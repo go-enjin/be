@@ -19,7 +19,7 @@ import (
 
 	"github.com/Shopify/gomail"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 )
 
 type EmailSender interface {
@@ -32,8 +32,8 @@ type EmailSender interface {
 type EmailProvider interface {
 	Feature
 
-	NewEmail(path string, bodyCtx beContext.Context) (message *gomail.Message, err error)
-	MakeEmailBody(path string, ctx beContext.Context) (matter beContext.Context, body string, err error)
+	NewEmail(path string, bodyCtx clContext.Context) (message *gomail.Message, err error)
+	MakeEmailBody(path string, ctx clContext.Context) (matter clContext.Context, body string, err error)
 
 	ListTemplates() (names []string)
 	HasTemplate(name string) (present bool)

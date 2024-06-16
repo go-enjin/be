@@ -20,11 +20,11 @@ import (
 	"github.com/Shopify/gomail"
 	"github.com/xlzd/gotp"
 
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-corelibs/path"
 	"github.com/go-corelibs/slices"
 	"github.com/go-corelibs/strings"
 	"github.com/go-corelibs/x-text/message"
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
@@ -111,7 +111,7 @@ func (f *CFeature) ProcessSetupPage(saf feature.SiteAuthFeature, w http.Response
 
 	handled = true
 
-	ctx := beContext.Context{
+	ctx := clContext.Context{
 		"FeatureInfo": f.SiteFeatureInfo(r),
 		"FormAction":  r.URL.Path,
 		"Nonces": feature.Nonces{
@@ -138,7 +138,7 @@ func (f *CFeature) sendNewToken(email, challenge string, r *http.Request) (m *ht
 	var err error
 	printer := message.GetPrinter(r)
 
-	bodyCtx := beContext.Context{
+	bodyCtx := clContext.Context{
 		"Name":  strings.NameFromEmail(email),
 		"Email": email,
 		"Token": challenge,

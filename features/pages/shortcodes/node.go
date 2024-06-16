@@ -19,7 +19,7 @@ package shortcodes
 import (
 	"fmt"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 )
 
 type Node struct {
@@ -123,7 +123,7 @@ func (node *Node) Append(children ...*Node) {
 	return
 }
 
-func (node *Node) Render(ctx beContext.Context) (output string) {
+func (node *Node) Render(ctx clContext.Context) (output string) {
 
 	if node.Name == "" {
 		output += node.Content

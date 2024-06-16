@@ -17,7 +17,7 @@ package feature
 import (
 	"encoding/json"
 
-	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-corelibs/context"
 )
 
 func MakeRawPage(matter context.Context, content string) (raw string) {

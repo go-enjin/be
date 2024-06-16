@@ -19,10 +19,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-corelibs/context"
 	clMime "github.com/go-corelibs/mime"
 	"github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/message"
-	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"

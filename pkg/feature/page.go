@@ -22,7 +22,7 @@ import (
 
 	"github.com/go-corelibs/x-text/language"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
@@ -57,7 +57,7 @@ type Page interface {
 	UpdatedAt() (at time.Time)
 	DeletedAt() (at sql.NullTime)
 
-	Context() (ctx beContext.Context)
+	Context() (ctx clContext.Context)
 
 	String() (jsonPage string)
 

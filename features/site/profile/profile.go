@@ -20,11 +20,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/urfave/cli/v2"
 
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-corelibs/slices"
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/language/display"
 	"github.com/go-corelibs/x-text/message"
-	beContext "github.com/go-enjin/be/pkg/context"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
@@ -353,7 +353,7 @@ func (f *CFeature) ServeProfilePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := beContext.Context{
+	ctx := clContext.Context{
 		"FeatureInfo": f.SiteFeatureInfo(r),
 		"User":        au.GetSettings(),
 	}
@@ -413,7 +413,7 @@ func (f *CFeature) SiteUserSetupStageHandler(saf feature.SiteAuthFeature, w http
 
 	}
 
-	ctx := beContext.Context{
+	ctx := clContext.Context{
 		"FeatureInfo": f.SiteFeatureInfo(r),
 		"FormAction":  r.URL.Path,
 		"Nonces": feature.Nonces{

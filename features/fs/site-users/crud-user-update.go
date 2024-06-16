@@ -19,7 +19,7 @@ import (
 	"net/http"
 	"net/url"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
@@ -105,7 +105,7 @@ func (f *CFeature) SetUserImage(r *http.Request, eid string, image string) (err 
 	return
 }
 
-func (f *CFeature) UpdateUserContext(r *http.Request, eid string, ctx beContext.Context) (err error) {
+func (f *CFeature) UpdateUserContext(r *http.Request, eid string, ctx clContext.Context) (err error) {
 	uid := userbase.GetCurrentEID(r)
 
 	if stop := f.Emit(signals.PreUpdateUserContext, f.Tag().String(), r, eid, ctx); stop {
@@ -122,7 +122,7 @@ func (f *CFeature) UpdateUserContext(r *http.Request, eid string, ctx beContext.
 	return
 }
 
-func (f *CFeature) SetUserContext(r *http.Request, eid string, ctx beContext.Context) (err error) {
+func (f *CFeature) SetUserContext(r *http.Request, eid string, ctx clContext.Context) (err error) {
 	var au *beUser.User
 
 	if stop := f.Emit(signals.PreSetUserContext, f.Tag().String(), r, eid, ctx); stop {
@@ -160,7 +160,7 @@ func (f *CFeature) SetUserSetting(r *http.Request, eid string, key string, value
 	return
 }
 
-func (f *CFeature) SetUserSettings(r *http.Request, eid string, ctx beContext.Context) (err error) {
+func (f *CFeature) SetUserSettings(r *http.Request, eid string, ctx clContext.Context) (err error) {
 	var au *beUser.User
 
 	if stop := f.Emit(signals.PreSetUserSettings, f.Tag().String(), r, eid, ctx); stop {

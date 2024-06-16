@@ -20,8 +20,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/urfave/cli/v2"
 
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-corelibs/x-text/message"
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
@@ -106,7 +106,7 @@ func (f *CFeature) RenderDashboard(path string, w http.ResponseWriter, r *http.R
 	t := f.SiteFeatureTheme()
 	printer := message.GetPrinter(r)
 
-	ctx := beContext.Context{
+	ctx := clContext.Context{
 		"Title":         f.SiteFeatureLabel(printer),
 		"EnjinContext":  f.Enjin.Context(r).Copy(),
 		"EnjinFeatures": f.Enjin.Features(),

@@ -24,7 +24,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"gopkg.in/yaml.v3"
 
-	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-corelibs/context"
 )
 
 func UnmarshalFrontMatter(data []byte, matterType FrontMatterType) (matter context.Context, err error) {

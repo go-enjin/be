@@ -19,10 +19,10 @@ import (
 	"strings"
 	"time"
 
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-corelibs/mime"
 	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/language"
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 )
 
@@ -54,7 +54,7 @@ type EditorFile struct {
 	Actions    editor.Actions    `json:"actions"`
 	Indicators editor.Indicators `json:"indicators,omitempty"`
 
-	Context beContext.Context `json:"-"`
+	Context clContext.Context `json:"-"`
 }
 
 func ParseDirectory(fsid, filePath string) *EditorFile {

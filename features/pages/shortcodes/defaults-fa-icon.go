@@ -18,16 +18,16 @@ import (
 	"fmt"
 	"strings"
 
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-corelibs/htmlcss"
 	"github.com/go-corelibs/maps"
 	clStrings "github.com/go-corelibs/strings"
-	beContext "github.com/go-enjin/be/pkg/context"
 )
 
 var (
 	FontAwesomeIconShortcode = Shortcode{
 		Name: "fa-icon",
-		InlineFn: func(node *Node, ctx beContext.Context) (output string) {
+		InlineFn: func(node *Node, ctx clContext.Context) (output string) {
 			class, _ := node.Attributes.Lookup["class"]
 			classes := htmlcss.ParseClass(class)
 			styles := make(map[string]string)

@@ -21,9 +21,9 @@ import (
 
 	"github.com/maruel/natural"
 
+	clContext "github.com/go-corelibs/context"
 	clPath "github.com/go-corelibs/path"
 	clStrings "github.com/go-corelibs/strings"
-	beContext "github.com/go-enjin/be/pkg/context"
 	beErrors "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
@@ -81,7 +81,7 @@ func (f *CFeature) makeUser(origin, rid, eid, email string) (u *beUser.User, err
 		Email:   email,
 		Origin:  origin,
 		Active:  true,
-		Context: beContext.Context{},
+		Context: clContext.Context{},
 		Groups: feature.Groups{
 			userbase.PublicGroup,
 			userbase.UsersGroup,

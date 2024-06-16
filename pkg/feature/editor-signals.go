@@ -17,7 +17,7 @@ package feature
 import (
 	"net/http"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/feature/signaling"
 )
 
@@ -52,12 +52,12 @@ const (
 // ParseSignalArgv is a helper function for translating the emitted signal argv into concrete types
 //
 //	`r, pg, ctx, form, info, eid, file, redirect, ok := bePkgEditor.ParseSignalArgv(argv)`
-func ParseSignalArgv(argv []interface{}) (r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string, redirect *string, ok bool) {
+func ParseSignalArgv(argv []interface{}) (r *http.Request, pg Page, ctx, form clContext.Context, info *EditorFile, eid string, redirect *string, ok bool) {
 	if ok = len(argv) == 7; !ok {
 	} else if r, ok = argv[0].(*http.Request); !ok {
 	} else if pg, ok = argv[1].(Page); !ok {
-	} else if ctx, ok = argv[2].(beContext.Context); !ok {
-	} else if form, ok = argv[3].(beContext.Context); !ok {
+	} else if ctx, ok = argv[2].(clContext.Context); !ok {
+	} else if form, ok = argv[3].(clContext.Context); !ok {
 	} else if info, ok = argv[4].(*EditorFile); !ok {
 	} else if eid, ok = argv[5].(string); !ok {
 	} else if redirect, ok = argv[6].(*string); !ok {

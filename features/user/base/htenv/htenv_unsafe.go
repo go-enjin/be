@@ -21,8 +21,8 @@ import (
 
 	"github.com/iancoleman/strcase"
 
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-corelibs/slices"
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
@@ -34,7 +34,7 @@ func (f *CFeature) loadEnvironment() (err error) {
 	if named, ok := f.env.GetSiteEnviron("user"); ok {
 		for name, hash := range named {
 			f.hashes[name] = hash
-			f.users[name] = users.NewUser(f.Tag().String()+"--"+name, name, "", "", beContext.Context{})
+			f.users[name] = users.NewUser(f.Tag().String()+"--"+name, name, "", "", clContext.Context{})
 		}
 	}
 

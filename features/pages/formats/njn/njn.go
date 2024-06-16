@@ -29,6 +29,7 @@ import (
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
 
+	"github.com/go-corelibs/context"
 	"github.com/go-corelibs/slices"
 	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/features/pages/formats/njn/blocks/card"
@@ -63,7 +64,6 @@ import (
 	"github.com/go-enjin/be/features/pages/formats/njn/fields/pre"
 	_select "github.com/go-enjin/be/features/pages/formats/njn/fields/select"
 	"github.com/go-enjin/be/features/pages/formats/njn/fields/table"
-	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	beForms "github.com/go-enjin/be/pkg/forms"

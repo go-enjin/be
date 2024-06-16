@@ -15,7 +15,7 @@
 package site
 
 import (
-	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/kvs"
 )
 

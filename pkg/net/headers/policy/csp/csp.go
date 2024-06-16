@@ -14,8 +14,8 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	clContext "github.com/go-corelibs/context"
 	sha "github.com/go-corelibs/shasum"
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/net/serve"
 	"github.com/go-enjin/be/pkg/request"
@@ -66,7 +66,7 @@ type RequestNonceData map[string]string
 
 type PageContextContentSecurity struct {
 	Policy Policy
-	Nonces beContext.Context
+	Nonces clContext.Context
 }
 
 func NewPolicyHandler() (h *PolicyHandler) {
@@ -185,7 +185,7 @@ func (h *PolicyHandler) ModifyPolicyMiddleware(fn ModifyPolicyFn) (mw func(next 
 	}
 }
 
-func (h *PolicyHandler) PreparePageContext(config ContentSecurityPolicyConfig, ctx beContext.Context, r *http.Request) (pccs *PageContextContentSecurity, modified *http.Request) {
+func (h *PolicyHandler) PreparePageContext(config ContentSecurityPolicyConfig, ctx clContext.Context, r *http.Request) (pccs *PageContextContentSecurity, modified *http.Request) {
 
 	prepareNonce := func(name string, r *http.Request, p Policy) (m *http.Request) {
 		if p == nil || p.None(name) || (name != "script-src" && p.Unsafe(name)) {
@@ -230,7 +230,7 @@ func (h *PolicyHandler) PreparePageContext(config ContentSecurityPolicyConfig, c
 	var data *RequestNonceData
 	data, modified = h.GetRequestNonceData(modified)
 
-	cspRequestNonces := beContext.New()
+	cspRequestNonces := clContext.New()
 	for tag, nonce := range *data {
 		cspRequestNonces.Set(tag, nonce)
 	}

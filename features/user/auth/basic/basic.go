@@ -27,8 +27,8 @@ import (
 	auth "github.com/abbot/go-http-auth"
 	"github.com/urfave/cli/v2"
 
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-corelibs/slices"
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	site_environ "github.com/go-enjin/be/pkg/feature/site-environ"
 	"github.com/go-enjin/be/pkg/globals"
@@ -490,7 +490,7 @@ func (f *CFeature) AuthenticateRequest(w http.ResponseWriter, r *http.Request) (
 	return false, modifyRequest(validated, w, r)
 }
 
-func (f *CFeature) RestrictServePage(pgCtx beContext.Context, w http.ResponseWriter, r *http.Request) (modCtx beContext.Context, modReq *http.Request, allow bool) {
+func (f *CFeature) RestrictServePage(pgCtx clContext.Context, w http.ResponseWriter, r *http.Request) (modCtx clContext.Context, modReq *http.Request, allow bool) {
 	modReq = r
 	modCtx = pgCtx.Copy()
 
@@ -500,7 +500,7 @@ func (f *CFeature) RestrictServePage(pgCtx beContext.Context, w http.ResponseWri
 			if allow = f.isUserInGroup(id, group); allow {
 				tag := f.Tag().Camel()
 				modCtx[tag+"UserID"] = id
-				modCtx[tag+"User"] = users.NewUser(id, id, "", "", beContext.Context{"ID": id, "GetName": id})
+				modCtx[tag+"User"] = users.NewUser(id, id, "", "", clContext.Context{"ID": id, "GetName": id})
 				if f.cacheControl != "" {
 					if _, exists := modCtx["CacheControl"]; !exists {
 						modCtx["CacheControl"] = f.cacheControl

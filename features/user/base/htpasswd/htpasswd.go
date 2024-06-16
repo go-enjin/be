@@ -23,7 +23,7 @@ import (
 	"github.com/tg123/go-htpasswd"
 	"github.com/urfave/cli/v2"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
@@ -176,7 +176,7 @@ func (f *CFeature) GetUser(id string) (user feature.User, err error) {
 	f.RLock()
 	defer f.RUnlock()
 	if _, found := f.parsedPwd[id]; found {
-		user = users.NewUser(id, id, "", "", beContext.Context{})
+		user = users.NewUser(id, id, "", "", clContext.Context{})
 	} else {
 		err = fmt.Errorf("user not found")
 	}

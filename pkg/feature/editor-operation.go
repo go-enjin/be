@@ -18,11 +18,11 @@ import (
 	"net/http"
 	"strings"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 )
 
-type EditorValidateFn = func(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (err error)
-type EditorOperationFn = func(r *http.Request, pg Page, ctx, form beContext.Context, info *EditorFile, eid string) (redirect string)
+type EditorValidateFn = func(r *http.Request, pg Page, ctx, form clContext.Context, info *EditorFile, eid string) (err error)
+type EditorOperationFn = func(r *http.Request, pg Page, ctx, form clContext.Context, info *EditorFile, eid string) (redirect string)
 
 type EditorOperation struct {
 	// Key is the submit button kebab-cased value

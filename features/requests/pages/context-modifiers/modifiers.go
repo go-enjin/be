@@ -19,7 +19,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 )
@@ -80,7 +80,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) PrepareServePage(ctx beContext.Context, t feature.Theme, p feature.Page, w http.ResponseWriter, r *http.Request) (out beContext.Context, modified *http.Request, stop bool) {
+func (f *CFeature) PrepareServePage(ctx clContext.Context, t feature.Theme, p feature.Page, w http.ResponseWriter, r *http.Request) (out clContext.Context, modified *http.Request, stop bool) {
 	fpcPgCtx := p.Context().Copy()
 	fpcPgCtx.SetSpecific("Content", p.Content())
 	for _, pcm := range f.Enjin.GetPageContextModifiers() {

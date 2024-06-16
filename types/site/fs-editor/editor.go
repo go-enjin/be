@@ -19,9 +19,9 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
-	beContext "github.com/go-enjin/be/pkg/context"
 	bePkgEditor "github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
@@ -258,7 +258,7 @@ func (f *CEditorFeature[MakeTypedFeature]) SetupEditorRoute(r chi.Router) {
 	r.Get("/", f.SelfEditor().RenderFileBrowser)
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) PrepareEditPage(pageType, editorType string, r *http.Request) (pg feature.Page, ctx beContext.Context, err error) {
+func (f *CEditorFeature[MakeTypedFeature]) PrepareEditPage(pageType, editorType string, r *http.Request) (pg feature.Page, ctx clContext.Context, err error) {
 	printer := message.GetPrinter(r)
 	pg, ctx, err = f.Editor.Site().PreparePage(f.Editor.BaseTag().Kebab(), pageType, editorType, f.Editor.SiteFeatureTheme(), r)
 
@@ -308,11 +308,11 @@ func (f *CEditorFeature[MakeTypedFeature]) ParseEditorUrlParams(r *http.Request)
 	return
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) ServePreparedEditPage(pg feature.Page, ctx beContext.Context, w http.ResponseWriter, r *http.Request) {
+func (f *CEditorFeature[MakeTypedFeature]) ServePreparedEditPage(pg feature.Page, ctx clContext.Context, w http.ResponseWriter, r *http.Request) {
 	f.Editor.Site().ServePreparedPage(pg, ctx, f.Editor.SiteFeatureTheme(), w, r)
 }
 
-func (f *CEditorFeature[MakeTypedFeature]) ParseCopyMoveTranslateForm(r *http.Request, pg feature.Page, ctx, form beContext.Context, info *feature.EditorFile, eid string, redirect *string) (srcUri, dstUri string, dstInfo *feature.EditorFile, srcFS, dstFS feature.FileSystemFeature, srcMP, dstMP *feature.CMountPoint, srcExists, dstExists bool, stop bool) {
+func (f *CEditorFeature[MakeTypedFeature]) ParseCopyMoveTranslateForm(r *http.Request, pg feature.Page, ctx, form clContext.Context, info *feature.EditorFile, eid string, redirect *string) (srcUri, dstUri string, dstInfo *feature.EditorFile, srcFS, dstFS feature.FileSystemFeature, srcMP, dstMP *feature.CMountPoint, srcExists, dstExists bool, stop bool) {
 	printer := message.GetPrinter(r)
 
 	var param string

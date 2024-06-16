@@ -21,20 +21,21 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"golang.org/x/net/html"
 
+	"github.com/go-corelibs/context"
+	"github.com/go-corelibs/maps"
 	"github.com/go-corelibs/slices"
 	"github.com/go-corelibs/x-text/language"
 	"github.com/go-corelibs/x-text/message"
-	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/pages/fields"
 	"github.com/go-enjin/be/pkg/userbase"
 	"github.com/go-enjin/be/types/page/matter"
 )
 
-func (f *CFeature) ParseFormToDraft(pm *matter.PageMatter, fields context.Fields, form context.Context, info *feature.EditorFile, r *http.Request) (modified *matter.PageMatter, redirect string, errs map[string]error) {
+func (f *CFeature) ParseFormToDraft(pm *matter.PageMatter, fields fields.Fields, form context.Context, info *feature.EditorFile, r *http.Request) (modified *matter.PageMatter, redirect string, errs map[string]error) {
 	var err error
 	eid := userbase.GetCurrentEID(r)
 	printer := message.GetPrinter(r)

@@ -26,8 +26,8 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/urfave/cli/v2"
 
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-corelibs/x-text/message"
-	beContext "github.com/go-enjin/be/pkg/context"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
@@ -188,7 +188,7 @@ func (f *CFeature) ServeSettingsPage(w http.ResponseWriter, r *http.Request) {
 	f.RenderSettingsWith(matter, w, r)
 }
 
-func (f *CFeature) RenderSettingsWith(matter beContext.Context, w http.ResponseWriter, r *http.Request) {
+func (f *CFeature) RenderSettingsWith(matter clContext.Context, w http.ResponseWriter, r *http.Request) {
 	t := f.SiteFeatureTheme()
 	printer := message.GetPrinter(r)
 
@@ -204,7 +204,7 @@ func (f *CFeature) RenderSettingsWith(matter beContext.Context, w http.ResponseW
 	}
 
 	settings, keys := f.SiteSettings(r)
-	ctx := beContext.Context{
+	ctx := clContext.Context{
 		"Title":                   printer.Sprintf(`Site Settings`),
 		"UserSettings":            matter,
 		"SiteSettings":            settings,
@@ -271,8 +271,8 @@ func (f *CFeature) ReceiveSettingsChanges(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	var formMatter beContext.Context
-	if bc, ok := form["matter"].(beContext.Context); ok {
+	var formMatter clContext.Context
+	if bc, ok := form["matter"].(clContext.Context); ok {
 		formMatter = bc
 	} else if fm, ok := form["matter"].(map[string]interface{}); ok {
 		formMatter = fm
@@ -314,7 +314,7 @@ func (f *CFeature) ReceiveSettingsChanges(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	matter := beContext.Context{}
+	matter := clContext.Context{}
 
 	for k, v := range formMatter.AsDeepKeyed() {
 		if field, ok := lookup(k); ok {
@@ -351,7 +351,7 @@ func (f *CFeature) ReceiveSettingsChanges(w http.ResponseWriter, r *http.Request
 	uCtx.KebabKeys()
 	uCtx.ApplySpecific(matter)
 
-	if err = f.Site().SiteUsers().SetUserContext(r, eid, beContext.Context{"settings": uCtx}); err != nil {
+	if err = f.Site().SiteUsers().SetUserContext(r, eid, clContext.Context{"settings": uCtx}); err != nil {
 		log.ErrorRF(r, "error saving user settings changes: %v - %v", eid, err)
 		f.Site().PushErrorNotice(eid, true, berrs.UnexpectedError(printer))
 		f.RenderSettingsWith(matter, w, r)

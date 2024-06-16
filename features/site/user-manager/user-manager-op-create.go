@@ -20,15 +20,15 @@ import (
 
 	"github.com/mrz1836/go-sanitize"
 
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-corelibs/x-text/message"
-	beContext "github.com/go-enjin/be/pkg/context"
 	bePkgEditor "github.com/go-enjin/be/pkg/editor"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/userbase"
 )
 
-func (f *CFeature) opCreateUser(form beContext.Context, r *http.Request) {
+func (f *CFeature) opCreateUser(form clContext.Context, r *http.Request) {
 	eid := userbase.GetCurrentEID(r)
 	printer := message.GetPrinter(r)
 

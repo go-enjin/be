@@ -28,9 +28,9 @@ import (
 	"github.com/urfave/cli/v2"
 	"golang.org/x/net/html"
 
+	"github.com/go-corelibs/context"
 	"github.com/go-corelibs/slices"
 	"github.com/go-corelibs/x-text/message"
-	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"

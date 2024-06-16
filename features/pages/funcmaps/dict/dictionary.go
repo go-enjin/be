@@ -22,7 +22,7 @@ import (
 
 	"github.com/samber/lo"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/maps"
 )
 
@@ -35,14 +35,14 @@ func NewDictionary(argv ...interface{}) (d Dictionary, err error) {
 		if ctx, ok := argv[0].(Dictionary); ok {
 			d, err = WrapDictionary(ctx, argv[1:]...)
 			return
-		} else if ctx, ok := argv[0].(beContext.Context); ok {
+		} else if ctx, ok := argv[0].(clContext.Context); ok {
 			d, err = WrapDictionary(ctx, argv[1:]...)
 			return
 		} else if ctx, ok := argv[0].(map[string]interface{}); ok {
 			d, err = WrapDictionary(ctx, argv[1:]...)
 			return
 		}
-		err = fmt.Errorf("expected Dictionary, beContext.Context{} or map[string]interface{}, received: %T", argv[0])
+		err = fmt.Errorf("expected Dictionary, clContext.Context{} or map[string]interface{}, received: %T", argv[0])
 		return
 	}
 	d = Dictionary{}

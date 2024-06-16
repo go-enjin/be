@@ -19,7 +19,7 @@ import (
 
 	"golang.org/x/net/html"
 
-	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/request/argv"
 )
 

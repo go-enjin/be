@@ -18,8 +18,8 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/go-corelibs/context"
 	sha "github.com/go-corelibs/shasum"
-	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/userbase"
 )

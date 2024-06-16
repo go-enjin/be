@@ -25,7 +25,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 	beErrors "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
@@ -82,7 +82,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) Render(t feature.Theme, view string, ctx beContext.Context) (data []byte, err error) {
+func (f *CFeature) Render(t feature.Theme, view string, ctx clContext.Context) (data []byte, err error) {
 
 	var tt *htmlTemplate.Template
 	if tt, err = f.NewHtmlTemplateFromContext(t, view, ctx); err == nil {
@@ -97,7 +97,7 @@ func (f *CFeature) Render(t feature.Theme, view string, ctx beContext.Context) (
 	return
 }
 
-func (f *CFeature) PrepareRenderPage(t feature.Theme, ctx beContext.Context, p feature.Page) (data htmlTemplate.HTML, redirect string, err error) {
+func (f *CFeature) PrepareRenderPage(t feature.Theme, ctx clContext.Context, p feature.Page) (data htmlTemplate.HTML, redirect string, err error) {
 
 	ctx.Apply(p.Context().Copy())
 	ctx.Set("RequestTheme", t)
@@ -133,7 +133,7 @@ func (f *CFeature) PrepareRenderPage(t feature.Theme, ctx beContext.Context, p f
 	return
 }
 
-func (f *CFeature) RenderPage(t feature.Theme, ctx beContext.Context, p feature.Page) (data []byte, redirect string, err error) {
+func (f *CFeature) RenderPage(t feature.Theme, ctx clContext.Context, p feature.Page) (data []byte, redirect string, err error) {
 
 	if html, redir, ee := f.PrepareRenderPage(t, ctx, p); ee != nil {
 		var enjErr *beErrors.EnjinError

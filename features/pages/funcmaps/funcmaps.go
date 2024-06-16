@@ -24,6 +24,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-corelibs/values"
 	"github.com/go-enjin/be/features/pages/funcmaps/casting"
 	"github.com/go-enjin/be/features/pages/funcmaps/crypto"
@@ -40,7 +41,6 @@ import (
 	"github.com/go-enjin/be/features/pages/funcmaps/slices"
 	"github.com/go-enjin/be/features/pages/funcmaps/strcase"
 	fmStrings "github.com/go-enjin/be/features/pages/funcmaps/strings"
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/maps"
@@ -48,7 +48,7 @@ import (
 
 const Tag feature.Tag = "pages-funcmaps"
 
-type MakeFuncMapFn = func(ctx beContext.Context) (fn interface{})
+type MakeFuncMapFn = func(ctx clContext.Context) (fn interface{})
 
 var (
 	_ Feature     = (*CFeature)(nil)
@@ -188,7 +188,7 @@ func (f *CFeature) Shutdown() {
 	}
 }
 
-func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
+func (f *CFeature) MakeFuncMap(ctx clContext.Context) (fm feature.FuncMap) {
 	var ok bool
 	var partialsCache *fnPartialsCache
 	if len(ctx) > 0 {
@@ -234,7 +234,7 @@ func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
 	return
 }
 
-func (f *CFeature) renderContent(ctx beContext.Context, pageFormat, content string) (output template.HTML, err error) {
+func (f *CFeature) renderContent(ctx clContext.Context, pageFormat, content string) (output template.HTML, err error) {
 	var t feature.Theme
 	t, ctx = f._prepareFn(ctx)
 	if format := t.GetFormat(pageFormat); format != nil {
@@ -250,7 +250,7 @@ func (f *CFeature) renderContent(ctx beContext.Context, pageFormat, content stri
 	return
 }
 
-func (f *CFeature) _prepareFn(input beContext.Context) (t feature.Theme, ctx beContext.Context) {
+func (f *CFeature) _prepareFn(input clContext.Context) (t feature.Theme, ctx clContext.Context) {
 	if input.Len() > 0 { // dynamic funcmap
 		ctx = input
 	} else { // static funcmap
@@ -268,7 +268,7 @@ type fnPartialsCache struct {
 	tmpl *template.Template
 }
 
-func (f *CFeature) partials(cache *fnPartialsCache, ctx beContext.Context, name string, data interface{}) (output template.HTML, err error) {
+func (f *CFeature) partials(cache *fnPartialsCache, ctx clContext.Context, name string, data interface{}) (output template.HTML, err error) {
 	var t feature.Theme
 	t, ctx = f._prepareFn(ctx)
 

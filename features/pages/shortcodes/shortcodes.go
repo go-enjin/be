@@ -23,7 +23,7 @@ import (
 
 	scanner "github.com/go-enjin/go-stdlib-text-scanner"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 )
@@ -143,7 +143,7 @@ func (f *CFeature) LookupShortcode(name string) (shortcode Shortcode, ok bool) {
 	return
 }
 
-func (f *CFeature) TranslateShortcodes(content string, ctx beContext.Context) (modified string) {
+func (f *CFeature) TranslateShortcodes(content string, ctx clContext.Context) (modified string) {
 	modified = f.ProcessShortcodes(content).Render(ctx)
 	return
 }

@@ -21,9 +21,9 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
+	clContext "github.com/go-corelibs/context"
 	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/message"
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"
@@ -114,12 +114,12 @@ func ProcessActiveItems(m menu.Menu, r *http.Request) (modified menu.Menu, found
 	return
 }
 
-func (f *CFeature) PrepareServePage(ctx beContext.Context, t feature.Theme, p feature.Page, w http.ResponseWriter, r *http.Request) (out beContext.Context, modified *http.Request, stop bool) {
+func (f *CFeature) PrepareServePage(ctx clContext.Context, t feature.Theme, p feature.Page, w http.ResponseWriter, r *http.Request) (out clContext.Context, modified *http.Request, stop bool) {
 	reqLangTag := message.GetTag(r)
 
 	var siteMenu map[string]interface{}
 	if v := ctx.Get("SiteMenu"); v != nil {
-		if vm, ok := v.(beContext.Context); ok {
+		if vm, ok := v.(clContext.Context); ok {
 			siteMenu = vm
 		} else {
 			log.ErrorRF(r, "invalid .SiteMenu value type: (%T) %#+v", v, v)

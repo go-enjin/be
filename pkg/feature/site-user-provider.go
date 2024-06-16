@@ -17,7 +17,7 @@ package feature
 import (
 	"net/http"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 )
 
 type SiteUsersProvider interface {
@@ -48,15 +48,15 @@ type SiteUsersProvider interface {
 
 	UpdateUserName(r *http.Request, eid string, name string) (err error)
 	UpdateUserImage(r *http.Request, eid string, image string) (err error)
-	UpdateUserContext(r *http.Request, eid string, ctx beContext.Context) (err error)
+	UpdateUserContext(r *http.Request, eid string, ctx clContext.Context) (err error)
 	UpdateUserGroups(r *http.Request, eid string, groups ...Group) (err error)
 	UpdateUserPermissions(r *http.Request, eid string, permissions ...Action) (err error)
 
 	SetUserName(r *http.Request, eid string, name string) (err error)
 	SetUserImage(r *http.Request, eid string, image string) (err error)
-	SetUserContext(r *http.Request, eid string, ctx beContext.Context) (err error)
+	SetUserContext(r *http.Request, eid string, ctx clContext.Context) (err error)
 	SetUserSetting(r *http.Request, eid string, key string, value interface{}) (err error)
-	SetUserSettings(r *http.Request, eid string, ctx beContext.Context) (err error)
+	SetUserSettings(r *http.Request, eid string, ctx clContext.Context) (err error)
 	SetUserGroups(r *http.Request, eid string, groups ...Group) (err error)
 	SetUserPermissions(r *http.Request, eid string, permissions ...Action) (err error)
 

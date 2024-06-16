@@ -19,10 +19,10 @@ import (
 
 	"github.com/Shopify/gomail"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 )
 
-func (f *CFeature) sendUserEmail(r *http.Request, to, subject, template string, body beContext.Context) (err error) {
+func (f *CFeature) sendUserEmail(r *http.Request, to, subject, template string, body clContext.Context) (err error) {
 	var msg *gomail.Message
 	if msg, err = f.emailProvider.NewEmail(template, body); err != nil {
 		return

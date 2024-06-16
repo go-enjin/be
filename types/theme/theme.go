@@ -22,9 +22,9 @@ import (
 
 	"github.com/maruel/natural"
 
+	clContext "github.com/go-corelibs/context"
 	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/slices"
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
@@ -58,7 +58,7 @@ type CTheme struct {
 
 	formatProviders []feature.PageFormatProvider
 
-	tomlCache beContext.Context
+	tomlCache clContext.Context
 
 	sync.RWMutex
 }

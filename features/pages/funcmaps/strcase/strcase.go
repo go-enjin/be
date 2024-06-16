@@ -23,8 +23,8 @@ import (
 	"github.com/go-corelibs/x-text/cases"
 	"github.com/go-corelibs/x-text/language"
 
+	clContext "github.com/go-corelibs/context"
 	clStrings "github.com/go-corelibs/strings"
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 )
 
@@ -78,7 +78,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
+func (f *CFeature) MakeFuncMap(ctx clContext.Context) (fm feature.FuncMap) {
 	fm = feature.FuncMap{
 		"toTitle": func(langCode, input string) (title string, err error) {
 			var tag language.Tag

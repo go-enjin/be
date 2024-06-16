@@ -26,8 +26,8 @@ import (
 
 	"github.com/go-corelibs/x-text/language"
 
+	"github.com/go-corelibs/context"
 	clStrings "github.com/go-corelibs/strings"
-	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/types/page/matter"
@@ -188,7 +188,7 @@ func NewMatterFromPage(p feature.Page) (pm *matter.PageMatter, err error) {
 	return
 }
 
-func NewPageFromStub(ps *feature.PageStub, formats feature.PageFormatProvider) (p feature.Page, err error) {
+func NewPageFromStub(ps *feature.PageStub, formats feature.PageFormatProvider, enjinCtx context.Context) (p feature.Page, err error) {
 	var data []byte
 	if data, err = ps.FS.ReadFile(ps.Source); err != nil {
 		err = fmt.Errorf("error reading %v mount file: %v - %v", ps.FS.Name(), ps.Source, err)

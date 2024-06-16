@@ -17,7 +17,7 @@ package email_backup
 import (
 	"net/http"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/request"
@@ -55,7 +55,7 @@ func (f *CFeature) ServeManagePage(settingsPath string, saf feature.SiteAuthFeat
 
 	}
 
-	ctx := beContext.Context{
+	ctx := clContext.Context{
 		"FeatureInfo": f.SiteFeatureInfo(r),
 		"Provider":    f.KebabTag,
 		"FormAction":  r.URL.Path,

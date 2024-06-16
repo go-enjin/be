@@ -18,17 +18,16 @@ package shortcodes
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 )
 
 var (
 	rxNotEmpty = regexp.MustCompile(`(?msi)\S`)
 )
 
-func BasicRenderFn(node *Node, ctx beContext.Context) (output string) {
+func BasicRenderFn(node *Node, ctx clContext.Context) (output string) {
 	if content := node.Children.Render(ctx); rxNotEmpty.MatchString(content) {
 		output += `<` + node.Name + ` class="shortcode">`
 		output += content
@@ -107,7 +106,7 @@ var (
 	// - [url link=https://go-enjin.org target=_blank]Go-Enjin.org[/url]
 	UrlShortcode = Shortcode{
 		Name: "url",
-		RenderFn: func(node *Node, ctx beContext.Context) (output string) {
+		RenderFn: func(node *Node, ctx clContext.Context) (output string) {
 			// if not attributes, the contents is the URL
 			var url, label, target string
 			if v, ok := node.Attributes.Lookup["url"]; ok {
@@ -143,7 +142,7 @@ var (
 	ColorShortcode = Shortcode{
 		Name:    "color",
 		Aliases: []string{"colour"},
-		RenderFn: func(node *Node, ctx beContext.Context) (output string) {
+		RenderFn: func(node *Node, ctx clContext.Context) (output string) {
 			var fg, bg string
 
 			// foreground
@@ -182,7 +181,7 @@ var (
 
 	CodeShortcode = Shortcode{
 		Name: "code",
-		RenderFn: func(node *Node, ctx beContext.Context) (output string) {
+		RenderFn: func(node *Node, ctx clContext.Context) (output string) {
 			output += `<pre class="shortcode">`
 			output += ParseRawContents(node)
 			output += `</pre>`
@@ -193,7 +192,7 @@ var (
 	QuoteShortcode = Shortcode{
 		Name:    "quote",
 		Aliases: []string{"blockquote"},
-		RenderFn: func(node *Node, ctx beContext.Context) (output string) {
+		RenderFn: func(node *Node, ctx clContext.Context) (output string) {
 			output += `<blockquote class="shortcode">`
 			output += ParseRawContents(node)
 			output += `</blockquote>`
@@ -220,7 +219,7 @@ var (
 	ImageShortcode = Shortcode{
 		Name:    "image",
 		Aliases: []string{"img"},
-		InlineFn: func(node *Node, ctx beContext.Context) (output string) {
+		InlineFn: func(node *Node, ctx clContext.Context) (output string) {
 			var src string
 			if v, ok := node.Attributes.Lookup["image"]; ok && v != "" {
 				src = v
@@ -280,7 +279,7 @@ var (
 
 	FigureShortcode = Shortcode{
 		Name: "figure",
-		InlineFn: func(node *Node, ctx beContext.Context) (output string) {
+		InlineFn: func(node *Node, ctx clContext.Context) (output string) {
 			var src, alt, caption string
 			if v, ok := node.Attributes.Lookup["src"]; ok {
 				src = strings.ReplaceAll(v, `\"`, `"`)

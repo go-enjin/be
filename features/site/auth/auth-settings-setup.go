@@ -17,7 +17,7 @@ package auth
 import (
 	"net/http"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 )
@@ -31,7 +31,7 @@ func (f *CFeature) ServeSettingsPanelSetupSelectorPage(settingsPath string, w ht
 	}
 
 	var err error
-	ctx := beContext.Context{
+	ctx := clContext.Context{
 		"FeatureInfo": f.SiteFeatureInfo(r),
 	}
 

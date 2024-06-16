@@ -17,7 +17,7 @@ package site
 import (
 	"net/http"
 
-	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/pkg/menu"

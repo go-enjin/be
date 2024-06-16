@@ -19,7 +19,7 @@ package shortcodes
 import (
 	"github.com/go-corelibs/slices"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 )
 
 type Nodes []*Node
@@ -121,7 +121,7 @@ func (stack Nodes) Raw() (raw string) {
 	return
 }
 
-func (stack Nodes) Render(ctx beContext.Context) (output string) {
+func (stack Nodes) Render(ctx clContext.Context) (output string) {
 	for _, child := range stack {
 		output += child.Render(ctx)
 	}

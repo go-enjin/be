@@ -22,8 +22,8 @@ import (
 
 	"github.com/urfave/cli/v2"
 
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-corelibs/x-text/message"
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/signaling"
 	"github.com/go-enjin/be/pkg/log"
@@ -127,7 +127,7 @@ func (f *CFeature) RoutePage(w http.ResponseWriter, r *http.Request) {
 	f.Enjin.ServeNotFound(w, r)
 }
 
-func (f *CFeature) ServePage(p feature.Page, t feature.Theme, ctx beContext.Context, w http.ResponseWriter, r *http.Request) (err error) {
+func (f *CFeature) ServePage(p feature.Page, t feature.Theme, ctx clContext.Context, w http.ResponseWriter, r *http.Request) (err error) {
 
 	for _, ptp := range f.Enjin.GetPageTypeProcessors() {
 		var pg feature.Page

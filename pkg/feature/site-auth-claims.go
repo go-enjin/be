@@ -17,8 +17,8 @@ package feature
 import (
 	"github.com/golang-jwt/jwt/v4"
 
+	clContext "github.com/go-corelibs/context"
 	sha "github.com/go-corelibs/shasum"
-	beContext "github.com/go-enjin/be/pkg/context"
 )
 
 type CSiteAuthClaims struct {
@@ -29,7 +29,7 @@ type CSiteAuthClaims struct {
 	// Email is the email address of the user
 	Email string
 	// Context is the variable metadata related to the user
-	Context beContext.Context
+	Context clContext.Context
 
 	jwt.RegisteredClaims
 }

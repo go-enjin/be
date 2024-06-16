@@ -18,9 +18,9 @@ import (
 	"net/http"
 	"strings"
 
+	clContext "github.com/go-corelibs/context"
 	clPath "github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/message"
-	beContext "github.com/go-enjin/be/pkg/context"
 	berrs "github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
@@ -201,7 +201,7 @@ func (f *CFeature) ServeVerificationRequest(verifyTarget string, w http.Response
 
 	claims.Context.SetSpecific(gVerifyingTargetKey, claims.Context.String(gVerifyTargetKey, verifyTarget))
 
-	ctx := beContext.Context{
+	ctx := clContext.Context{
 		"FeatureInfo": f.SiteFeatureInfo(r),
 		"FormAction":  f.SiteAuthSignInPath(),
 		"Nonces": feature.Nonces{

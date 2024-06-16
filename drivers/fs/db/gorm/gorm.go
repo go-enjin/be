@@ -31,9 +31,9 @@ import (
 
 	times "github.com/go-enjin/github-com-djherbis-times"
 
+	clContext "github.com/go-corelibs/context"
 	sha "github.com/go-corelibs/shasum"
 	clStrings "github.com/go-corelibs/strings"
-	beContext "github.com/go-enjin/be/pkg/context"
 	beFs "github.com/go-enjin/be/pkg/fs"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/gob"
@@ -409,7 +409,7 @@ func (f *DBFileSystem) ReadPageMatter(path string) (pm *matter.PageMatter, err e
 		f.RUnlock()
 		return
 	}
-	var entryCtx beContext.Context
+	var entryCtx clContext.Context
 	if err = json.Unmarshal(entryCtxData, &entryCtx); err != nil {
 		err = fmt.Errorf("error unmarshalling json from gorm.File.Context data: %v - %v", path, err)
 		f.RUnlock()

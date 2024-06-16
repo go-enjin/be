@@ -18,7 +18,7 @@ import (
 	htmlTemplate "html/template"
 	textTemplate "text/template"
 
-	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-corelibs/context"
 )
 
 type FuncMapProvider interface {

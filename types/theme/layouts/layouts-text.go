@@ -17,7 +17,7 @@ package layouts
 import (
 	textTemplate "text/template"
 
-	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"

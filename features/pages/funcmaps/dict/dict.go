@@ -19,7 +19,7 @@ package dict
 import (
 	"github.com/urfave/cli/v2"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/feature"
 )
 
@@ -70,7 +70,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
-func (f *CFeature) MakeFuncMap(ctx beContext.Context) (fm feature.FuncMap) {
+func (f *CFeature) MakeFuncMap(ctx clContext.Context) (fm feature.FuncMap) {
 	fm = feature.FuncMap{
 		"dict":   NewDictionary,
 		"hasKey": HasKey,

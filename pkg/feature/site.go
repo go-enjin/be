@@ -17,7 +17,7 @@ package feature
 import (
 	"net/http"
 
-	beContext "github.com/go-enjin/be/pkg/context"
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/feature/signaling"
 )
 
@@ -26,7 +26,7 @@ type Site interface {
 	signaling.Signaling
 
 	SitePath() (path string)
-	SiteMenu(r *http.Request) (siteMenu beContext.Context)
+	SiteMenu(r *http.Request) (siteMenu clContext.Context)
 	SiteTheme() (t Theme)
 	SiteUsers() (sup SiteUsersProvider)
 	SiteAuth() (sup SiteAuthFeature)
@@ -40,14 +40,14 @@ type Site interface {
 	PushNotices(eid string, notices ...*UserNotice)
 	PullNotices(eid string) (notices UserNotices)
 
-	GetContext(eid string) (ctx beContext.Context)
-	SetContext(eid string, ctx beContext.Context)
-	ApplyContext(eid string, changes beContext.Context)
+	GetContext(eid string) (ctx clContext.Context)
+	SetContext(eid string, ctx clContext.Context)
+	ApplyContext(eid string, changes clContext.Context)
 	DeleteContextKeys(eid string, keys ...string)
 
-	PreparePage(layout, pageType, pagePath string, t Theme, r *http.Request) (pg Page, ctx beContext.Context, err error)
-	ServePreparedPage(pg Page, ctx beContext.Context, t Theme, w http.ResponseWriter, r *http.Request)
-	PrepareAndServePage(layout, pageType, pagePath string, t Theme, w http.ResponseWriter, r *http.Request, ctx beContext.Context) (err error)
+	PreparePage(layout, pageType, pagePath string, t Theme, r *http.Request) (pg Page, ctx clContext.Context, err error)
+	ServePreparedPage(pg Page, ctx clContext.Context, t Theme, w http.ResponseWriter, r *http.Request)
+	PrepareAndServePage(layout, pageType, pagePath string, t Theme, w http.ResponseWriter, r *http.Request, ctx clContext.Context) (err error)
 
 	RequireVerification(path string, w http.ResponseWriter, r *http.Request) (allowed bool)
 	MustRequireVerification(path string, w http.ResponseWriter, r *http.Request) (allowed bool)

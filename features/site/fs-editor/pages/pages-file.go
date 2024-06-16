@@ -17,8 +17,8 @@ package pages
 import (
 	"net/http"
 
+	clContext "github.com/go-corelibs/context"
 	"github.com/go-corelibs/x-text/message"
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
 	"github.com/go-enjin/be/types/page"
@@ -26,7 +26,7 @@ import (
 )
 
 func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
-	var ctx beContext.Context
+	var ctx clContext.Context
 	var info *feature.EditorFile
 	var handled bool
 	var eid string
@@ -77,7 +77,7 @@ func (f *CFeature) RenderFilePreview(w http.ResponseWriter, r *http.Request) {
 
 func (f *CFeature) RenderFileEditor(w http.ResponseWriter, r *http.Request) {
 	var pg feature.Page
-	var ctx beContext.Context
+	var ctx clContext.Context
 	var info *feature.EditorFile
 	var err error
 	var eid string

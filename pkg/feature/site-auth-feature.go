@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-corelibs/context"
 )
 
 type SiteAuthFeature interface {

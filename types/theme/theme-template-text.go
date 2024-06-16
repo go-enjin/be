@@ -17,7 +17,7 @@ package theme
 import (
 	textTemplate "text/template"
 
-	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/feature"
 )
 

@@ -15,7 +15,7 @@
 package feature
 
 import (
-	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-corelibs/context"
 )
 
 type User interface {

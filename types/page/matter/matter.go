@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"time"
 
+	clContext "github.com/go-corelibs/context"
 	clPath "github.com/go-corelibs/path"
 	sha "github.com/go-corelibs/shasum"
 	"github.com/go-corelibs/tmplstr"
 	"github.com/go-corelibs/x-text/language"
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/lang"
 	"github.com/go-enjin/be/pkg/log"
@@ -50,7 +50,7 @@ type PageMatter struct {
 	Shasum string
 
 	Body   string
-	Matter beContext.Context
+	Matter clContext.Context
 	Locale language.Tag
 
 	Created time.Time
@@ -62,7 +62,7 @@ type PageMatter struct {
 	Stub interface{}
 }
 
-func NewPageMatter(origin string, path, body string, frontMatterType FrontMatterType, matter beContext.Context) (pm *PageMatter) {
+func NewPageMatter(origin string, path, body string, frontMatterType FrontMatterType, matter clContext.Context) (pm *PageMatter) {
 	stanza := MakeStanza(frontMatterType, matter)
 	content := stanza + "\n" + body
 	now := time.Now()
@@ -86,28 +86,28 @@ func ParsePageMatter(origin string, path string, created, updated time.Time, raw
 	path = clPath.CleanWithSlash(path)
 	cleaned := tmplstr.RemoveTemplateComments(string(raw))
 
-	var ctx beContext.Context
+	var ctx clContext.Context
 	matter, content, matterType := ParseContent(cleaned)
 	switch matterType {
 	case JsonMatter:
-		if ctx, err = beContext.ParseJson(matter); err != nil {
+		if ctx, err = clContext.ParseJson(matter); err != nil {
 			err = fmt.Errorf("error parsing JSON front-matter: %v", err)
 			return
 		}
 	case TomlMatter:
-		if ctx, err = beContext.ParseToml(matter); err != nil {
+		if ctx, err = clContext.ParseToml(matter); err != nil {
 			err = fmt.Errorf("error parsing TOML front-matter: %v", err)
 			return
 		}
 	case YamlMatter:
-		if ctx, err = beContext.ParseYaml(matter); err != nil {
+		if ctx, err = clContext.ParseYaml(matter); err != nil {
 			err = fmt.Errorf("error parsing YAML front-matter: %v", err)
 			return
 		}
 	case NoneMatter:
 		fallthrough
 	default:
-		ctx = beContext.New()
+		ctx = clContext.New()
 	}
 
 	locale := language.Und
@@ -198,8 +198,8 @@ func (pm *PageMatter) DecodeJsonBodyWith(v interface{}) (err error) {
 }
 
 // DecodeJsonBody decodes the .Body from JSON and returns the context data
-func (pm *PageMatter) DecodeJsonBody() (data beContext.Context, err error) {
-	data = beContext.New()
+func (pm *PageMatter) DecodeJsonBody() (data clContext.Context, err error) {
+	data = clContext.New()
 	err = json.Unmarshal([]byte(pm.Body), &data)
 	return
 }

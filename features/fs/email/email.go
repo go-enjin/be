@@ -29,8 +29,8 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/urfave/cli/v2"
 
+	clContext "github.com/go-corelibs/context"
 	clPath "github.com/go-corelibs/path"
-	beContext "github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/feature/filesystem"
 	"github.com/go-enjin/be/pkg/maps"
@@ -119,7 +119,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 		}
 		emailTmpl := ctx.String(tmplFlag)
 		emailAccount := ctx.String(accountFlag)
-		bodyCtx := beContext.New()
+		bodyCtx := clContext.New()
 		bodyCtx.Set("Recipient", emailRecipient)
 		if p := f.Enjin.FindEmailAccount(emailAccount); p == nil {
 			err = fmt.Errorf("email account not found: %v", emailAccount)
@@ -160,7 +160,7 @@ func (f *CFeature) HasTemplate(name string) (present bool) {
 	return
 }
 
-func (f *CFeature) NewEmail(path string, bodyCtx beContext.Context) (message *gomail.Message, err error) {
+func (f *CFeature) NewEmail(path string, bodyCtx clContext.Context) (message *gomail.Message, err error) {
 
 	basename := clPath.CleanWithSlash(path)
 	basename = strings.TrimSuffix(path, ".tmpl")
@@ -179,7 +179,7 @@ func (f *CFeature) NewEmail(path string, bodyCtx beContext.Context) (message *go
 
 	var textBody, htmlBody string
 	var textSubject, htmlSubject string
-	var textMatter, htmlMatter beContext.Context
+	var textMatter, htmlMatter clContext.Context
 	if pmText {
 		if textMatter, textBody, err = f.MakeEmailBody(textName, bodyCtx); err != nil {
 			return
@@ -242,7 +242,7 @@ func (f *CFeature) NewEmail(path string, bodyCtx beContext.Context) (message *go
 	return
 }
 
-func (f *CFeature) MakeEmailBody(path string, ctx beContext.Context) (fm beContext.Context, body string, err error) {
+func (f *CFeature) MakeEmailBody(path string, ctx clContext.Context) (fm clContext.Context, body string, err error) {
 
 	var pm *matter.PageMatter
 	if pm, err = f.FindReadPageMatter(path); err != nil {
@@ -251,7 +251,7 @@ func (f *CFeature) MakeEmailBody(path string, ctx beContext.Context) (fm beConte
 	}
 	fm = pm.Matter
 
-	render := beContext.New()
+	render := clContext.New()
 	render.Apply(pm.Matter)
 	render.Apply(ctx)
 	render.Apply(f.Enjin.Context(nil))

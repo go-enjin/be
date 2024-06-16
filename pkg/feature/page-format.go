@@ -21,7 +21,7 @@ import (
 
 	"github.com/go-corelibs/x-text/language"
 
-	"github.com/go-enjin/be/pkg/context"
+	"github.com/go-corelibs/context"
 )
 
 type PageFormat interface {

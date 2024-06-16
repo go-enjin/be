@@ -18,9 +18,9 @@ import (
 	errors2 "errors"
 	"net/http"
 
+	"github.com/go-corelibs/context"
 	"github.com/go-corelibs/path"
 	"github.com/go-corelibs/x-text/message"
-	"github.com/go-enjin/be/pkg/context"
 	"github.com/go-enjin/be/pkg/editor"
 	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
