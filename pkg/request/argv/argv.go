@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -37,19 +36,6 @@ const (
 	RequestRedirectKey string      = "RequestRedirect"
 	RequestIgnoredKey  string      = "RequestArgvIgnored"
 	RequestConsumedKey string      = "RequestArgvConsumed"
-)
-
-const (
-	PatternArgs  = `((?:/:[^/]+)+?)`
-	PatternPgntn = `(/\d+/\d+/??)`
-)
-
-var (
-	RxRequestSplit = regexp.MustCompile(`/:`)
-	RxRequestCase0 = regexp.MustCompile(`^(/[^:]+?)` + PatternArgs + PatternPgntn + `$`)
-	RxRequestCase1 = regexp.MustCompile(`^(/[^:]+?)` + PatternPgntn + `$`)
-	RxRequestCase2 = regexp.MustCompile(`^(/[^:]+?)` + PatternArgs + `$`)
-	RxRequestCase3 = regexp.MustCompile(`^(/[^:]+?)$`)
 )
 
 type Argv struct {
@@ -125,56 +111,26 @@ func DecomposeHttpRequest(r *http.Request) (reqArgv *Argv) {
 
 	// path, args, pgntn
 
-	var vPath, vArgs, vPgntn string
-
-	switch {
-
-	case RxRequestCase0.MatchString(path): // all three segments
-		m := RxRequestCase0.FindAllStringSubmatch(path, 1)
-		vPath, vArgs, vPgntn = m[0][1], m[0][2], m[0][3]
-
-	case RxRequestCase1.MatchString(path): // first and third
-		m := RxRequestCase1.FindAllStringSubmatch(path, 1)
-		vPath, vPgntn = m[0][1], m[0][2]
-
-	case RxRequestCase2.MatchString(path): // first and second
-		m := RxRequestCase2.FindAllStringSubmatch(path, 1)
-		vPath, vArgs = m[0][1], m[0][2]
-
-	case RxRequestCase3.MatchString(path): // first only
-		m := RxRequestCase3.FindAllStringSubmatch(path, 1)
-		vPath = m[0][1]
+	if m := rxRequestPageSize.FindAllStringSubmatch(path, 1); len(m) == 1 {
+		numPerPage, _ = strconv.Atoi(m[0][1])
+		pageNumber, _ = strconv.Atoi(m[0][2])
+		path = strings.TrimSuffix(path, m[0][0])
+	} else if m = rxRequestPageOnly.FindAllStringSubmatch(path, 1); len(m) == 1 {
+		pageNumber, _ = strconv.Atoi(m[0][1])
+		path = strings.TrimSuffix(path, m[0][0])
 	}
 
-	path = strings.TrimSuffix(vPath, "/")
-
-	if args := vArgs; args != "" {
-		args = args[2:] // remove leading "/:"
-		parts := RxRequestSplit.Split(args, -1)
-		for _, part := range parts {
-			argv = append(argv, strings.Split(part, ","))
+	for {
+		if m := rxRequestArgv.FindAllStringSubmatch(path, 1); len(m) == 1 {
+			parts := strings.Split(m[0][1], ",")
+			argv = append(argv, parts)
+			path = strings.TrimSuffix(path, m[0][0])
+		} else {
+			break
 		}
 	}
 
-	// log.WarnF("path=%v, uri=%v\nm=%v", path, r.RequestURI, argv)
-	if pgntn := vPgntn; pgntn != "" {
-		pgntn = strings.TrimPrefix(strings.TrimSuffix(pgntn, "/"), "/")
-		parts := strings.Split(pgntn, "/")
-		// log.WarnF("pgntn: %v - %#v", pgntn, parts)
-		switch len(parts) {
-		case 1:
-			if v, err := strconv.Atoi(parts[0]); err == nil && v >= 0 {
-				pageNumber = v
-			}
-		case 2:
-			if v, err := strconv.Atoi(parts[0]); err == nil && v >= 0 {
-				numPerPage = v
-			}
-			if v, err := strconv.Atoi(parts[1]); err == nil && v >= 0 {
-				pageNumber = v
-			}
-		}
-	}
+	path = strings.TrimSuffix(path, "/")
 
 	reqArgv = &Argv{
 		Path:       path,
