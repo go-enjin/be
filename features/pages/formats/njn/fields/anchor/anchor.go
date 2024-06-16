@@ -22,7 +22,7 @@ import (
 
 	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/pages"
 )
 
 const (
@@ -102,12 +102,12 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 		}
 	}
 	data["Decorated"] = decorated
-	if attrs, classes, _, e := maps.ParseNjnFieldAttributes(field); e == nil {
+	if attrs, classes, _, e := pages.ParseNjnFieldAttributes(field); e == nil {
 		if decorated {
 			classes = append(classes, "decorated")
 			attrs["class"] = strings.Join(classes, " ")
 		}
-		if data["Attributes"], e = maps.FinalizeNjnFieldAttributes(attrs); e != nil {
+		if data["Attributes"], e = pages.FinalizeNjnFieldAttributes(attrs); e != nil {
 			err = fmt.Errorf("error finalizing njn field attributes: %v", e)
 			return
 		}
@@ -115,7 +115,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 		err = fmt.Errorf("error parsing njn field attributes: %v", e)
 		return
 	} else if decorated {
-		if data["Attributes"], e = maps.FinalizeNjnFieldAttributes(map[string]interface{}{
+		if data["Attributes"], e = pages.FinalizeNjnFieldAttributes(map[string]interface{}{
 			"class": "decorated",
 		}); e != nil {
 			err = fmt.Errorf("error finalizing njn field attributes: %v", e)
@@ -123,6 +123,6 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 		}
 	}
 
-	err = maps.FinalizeNjnFieldData(data, field, "type", "href", "text", "decorated", "attributes")
+	err = pages.FinalizeNjnFieldData(data, field, "type", "href", "text", "decorated", "attributes")
 	return
 }

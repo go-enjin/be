@@ -19,8 +19,9 @@ package img
 import (
 	"fmt"
 
+	"github.com/go-corelibs/values"
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/pages"
 )
 
 const (
@@ -83,14 +84,14 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 	data["Alt"], _ = field["alt"].(string)
 	var width, height int
 	var hasWidth, hasHeight bool
-	if width, hasWidth = maps.ParseKeyIntValue("width", field); hasWidth {
+	if width, hasWidth = values.ExtractIntValue("width", field); hasWidth {
 		data["Width"] = width
 	}
-	if height, hasHeight = maps.ParseKeyIntValue("height", field); hasHeight {
+	if height, hasHeight = values.ExtractIntValue("height", field); hasHeight {
 		data["Height"] = height
 	}
 	var attrs map[string]interface{}
-	if attrs, _, _, err = maps.ParseNjnFieldAttributes(field); err != nil {
+	if attrs, _, _, err = pages.ParseNjnFieldAttributes(field); err != nil {
 		err = fmt.Errorf("error parsing njn field attributes: %v", err)
 		return
 	} else {
@@ -100,12 +101,12 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 		if hasHeight {
 			delete(attrs, "height")
 		}
-		if data["Attributes"], err = maps.FinalizeNjnFieldAttributes(attrs); err != nil {
+		if data["Attributes"], err = pages.FinalizeNjnFieldAttributes(attrs); err != nil {
 			err = fmt.Errorf("error finalizing njn field attributes: %v", err)
 			return
 		}
 	}
 
-	err = maps.FinalizeNjnFieldData(data, field, "type", "src", "alt", "attributes")
+	err = pages.FinalizeNjnFieldData(data, field, "type", "src", "alt", "attributes")
 	return
 }

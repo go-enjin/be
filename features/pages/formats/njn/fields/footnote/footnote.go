@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/pages"
 )
 
 const (
@@ -123,6 +123,6 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 		return
 	}
 
-	err = maps.FinalizeNjnFieldData(data, field, "type", "text", "note")
+	err = pages.FinalizeNjnFieldData(data, field, "type", "text", "note")
 	return
 }

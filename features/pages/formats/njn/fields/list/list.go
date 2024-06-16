@@ -23,7 +23,7 @@ import (
 	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/pages"
 )
 
 const (
@@ -134,6 +134,6 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 	}
 	data["Items"] = combined
 
-	err = maps.FinalizeNjnFieldData(data, field, "type", "list")
+	err = pages.FinalizeNjnFieldData(data, field, "type", "list")
 	return
 }

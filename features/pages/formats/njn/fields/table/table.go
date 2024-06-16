@@ -22,7 +22,7 @@ import (
 	"github.com/iancoleman/strcase"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/pages"
 )
 
 const (
@@ -124,10 +124,10 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 
 						row := make(map[string]interface{})
 						row["Type"] = "tr"
-						if attrs, _, _, e := maps.ParseNjnFieldAttributes(bodyRowMap); e != nil {
+						if attrs, _, _, e := pages.ParseNjnFieldAttributes(bodyRowMap); e != nil {
 							err = e
 							return
-						} else if data["Attributes"], err = maps.FinalizeNjnFieldAttributes(attrs); err != nil {
+						} else if data["Attributes"], err = pages.FinalizeNjnFieldAttributes(attrs); err != nil {
 							return
 						}
 						var rowCells []interface{}
@@ -139,11 +139,11 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 										case "td":
 											rowData := make(map[string]interface{})
 											rowData["Type"] = "td"
-											if attrs, _, _, e := maps.ParseNjnFieldAttributes(bodyRowDataMap); e != nil {
+											if attrs, _, _, e := pages.ParseNjnFieldAttributes(bodyRowDataMap); e != nil {
 												err = e
 												return
 											} else {
-												if data["Attributes"], err = maps.FinalizeNjnFieldAttributes(attrs); err != nil {
+												if data["Attributes"], err = pages.FinalizeNjnFieldAttributes(attrs); err != nil {
 													return
 												}
 											}
@@ -178,6 +178,6 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 		data["Body"] = dataBody
 	}
 
-	err = maps.FinalizeNjnFieldData(data, field, "type", "head", "body", "foot")
+	err = pages.FinalizeNjnFieldData(data, field, "type", "head", "body", "foot")
 	return
 }

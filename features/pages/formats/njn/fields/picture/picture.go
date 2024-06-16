@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/pages"
 )
 
 const (
@@ -89,7 +89,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 			err = fmt.Errorf("picture field missing default img src: %v", defaultMap)
 			return
 		}
-		if err = maps.FinalizeNjnFieldData(dataDefault, defaultMap, "type", "src"); err != nil {
+		if err = pages.FinalizeNjnFieldData(dataDefault, defaultMap, "type", "src"); err != nil {
 			err = fmt.Errorf("error finalizing njn field data: %v", err)
 			return
 		}
@@ -114,6 +114,6 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 		}
 	}
 	data["Sources"] = dataSources
-	err = maps.FinalizeNjnFieldData(data, field, "type", "sources", "default")
+	err = pages.FinalizeNjnFieldData(data, field, "type", "sources", "default")
 	return
 }

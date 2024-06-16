@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/pages"
 )
 
 const (
@@ -104,9 +104,9 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 		}
 	}
 
-	if attrs, classes, _, e := maps.ParseNjnFieldAttributes(field); e != nil {
+	if attrs, classes, _, e := pages.ParseNjnFieldAttributes(field); e != nil {
 		if decorated {
-			if data["Attributes"], err = maps.FinalizeNjnFieldAttributes(map[string]interface{}{
+			if data["Attributes"], err = pages.FinalizeNjnFieldAttributes(map[string]interface{}{
 				"class": "decorated",
 			}); err != nil {
 				return
@@ -117,11 +117,11 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 			classes = append(classes, "decorated")
 			attrs["class"] = strings.Join(classes, " ")
 		}
-		if data["Attributes"], err = maps.FinalizeNjnFieldAttributes(attrs); err != nil {
+		if data["Attributes"], err = pages.FinalizeNjnFieldAttributes(attrs); err != nil {
 			return
 		}
 	}
 
-	err = maps.FinalizeNjnFieldData(data, field, "type", "decorated", "code", "attributes")
+	err = pages.FinalizeNjnFieldData(data, field, "type", "decorated", "code", "attributes")
 	return
 }

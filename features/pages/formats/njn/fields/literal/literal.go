@@ -23,7 +23,7 @@ import (
 	"github.com/go-corelibs/slices"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/pages"
 )
 
 const (
@@ -129,6 +129,6 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 	data = make(map[string]interface{})
 	data["Type"] = tagName
 
-	err = maps.FinalizeNjnFieldData(data, field, "type")
+	err = pages.FinalizeNjnFieldData(data, field, "type")
 	return
 }
