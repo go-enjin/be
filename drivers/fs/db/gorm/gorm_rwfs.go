@@ -197,7 +197,7 @@ func (f *DBFileSystem) WritePageMatter(pm *matter.PageMatter) (err error) {
 
 	mime := mimetype.Detect(data).String()
 
-	jsonMatter, _ := pm.Matter.AsJSON()
+	jsonMatter, _ := pm.Matter.ToJSON()
 
 	var entry *File
 	if entry, err = f.getEntryUnsafe(pm.Path); err != nil {
