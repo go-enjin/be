@@ -103,3 +103,15 @@ func (t Tags) Strings() (names []string) {
 	}
 	return
 }
+
+// Prune returns a new Tags list with the given tags omitted
+func (t Tags) Prune(tags ...Tag) (pruned Tags) {
+	tt := Tags(tags)
+	for _, tag := range t {
+		if tt.Has(tag) {
+			continue
+		}
+		pruned = append(pruned, tag)
+	}
+	return
+}
