@@ -183,6 +183,7 @@ type Internals interface {
 	ValidateUserRequest(action Action, w http.ResponseWriter, r *http.Request) (valid bool)
 
 	PageContextParsers() (parsers page_fields.Parsers)
+	ListPageContextFields() (kebabs []string)
 	MakePageContextField(key string, r *http.Request) (field *page_fields.Field, ok bool)
 	MakePageContextFields(r *http.Request) (fields page_fields.Fields)
 	ApplyPageContextUpdaters(r *http.Request, pages ...Page)

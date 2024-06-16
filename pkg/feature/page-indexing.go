@@ -29,18 +29,6 @@ type SearchEnjinFeature interface {
 	RemoveFromSearchIndex(stub *PageStub, p Page)
 }
 
-type PageIndexFeature interface {
-	Feature
-	AddToIndex(stub *PageStub, p Page) (err error)
-	RemoveFromIndex(stub *PageStub, p Page) (err error)
-}
-
-type QueryIndexFeature interface {
-	Feature
-	PerformQuery(input string) (stubs []*PageStub, err error)
-	PerformSelect(input string) (selected map[string]interface{}, err error)
-}
-
 type SearchDocumentMapperFeature interface {
 	Feature
 	SearchDocumentMapping(tag language.Tag) (doctype string, dm *mapping.DocumentMapping)
@@ -57,10 +45,10 @@ type KeywordProvider interface {
 
 type PageContextProvider interface {
 	Feature
+
 	FindPageStub(shasum string) (stub *PageStub)
 	PageContextValuesCount(key string) (count uint64)
-	PageContextValueCounts(key string) (counts map[interface{}]uint64)
+
 	YieldPageContextValueStubs(key string) (pairs chan *ValueStubPair)
 	YieldFilterPageContextValueStubs(include bool, key string, value interface{}) (pairs chan *ValueStubPair)
-	FilterPageContextValueStubs(include bool, key string, value interface{}) (stubs PageStubs)
 }

@@ -62,15 +62,23 @@ type PageContextParsersProvider interface {
 
 type PageContextFieldsProvider interface {
 	Feature
+	ListPageContextFields() (kebabs []string)
 	MakePageContextFields(r *http.Request) (fields page_fields.Fields)
 }
 
 type PageProvider interface {
 	Feature
+	// FindRedirection returns the actual page the given URL redirects to
 	FindRedirection(url string) (p Page)
+	// FindTranslations returns all pages that translate the given URL
 	FindTranslations(url string) (pages []Page)
+	// FindTranslationUrls returns a mapping of languages mapped to other URLs
+	// for the given url
 	FindTranslationUrls(url string) (pages map[language.Tag]string)
+	// FindPage returns the first page associated with the given language.Tag
+	// and URL path
 	FindPage(r *http.Request, tag language.Tag, url string) (p Page)
+	// LookupPrefixed returns pages with URLs prefixed with the given string
 	LookupPrefixed(prefix string) (pages []Page)
 }
 
