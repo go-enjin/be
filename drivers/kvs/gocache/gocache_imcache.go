@@ -26,16 +26,27 @@ var IMCacheShardCount = 50
 
 type IMCacheSupport interface {
 	AddIMCacheCache(name string, buckets ...string) MakeFeature
+	AddExpiringIMCacheCache(name string, expiration, interval time.Duration, buckets ...string) MakeFeature
+	AddShardIMCacheCache(name string, shards int, buckets ...string) MakeFeature
+	AddExpiringShardIMCacheCache(name string, shards int, expiration, interval time.Duration, buckets ...string) MakeFeature
 }
 
 func (f *CFeature) AddIMCacheCache(name string, buckets ...string) MakeFeature {
-	return f.AddExpiringIMCacheCache(name, NoExpiration, NoExpiration, buckets...)
+	return f.AddExpiringShardIMCacheCache(name, IMCacheShardCount, NoExpiration, NoExpiration, buckets...)
 }
 
 func (f *CFeature) AddExpiringIMCacheCache(name string, expiration, interval time.Duration, buckets ...string) MakeFeature {
+	return f.AddExpiringShardIMCacheCache(name, IMCacheShardCount, expiration, interval, buckets...)
+}
+
+func (f *CFeature) AddShardIMCacheCache(name string, shards int, buckets ...string) MakeFeature {
+	return f.AddExpiringShardIMCacheCache(name, shards, NoExpiration, NoExpiration, buckets...)
+}
+
+func (f *CFeature) AddExpiringShardIMCacheCache(name string, shards int, expiration, interval time.Duration, buckets ...string) MakeFeature {
 	f.Lock()
 	defer f.Unlock()
-	f.addCache(name, newIMCacheCache(expiration, interval))
+	f.addCache(name, newIMCacheCache(shards, expiration, interval))
 	for _, bucket := range buckets {
 		if _, err := f.caches[name].AddBucket(bucket); err != nil {
 			log.FatalDF(1, "error adding bucket to cache: %v - %v", name, bucket)

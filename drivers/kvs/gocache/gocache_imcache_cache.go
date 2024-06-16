@@ -20,25 +20,27 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
-	"github.com/go-enjin/be/pkg/maps"
 )
 
 var _ feature.KeyValueCache = (*cIMCacheCache)(nil)
 
 type cIMCacheCache struct {
+	shards     int
 	buckets    map[string]*cIMCacheStore
 	expiration time.Duration
 	interval   time.Duration
 	sync.RWMutex
 }
 
-func newIMCacheCache(expiration, interval time.Duration) (cache *cIMCacheCache) {
+func newIMCacheCache(shards int, expiration, interval time.Duration) (cache *cIMCacheCache) {
 	cache = &cIMCacheCache{
+		shards:     shards,
+		buckets:    make(map[string]*cIMCacheStore),
 		expiration: expiration,
 		interval:   interval,
-		buckets:    make(map[string]*cIMCacheStore),
 	}
 	return
 }
@@ -74,7 +76,7 @@ func (c *cIMCacheCache) AddBucket(name string) (kvs feature.KeyValueStore, err e
 		err = BucketExists
 		return
 	}
-	c.buckets[name] = newIMCacheBucket(c.expiration, c.interval)
+	c.buckets[name] = newIMCacheBucket(c.shards, c.expiration, c.interval)
 	kvs = c.buckets[name]
 	return
 }

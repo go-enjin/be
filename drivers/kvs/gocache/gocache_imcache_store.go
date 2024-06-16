@@ -32,11 +32,12 @@ var _ feature.ExtendedKeyValueStore = (*cIMCacheStore)(nil)
 type cIMCacheStore struct {
 	cache *imcache.Sharded[string, []byte]
 
+	shards     int
 	expiration time.Duration
 	interval   time.Duration
 }
 
-func newIMCacheBucket(expiration, interval time.Duration) (store *cIMCacheStore) {
+func newIMCacheBucket(shards int, expiration, interval time.Duration) (store *cIMCacheStore) {
 	var options []imcache.Option[string, []byte]
 	if expiration > 1 {
 		options = append(options, imcache.WithDefaultExpirationOption[string, []byte](expiration))
@@ -44,11 +45,15 @@ func newIMCacheBucket(expiration, interval time.Duration) (store *cIMCacheStore)
 	if interval > 1 {
 		options = append(options, imcache.WithCleanerOption[string, []byte](interval))
 	}
+	if shards < 1 {
+		shards = IMCacheShardCount
+	}
 	store = &cIMCacheStore{
+		shards:     shards,
 		expiration: expiration,
 		interval:   interval,
 		cache: imcache.NewSharded[string, []byte](
-			IMCacheShardCount,
+			shards,
 			imcache.DefaultStringHasher64{},
 			options...,
 		),
@@ -90,7 +95,7 @@ func (c *cIMCacheStore) Keys(prefix string) (keys []string) {
 	prefixLen := len(prefix)
 	for k := range c.cache.GetAll() {
 		// TODO: figure out pattern matching in the model of redis?
-		if len(k) <= prefixLen && k[:prefixLen] == prefix {
+		if len(k) >= prefixLen && k[:prefixLen] == prefix {
 			keys = append(keys, k)
 		}
 	}
@@ -99,10 +104,13 @@ func (c *cIMCacheStore) Keys(prefix string) (keys []string) {
 
 func (c *cIMCacheStore) StreamKeys(prefix string, ctx context.Context) (keys chan string) {
 	keys = make(chan string)
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	go func() {
 		prefixLen := len(prefix)
 		for k := range c.cache.GetAll() {
-			if len(k) <= prefixLen && k[:prefixLen] == prefix {
+			if len(k) >= prefixLen && k[:prefixLen] == prefix {
 				keys <- k
 			}
 			select {
@@ -121,7 +129,7 @@ func (c *cIMCacheStore) Range(prefix string, fn feature.KeyValueStoreRangeFn) {
 	prefixLen := len(prefix)
 	for k, v := range c.cache.GetAll() {
 		// TODO: figure out pattern matching in the model of redis?
-		if len(k) <= prefixLen && k[:prefixLen] == prefix {
+		if len(k) >= prefixLen && k[:prefixLen] == prefix {
 			if stop := fn(k, v); stop {
 				return
 			}
