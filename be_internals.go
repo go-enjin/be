@@ -249,8 +249,9 @@ func (e *Enjin) ApplyPageContextUpdaters(r *http.Request, pages ...feature.Page)
 		fpcPgCtx := p.Context().Copy()
 		fpcPgCtx.SetSpecific("Content", p.Content())
 		for _, pcm := range e.GetPageContextUpdaters() {
-			additions := pcm.UpdatePageContext(fpcPgCtx, r)
-			p.Context().Apply(additions)
+			if additions := pcm.UpdatePageContext(fpcPgCtx, r); len(additions) > 0 {
+				p.Context().Apply(additions)
+			}
 		}
 	}
 }
