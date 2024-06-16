@@ -239,11 +239,11 @@ func (eb *EnjinBuilder) prepareBuild() {
 	}
 
 	if eb.tag == "" {
-		log.FatalDF(2, "missing .SiteTag")
+		log.FatalDF(2, ".SiteTag is required")
 	}
 	eb.Set("SiteTag", eb.tag)
 	if eb.name == "" {
-		log.FatalDF(2, "missing .SiteName")
+		log.FatalDF(2, ".SiteName is required")
 	}
 	eb.Set("SiteName", eb.name)
 	eb.Set("SiteTagLine", eb.tagLine)
