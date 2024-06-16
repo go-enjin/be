@@ -54,7 +54,6 @@ type EnjinBase interface {
 	FindTranslations(url string) (pages Pages)
 	FindTranslationUrls(url string) (pages map[language.Tag]string)
 	FindPage(r *http.Request, tag language.Tag, url string) (p Page)
-	FindPages(prefix string) (pages []Page)
 }
 
 type Service interface {
