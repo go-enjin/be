@@ -186,6 +186,15 @@ func (e *Enjin) MakePageContextField(key string, r *http.Request) (field *page_f
 	return
 }
 
+func (e *Enjin) ListPageContextFields() (kebabs []string) {
+	for _, fp := range e.GetPageContextFieldsProviders() {
+		for _, kebab := range fp.ListPageContextFields() {
+			kebabs = append(kebabs, kebab)
+		}
+	}
+	return
+}
+
 func (e *Enjin) MakePageContextFields(r *http.Request) (list page_fields.Fields) {
 	list = page_fields.Fields{}
 
