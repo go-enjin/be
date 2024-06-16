@@ -18,17 +18,18 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"regexp"
 	"strings"
+
+	"github.com/go-corelibs/rxp"
 )
 
-var rxSplitForwardedFor = regexp.MustCompile(`\s*,\s*`)
+var rxSplitForwardedFor = rxp.Pattern{}.S("*").Text(",").S("*")
 
 func GetProxyIpFromRequest(r *http.Request) (ip string, err error) {
 	xForwardedFor := r.Header.Get("X-Forwarded-FOR")
 	switch {
 	case xForwardedFor != "":
-		if parts := rxSplitForwardedFor.Split(xForwardedFor, -1); len(parts) > 0 {
+		if parts := rxSplitForwardedFor.SplitString(xForwardedFor, -1); len(parts) > 0 {
 			// the first non-remote-addr IP address
 			if len(parts) == 1 {
 				ip = parts[0]
@@ -55,7 +56,7 @@ func GetIpFromRequest(r *http.Request) (ip string, err error) {
 
 	// Get IP from X-FORWARDED-FOR header
 	xff := r.Header.Get("X-Forwarded-For")
-	ips := rxSplitForwardedFor.Split(xff, -1)
+	ips := rxSplitForwardedFor.SplitString(xff, -1)
 	if len(ips) > 0 {
 		if netIP := net.ParseIP(ips[0]); netIP != nil {
 			ip = netIP.String()
