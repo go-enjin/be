@@ -22,7 +22,7 @@ import (
 	"strings"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/pages"
 )
 
 const (
@@ -97,15 +97,15 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 				if name, ok := st["type"].(string); ok {
 					if name == "a" {
 						st["decorated"] = "true"
-						if attrs, classes, _, e := maps.ParseNjnFieldAttributes(st); e == nil {
+						if attrs, classes, _, e := pages.ParseNjnFieldAttributes(st); e == nil {
 							classes = append(classes, "decorated")
 							attrs["class"] = strings.Join(classes, " ")
-							if st["attributes"], e = maps.FinalizeNjnFieldAttributes(attrs); e != nil {
+							if st["attributes"], e = pages.FinalizeNjnFieldAttributes(attrs); e != nil {
 								err = e
 								return
 							}
 						} else {
-							if st["attributes"], e = maps.FinalizeNjnFieldAttributes(map[string]interface{}{
+							if st["attributes"], e = pages.FinalizeNjnFieldAttributes(map[string]interface{}{
 								"class": "decorated",
 							}); e != nil {
 								err = e

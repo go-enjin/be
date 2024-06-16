@@ -22,7 +22,7 @@ import (
 	"strings"
 
 	"github.com/go-enjin/be/pkg/feature"
-	beStrings "github.com/go-enjin/be/pkg/strings"
+	"github.com/go-enjin/be/pkg/pages"
 )
 
 const (
@@ -114,9 +114,9 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			if sectionBlock, ok := section.(map[string]interface{}); ok {
 				sectionBlockType, _ := re.ParseTypeName(sectionBlock)
 				if idx == 0 {
-					sectionBlock = beStrings.AddClassNamesToNjnBlock(sectionBlock, "first", sectionBlockType)
+					sectionBlock = pages.AddClassNamesToNjnBlock(sectionBlock, "first", sectionBlockType)
 				} else {
-					sectionBlock = beStrings.AddClassNamesToNjnBlock(sectionBlock, "second", sectionBlockType)
+					sectionBlock = pages.AddClassNamesToNjnBlock(sectionBlock, "second", sectionBlockType)
 				}
 				// TODO: restrict pair block contents to only inline blocks
 				if prepared, redir, e := re.PrepareBlock(sectionBlock); e != nil {

@@ -22,7 +22,7 @@ import (
 	"strings"
 
 	"github.com/go-enjin/be/pkg/feature"
-	"github.com/go-enjin/be/pkg/maps"
+	"github.com/go-enjin/be/pkg/pages"
 )
 
 const (
@@ -125,8 +125,8 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			icon["Caption"] = v
 		}
 
-		if attrs, _, _, e := maps.ParseNjnFieldAttributes(iconMap); e == nil {
-			if icon["Attributes"], e = maps.FinalizeNjnFieldAttributes(attrs); e != nil {
+		if attrs, _, _, e := pages.ParseNjnFieldAttributes(iconMap); e == nil {
+			if icon["Attributes"], e = pages.FinalizeNjnFieldAttributes(attrs); e != nil {
 				err = fmt.Errorf("error finalizing field attributes: %v", e)
 				return
 			}
