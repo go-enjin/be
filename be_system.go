@@ -237,9 +237,12 @@ func (e *Enjin) FindPage(r *http.Request, tag language.Tag, url string) (p featu
 	return
 }
 
-func (e *Enjin) FindPages(prefix string) (pages []feature.Page) {
-	for _, provider := range e.eb.fPageProviders {
-		pages = append(pages, provider.LookupPrefixed(prefix)...)
+func (e *Enjin) FindPageStub(shasum string) (stub *feature.PageStub) {
+	// TODO: PageStub cache
+	for _, pcp := range e.eb.fPageContextProviders {
+		if stub = pcp.FindPageStub(shasum); stub != nil {
+			return
+		}
 	}
 	return
 }
@@ -269,94 +272,44 @@ func (e *Enjin) MatchFormat(filename string) (format feature.PageFormat, match s
 	return
 }
 
-func (e *Enjin) CheckMatchQL(query string) (pages []feature.Page, err error) {
+func (e *Enjin) PerformQuery(r *http.Request, format string, argv ...interface{}) (stubs feature.PageStubs, err error) {
+	for _, qef := range e.GetQueryIndexFeatures() {
+		// first query index feature wins
+		stubs, err = qef.PerformQuery(format, argv...)
+		return
+	}
+	err = fmt.Errorf("enjin no query index features present")
+	return
+}
+
+func (e *Enjin) PerformQueryPages(r *http.Request, format string, argv ...interface{}) (pages feature.Pages, err error) {
+	ctx := e.Context(r)
 	t, _ := e.GetTheme()
-	for _, queryEnjin := range e.eb.fQueryIndexFeatures {
-		if matches, ee := queryEnjin.PerformQuery(query); ee != nil {
-			err = ee
-		} else {
-			for _, stub := range matches {
-				if p, err := page.NewPageFromStub(stub, t); err != nil {
-					log.ErrorF("error making page from cache: %v", err)
+	for _, qef := range e.GetQueryIndexFeatures() {
+		// first query index feature wins
+		var stubs feature.PageStubs
+		if stubs, err = qef.PerformQuery(format, argv...); err == nil {
+			for _, stub := range stubs {
+				if pg, ee := page.NewPageFromStub(stub, t, ctx); ee != nil {
+					log.ErrorRF(r, "error making page from stub: %v", err)
 				} else {
-					pages = append(pages, p)
+					pages = append(pages, pg)
 				}
 			}
 		}
-		// first query index feature wins?
-		break
+		return
 	}
+	err = fmt.Errorf("enjin no query index features present")
 	return
 }
 
-func (e *Enjin) MatchQL(query string) (pages []feature.Page) {
-	t, _ := e.GetTheme()
-	for _, queryEnjin := range e.eb.fQueryIndexFeatures {
-		if matches, err := queryEnjin.PerformQuery(query); err != nil {
-			log.ErrorF("error performing enjin query: %v", err)
-		} else {
-			for _, stub := range matches {
-				if p, ee := page.NewPageFromStub(stub, t); ee != nil {
-					log.ErrorF("error making page from cache: %v", ee)
-				} else {
-					pages = append(pages, p)
-				}
-			}
-		}
-		// first query index feature wins?
-		break
+func (e *Enjin) PerformLookup(format string, argv ...interface{}) (columns []string, results []context.Context, err error) {
+	for _, qef := range e.GetQueryIndexFeatures() {
+		// first query index feature wins
+		columns, results, err = qef.PerformLookup(format, argv...)
+		return
 	}
-	return
-}
-
-func (e *Enjin) MatchStubsQL(query string) (stubs []*feature.PageStub) {
-	for _, queryEnjin := range e.eb.fQueryIndexFeatures {
-		var err error
-		if stubs, err = queryEnjin.PerformQuery(query); err != nil {
-			log.ErrorF("error performing enjin query: %v", err)
-		}
-		// first query index feature wins?
-		break
-	}
-	return
-}
-
-func (e *Enjin) CheckMatchStubsQL(query string) (stubs []*feature.PageStub, err error) {
-	for _, queryEnjin := range e.eb.fQueryIndexFeatures {
-		stubs, err = queryEnjin.PerformQuery(query)
-		// first query index feature wins?
-		break
-	}
-	return
-}
-
-func (e *Enjin) SelectQL(query string) (selected map[string]interface{}) {
-	for _, queryEnjin := range e.eb.fQueryIndexFeatures {
-		var err error
-		if selected, err = queryEnjin.PerformSelect(query); err != nil {
-			log.ErrorF("error performing enjin select: %v", err)
-		}
-		// first query index feature wins?
-		break
-	}
-	return
-}
-
-func (e *Enjin) CheckSelectQL(query string) (selected map[string]interface{}, err error) {
-	for _, queryEnjin := range e.eb.fQueryIndexFeatures {
-		selected, err = queryEnjin.PerformSelect(query)
-		// first query index feature wins?
-		break
-	}
-	return
-}
-
-func (e *Enjin) FindPageStub(shasum string) (stub *feature.PageStub) {
-	for _, pcp := range e.eb.fPageContextProviders {
-		if stub = pcp.FindPageStub(shasum); stub != nil {
-			return
-		}
-	}
+	err = fmt.Errorf("enjin no query index features present")
 	return
 }
 
