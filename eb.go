@@ -186,6 +186,8 @@ func New() (be *EnjinBuilder) {
 		}
 		if be.copyrightYear == "" {
 			copyrightYear = strconv.Itoa(time.Now().Year())
+		} else {
+			copyrightYear = be.copyrightYear
 		}
 		if be.copyrightNotice != "" {
 			copyrightNotice = printer.Sprint(be.copyrightNotice)

@@ -14,6 +14,11 @@
 
 package be
 
+import (
+	"strconv"
+	"time"
+)
+
 func (e *Enjin) SiteTag() (tag string) {
 	tag = e.eb.tag
 	return
@@ -35,7 +40,11 @@ func (e *Enjin) SiteCopyrightName() (name string) {
 }
 
 func (e *Enjin) SiteCopyrightYear() (year string) {
-	year = e.eb.copyrightYear
+	if e.eb.copyrightYear != "" {
+		year = e.eb.copyrightYear
+	} else {
+		year = strconv.Itoa(time.Now().Year())
+	}
 	return
 }
 
