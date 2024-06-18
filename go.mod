@@ -20,7 +20,7 @@ require (
 	github.com/foomo/htpasswd v0.0.0-20200116085101-e3a90e78da9c
 	github.com/frustra/bbcode v0.0.0-20201127003707-6ef347fbe1c8
 	github.com/gabriel-vasile/mimetype v1.4.4
-	github.com/go-chi/chi/v5 v5.0.12
+	github.com/go-chi/chi/v5 v5.0.13
 	github.com/go-chi/hostrouter v0.2.0
 	github.com/go-corelibs/context v0.1.0
 	github.com/go-corelibs/enjinql v0.1.0
@@ -32,7 +32,7 @@ require (
 	github.com/go-corelibs/maths v1.2.1
 	github.com/go-corelibs/mime v1.0.1
 	github.com/go-corelibs/path v1.4.2
-	github.com/go-corelibs/rxp v0.10.0
+	github.com/go-corelibs/rxp v0.10.1
 	github.com/go-corelibs/shasum v1.1.1
 	github.com/go-corelibs/slices v1.6.2
 	github.com/go-corelibs/strings v1.9.1
@@ -133,7 +133,7 @@ require (
 	github.com/go-corelibs/replace v1.3.2 // indirect
 	github.com/go-corelibs/runes v1.1.0 // indirect
 	github.com/go-corelibs/strcases v1.0.0 // indirect
-	github.com/go-corelibs/x-sync v0.1.0 // indirect
+	github.com/go-corelibs/x-sync v0.1.1 // indirect
 	github.com/go-curses/term v1.2.2-gocurses.1 // indirect
 	github.com/go-curses/terminfo v1.1.0 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
