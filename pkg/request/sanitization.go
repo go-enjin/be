@@ -25,8 +25,8 @@ import (
 )
 
 var (
-	rxHash10           = rxp.Pattern{}.Add(rxp.IsHash10())
-	rxAtLeastSixDigits = rxp.Pattern{}.Add(rxp.IsAtLeastSixDigits())
+	rxHash10           = rxp.Pattern{}.Add(rxp.IsHash10("c"))
+	rxAtLeastSixDigits = rxp.Pattern{}.Add(rxp.IsAtLeastSixDigits("c"))
 )
 
 func QueryFormValue(r *http.Request, key string) (value string) {
