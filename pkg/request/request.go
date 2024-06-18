@@ -16,7 +16,9 @@ package request
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"net/http/httputil"
 )
 
 // Set is a convenience wrapper for cloning the given request with one or more context key+value pairs added, will panic
@@ -61,5 +63,22 @@ func Int(r *http.Request, key interface{}) (value int, ok bool) {
 // Float64 is a convenience wrapper around Value[float64]()
 func Float64(r *http.Request, key interface{}) (value float64, ok bool) {
 	value, ok = Value[float64](r, key)
+	return
+}
+
+// Debug is a convenience wrapper around httputil.DumpRequest
+func Debug(r *http.Request) (details string) {
+	var err error
+	var data []byte
+	if data, err = httputil.DumpRequest(r, false); err == nil {
+		return string(data)
+	}
+	// provide at least some basic details regardless of the error case
+	details += fmt.Sprintf("httputil.DumpRequest error: %v\n", err)
+	details += "Host: " + r.Host + "\n"
+	details += "Referer: " + r.Referer() + "\n"
+	details += "UserAgent: " + r.UserAgent() + "\n"
+	details += "RemoteAddr: " + r.RemoteAddr + "\n"
+	details += "RequestURI: " + r.RequestURI + "\n"
 	return
 }
