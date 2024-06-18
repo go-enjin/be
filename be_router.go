@@ -49,6 +49,8 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 	})
 
 	router.Use(middleware.RequestID)
+	// gzip compression for default compressible content types
+	router.Use(middleware.Compress(5))
 	router.Use(e.eb.fPanicHandler.PanicHandler)
 	router.Use(argv.Middleware)
 
@@ -98,9 +100,6 @@ func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
 
 	// logging after requests modified so proxy has a chance to populate ip
 	router.Use(middleware.Logger)
-
-	// gzip compression for default compressible content types
-	router.Use(middleware.Compress(5))
 
 	// these should be request modifiers instead of enjin middleware
 	router.Use(e.eb.fLocaleHandler.LocaleHandler)
