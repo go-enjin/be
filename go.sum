@@ -211,8 +211,8 @@ github.com/go-corelibs/enjinql v0.1.0 h1:K5e1zy3t1Dqg1YmgaAh6Rcx9yUmlnHuqpEU2fFZ
 github.com/go-corelibs/enjinql v0.1.0/go.mod h1:z+wKx+ukEtYFjxWuy40qsHqemNou+YmCKcyvX6r7W4M=
 github.com/go-corelibs/env v1.1.2 h1:VPLiwoKdJHrap4Vuaz5y/DtxNcnZto8UqzMk+qB4Jmk=
 github.com/go-corelibs/env v1.1.2/go.mod h1:64O3uw0nEZR/0QXWkAbAqjX5dEoEOgOfHH+lwuouXbw=
-github.com/go-corelibs/fmtstr v1.2.0 h1:4OI9aT8zz4nBiQL3Xhi8LFmNeAeT8IUZroVVrg8Ew/I=
-github.com/go-corelibs/fmtstr v1.2.0/go.mod h1:bxaIqxRRkTQ/R4IdcpTX+yKaQYVP1DtU7xj7/17VPeE=
+github.com/go-corelibs/fmtstr v1.2.1 h1:Sy6Tt2CQN3HLmfIa/rwbItI0J7wW5zLNsoSdb/4Jc9c=
+github.com/go-corelibs/fmtstr v1.2.1/go.mod h1:Fk4KpahEdjWx66E1wqHxvRijz4CEIynKgtZL86u+0AE=
 github.com/go-corelibs/globs v1.0.0 h1:x8GL5Zj1Py488O1G87hdJdkf/5wtY86s5mvuE4821KE=
 github.com/go-corelibs/globs v1.0.0/go.mod h1:k3BuGZ+CsTe7Vg5oJyNhkypIZCdn2pw97E4hTm3WXZo=
 github.com/go-corelibs/go-sqlbuilder v1.1.0 h1:BoJG0OvKMVtmiRdV11FPF0dgBNUr4G+wkpbTfNvHe/E=
@@ -221,8 +221,8 @@ github.com/go-corelibs/hrx v1.1.4 h1:FhdCBhD5tS9HwwSkAbPoXrwnTdAIB8bmATSooSaC/Cs
 github.com/go-corelibs/hrx v1.1.4/go.mod h1:bKzt/67rw7sFSGyqXvdvTnInYDsMw/3fxP5tipUKHU0=
 github.com/go-corelibs/htmlcss v1.0.1 h1:om+Jw3YCRkd6N3BI8+cUSfEE8iqhlYIN13PH1tn/oek=
 github.com/go-corelibs/htmlcss v1.0.1/go.mod h1:KtnGJ4zjHPRt/n05p6U7BJ0LAQZnQ96Ca2W5DUic2xw=
-github.com/go-corelibs/lang v0.3.1 h1:EnpGNEuH0zHeXyilq4QzgwLt+qKVrTAmpOSGw/OOH+4=
-github.com/go-corelibs/lang v0.3.1/go.mod h1:1cL4l7h4YQ2pyH2Ph00akgak7rzK73VA0DJ+yTvy3Ls=
+github.com/go-corelibs/lang v0.3.2 h1:yUGY3n7cCA+agd/iLqCMDx0slJy+jAYceWkH73oA458=
+github.com/go-corelibs/lang v0.3.2/go.mod h1:YAvChvq14nqSylcNufRoAO0mZ3lIB7HbJ3rrnES6itA=
 github.com/go-corelibs/maps v1.2.0 h1:lJmsFz6L5wOdyRKJMNmFpD3YtHSMsM8uYOWQcnXmlyg=
 github.com/go-corelibs/maps v1.2.0/go.mod h1:j5WTMm2V1JT+XLe4vEQXGcf8P7dp29hCJf48TxvjWCA=
 github.com/go-corelibs/maths v1.2.1 h1:FE7MWp909VSmkmKXAfP2K6TD30+HqrR7LvcDFqR5PeQ=
@@ -255,8 +255,8 @@ github.com/go-corelibs/templates v1.0.1 h1:yslLS884sSk+VdJae1SURBW/oWOseMrVgxbvL
 github.com/go-corelibs/templates v1.0.1/go.mod h1:3HVfFiJfqtNRKp3bKwTtNDkBLTM35UMqgFziTL7QkFE=
 github.com/go-corelibs/testdb v1.0.2 h1:IyOIbRT4cIxYLbuHGCoUVgP03hmhqXOU9ZfRpjcnN90=
 github.com/go-corelibs/testdb v1.0.2/go.mod h1:nzk4JAHTbLjFC+XdFgDc7lGBZiLHrHH5fXomxnbiz0U=
-github.com/go-corelibs/tmplstr v1.0.1 h1:7OEsziymrfH6vv63+RMA1+93ZB34Xq3nNkHFhr8vASA=
-github.com/go-corelibs/tmplstr v1.0.1/go.mod h1:sJZG+GfIvuEQVihKNDcrMrXeWSRlzxN0BCXKimB2OBc=
+github.com/go-corelibs/tmplstr v1.1.0 h1:YgtORMQt9Sf7FwAjw1/TmFo5CBSh/ZWCbdMaPjqhjAY=
+github.com/go-corelibs/tmplstr v1.1.0/go.mod h1:sJZG+GfIvuEQVihKNDcrMrXeWSRlzxN0BCXKimB2OBc=
 github.com/go-corelibs/values v1.2.1 h1:saSoFo1IqIudaRIb+g/vQTlxg86fapfSseXVH/HwE0Y=
 github.com/go-corelibs/values v1.2.1/go.mod h1:BAETQqyvqWoEaR5mKD0QcNKpU65AgqzfY3bQU2KUaz4=
 github.com/go-corelibs/words v1.0.3 h1:vGKooB8zsyK4nBS6EYWN9PCBl1lUU48rDa1sI4GxFXQ=

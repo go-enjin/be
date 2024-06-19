@@ -27,7 +27,7 @@ require (
 	github.com/go-corelibs/env v1.1.2
 	github.com/go-corelibs/go-sqlbuilder v1.1.0
 	github.com/go-corelibs/htmlcss v1.0.1
-	github.com/go-corelibs/lang v0.3.1
+	github.com/go-corelibs/lang v0.3.2
 	github.com/go-corelibs/maps v1.2.0
 	github.com/go-corelibs/maths v1.2.1
 	github.com/go-corelibs/mime v1.0.1
@@ -37,7 +37,7 @@ require (
 	github.com/go-corelibs/slices v1.6.2
 	github.com/go-corelibs/strings v1.9.1
 	github.com/go-corelibs/templates v1.0.1
-	github.com/go-corelibs/tmplstr v1.0.1
+	github.com/go-corelibs/tmplstr v1.1.0
 	github.com/go-corelibs/values v1.2.1
 	github.com/go-corelibs/words v1.0.3
 	github.com/go-corelibs/x-text v0.14.2
@@ -127,7 +127,7 @@ require (
 	github.com/ganbarodigital/go_glob v1.0.0 // indirect
 	github.com/gdamore/encoding v1.0.1 // indirect
 	github.com/go-corelibs/diff v1.1.1 // indirect
-	github.com/go-corelibs/fmtstr v1.2.0 // indirect
+	github.com/go-corelibs/fmtstr v1.2.1 // indirect
 	github.com/go-corelibs/globs v1.0.0 // indirect
 	github.com/go-corelibs/regexps v1.2.0 // indirect
 	github.com/go-corelibs/replace v1.3.2 // indirect
