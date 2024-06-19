@@ -366,6 +366,12 @@ func (eb *EnjinBuilder) Build() feature.Runner {
 			Category: "general",
 		},
 		&cli.StringFlag{
+			Name:     "debug-pprof",
+			Usage:    "set pprof handler path for runtime profiling, requires --debug",
+			EnvVars:  eb.MakeEnvKeys("DEBUG_PPROF"),
+			Category: "general",
+		},
+		&cli.StringFlag{
 			Name:     "log-level",
 			Usage:    "set logging level: error, warn, info, debug or trace",
 			EnvVars:  eb.MakeEnvKeys("LOG_LEVEL"),

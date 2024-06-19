@@ -16,12 +16,17 @@ package be
 
 import (
 	"net/http"
+	"net/http/pprof"
+	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/urfave/cli/v2"
 
 	"github.com/go-corelibs/maps"
+	clPath "github.com/go-corelibs/path"
 	clStrings "github.com/go-corelibs/strings"
 	"github.com/go-enjin/be/pkg/feature"
 	"github.com/go-enjin/be/pkg/log"
@@ -33,6 +38,35 @@ import (
 
 func (e *Enjin) setupRouter(ctx *cli.Context, router *chi.Mux) (err error) {
 	e.Emit(signals.PreEnjinSetupRouter, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
+
+	if e.debug {
+		if value := ctx.String("debug-pprof"); value != "" {
+			path := clPath.TrimSlash(filepath.Clean("/"+value)) + "/"
+			pathLen := len(path)
+			profiles := map[string]http.Handler{
+				"goroutine":    pprof.Handler("goroutine"),    // stack traces of all current goroutines
+				"heap":         pprof.Handler("heap"),         // a sampling of memory allocations of live objects
+				"allocs":       pprof.Handler("allocs"),       // a sampling of all past memory allocations
+				"threadcreate": pprof.Handler("threadcreate"), // stack traces that led to the creation of new OS threads
+				"block":        pprof.Handler("block"),        // stack traces that led to blocking on synchronization primitives
+				"mutex":        pprof.Handler("mutex"),        // stack traces of holders of contended mutexes
+			}
+			log.WarnF("including all pprof handlers: %s<goroutine|heap|allocs|threadcreate|block|mutex>", path)
+			router.Use(func(next http.Handler) http.Handler {
+				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					if strings.HasPrefix(r.URL.Path, path) {
+						before, _, _ := strings.Cut(r.URL.Path[pathLen:], "/")
+						if profile, ok := profiles[before]; ok {
+							profile.ServeHTTP(w, r)
+							return
+						}
+					}
+					next.ServeHTTP(w, r)
+				})
+			})
+
+		}
+	}
 
 	router.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
