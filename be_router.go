@@ -31,7 +31,7 @@ import (
 	"github.com/go-enjin/be/pkg/signals"
 )
 
-func (e *Enjin) setupRouter(router *chi.Mux) (err error) {
+func (e *Enjin) setupRouter(ctx *cli.Context, router *chi.Mux) (err error) {
 	e.Emit(signals.PreEnjinSetupRouter, feature.EnjinTag.String(), interface{}(e).(feature.Internals))
 
 	router.Use(func(next http.Handler) http.Handler {

@@ -322,7 +322,7 @@ func (e *Enjin) startupFeatures(ctx *cli.Context) (err error) {
 func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 
 	e.router = chi.NewRouter()
-	if err = e.setupRouter(e.router); err != nil {
+	if err = e.setupRouter(ctx, e.router); err != nil {
 		return
 	}
 
@@ -375,7 +375,7 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 		}
 
 		enjin.router = chi.NewRouter()
-		if err = enjin.setupRouter(enjin.router); err != nil {
+		if err = enjin.setupRouter(ctx, enjin.router); err != nil {
 			return
 		}
 
