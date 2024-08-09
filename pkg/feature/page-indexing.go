@@ -47,8 +47,4 @@ type PageContextProvider interface {
 	Feature
 
 	FindPageStub(shasum string) (stub *PageStub)
-	PageContextValuesCount(key string) (count uint64)
-
-	YieldPageContextValueStubs(key string) (pairs chan *ValueStubPair)
-	YieldFilterPageContextValueStubs(include bool, key string, value interface{}) (pairs chan *ValueStubPair)
 }
