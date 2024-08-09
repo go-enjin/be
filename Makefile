@@ -25,7 +25,7 @@ MAKEFILE_VERSION = v0.0.6
 
 SHELL = /bin/bash
 
-GOLANG ?= 1.22.4
+GOLANG ?= 1.22.6
 GO_MOD ?= 1022
 
 GOIMPORT_LOCALS += github.com/go-corelibs
