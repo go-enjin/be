@@ -84,7 +84,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 
 func (f *CFeature) MakeFuncMap(ctx clContext.Context) (fm feature.FuncMap) {
 	fm = feature.FuncMap{
-		"loAssignStringAny": lo.Assign[string, interface{}],
+		"loAssignStringAny": lo.Assign[string, interface{}, map[string]interface{}],
 	}
 	return
 }
