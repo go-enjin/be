@@ -78,7 +78,6 @@ func (e *Enjin) setupRouter(ctx *cli.Context, router *chi.Mux) (err error) {
 
 			w.Header().Set("Server", e.ServerName())
 			next.ServeHTTP(w, r)
-			return
 		})
 	})
 
