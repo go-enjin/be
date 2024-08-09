@@ -409,18 +409,3 @@ func (f *CFeature) LookupPrefixed(prefix string) (pages []feature.Page) {
 
 	return
 }
-
-func (f *CFeature) YieldPageContextValueStubs(key string) (pairs chan *feature.ValueStubPair) {
-	panic("deprecated")
-	return
-}
-
-func (f *CFeature) YieldFilterPageContextValueStubs(include bool, key string, value interface{}) (pairs chan *feature.ValueStubPair) {
-	panic("deprecated")
-	return
-}
-
-func (f *CFeature) PageContextValuesCount(key string) (count uint64) {
-	panic("deprecated")
-	return
-}
