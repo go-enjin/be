@@ -19,7 +19,7 @@
 
 .PHONY: all help compile generate build locales
 .PHONY: be-update local unlocal tidy
-.PHONY: deps fmt reportcard
+.PHONY: deps fmt reportcard govulncheck
 
 MAKEFILE_VERSION = v0.0.6
 
@@ -85,7 +85,7 @@ all: help
 help:
 	@echo "usage: make <compile|generate|build|locales>"
 	@echo "       make <be-update|local|unlocal|tidy>"
-	@echo "       make <deps|fmt|reportcard>"
+	@echo "       make <deps|fmt|reportcard|govulncheck>"
 
 export GO_BIN=$(shell which go)
 export GOFMT_BIN=$(shell which gofmt)
@@ -310,6 +310,10 @@ reportcard:
 	  | while read LINE; do \
 	    echo "$${LINE}\n"; \
 	  done`
+
+govulncheck:
+	@echo "#: govulncheck (verbose)"
+	@${GOVULNCHECK_BIN} -tags all ./...
 
 clean:
 	@if [ -n "${CLEAN_FILES}" ]; then \
