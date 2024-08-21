@@ -137,8 +137,13 @@ func buildCommonLogLine(req *http.Request, url *url.URL, ts time.Time, status in
 	buf = append(buf, `] `...)
 	buf = append(buf, `- `...)
 	buf = append(buf, req.Host...)
-	if v, ok := req.Context().Value("enjin-id").(string); ok {
+	if v := request.GetEnjinID(req); v != "" {
 		buf = append(buf, fmt.Sprintf(" [%v]", v)...)
+	} else {
+		buf = append(buf, ` [nil]`...)
+	}
+	if username, _, ok := req.BasicAuth(); ok {
+		buf = append(buf, fmt.Sprintf(" [%v]", username)...)
 	} else {
 		buf = append(buf, ` [nil]`...)
 	}
