@@ -118,8 +118,8 @@ func NewTagged(tag feature.Tag) MakeFeature {
 
 func (f *CFeature) UsageNotes() (notes []string) {
 	category := f.Tag().String()
-	patternKey := globals.MakeFlagEnvKey(category, "PROTECT_PATH_REGEX")
-	groupKey := globals.MakeFlagEnvKey(category, "PROTECT_PATH_GROUP")
+	patternKey := globals.MakeFlagEnvKey(category, "REGEX")
+	groupKey := globals.MakeFlagEnvKey(category, "GROUP")
 
 	notes = []string{
 		"this feature supports dynamically restricting content through environment variables",
@@ -366,7 +366,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	for fpk, fpv := range foundRegexs {
 		if fgv, ok := foundGroups[fpk]; ok {
 			f.Protect(fpv, fgv)
-			log.DebugF(`"%v" group required for access to: "%v"`, fgv, fpv)
+			log.WarnF(`"%v" group required for access to: "%v"`, fgv, fpv)
 		} else {
 			brokenPairs = append(brokenPairs, fpk)
 		}
@@ -632,8 +632,6 @@ func (f *CFeature) isUserInGroup(user string, group feature.Group) (present bool
 	}
 	return
 }
-
-var rxProtectPath = regexp.MustCompile(`^\s*[_A-Z0-9]+?PROTECT_PATH_(REGEX|GROUP)_([A-Z0-9]+[_A-Z0-9]+?)\s*$`)
 
 var UnauthContentType = "text/plain"
 var UnauthResponse = "401 - " + http.StatusText(http.StatusUnauthorized)
