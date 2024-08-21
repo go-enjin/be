@@ -60,12 +60,12 @@ require (
 	github.com/pkg/profile v1.7.0
 	github.com/polds/logrus-papertrail-hook v0.0.0-20180214143432-bcfe7b72c1a4
 	github.com/redis/go-redis/v9 v9.6.1
-	github.com/samber/lo v1.46.0
+	github.com/samber/lo v1.47.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spkg/zipfs v0.7.1
 	github.com/tdewolff/minify/v2 v2.20.37
 	github.com/tg123/go-htpasswd v1.2.2
-	github.com/urfave/cli/v2 v2.27.3
+	github.com/urfave/cli/v2 v2.27.4
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	github.com/xlzd/gotp v0.1.0
 	github.com/yeqown/go-qrcode/v2 v2.2.4
