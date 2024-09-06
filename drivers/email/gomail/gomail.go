@@ -55,7 +55,8 @@ type CFeature struct {
 
 	accounts map[string]SmtpConfig
 
-	sync.RWMutex
+	m  *sync.RWMutex
+	wg sync.WaitGroup
 }
 
 func New() MakeFeature {
@@ -74,6 +75,7 @@ func NewTagged(tag feature.Tag) MakeFeature {
 func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.accounts = make(map[string]SmtpConfig)
+	f.m = &sync.RWMutex{}
 }
 
 func (f *CFeature) AddAccount(key string, cfg SmtpConfig) MakeFeature {
@@ -167,7 +169,11 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 			message.SetHeader("To", recipient)
 			message.SetHeader("Subject", "Test message")
 			message.SetBody("text/plain", "This is a test of sending emails from the "+account+" account.")
-			err = f.SendEmail(nil, account, message)
+			if err = f.SendEmail(nil, account, message); err != nil {
+				return
+			}
+			f.wg.Wait() // f.SendMail uses goroutines for fast-path optimization
+			fmt.Printf("test email sent to: %s\n", recipient)
 			return
 		},
 	})
@@ -226,9 +232,13 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	return
 }
 
+func (f *CFeature) Shutdown() {
+	f.wg.Wait()
+}
+
 func (f *CFeature) HasEmailAccount(account string) (present bool) {
-	f.RLock()
-	defer f.RUnlock()
+	f.m.RLock()
+	defer f.m.RUnlock()
 	_, present = f.accounts[account]
 	return
 }
@@ -236,24 +246,47 @@ func (f *CFeature) HasEmailAccount(account string) (present bool) {
 func (f *CFeature) SendEmail(r *http.Request, account string, message *gomail.Message) (err error) {
 	var ok bool
 	var cfg SmtpConfig
-	f.RLock()
+	f.m.RLock()
 	if cfg, ok = f.accounts[account]; !ok {
-		f.RUnlock()
+		f.m.RUnlock()
 		err = fmt.Errorf("account not found")
 		return
 	}
-	f.RUnlock()
+	f.m.RUnlock()
 	if v := message.GetHeader("To"); len(v) == 0 {
 		err = fmt.Errorf("message is missing the recipient, please set the \"To\" header before calling .SendEmail")
 		return
 	}
+	f.wg.Add(1)
 	go func() {
+		defer f.wg.Done()
 		message.SetHeader("From", cfg.Email)
-		dialer := gomail.NewDialer(cfg.Host, cfg.Port, cfg.Username, cfg.Password)
-		log.DebugRF(r, "dialing and sending message from: %v, to: %v", cfg.Email, message.GetHeader("To"))
-		if ee := dialer.DialAndSend(message); ee != nil {
-			log.ErrorRF(r, "error dialing and sending message from: %v, to: %v - %v", cfg.Email, message.GetHeader("To"), ee)
+
+		var try int
+		var err error
+		for try = 0; try < 5; try++ {
+			log.DebugRF(r, "dialing and sending message from: %v, to: %v (%d tries)", cfg.Email, message.GetHeader("To"), try)
+			if err = f.dialAndSend(cfg, message); err == nil {
+				return
+			}
 		}
+
+		log.ErrorRF(r, "failed five times to send email: %v", err)
 	}()
+	return
+}
+
+func (f *CFeature) dialAndSend(cfg SmtpConfig, message *gomail.Message) (err error) {
+
+	dialer := gomail.NewDialer(cfg.Host, cfg.Port, cfg.Username, cfg.Password)
+	if err = dialer.DialAndSend(message); err != nil {
+		err = fmt.Errorf(
+			"error dialing and sending message from: %v, to: %v - %v",
+			cfg.Email,
+			message.GetHeader("To"),
+			err,
+		)
+	}
+
 	return
 }
