@@ -168,8 +168,10 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 
 func (f *CFeature) FilterPageContext(themeCtx, pageCtx context.Context, r *http.Request) (out context.Context) {
 	out = themeCtx
-	out.SetSpecific("SiteSearchable", true)
-	out.SetSpecific("SiteSearchPath", f.path)
+	if !out.Has("SiteSearchable") {
+		out.SetSpecific("SiteSearchable", true)
+		out.SetSpecific("SiteSearchPath", f.path)
+	}
 	return
 }
 
