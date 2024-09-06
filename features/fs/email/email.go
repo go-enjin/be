@@ -131,6 +131,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 			if err = p.SendEmail(nil, emailAccount, message); err != nil {
 				err = fmt.Errorf("error sending email: %v", err)
 			} else {
+				p.Shutdown() // allow gomail to complete it's work
 				err = fmt.Errorf("test email sent to: %v", emailRecipient)
 			}
 		}
