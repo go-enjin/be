@@ -39,19 +39,28 @@ var (
 	_ MakeFeature = (*CFeature)(nil)
 )
 
+var (
+	DefaultRetries int = 5
+)
+
 type Feature interface {
 	feature.Feature
 	feature.EmailSender
+
+	RetrySendEmail(retries int, r *http.Request, account string, message *gomail.Message) (err error)
 }
 
 type MakeFeature interface {
-	Make() Feature
-
+	SetDefaultRetries(value int) MakeFeature
 	AddAccount(name string, cfg SmtpConfig) MakeFeature
+
+	Make() Feature
 }
 
 type CFeature struct {
 	feature.CFeature
+
+	retries int
 
 	accounts map[string]SmtpConfig
 
@@ -76,6 +85,20 @@ func (f *CFeature) Init(this interface{}) {
 	f.CFeature.Init(this)
 	f.accounts = make(map[string]SmtpConfig)
 	f.m = &sync.RWMutex{}
+	f.retries = DefaultRetries
+}
+
+// SetRetries overrides the DefaultRetries value for accounts configured with
+// this feature instance.
+//
+// Negative values apply the DefaultRetries, zero means "do not retry after the
+// first attempt".
+func (f *CFeature) SetDefaultRetries(value int) MakeFeature {
+	if value < 0 {
+		value = DefaultRetries
+	}
+	f.retries = value
+	return f
 }
 
 func (f *CFeature) AddAccount(key string, cfg SmtpConfig) MakeFeature {
