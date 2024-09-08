@@ -28,6 +28,7 @@ import (
 
 	"github.com/go-corelibs/maps"
 	"github.com/go-enjin/be/pkg/feature"
+	"github.com/go-enjin/be/pkg/forms"
 	"github.com/go-enjin/be/pkg/globals"
 	"github.com/go-enjin/be/pkg/log"
 )
@@ -226,9 +227,9 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	return
 }
 
-func startupCheck[T string | int](ctx *cli.Context, tag, key string) (value T, err error) {
-	var flagName string
-	if flagName = globals.MakeFlagName(tag, key); ctx.IsSet(flagName) {
+func startupCheck[T string | int](ctx *cli.Context, tag, key string) (value T, flagName string, present bool) {
+	flagName = globals.MakeFlagName(tag, key)
+	if present = ctx.IsSet(flagName); present {
 		v := ctx.Value(flagName)
 		switch t := v.(type) {
 		case string:
@@ -243,7 +244,15 @@ func startupCheck[T string | int](ctx *cli.Context, tag, key string) (value T, e
 			}
 		}
 	}
-	err = fmt.Errorf("missing --" + flagName)
+	return
+}
+
+func startupMust[T string | int](ctx *cli.Context, tag, key string) (value T, err error) {
+	var present bool
+	var flagName string
+	if value, flagName, present = startupCheck[T](ctx, tag, key); !present {
+		err = fmt.Errorf("missing --" + flagName)
+	}
 	return
 }
 
@@ -257,20 +266,36 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	for _, key := range maps.SortedKeys(f.accounts) {
 		account := f.accounts[key]
 
-		if account.Host, err = startupCheck[string](ctx, tag, key+"-host"); err != nil {
+		// required
+		if account.Host, err = startupMust[string](ctx, tag, key+"-host"); err != nil {
 			return
-		} else if account.Port, err = startupCheck[int](ctx, tag, key+"-port"); err != nil {
+		} else if account.Port, err = startupMust[int](ctx, tag, key+"-port"); err != nil {
 			return
-		} else if account.Username, err = startupCheck[string](ctx, tag, key+"-username"); err != nil {
+		} else if account.Username, err = startupMust[string](ctx, tag, key+"-username"); err != nil {
 			return
-		} else if account.Password, err = startupCheck[string](ctx, tag, key+"-password"); err != nil {
+		} else if account.Password, err = startupMust[string](ctx, tag, key+"-password"); err != nil {
 			return
-		} else if account.Email, err = startupCheck[string](ctx, tag, key+"-email"); err != nil {
-			return
-		} else if account.Email = sanitize.Email(account.Email, false); account.Email == "" {
-			flagName := globals.MakeFlagName(tag, key+"-email")
+		}
+
+		// optional
+		if display, flagName, present := startupCheck[string](ctx, tag, key+"-display"); !present {
+			// nop
+		} else if sanitized := forms.StrictSanitize(display); sanitized != display {
 			err = fmt.Errorf("invalid --" + flagName + " value")
 			return
+		}
+
+		if email, flagName, present := startupCheck[string](ctx, tag, key+"-email"); !present {
+			// nop
+		} else if sanitized := sanitize.Email(email, false); sanitized != email {
+			err = fmt.Errorf("invalid --" + flagName + " value")
+			return
+		}
+
+		if retries, _, present := startupCheck[int](ctx, tag, key+"-retries"); present {
+			account.Retries = retries
+		} else {
+			account.Retries = f.retries
 		}
 
 		f.accounts[key] = account
