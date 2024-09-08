@@ -331,7 +331,11 @@ func (f *CFeature) SendEmail(r *http.Request, account string, message *gomail.Me
 	f.wg.Add(1)
 	go func() {
 		defer f.wg.Done()
-		message.SetHeader("From", cfg.Email)
+		if cfg.Display == "" {
+			message.SetHeader("From", cfg.Email)
+		} else {
+			message.SetHeader("From", fmt.Sprintf("%s <%s>", cfg.Display, cfg.Email))
+		}
 
 		var try int
 		var err error
