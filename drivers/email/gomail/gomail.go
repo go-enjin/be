@@ -360,13 +360,14 @@ func (f *CFeature) RetrySendEmail(retries int, r *http.Request, account string, 
 		var try int
 		var err error
 		for try = 0; try <= retries; try++ {
-			log.DebugRF(r, "dialing and sending message from: %v, to: %v (%d tries)", cfg.Email, message.GetHeader("To"), try)
+			log.DebugRF(r, "dialing and sending message from: %v, to: %v (attempt %d/%d)", cfg.Email, message.GetHeader("To"), try, retries)
 			if err = f.dialAndSend(cfg, message); err == nil {
 				return
 			}
+			log.ErrorRF(r, "error dialing and sending message from: %v", err)
 		}
 
-		log.ErrorRF(r, "failed five times to send email: %v", err)
+		log.ErrorRF(r, "%d dial and send retries failed", retries)
 	}()
 	return
 }
