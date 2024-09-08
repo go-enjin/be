@@ -320,7 +320,7 @@ func (f *CFeature) SendEmail(r *http.Request, account string, message *gomail.Me
 	f.m.RLock()
 	if cfg, ok = f.accounts[account]; !ok {
 		f.m.RUnlock()
-		err = fmt.Errorf("account not found")
+		err = fmt.Errorf("account not found: %q", account)
 		return
 	}
 	f.m.RUnlock()
