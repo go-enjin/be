@@ -48,6 +48,8 @@ type Feature interface {
 	feature.Feature
 	feature.EmailSender
 
+	// RetrySendEmail is what SendEmail uses to send emails. If the given retries
+	// value is negative, will use the account's retries value
 	RetrySendEmail(retries int, r *http.Request, account string, message *gomail.Message) (err error)
 }
 
@@ -315,6 +317,10 @@ func (f *CFeature) HasEmailAccount(account string) (present bool) {
 }
 
 func (f *CFeature) SendEmail(r *http.Request, account string, message *gomail.Message) (err error) {
+	return f.RetrySendEmail(-1, r, account, message)
+}
+
+func (f *CFeature) RetrySendEmail(retries int, r *http.Request, account string, message *gomail.Message) (err error) {
 	var ok bool
 	var cfg SmtpConfig
 	f.m.RLock()
@@ -328,6 +334,9 @@ func (f *CFeature) SendEmail(r *http.Request, account string, message *gomail.Me
 		err = fmt.Errorf("message is missing the recipient, please set the \"To\" header before calling .SendEmail")
 		return
 	}
+	if retries < 0 {
+		retries = cfg.Retries
+	}
 	f.wg.Add(1)
 	go func() {
 		defer f.wg.Done()
@@ -339,7 +348,7 @@ func (f *CFeature) SendEmail(r *http.Request, account string, message *gomail.Me
 
 		var try int
 		var err error
-		for try = 0; try < 5; try++ {
+		for try = 0; try <= retries; try++ {
 			log.DebugRF(r, "dialing and sending message from: %v, to: %v (%d tries)", cfg.Email, message.GetHeader("To"), try)
 			if err = f.dialAndSend(cfg, message); err == nil {
 				return
