@@ -17,9 +17,25 @@
 package gomail
 
 type SmtpConfig struct {
-	Host     string
-	Port     int
+	// Host is the remote SMTP service hostname
+	Host string
+	// Port is the remote SMTP service port
+	Port int
+	// Username is the remote SMTP service account username
 	Username string
+	// Username is the remote SMTP service account password
+	//
+	// Do not hard-code this value. Use the environment variables for operational
+	// security
 	Password string
-	Email    string
+
+	// Email is the address used in the `From:` message header
+	Email string
+	// Display is the (optional) Email address display name
+	Display string
+
+	// Retries is the maximum number of retries after if the first attempt fails
+	//
+	// Negative values use the DefaultRetries and a value of zero means "try once"
+	Retries int
 }
