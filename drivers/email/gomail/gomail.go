@@ -188,7 +188,14 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 		Name:      "test-gomail-send",
 		Usage:     "Send a test message from the email/gomail feature",
 		ArgsUsage: globals.BinName + " send-test-email [options] <account-key> <recipient>",
-		Flags:     accountFlags,
+		Flags: append(accountFlags,
+			&cli.IntFlag{
+				Name:     "retries",
+				Usage:    "specify the testing retries value",
+				Category: tag,
+				Value:    0,
+			},
+		),
 		Action: func(ctx *cli.Context) (err error) {
 			if err = f.Startup(ctx); err != nil {
 				return
@@ -214,11 +221,15 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 				err = fmt.Errorf("not an email address: %v", recipient)
 				return
 			}
+			var retries int
+			if retries = ctx.Int("retries"); retries < 0 {
+				retries = int(DefaultRetries)
+			}
 			message := gomail.NewMessage()
 			message.SetHeader("To", recipient)
 			message.SetHeader("Subject", "Test message")
 			message.SetBody("text/plain", "This is a test of sending emails from the "+account+" account.")
-			if err = f.SendEmail(nil, account, message); err != nil {
+			if err = f.RetrySendEmail(retries, nil, account, message); err != nil {
 				return
 			}
 			f.wg.Wait() // f.SendMail uses goroutines for fast-path optimization
