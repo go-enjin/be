@@ -116,7 +116,16 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 	}
 
 	tag := f.Tag().String()
-	var accountFlags []cli.Flag
+	accountFlags := []cli.Flag{
+		&cli.IntFlag{
+			Name:     globals.MakeFlagName(tag, "retries"),
+			Usage:    "specify the default retries value",
+			Category: tag,
+			Value:    f.retries,
+			EnvVars:  globals.MakeFlagEnvKeys(tag, "retries"),
+		},
+	}
+
 	for _, key := range maps.SortedKeys(f.accounts) {
 		accountFlags = append(accountFlags,
 			&cli.StringFlag{
@@ -134,6 +143,20 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 				EnvVars:  globals.MakeFlagEnvKeys(tag, key+"-port"),
 			},
 			&cli.StringFlag{
+				Name:     globals.MakeFlagName(tag, key+"-email"),
+				Usage:    "specify the email address sending from",
+				Category: tag,
+				Value:    f.accounts[key].Email,
+				EnvVars:  globals.MakeFlagEnvKeys(tag, key+"-email"),
+			},
+			&cli.StringFlag{
+				Name:     globals.MakeFlagName(tag, key+"-display"),
+				Usage:    "specify the display name sending from",
+				Category: tag,
+				Value:    f.accounts[key].Display,
+				EnvVars:  globals.MakeFlagEnvKeys(tag, key+"-display"),
+			},
+			&cli.StringFlag{
 				Name:     globals.MakeFlagName(tag, key+"-username"),
 				Usage:    "specify the username",
 				Category: tag,
@@ -147,12 +170,12 @@ func (f *CFeature) Build(b feature.Buildable) (err error) {
 				// Value:    f.accounts[key].Password,
 				EnvVars: globals.MakeFlagEnvKeys(tag, key+"-password"),
 			},
-			&cli.StringFlag{
-				Name:     globals.MakeFlagName(tag, key+"-email"),
-				Usage:    "specify the email address sending from",
+			&cli.IntFlag{
+				Name:     globals.MakeFlagName(tag, key+"-retries"),
+				Usage:    "specify the retries value",
 				Category: tag,
-				Value:    f.accounts[key].Email,
-				EnvVars:  globals.MakeFlagEnvKeys(tag, key+"-email"),
+				Value:    f.accounts[key].Retries,
+				EnvVars:  globals.MakeFlagEnvKeys(tag, key+"-retries"),
 			},
 		)
 	}
