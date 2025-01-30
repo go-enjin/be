@@ -268,7 +268,7 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 			err = fmt.Errorf("error writing enjinql config: %q - %w", writeConfig, err)
 			return
 		}
-		log.DebugF("%v feature enjinql config written to: %q", writeConfig)
+		log.DebugF("%v feature enjinql config written to: %q", f.Tag(), writeConfig)
 	}
 	return
 }
