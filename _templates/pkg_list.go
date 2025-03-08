@@ -1,6 +1,6 @@
 // Code generated with _scripts/bg-pkg-list.sh DO NOT EDIT.
 
-// Copyright (c) 2024  The Go-Enjin Authors
+// Copyright (c) 2025  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -122,6 +122,7 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/features/pages/formats/njn/fields/pre",
 		"github.com/go-enjin/be/features/pages/formats/njn/fields/select",
 		"github.com/go-enjin/be/features/pages/formats/njn/fields/table",
+		"github.com/go-enjin/be/features/pages/formats/njn/fields/video",
 		"github.com/go-enjin/be/features/pages/formats/org",
 		"github.com/go-enjin/be/features/pages/formats/text",
 		"github.com/go-enjin/be/features/pages/formats/tmpl",
