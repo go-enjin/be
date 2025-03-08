@@ -1,6 +1,6 @@
 module github.com/go-enjin/be
 
-go 1.22.6
+go 1.24.1
 
 require (
 	github.com/BurntSushi/toml v1.4.0
@@ -22,13 +22,13 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.8
 	github.com/go-chi/chi/v5 v5.2.0
 	github.com/go-chi/hostrouter v0.3.0
-	github.com/go-corelibs/context v0.1.0
+	github.com/go-corelibs/context v0.1.1
 	github.com/go-corelibs/enjinql v0.1.0
 	github.com/go-corelibs/env v1.1.2
 	github.com/go-corelibs/go-sqlbuilder v1.1.0
 	github.com/go-corelibs/htmlcss v1.0.1
 	github.com/go-corelibs/lang v0.3.2
-	github.com/go-corelibs/maps v1.2.0
+	github.com/go-corelibs/maps v1.3.0
 	github.com/go-corelibs/maths v1.2.1
 	github.com/go-corelibs/mime v1.0.1
 	github.com/go-corelibs/path v1.4.2
