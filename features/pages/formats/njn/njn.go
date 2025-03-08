@@ -90,6 +90,7 @@ type Feature interface {
 	feature.Feature
 	feature.PageFormat
 	feature.EnjinSystem
+	feature.FuncMapProvider
 }
 
 type MakeFeature interface {
