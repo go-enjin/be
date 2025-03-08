@@ -336,7 +336,7 @@ func (f *CFeature) PopulateIndexes() (err error) {
 								} else {
 									// log.DebugF("%v indexed %v", pip.(feature.Feature).Tag(), pg.Url)
 								}
-								batchTrack[tag] += time.Now().Sub(pipStart)
+								batchTrack[tag] += time.Since(pipStart)
 								for _, rtag := range maps.SortedKeys(report) {
 									batchTrack[tag+":"+rtag] += report[rtag]
 								}
@@ -353,7 +353,7 @@ func (f *CFeature) PopulateIndexes() (err error) {
 								} else {
 									// log.DebugF("%v indexed %v", pip.(feature.Feature).Tag(), pg.Url)
 								}
-								batchTrack[tag] += time.Now().Sub(pipStart)
+								batchTrack[tag] += time.Since(pipStart)
 							}
 
 							for _, sep := range f.searchProviders {
@@ -367,12 +367,12 @@ func (f *CFeature) PopulateIndexes() (err error) {
 								} else {
 									// log.DebugF("%v indexed %v", sep.(feature.Feature).Tag(), pg.Url)
 								}
-								batchTrack[tag] += time.Now().Sub(sepStart)
+								batchTrack[tag] += time.Since(sepStart)
 							}
 
 							caiStart := time.Now()
 							f.Enjin.Emit(signals.ContentAddIndexing, f.Tag().String(), file, theme, pmStub, pg)
-							if caiTime := time.Now().Sub(caiStart); caiTime.Milliseconds() > 25 {
+							if caiTime := time.Since(caiStart); caiTime.Milliseconds() > 25 {
 								batchTrack["signaling"] += caiTime
 							}
 
