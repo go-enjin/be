@@ -110,6 +110,9 @@ func (f *CFeature) MakeFuncMap(ctx clContext.Context) (fm feature.FuncMap) {
 		"repeatString":     strings.Repeat,
 		"centreString":     CenterString,
 		"centerString":     CenterString,
+		"jsonEncode":       JsonEncode,
+		"jsonDecodeMap":    JsonDecodeMap,
+		"jsonDecodeList":   JsonDecodeList,
 	}
 	return
 }
@@ -186,6 +189,40 @@ func MergeClassNames(names ...interface{}) (result template.HTML) {
 		}
 	}
 	result = template.HTML(strings.Join(accepted, " "))
+	return
+}
+
+func JsonEncode(input interface{}) (value string, err error) {
+	var data []byte
+	if data, err = json.MarshalIndent(input, "", "  "); err == nil {
+		value = string(data)
+	}
+	return
+}
+
+func JsonDecodeMap(input interface{}) (value map[string]interface{}, err error) {
+	switch t := input.(type) {
+	case string:
+		value = make(map[string]interface{})
+		err = json.Unmarshal([]byte(t), &value)
+	case []byte:
+		value = make(map[string]interface{})
+		err = json.Unmarshal(t, &value)
+	default:
+		err = fmt.Errorf("jsonDecode error: input is not a string or []byte")
+	}
+	return
+}
+
+func JsonDecodeList(input interface{}) (value []interface{}, err error) {
+	switch t := input.(type) {
+	case string:
+		err = json.Unmarshal([]byte(t), &value)
+	case []byte:
+		err = json.Unmarshal(t, &value)
+	default:
+		err = fmt.Errorf("jsonDecode error: input is not a string or []byte")
+	}
 	return
 }
 
