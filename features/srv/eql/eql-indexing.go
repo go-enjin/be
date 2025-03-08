@@ -44,7 +44,7 @@ func (f *CFeature) AddToIndexWithReport(stub *feature.PageStub, p feature.Page) 
 		for key := range report {
 			delta += report[key]
 		}
-		report["~"] = time.Now().Sub(start) - delta
+		report["~"] = time.Since(start) - delta
 	}()
 
 	if _, ok := f.FindPageID(stub.Shasum); ok {
@@ -107,7 +107,7 @@ func (f *CFeature) AddToIndexWithReport(stub *feature.PageStub, p feature.Page) 
 			err = fmt.Errorf("error adding to %q source: %w", other.Tag(), err)
 			return
 		}
-		report[other.Tag()] += time.Now().Sub(otherStart)
+		report[other.Tag()] += time.Since(otherStart)
 	}
 
 	// commit and release the transaction lock
@@ -129,7 +129,7 @@ func (f *CFeature) RemoveFromIndexWithReport(stub *feature.PageStub, p feature.P
 		for key := range report {
 			delta += report[key]
 		}
-		report["+"] = time.Now().Sub(start) - delta
+		report["+"] = time.Since(start) - delta
 	}()
 
 	// - check if this shasum has not been indexed
@@ -155,7 +155,7 @@ func (f *CFeature) RemoveFromIndexWithReport(stub *feature.PageStub, p feature.P
 				err = fmt.Errorf("error removing from %q source: %w", other.Tag(), err)
 				return
 			}
-			report[other.Tag()] += time.Now().Sub(otherStart)
+			report[other.Tag()] += time.Since(otherStart)
 		}
 
 		for _, key := range f.includeContextKeys {
