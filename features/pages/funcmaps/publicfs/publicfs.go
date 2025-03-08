@@ -18,6 +18,8 @@ package publicfs
 
 import (
 	"encoding/base64"
+	"fmt"
+	"html/template"
 	"strings"
 
 	"github.com/urfave/cli/v2"
@@ -81,21 +83,59 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 func (f *CFeature) MakeFuncMap(ctx clContext.Context) (fm feature.FuncMap) {
 	if f.Enjin != nil {
 		pfs := f.Enjin.PublicFileSystems().Lookup()
+		preloads := getPfsCache(ctx, "_fs_preloads")
+		fsUrlCache := getPfsCache(ctx, "_fs_url")
 		fm = feature.FuncMap{
 			"fsHash": func(path string) (shasum string) {
-				shasum, _ = pfs.FindFileShasum(path)
+				if item := fsUrlCache.get(path); item != nil {
+					return item.shasum
+				} else if shasum, _ = pfs.FindFileShasum(path); shasum != "" {
+					fsUrlCache.set(path, shasum, "")
+				}
 				return
 			},
 			"fsHash256": func(path string) (shasum string) {
 				shasum, _ = pfs.FindFileSha256(path)
 				return
 			},
-			"fsUrl": func(path string) (url string) {
-				url = path
-				if shasum, err := pfs.FindFileShasum(path); err == nil {
-					url += "?rev=" + shasum
+			"fsUrl": func(path string) string {
+				if item := fsUrlCache.get(path); item != nil {
+					return item.revUrl()
 				}
-				return
+				if shasum, err := pfs.FindFileShasum(path); err == nil {
+					fsUrlCache.set(path, shasum, "")
+					return path + "?rev=" + shasum
+				}
+				return path
+			},
+			"fsPreloadUrl": func(path string) string {
+				if item := preloads.get(path); item != nil {
+					return item.revUrl()
+				} else if shasum, err := pfs.FindFileShasum(path); err == nil {
+					if mimeType, err := pfs.FindFileMime(path); err == nil {
+						preloads.set(path, shasum, mimeType)
+						return path + "?rev=" + shasum
+					}
+				}
+				return path
+			},
+			"fsPreloadLinks": func() template.HTML {
+				var outputs []string
+				preloads.walk(func(item *pfsCacheItem) bool {
+					// only images for now?
+					if strings.HasPrefix(item.mimeType, "image/") {
+						outputs = append(
+							outputs,
+							fmt.Sprintf(
+								`<link rel="preload" as="image" type=%q href=%q />`,
+								item.mimeType,
+								item.revUrl(),
+							),
+						)
+					}
+					return true
+				})
+				return template.HTML(strings.Join(outputs, "\n\t"))
 			},
 			"fsDataUri":      f.DataUri,
 			"fsMime":         pfs.FindFileMime,
