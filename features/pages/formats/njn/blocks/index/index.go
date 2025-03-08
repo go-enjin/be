@@ -135,6 +135,12 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		return
 	}
 
+	var indexFilters []string
+	if labels, ok := data["index-filter-labels"].(string); ok {
+		indexFilters = append(indexFilters, strings.Split(labels, ";")...)
+		block["FilterLabels"] = indexFilters
+	}
+
 	filters := makeFilters(data)
 
 	reqArgv := re.RequestArgv()
