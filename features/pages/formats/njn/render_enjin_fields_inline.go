@@ -352,13 +352,8 @@ func (re *RenderEnjin) RenderInlineFieldText(field map[string]interface{}) (html
 }
 
 func (re *RenderEnjin) RenderInlineFieldList(list []interface{}) (html template.HTML, err error) {
-	for idx, item := range list {
+	for _, item := range list {
 		if itemString, ok := item.(string); ok {
-			if idx > 0 {
-				if _, ok := list[idx-1].(string); ok {
-					html += " "
-				}
-			}
 			html += template.HTML(itemString)
 		} else if itemString, ok := item.(template.HTML); ok {
 			html += itemString
