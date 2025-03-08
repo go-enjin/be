@@ -74,6 +74,7 @@ func (f *CFeature) MakeFuncMap(ctx clContext.Context) (fm feature.FuncMap) {
 	fm = feature.FuncMap{
 		"dict":   NewDictionary,
 		"hasKey": HasKey,
+		"ctx":    NewContext,
 	}
 	return
 }
