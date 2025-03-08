@@ -200,6 +200,11 @@ func (t *CTheme) makeConfig(ctx context.Context) (config *feature.ThemeConfig) {
 
 			if siteInfo, ok := semantic["site"].(map[string]interface{}); ok {
 				if siteMenu, ok := siteInfo["menu"].(map[string]interface{}); ok {
+					if siteMenuImage, ok := siteMenu["image"].(map[string]interface{}); ok {
+						if siteMenuImageIcons, ok := siteMenuImage["icons"].(bool); ok {
+							config.Context.SetSpecific("SiteMenuImageIcons", siteMenuImageIcons)
+						}
+					}
 					if siteMenuMobile, ok := siteMenu["mobile"].(map[string]interface{}); ok {
 						if siteMenuMobileStyle, ok := siteMenuMobile["style"].(string); ok {
 							config.Context.SetSpecific("SiteMenuMobileStyle", siteMenuMobileStyle)
