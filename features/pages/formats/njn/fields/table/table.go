@@ -143,7 +143,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 												err = e
 												return
 											} else {
-												if data["Attributes"], err = pages.FinalizeNjnFieldAttributes(attrs); err != nil {
+												if rowData["Attributes"], err = pages.FinalizeNjnFieldAttributes(attrs); err != nil {
 													return
 												}
 											}
