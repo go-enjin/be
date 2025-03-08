@@ -62,7 +62,7 @@ func (f *CFeature) RenderTextTemplateContent(t feature.Theme, ctx context.Contex
 		if tt, err = tt.Parse(tmplContent); err == nil {
 			var w bytes.Buffer
 			if err = tt.Execute(&w, ctx); err == nil {
-				rendered = string(w.Bytes())
+				rendered = w.String()
 				return
 			} else {
 				err = fmt.Errorf("error executing template content: %v", err)
