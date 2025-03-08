@@ -27,8 +27,9 @@ import (
 )
 
 var (
-	RxTemplateParseError = regexp.MustCompile(`template: ([^:]+?):(\d+):\s*(.+?)\s*$`)
-	RxTemplateExecError  = regexp.MustCompile(`template: ([^:]+?):(\d+):(\d+):\s*executing\s*"[^"]+?"\s*at\s*<[^>]+?>:\s*(.+?)\s*$`)
+	rxTemplateSummaryError = regexp.MustCompile(`template error: \[(\d+):(\d+):(\d+)\]\s*(.+?)\s*$`)
+	rxTemplateParseError   = regexp.MustCompile(`template: ([^:]+?):(\d+):\s*(.+?)\s*$`)
+	rxTemplateExecError    = regexp.MustCompile(`template: ([^:]+?):(\d+):(\d+):\s*executing\s*"[^"]+?"\s*at\s*<[^>]+?>:\s*(.+?)\s*$`)
 )
 
 func makeEnjinErrorSpan(unescaped string) (span string) {
@@ -142,8 +143,7 @@ func NewEnjinOffsetRangeError(title, err, content string, offset, end int64) (ee
 }
 
 func ParseTemplateError(message, content string) (err error) {
-	if RxTemplateExecError.MatchString(message) {
-		m := RxTemplateExecError.FindAllStringSubmatch(message, 1)
+	if m := rxTemplateSummaryError.FindAllStringSubmatch(message, 1); len(m) > 0 {
 		text := m[0][4]
 		lino, _ := strconv.ParseInt(m[0][2], 10, 64)
 		colno, _ := strconv.ParseInt(m[0][3], 10, 64)
@@ -151,22 +151,36 @@ func ParseTemplateError(message, content string) (err error) {
 		lines := strings.Split(content, "\n")
 		for idx, line := range lines {
 			if int64(idx) < lino-1 {
-				offset += int64(len(line)) + 1
+				offset += int64(len(line))
 			} else if int64(idx) == lino-1 {
 				offset += 1 + colno
 				break
 			}
 		}
 		err = NewEnjinOffsetError("template error", text, content, offset)
-	} else if RxTemplateParseError.MatchString(message) {
-		m := RxTemplateParseError.FindAllStringSubmatch(message, 1)
+	} else if m := rxTemplateExecError.FindAllStringSubmatch(message, 1); len(m) > 0 {
+		text := m[0][4]
+		lino, _ := strconv.ParseInt(m[0][2], 10, 64)
+		colno, _ := strconv.ParseInt(m[0][3], 10, 64)
+		var offset int64
+		lines := strings.Split(content, "\n")
+		for idx, line := range lines {
+			if int64(idx) < lino-1 {
+				offset += int64(len(line))
+			} else if int64(idx) == lino-1 {
+				offset += 1 + colno
+				break
+			}
+		}
+		err = NewEnjinOffsetError("template error", text, content, offset)
+	} else if m := rxTemplateParseError.FindAllStringSubmatch(message, 1); len(m) > 0 {
 		text := m[0][3]
 		lino, _ := strconv.ParseInt(m[0][2], 10, 64)
 		var offset, end int64
 		lines := strings.Split(content, "\n")
 		for idx, line := range lines {
 			if int64(idx) < lino-1 {
-				offset += int64(len(line)) + 1
+				offset += int64(len(line))
 			} else if int64(idx) == lino-1 {
 				offset += 1
 				end = offset + int64(len(line))
@@ -175,7 +189,7 @@ func ParseTemplateError(message, content string) (err error) {
 		}
 		err = NewEnjinOffsetRangeError("template error", text, content, offset, end)
 	} else {
-		err = errors.New(message)
+		err = errors.New(ExtractErrSummary(message))
 	}
 	return
 }

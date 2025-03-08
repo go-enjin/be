@@ -68,10 +68,8 @@ func (e *EnjinError) Html() (markup template.HTML) {
     data-block-tag="theme-enjin-error"
     data-block-type="content"
     data-block-profile="full--outer"
-    data-block-padding="none"
-    data-block-margins="none"
-    data-block-jump-top="true"
-    data-block-jump-link="true">
+    data-block-padding="both"
+    data-block-margins="none">
     <div class="content">`
 	if e.Title != "" {
 		markup += `
