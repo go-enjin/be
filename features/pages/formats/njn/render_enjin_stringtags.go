@@ -17,105 +17,21 @@
 package njn
 
 import (
-	"fmt"
-	"strings"
-
-	"golang.org/x/net/html"
-
-	"github.com/go-corelibs/slices"
+	"html/template"
 )
 
 func (re *RenderEnjin) PrepareStringTags(text string) (data []interface{}, err error) {
-	if doc, e := html.Parse(strings.NewReader(text)); e != nil {
-		err = e
-		return
-	} else {
-		data = re.WalkStringTags(doc)
-	}
-	return
-}
-
-func (re *RenderEnjin) WalkStringTags(doc *html.Node) (prepared []interface{}) {
-
-	var traverse func(depth string, n *html.Node) (*html.Node, []interface{})
-
-	foundBody := false
-	traverse = func(depth string, n *html.Node) (*html.Node, []interface{}) {
-		var data []interface{}
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			if !foundBody {
-				// log.DebugF("%v[skipping]: %+v - %+v", depth, c.Type, c.Data)
-				foundBody = c.Type == html.ElementNode && c.Data == "body"
-				if res, childData := traverse(depth+" ", c); res != nil {
-					if len(childData) > 0 {
-						data = append(data, childData...)
-					}
-					return res, data
-				} else if len(childData) > 0 {
-					data = append(data, childData...)
-				}
-			} else if c.Type == html.TextNode {
-				// log.DebugF("%v[storing]: %v", depth, c.Data)
-
-				parsed := re.Enjin.TranslateShortcodes(c.Data, re.ctx)
-				if last := len(data) - 1; last >= 0 {
-					if v, ok := data[last].(string); ok {
-						data[last] = v + parsed
-					} else {
-						data = append(data, parsed)
-					}
-				} else {
-					data = append(data, parsed)
-				}
-
-			} else if c.Type == html.ElementNode {
-				if slices.Present(c.Data, re.Njn.StringTags()...) {
-					// log.DebugF("%v[shortcode]: %v", depth, c.Data)
-					child := make(map[string]interface{})
-					child["Type"] = c.Data // tag name for element nodes
-					res, childData := traverse(depth+" ", c)
-					child["Text"] = childData
-					data = append(data, child)
-					if res != nil {
-						return res, data
-					}
-				} else {
-					// log.DebugF("%v[ignored]: %v", depth, c.Data)
-					res, childData := traverse(depth+" ", c)
-					childText := "<" + c.Data + ">"
-					for _, childDatum := range childData {
-						switch typedDatum := childDatum.(type) {
-						case string:
-							childText += typedDatum
-						default:
-							// TODO: parse content within StringTags for fields and other oddities
-							childText += fmt.Sprintf("(stringtags error: %T)", typedDatum)
-						}
-					}
-					childText += "</" + c.Data + ">"
-
-					if last := len(data) - 1; last >= 0 {
-						if v, ok := data[last].(string); ok {
-							data[last] = v + childText
-						} else {
-							data = append(data, childText)
-						}
-					} else {
-						data = append(data, childText)
-					}
-
-					if res != nil {
-						return res, data
-					}
-				}
-			}
-		}
-
-		return nil, data
-	}
-
-	_, prepared = traverse("", doc)
-
-	// log.DebugF("returning prepared: %+v", prepared)
+	/*
+		 BUG: html.Parse is eating the prefixing space between `</a> section!`
+		 TODO: perform shortcode translation only on actual HTML tag contents, not the whole thing
+				 - html.Parse is used because we want to parse the contents of tags for shortcodes
+				 - how else can this be done?
+				 - regexp to extract the content within tags, but this is a nightmare
+				 - thus html.Parse was used in the first place
+				 - tried using goquery just now and it has the same space-eating problems
+				 - this time around, let's just accept the input as plain text and translate that
+	*/
+	parsed := re.Enjin.TranslateShortcodes(text, re.ctx)
+	data = []interface{}{template.HTML(parsed)}
 	return
 }
