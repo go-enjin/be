@@ -171,26 +171,33 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 
 	block["Bookends"] = bookends
 
-	for idx, card := range cards {
-		switch idx {
-		case 0:
-			// first wraps to last
-			card["PreviousCard"] = cards[numCards-1]
-			card["PreviousCardIndex"] = numCards - 1
-			card["NextCard"] = cards[idx+1]
-			card["NextCardIndex"] = idx + 1
-		case numCards - 1:
-			// last wraps to first
-			card["PreviousCard"] = cards[idx-1]
-			card["PreviousCardIndex"] = idx - 1
-			card["NextCard"] = cards[0]
-			card["NextCardIndex"] = 0
-		default:
-			// middle cards
-			card["PreviousCardIndex"] = idx - 1
-			card["PreviousCard"] = cards[idx-1]
-			card["NextCard"] = cards[idx+1]
-			card["NextCardIndex"] = idx + 1
+	if numCards == 1 {
+		cards[0]["PreviousCard"] = cards[0]
+		cards[0]["PreviousCardIndex"] = 0
+		cards[0]["NextCard"] = cards[0]
+		cards[0]["NextCardIndex"] = 0
+	} else {
+		for idx, card := range cards {
+			switch idx {
+			case 0:
+				// first wraps to last
+				card["PreviousCard"] = cards[numCards-1]
+				card["PreviousCardIndex"] = numCards - 1
+				card["NextCard"] = cards[idx+1]
+				card["NextCardIndex"] = idx + 1
+			case numCards - 1:
+				// last wraps to first
+				card["PreviousCard"] = cards[idx-1]
+				card["PreviousCardIndex"] = idx - 1
+				card["NextCard"] = cards[0]
+				card["NextCardIndex"] = 0
+			default:
+				// middle cards
+				card["PreviousCardIndex"] = idx - 1
+				card["PreviousCard"] = cards[idx-1]
+				card["NextCard"] = cards[idx+1]
+				card["NextCardIndex"] = idx + 1
+			}
 		}
 	}
 
