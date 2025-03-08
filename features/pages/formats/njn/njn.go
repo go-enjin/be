@@ -64,6 +64,7 @@ import (
 	"github.com/go-enjin/be/features/pages/formats/njn/fields/pre"
 	_select "github.com/go-enjin/be/features/pages/formats/njn/fields/select"
 	"github.com/go-enjin/be/features/pages/formats/njn/fields/table"
+	"github.com/go-enjin/be/features/pages/formats/njn/fields/video"
 	"github.com/go-enjin/be/pkg/errors"
 	"github.com/go-enjin/be/pkg/feature"
 	beForms "github.com/go-enjin/be/pkg/forms"
@@ -232,6 +233,7 @@ func (f *CFeature) Defaults() MakeFeature {
 	f.AddBlock(carousel.New().Make())
 	f.AddBlock(pair.New().Make())
 	f.AddBlock(sidebar.New().Make())
+	f.AddField(video.New().Make())
 	// stringtags (text-level tags such as `<u>` and `<i>`)
 	f.AddStringTags(DefaultStringTags...)
 	return f
