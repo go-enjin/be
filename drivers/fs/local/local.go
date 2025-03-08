@@ -172,9 +172,13 @@ func (f *FileSystem) ReadFile(path string) (content []byte, err error) {
 func (f *FileSystem) MimeType(path string) (mime string, err error) {
 	f.RLock()
 	defer f.RUnlock()
-	if mime = clMime.Mime(f.realpath(path)); mime == "" {
-		mime = "application/octet-stream"
+	if f.Exists(path) {
+		if mime = clMime.Mime(f.realpath(path)); mime == "" {
+			mime = "application/octet-stream"
+		}
+		return
 	}
+	err = os.ErrNotExist
 	return
 }
 
