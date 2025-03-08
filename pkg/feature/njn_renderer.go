@@ -17,8 +17,6 @@ package feature
 import (
 	"html/template"
 
-	"golang.org/x/net/html"
-
 	"github.com/go-corelibs/context"
 	"github.com/go-enjin/be/pkg/request/argv"
 )
@@ -63,7 +61,6 @@ type EnjinRenderer interface {
 	ParseFieldAndTypeName(data interface{}) (field map[string]interface{}, name string, ok bool)
 
 	PrepareStringTags(text string) (data []interface{}, err error)
-	WalkStringTags(doc *html.Node) (prepared []interface{})
 
 	PrepareBlockHeader(content map[string]interface{}) (combined []interface{}, ok bool)
 	PrepareBlockFooter(content map[string]interface{}) (combined []interface{}, ok bool)
