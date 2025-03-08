@@ -175,7 +175,7 @@ func (f *CFeature) makeUnderscoreUnderscore(ctx clContext.Context) interface{} {
 		}
 
 		if !f.Enjin.SiteSupportsLanguage(targetLang) {
-			log.DebugF("unsupported site language requested: %v, reverting to default", targetLang)
+			// log.DebugF("unsupported site language requested: %v, reverting to default", targetLang)
 			targetLang = f.Enjin.SiteDefaultLanguage()
 		}
 
@@ -253,7 +253,7 @@ func (f *CFeature) makeUnderscoreUnderscoreUnderscore(ctx clContext.Context) int
 		}
 
 		if !f.Enjin.SiteSupportsLanguage(targetLang) {
-			log.DebugF("unsupported site language requested: %v, reverting to default", targetLang)
+			// log.DebugF("unsupported site language requested: %v, reverting to default", targetLang)
 			targetLang = f.Enjin.SiteDefaultLanguage()
 		}
 
