@@ -17,6 +17,7 @@
 package dict
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -122,6 +123,14 @@ func (d Dictionary) PICK(keys ...string) (value interface{}) {
 		if value = maps.Get(d, key); value != nil {
 			return
 		}
+	}
+	return
+}
+
+func (d Dictionary) JSON() (value string, err error) {
+	var data []byte
+	if data, err = json.MarshalIndent(d, "", "  "); err == nil {
+		value = string(data)
 	}
 	return
 }
