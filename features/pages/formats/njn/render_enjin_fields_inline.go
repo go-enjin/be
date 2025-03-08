@@ -40,6 +40,13 @@ func (re *RenderEnjin) PrepareInlineFieldText(field map[string]interface{}) (com
 							} else {
 								combined = append(combined, prepared...)
 							}
+						} else if childText, ok := item.(template.HTML); ok {
+							if prepared, e := re.PrepareInlineFieldList([]interface{}{childText}); e != nil {
+								err = e
+								return
+							} else {
+								combined = append(combined, prepared...)
+							}
 						} else {
 							if _, child, _, e := re.CheckInlineFieldText(njnField, typeName, item); e != nil {
 								err = e
@@ -106,22 +113,14 @@ func (re *RenderEnjin) PrepareInlineFieldList(list []interface{}) (combined []in
 				combined = append(combined, parsed...)
 			}
 
-			// if idx > 0 {
-			// 	if _, ok := list[idx-1].(string); ok {
-			// 		if lastIndex := len(combined) - 1; lastIndex >= 0 {
-			// 			if v, ok := combined[lastIndex].(string); ok {
-			// 				combined[lastIndex] = v + " " + typedItem
-			// 			} else {
-			// 				combined = append(combined, typedItem)
-			// 			}
-			// 		} else {
-			// 			combined = append(combined, typedItem)
-			// 		}
-			// 		continue
-			// 	}
-			// }
-			// // combined = append(combined, template.HTML(typedItem))
-			// combined = append(combined, typedItem)
+		case template.HTML:
+
+			if parsed, e := re.PrepareStringTags(string(typedItem)); e != nil {
+				err = fmt.Errorf("error parsing shortcodes: %v", e)
+				return
+			} else {
+				combined = append(combined, parsed...)
+			}
 
 		case []interface{}:
 			if prepared, e := re.PrepareInlineFieldList(typedItem); e != nil {
@@ -153,6 +152,13 @@ func (re *RenderEnjin) PrepareInlineFields(fields []interface{}) (combined []int
 		case string:
 			// combined = append(combined, typedField)
 			if parsed, e := re.PrepareStringTags(typedField); e != nil {
+				err = fmt.Errorf("error parsing shortcodes: %v", e)
+				return
+			} else {
+				combined = append(combined, parsed...)
+			}
+		case template.HTML:
+			if parsed, e := re.PrepareStringTags(string(typedField)); e != nil {
 				err = fmt.Errorf("error parsing shortcodes: %v", e)
 				return
 			} else {
@@ -234,6 +240,19 @@ func (re *RenderEnjin) RenderInlineFields(fields []interface{}) (combined []temp
 					combined = append(combined, c)
 				}
 			}
+		case template.HTML:
+			// combined = append(combined, template.HTML(typedField))
+			if parsed, e := re.PrepareStringTags(string(typedField)); e != nil {
+				err = fmt.Errorf("error parsing shortcodes: %v", e)
+				return
+			} else {
+				if c, e := re.RenderInlineFieldList(parsed); e != nil {
+					err = e
+					return
+				} else {
+					combined = append(combined, c)
+				}
+			}
 		case map[string]interface{}:
 			if c, e := re.RenderInlineField(typedField); e != nil {
 				err = e
@@ -291,6 +310,8 @@ func (re *RenderEnjin) RenderInlineFieldText(field map[string]interface{}) (html
 					for _, item := range t {
 						if childText, ok := item.(string); ok {
 							allowed = append(allowed, childText)
+						} else if childText, ok := item.(template.HTML); ok {
+							allowed = append(allowed, childText)
 						} else {
 							if _, child, _, e := re.CheckInlineFieldText(njnField, typeName, item); e != nil {
 								err = e
@@ -303,6 +324,8 @@ func (re *RenderEnjin) RenderInlineFieldText(field map[string]interface{}) (html
 					html, err = re.RenderInlineFieldList(allowed)
 				case interface{}:
 					if childText, ok := t.(string); ok {
+						html, err = re.RenderInlineFieldList([]interface{}{childText})
+					} else if childText, ok := t.(template.HTML); ok {
 						html, err = re.RenderInlineFieldList([]interface{}{childText})
 					} else {
 						if _, child, _, e := re.CheckInlineFieldText(njnField, typeName, t); e != nil {
@@ -337,6 +360,8 @@ func (re *RenderEnjin) RenderInlineFieldList(list []interface{}) (html template.
 				}
 			}
 			html += template.HTML(itemString)
+		} else if itemString, ok := item.(template.HTML); ok {
+			html += itemString
 		} else if itemMap, ok := item.(map[string]interface{}); ok {
 			var rendered []template.HTML
 			if rendered, err = re.RenderInlineField(itemMap); err != nil {
