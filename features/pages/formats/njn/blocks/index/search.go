@@ -50,7 +50,7 @@ func (f *CBlock) handleSearchRedirect(blockTag, nonceKey string, viewKeys []stri
 			if f.Enjin.VerifyNonce(nonceKey, value) {
 				foundNonce = true
 			} else {
-				err = fmt.Errorf(printer.Sprintf("search form expired"))
+				err = fmt.Errorf("%s", printer.Sprintf("search form expired"))
 				break
 			}
 
