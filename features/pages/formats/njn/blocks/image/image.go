@@ -21,6 +21,8 @@ import (
 	"html/template"
 	"strings"
 
+	"github.com/go-corelibs/maps"
+
 	"github.com/go-enjin/be/pkg/feature"
 )
 
@@ -84,51 +86,59 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 
 	block = re.PrepareGenericBlock("image", data)
 
-	if v, ok := data["constraint"].(string); ok {
-		v = strings.ToLower(v)
-		switch v {
-		case "width", "height":
-			block["Constraint"] = v
-		default:
-			err = fmt.Errorf("invalid image block constraint: %v", v)
-			return
+	if value, ok := maps.GetFirstValue(data, "constraint", "image-constraint"); ok {
+		if v, ok := value.(string); ok {
+			v = strings.ToLower(v)
+			switch v {
+			case "width", "height":
+				block["Constraint"] = v
+			default:
+				err = fmt.Errorf("invalid image block constraint: %v", v)
+				return
+			}
 		}
 	}
 
-	if v, ok := data["fitting"].(string); ok {
-		v = strings.ToLower(v)
-		switch v {
-		case "cover", "fill", "contain", "none", "scale-down":
-			block["Fitting"] = v
-		default:
-			err = fmt.Errorf("invalid image block fitting: %v", v)
-			return
+	if value, ok := maps.GetFirstValue(data, "fit", "fitting", "image-fit", "image-fitting"); ok {
+		if v, ok := value.(string); ok {
+			v := strings.ToLower(v)
+			switch v {
+			case "cover", "fill", "contain", "none", "scale-down":
+				block["Fitting"] = v
+			default:
+				err = fmt.Errorf("invalid image block fitting: %v", v)
+				return
+			}
 		}
 	} else {
 		block["Fitting"] = "cover"
 	}
 
-	if v, ok := data["position"].(string); ok {
-		v = strings.ToLower(v)
-		switch v {
-		case "center", "top", "top-left", "left", "bottom-left", "bottom", "bottom-right", "right", "top-right":
-			block["Position"] = v
-		default:
-			err = fmt.Errorf("invalid image block position: %v", v)
-			return
+	if value, ok := maps.GetFirstValue(data, "pos", "position", "image-pos", "image-position"); ok {
+		if v, ok := value.(string); ok {
+			v = strings.ToLower(v)
+			switch v {
+			case "center", "top", "top-left", "left", "bottom-left", "bottom", "bottom-right", "right", "top-right":
+				block["Position"] = v
+			default:
+				err = fmt.Errorf("invalid image block position: %v", v)
+				return
+			}
 		}
 	} else {
 		block["Position"] = "center"
 	}
 
-	if v, ok := data["size"].(string); ok {
-		v = strings.ToLower(v)
-		switch v {
-		case "sliver", "thin", "banner", "normal", "tall", "huge", "actual":
-			block["Size"] = v
-		default:
-			err = fmt.Errorf("invalid image block size: %v", v)
-			return
+	if value, ok := maps.GetFirstValue(data, "size", "image-size"); ok {
+		if v, ok := value.(string); ok {
+			v = strings.ToLower(v)
+			switch v {
+			case "sliver", "thin", "banner", "normal", "tall", "huge", "actual":
+				block["Size"] = v
+			default:
+				err = fmt.Errorf("invalid image block size: %v", v)
+				return
+			}
 		}
 	} else {
 		block["Size"] = "normal"
