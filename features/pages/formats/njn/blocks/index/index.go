@@ -141,6 +141,30 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		block["FilterLabels"] = indexFilters
 	}
 
+	indexViewNoImgs := make(map[string]bool)
+	block["NoThumbnails"] = false
+	if skip, ok := data["no-thumbnails"].(string); ok && values.IsTrue(skip) {
+		// block-level no-thumbnails stops all views from having images
+		block["NoThumbnails"] = true
+		for _, view := range indexViews {
+			indexViewNoImgs[view] = true
+		}
+	} else if views, ok := data["index-no-thumbnails"].(string); ok {
+		// per-view no-thumbnails
+		views = strings.TrimSpace(views)
+		if values.IsTrue(views) {
+			block["NoThumbnails"] = true
+			for _, view := range indexViews {
+				indexViewNoImgs[view] = true
+			}
+		} else {
+			for _, view := range strings.Split(views, ";") {
+				kebab := strcase.ToKebab(strings.TrimSpace(view))
+				indexViewNoImgs[kebab] = true
+			}
+		}
+	}
+
 	filters := makeFilters(data)
 
 	reqArgv := re.RequestArgv()
@@ -390,6 +414,8 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 		if argvView == viewKey {
 			view.Present = true
 		}
+
+		_, view.NoThumbnails = indexViewNoImgs[viewKey]
 
 		cra := reqArgv.Copy()
 		args := []string{tag, view.Key}

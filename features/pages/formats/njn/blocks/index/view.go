@@ -43,6 +43,8 @@ type View struct {
 	NumPerPage int
 
 	SearchAction string
+
+	NoThumbnails bool
 }
 
 func makeView(idx int, key, label string, filters Filters) (view *View) {
