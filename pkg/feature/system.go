@@ -76,6 +76,7 @@ type Service interface {
 	FinalizeServeRequest(w http.ResponseWriter, r *http.Request) (modified *http.Request)
 
 	ServeRedirect(destination string, w http.ResponseWriter, r *http.Request)
+	ServeHtmlRedirect(destination string, w http.ResponseWriter, r *http.Request)
 	ServeRedirectHomePath(w http.ResponseWriter, r *http.Request)
 
 	Serve204(w http.ResponseWriter, r *http.Request)
