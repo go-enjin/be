@@ -82,6 +82,10 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 
 func (f *CFeature) MakeFuncMap(ctx clContext.Context) (fm feature.FuncMap) {
 	if f.Enjin != nil {
+		if ctx == nil {
+			// should there be a cache package global?
+			ctx = clContext.Context{}
+		}
 		pfs := f.Enjin.PublicFileSystems().Lookup()
 		preloads := getPfsCache(ctx, "_fs_preloads")
 		fsUrlCache := getPfsCache(ctx, "_fs_url")
