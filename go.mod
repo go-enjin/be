@@ -2,8 +2,10 @@ module github.com/go-enjin/be
 
 go 1.24.1
 
+require golang.org/x/image v0.18.0 // indirect
+
 require (
-	github.com/BurntSushi/toml v1.4.0
+	github.com/BurntSushi/toml v1.5.0
 	github.com/Pramod-Devireddy/go-exprtk v1.1.0
 	github.com/Shopify/gomail v0.0.0-20220729171026-0784ece65e69
 	github.com/abbot/go-http-auth v0.4.0
@@ -20,7 +22,7 @@ require (
 	github.com/foomo/htpasswd v0.0.0-20200116085101-e3a90e78da9c
 	github.com/frustra/bbcode v0.0.0-20201127003707-6ef347fbe1c8
 	github.com/gabriel-vasile/mimetype v1.4.8
-	github.com/go-chi/chi/v5 v5.2.0
+	github.com/go-chi/chi/v5 v5.2.1
 	github.com/go-chi/hostrouter v0.3.0
 	github.com/go-corelibs/context v0.1.1
 	github.com/go-corelibs/enjinql v0.1.0
@@ -46,35 +48,35 @@ require (
 	github.com/go-enjin/github-com-djherbis-times v0.0.0-20221101184323-aeef8854ee8a
 	github.com/go-enjin/go-stdlib-text-scanner v0.0.0-20230802192426-4bb6f8536f19
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/golang-jwt/jwt/v4 v4.5.1
-	github.com/gomarkdown/markdown v0.0.0-20241205020045-f7e15b2f3e62
+	github.com/golang-jwt/jwt/v4 v4.5.2
+	github.com/gomarkdown/markdown v0.0.0-20250311123330-531bef5e742b
 	github.com/iancoleman/strcase v0.3.0
 	github.com/kenshaw/emoji v0.3.4
 	github.com/leekchan/gtf v0.0.0-20190214083521-5fba33c5b00b
 	github.com/maruel/natural v1.1.1
 	github.com/mattn/go-sqlite3 v1.14.24
 	github.com/microcosm-cc/bluemonday v1.0.27
-	github.com/mrz1836/go-sanitize v1.3.3
+	github.com/mrz1836/go-sanitize v1.3.4
 	github.com/niklasfasching/go-org v1.7.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/profile v1.7.0
 	github.com/polds/logrus-papertrail-hook v0.0.0-20180214143432-bcfe7b72c1a4
-	github.com/redis/go-redis/v9 v9.7.0
+	github.com/redis/go-redis/v9 v9.7.3
 	github.com/samber/lo v1.49.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spkg/zipfs v0.7.1
-	github.com/tdewolff/minify/v2 v2.21.3
+	github.com/tdewolff/minify/v2 v2.22.3
 	github.com/tg123/go-htpasswd v1.2.3
-	github.com/urfave/cli/v2 v2.27.5
+	github.com/urfave/cli/v2 v2.27.6
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	github.com/xlzd/gotp v0.1.0
-	github.com/yeqown/go-qrcode/v2 v2.2.4
-	github.com/yeqown/go-qrcode/writer/standard v1.2.4
+	github.com/yeqown/go-qrcode/v2 v2.2.5
+	github.com/yeqown/go-qrcode/writer/standard v1.2.5
 	github.com/yookoala/gofast v0.8.0
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
 	golang.ngrok.com/ngrok v1.13.0
-	golang.ngrok.com/ngrok/log/logrus v0.0.0-20250122175637-2d002d1bfed4
-	golang.org/x/net v0.34.0
+	golang.ngrok.com/ngrok/log/logrus v0.0.0-20250319205015-87bc1680c1e1
+	golang.org/x/net v0.37.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/datatypes v1.2.5
 	gorm.io/driver/mysql v1.5.7
@@ -183,7 +185,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/stvp/go-udp-testing v0.0.0-20201019212854-469649b16807 // indirect
-	github.com/tdewolff/parse/v2 v2.7.19 // indirect
+	github.com/tdewolff/parse/v2 v2.7.21 // indirect
 	github.com/weppos/publicsuffix-go v0.30.2 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
@@ -192,13 +194,12 @@ require (
 	go.uber.org/mock v0.4.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.ngrok.com/muxado/v2 v2.0.1 // indirect
-	golang.org/x/crypto v0.32.0 // indirect
+	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
-	golang.org/x/image v0.10.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.29.0 // indirect
-	golang.org/x/term v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/sync v0.12.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/term v0.30.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/protobuf v1.35.1 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
