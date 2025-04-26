@@ -1,6 +1,6 @@
 module github.com/go-enjin/be
 
-go 1.24.1
+go 1.24.2
 
 require golang.org/x/image v0.18.0 // indirect
 
@@ -11,7 +11,7 @@ require (
 	github.com/abbot/go-http-auth v0.4.0
 	github.com/allegro/bigcache/v3 v3.1.0
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
-	github.com/blevesearch/bleve/v2 v2.4.4
+	github.com/blevesearch/bleve/v2 v2.5.0
 	github.com/dgraph-io/ristretto v0.2.0
 	github.com/eko/gocache/lib/v4 v4.2.0
 	github.com/eko/gocache/store/bigcache/v4 v4.2.2
@@ -21,7 +21,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4
 	github.com/foomo/htpasswd v0.0.0-20200116085101-e3a90e78da9c
 	github.com/frustra/bbcode v0.0.0-20201127003707-6ef347fbe1c8
-	github.com/gabriel-vasile/mimetype v1.4.8
+	github.com/gabriel-vasile/mimetype v1.4.9
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/go-chi/hostrouter v0.3.0
 	github.com/go-corelibs/context v0.1.1
@@ -33,7 +33,7 @@ require (
 	github.com/go-corelibs/maps v1.3.0
 	github.com/go-corelibs/maths v1.2.1
 	github.com/go-corelibs/mime v1.0.1
-	github.com/go-corelibs/path v1.4.2
+	github.com/go-corelibs/path v1.4.3
 	github.com/go-corelibs/rxp v0.10.1
 	github.com/go-corelibs/shasum v1.1.1
 	github.com/go-corelibs/slices v1.6.2
@@ -54,19 +54,19 @@ require (
 	github.com/kenshaw/emoji v0.3.4
 	github.com/leekchan/gtf v0.0.0-20190214083521-5fba33c5b00b
 	github.com/maruel/natural v1.1.1
-	github.com/mattn/go-sqlite3 v1.14.24
+	github.com/mattn/go-sqlite3 v1.14.28
 	github.com/microcosm-cc/bluemonday v1.0.27
-	github.com/mrz1836/go-sanitize v1.3.4
+	github.com/mrz1836/go-sanitize v1.3.5
 	github.com/niklasfasching/go-org v1.7.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/profile v1.7.0
 	github.com/polds/logrus-papertrail-hook v0.0.0-20180214143432-bcfe7b72c1a4
 	github.com/redis/go-redis/v9 v9.7.3
-	github.com/samber/lo v1.49.1
+	github.com/samber/lo v1.50.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spkg/zipfs v0.7.1
-	github.com/tdewolff/minify/v2 v2.22.3
-	github.com/tg123/go-htpasswd v1.2.3
+	github.com/tdewolff/minify/v2 v2.23.1
+	github.com/tg123/go-htpasswd v1.2.4
 	github.com/urfave/cli/v2 v2.27.6
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	github.com/xlzd/gotp v0.1.0
@@ -76,19 +76,19 @@ require (
 	github.com/yosssi/gohtml v0.0.0-20201013000340-ee4748c638f4
 	golang.ngrok.com/ngrok v1.13.0
 	golang.ngrok.com/ngrok/log/logrus v0.0.0-20250319205015-87bc1680c1e1
-	golang.org/x/net v0.37.0
+	golang.org/x/net v0.39.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/datatypes v1.2.5
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/driver/sqlite v1.5.7
-	gorm.io/gorm v1.25.12
+	gorm.io/gorm v1.26.0
 )
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
-	github.com/GehirnInc/crypt v0.0.0-20200316065508-bb7000b8a962 // indirect
-	github.com/RoaringBitmap/roaring v1.9.3 // indirect
+	github.com/GehirnInc/crypt v0.0.0-20230320061759-8cc1b52080c5 // indirect
+	github.com/RoaringBitmap/roaring/v2 v2.4.5 // indirect
 	github.com/abiosoft/ishell/v2 v2.0.2 // indirect
 	github.com/abiosoft/readline v0.0.0-20180607040430-155bce2042db // indirect
 	github.com/alecthomas/participle/v2 v2.1.1 // indirect
@@ -96,24 +96,24 @@ require (
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/bits-and-blooms/bitset v1.12.0 // indirect
-	github.com/blevesearch/bleve_index_api v1.1.12 // indirect
+	github.com/bits-and-blooms/bitset v1.22.0 // indirect
+	github.com/blevesearch/bleve_index_api v1.2.7 // indirect
 	github.com/blevesearch/geo v0.1.20 // indirect
-	github.com/blevesearch/go-faiss v1.0.24 // indirect
+	github.com/blevesearch/go-faiss v1.0.25 // indirect
 	github.com/blevesearch/go-porterstemmer v1.0.3 // indirect
 	github.com/blevesearch/gtreap v0.1.1 // indirect
 	github.com/blevesearch/mmap-go v1.0.4 // indirect
-	github.com/blevesearch/scorch_segment_api/v2 v2.2.16 // indirect
+	github.com/blevesearch/scorch_segment_api/v2 v2.3.9 // indirect
 	github.com/blevesearch/segment v0.9.1 // indirect
 	github.com/blevesearch/snowballstem v0.9.0 // indirect
 	github.com/blevesearch/upsidedown_store_api v1.0.2 // indirect
-	github.com/blevesearch/vellum v1.0.10 // indirect
-	github.com/blevesearch/zapx/v11 v11.3.10 // indirect
-	github.com/blevesearch/zapx/v12 v12.3.10 // indirect
-	github.com/blevesearch/zapx/v13 v13.3.10 // indirect
-	github.com/blevesearch/zapx/v14 v14.3.10 // indirect
-	github.com/blevesearch/zapx/v15 v15.3.16 // indirect
-	github.com/blevesearch/zapx/v16 v16.1.9-0.20241217210638-a0519e7caf3b // indirect
+	github.com/blevesearch/vellum v1.1.0 // indirect
+	github.com/blevesearch/zapx/v11 v11.4.1 // indirect
+	github.com/blevesearch/zapx/v12 v12.4.1 // indirect
+	github.com/blevesearch/zapx/v13 v13.4.1 // indirect
+	github.com/blevesearch/zapx/v14 v14.4.1 // indirect
+	github.com/blevesearch/zapx/v15 v15.4.1 // indirect
+	github.com/blevesearch/zapx/v16 v16.2.2 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
 	github.com/creack/pty v1.1.21 // indirect
@@ -145,7 +145,7 @@ require (
 	github.com/golang/geo v0.0.0-20210211234256-740aa86cb551 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/golang/snappy v0.0.1 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/pprof v0.0.0-20211214055906-6f57359322fd // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gookit/color v1.5.4 // indirect
@@ -185,21 +185,21 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
 	github.com/stvp/go-udp-testing v0.0.0-20201019212854-469649b16807 // indirect
-	github.com/tdewolff/parse/v2 v2.7.21 // indirect
+	github.com/tdewolff/parse/v2 v2.7.23 // indirect
 	github.com/weppos/publicsuffix-go v0.30.2 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	github.com/yeqown/reedsolomon v1.0.0 // indirect
-	go.etcd.io/bbolt v1.3.7 // indirect
+	go.etcd.io/bbolt v1.4.0 // indirect
 	go.uber.org/mock v0.4.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.ngrok.com/muxado/v2 v2.0.1 // indirect
-	golang.org/x/crypto v0.36.0 // indirect
+	golang.org/x/crypto v0.37.0 // indirect
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
-	golang.org/x/sync v0.12.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
-	golang.org/x/term v0.30.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
+	golang.org/x/sync v0.13.0 // indirect
+	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/term v0.31.0 // indirect
+	golang.org/x/text v0.24.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	google.golang.org/protobuf v1.35.1 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
