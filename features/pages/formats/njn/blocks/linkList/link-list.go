@@ -95,7 +95,9 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 			switch st := si.(type) {
 			case map[string]interface{}:
 				if name, ok := st["type"].(string); ok {
-					if name == "a" {
+					switch name {
+
+					case "a", "span":
 						st["decorated"] = "true"
 						if attrs, classes, _, e := pages.ParseNjnFieldAttributes(st); e == nil {
 							classes = append(classes, "decorated")
@@ -113,7 +115,8 @@ func (f *CBlock) PrepareBlock(re feature.EnjinRenderer, blockType string, data m
 							}
 						}
 						sectionFields = append(sectionFields, st)
-					} else {
+
+					default:
 						err = fmt.Errorf("link-list block has more than just anchor tags: %+v", st)
 						return
 					}
