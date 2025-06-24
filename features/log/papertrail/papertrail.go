@@ -17,6 +17,9 @@
 package papertrail
 
 import (
+	"fmt"
+
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 
 	"github.com/go-enjin/be/pkg/feature"
@@ -92,13 +95,15 @@ func (f *CFeature) Startup(ctx *cli.Context) (err error) {
 	ptHost := ctx.String("papertrail-host")
 	ptPort := ctx.Int("papertrail-port")
 	if ptHost == "" || ptPort <= 0 {
+		// no host or port, do nothing
 		return
 	}
-	log.Config.LogHook = "papertrail"
-	log.Config.PapertrailHost = ptHost
-	log.Config.PapertrailPort = ptPort
-	log.Config.PapertrailTag = globals.BinName
-	log.DebugF("configuring papertrail: %v:%v (tag=%v)", ptHost, ptPort, globals.BinName)
+	var hook logrus.Hook
+	if hook, err = newPapertrailHook(globals.BinName, ptHost, ptPort); err != nil {
+		return fmt.Errorf("new papertail hook error: %w", err)
+	}
+	log.Config.LogHooks = append(log.Config.LogHooks, hook)
 	log.Config.Apply()
+	log.DebugF("configuring papertrail: %v:%v (tag=%v)", ptHost, ptPort, globals.BinName)
 	return
 }
