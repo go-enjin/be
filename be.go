@@ -373,7 +373,7 @@ func (e *Enjin) startupRootService(ctx *cli.Context) (err error) {
 
 		enjin := newIncludedEnjin(eb, e)
 		if err = enjin.setupInternals(ctx); err != nil {
-			log.FatalDF(5, "%v enjin setup error: %v", err)
+			log.FatalDF(5, "included %q enjin setup error: %v", eb.tag, err)
 			continue
 		}
 
