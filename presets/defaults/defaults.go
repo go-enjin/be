@@ -16,6 +16,7 @@ package defaults
 
 import (
 	"github.com/go-enjin/be/features/log/papertrail"
+	"github.com/go-enjin/be/features/log/syslogger"
 	"github.com/go-enjin/be/features/outputs/htmlify"
 	"github.com/go-enjin/be/features/pages/formats"
 	"github.com/go-enjin/be/features/pages/funcmaps"
@@ -61,6 +62,8 @@ type MakePreset interface {
 
 	Make() Preset
 
+	OmitLogs() MakePreset
+
 	SetRenderer(r feature.ThemeRenderer) MakePreset
 	SetListener(l feature.ServiceListener) MakePreset
 
@@ -76,6 +79,8 @@ type MakePreset interface {
 
 type CPreset[MakeTypedPreset interface{}] struct {
 	feature.CPreset[MakeTypedPreset]
+
+	omitLogs bool
 
 	htenvTag     feature.Tag
 	htenvIgnored []string
@@ -101,7 +106,6 @@ func New() MakePreset {
 		permalink.New().Make(),
 		query.New().Make(),
 		htmlify.New().Make(),
-		papertrail.New().Make(),
 		request.New().Make(),
 		i18n.New().Make(),
 		policies.New().Make(),
@@ -109,14 +113,17 @@ func New() MakePreset {
 		sitemenus.New().Make(),
 		modifiers.New().Make(),
 		pages.New().Make(),
-		beLogHandler.New().Make(),
-		beLogger.New().SetCombined(true).Make(),
 	}
 	p.htenvTag = "htenv"
 	p.htenvIgnored = []string{`^/favicon.ico$`}
 	p.basicAuthTag = "basic-auth"
 	p.Init(p)
 	return p
+}
+
+func (p *CPreset[MakeTypedPreset]) OmitLogs() MakeTypedPreset {
+	p.omitLogs = true
+	return interface{}(p).(MakeTypedPreset)
 }
 
 func (p *CPreset[MakeTypedPreset]) SetBasicAuthTag(tag feature.Tag) MakeTypedPreset {
@@ -166,6 +173,14 @@ func (p *CPreset[MakeTypedPreset]) AddFuncmaps(funcmaps ...feature.FuncMapProvid
 }
 
 func (p *CPreset[MakeTypedPreset]) Make() (feat Preset) {
+	if !p.omitLogs {
+		p.Features = append(p.Features,
+			papertrail.New().Make(),
+			syslogger.New().Make(),
+			beLogHandler.New().Make(),
+			beLogger.New().SetCombined(true).Make(),
+		)
+	}
 	return p
 }
 

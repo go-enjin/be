@@ -15,6 +15,8 @@
 package essentials
 
 import (
+	"github.com/go-enjin/be/features/log/papertrail"
+	"github.com/go-enjin/be/features/log/syslogger"
 	"github.com/go-enjin/be/features/outputs/htmlify"
 	"github.com/go-enjin/be/features/pages/formats"
 	"github.com/go-enjin/be/features/pages/formats/html"
@@ -57,6 +59,8 @@ type MakePreset interface {
 
 	Make() Preset
 
+	OmitLogs() MakePreset
+
 	SetRenderer(r feature.ThemeRenderer) MakePreset
 	SetListener(l feature.ServiceListener) MakePreset
 
@@ -66,6 +70,8 @@ type MakePreset interface {
 
 type CPreset[MakeTypedPreset interface{}] struct {
 	feature.CPreset[MakeTypedPreset]
+
+	omitLogs bool
 
 	formats  []feature.PageFormat
 	funcmaps []feature.FuncMapProvider
@@ -92,11 +98,14 @@ func New() MakePreset {
 		modifiers.New().Make(),
 		pages.New().Make(),
 		htmlify.New().Make(),
-		beLogHandler.New().Make(),
-		beLogger.New().SetCombined(true).Make(),
 	}
 	p.Init(p)
 	return p
+}
+
+func (p *CPreset[MakeTypedPreset]) OmitLogs() MakeTypedPreset {
+	p.omitLogs = true
+	return interface{}(p).(MakeTypedPreset)
 }
 
 func (p *CPreset[MakeTypedPreset]) SetRenderer(r feature.ThemeRenderer) MakeTypedPreset {
@@ -120,6 +129,14 @@ func (p *CPreset[MakeTypedPreset]) AddFuncmaps(funcmaps ...feature.FuncMapProvid
 }
 
 func (p *CPreset[MakeTypedPreset]) Make() (feat Preset) {
+	if !p.omitLogs {
+		p.Features = append(p.Features,
+			papertrail.New().Make(),
+			syslogger.New().Make(),
+			beLogHandler.New().Make(),
+			beLogger.New().SetCombined(true).Make(),
+		)
+	}
 	return p
 }
 
