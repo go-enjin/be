@@ -68,8 +68,9 @@ type Enjin struct {
 	contentSecurityPolicy *csp.PolicyHandler
 	permissionsPolicy     *permissions.PolicyHandler
 
-	eb  *EnjinBuilder
-	cli *cli.App
+	parent *Enjin
+	eb     *EnjinBuilder
+	cli    *cli.App
 
 	router *chi.Mux
 	enjins []*Enjin
@@ -138,6 +139,7 @@ func newEnjin(eb *EnjinBuilder) *Enjin {
 
 func newIncludedEnjin(eb *EnjinBuilder, parent *Enjin) *Enjin {
 	e := &Enjin{
+		parent:                parent,
 		eb:                    eb,
 		contentSecurityPolicy: csp.NewPolicyHandler(),
 		permissionsPolicy:     permissions.NewPolicyHandler(),
@@ -225,14 +227,21 @@ func (e *Enjin) setupInternals(ctx *cli.Context) (err error) {
 	}
 
 	if e.eb.fServiceLogHandler == nil {
-		err = fmt.Errorf("builder error: a feature.ServiceLogHandler is required")
-		return
-	} else if list := feature.FilterTyped[feature.ServiceLogger](e.eb.features.List()); len(list) == 0 {
-		err = fmt.Errorf("builder error: at least one feature.ServiceLogger is required")
-		return
-	} else {
-		middleware.DefaultLogger = e.eb.fServiceLogHandler.LogHandler
+		if e.parent == nil {
+			err = fmt.Errorf("builder error: a feature.ServiceLogHandler is required")
+			return
+		}
+		e.eb.fServiceLogHandler = e.parent.eb.fServiceLogHandler
 	}
+
+	if list := feature.FilterTyped[feature.ServiceLogger](e.eb.features.List()); len(list) == 0 {
+		if e.parent == nil {
+			err = fmt.Errorf("builder error: at least one feature.ServiceLogger is required")
+			return
+		}
+	}
+
+	middleware.DefaultLogger = e.eb.fServiceLogHandler.LogHandler
 
 	return
 }
