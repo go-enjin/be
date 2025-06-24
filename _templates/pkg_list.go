@@ -80,6 +80,7 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/features/fs/site-users",
 		"github.com/go-enjin/be/features/fs/themes",
 		"github.com/go-enjin/be/features/log/papertrail",
+		"github.com/go-enjin/be/features/log/syslogger",
 		"github.com/go-enjin/be/features/notify/slack",
 		"github.com/go-enjin/be/features/outputs/htmlify",
 		"github.com/go-enjin/be/features/outputs/minify",
