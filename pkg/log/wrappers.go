@@ -23,8 +23,7 @@ func ErrorF(format string, argv ...interface{}) {
 }
 
 func ErrorDF(depth int, format string, argv ...interface{}) {
-	depth += 1
-	writeLogEntry(logger.Errorf, prefixLogEntry(depth, format, nil), argv...)
+	Config.ErrorDF(depth+1, format, argv...)
 }
 
 func WarnF(format string, argv ...interface{}) {
@@ -32,8 +31,7 @@ func WarnF(format string, argv ...interface{}) {
 }
 
 func WarnDF(depth int, format string, argv ...interface{}) {
-	depth += 1
-	writeLogEntry(logger.Warnf, prefixLogEntry(depth, format, nil), argv...)
+	Config.WarnDF(depth+1, format, argv...)
 }
 
 func InfoF(format string, argv ...interface{}) {
@@ -41,8 +39,7 @@ func InfoF(format string, argv ...interface{}) {
 }
 
 func InfoDF(depth int, format string, argv ...interface{}) {
-	depth += 1
-	writeLogEntry(logger.Infof, prefixLogEntry(depth, format, nil), argv...)
+	Config.InfoDF(depth+1, format, argv...)
 }
 
 func DebugF(format string, argv ...interface{}) {
@@ -50,8 +47,7 @@ func DebugF(format string, argv ...interface{}) {
 }
 
 func DebugDF(depth int, format string, argv ...interface{}) {
-	depth += 1
-	writeLogEntry(logger.Debugf, prefixLogEntry(depth, format, nil), argv...)
+	Config.DebugDF(depth+1, format, argv...)
 }
 
 func TraceF(format string, argv ...interface{}) {
@@ -59,8 +55,7 @@ func TraceF(format string, argv ...interface{}) {
 }
 
 func TraceDF(depth int, format string, argv ...interface{}) {
-	depth += 1
-	writeLogEntry(logger.Tracef, prefixLogEntry(depth, format, nil), argv...)
+	Config.TraceDF(depth+1, format, argv...)
 }
 
 func PanicF(format string, argv ...interface{}) {
@@ -68,8 +63,7 @@ func PanicF(format string, argv ...interface{}) {
 }
 
 func PanicDF(depth int, format string, argv ...interface{}) {
-	depth += 1
-	writeLogEntry(logger.Panicf, prefixLogEntry(depth, format, nil), argv...)
+	Config.PanicDF(depth+1, format, argv...)
 }
 
 func FatalF(format string, argv ...interface{}) {
@@ -77,14 +71,5 @@ func FatalF(format string, argv ...interface{}) {
 }
 
 func FatalDF(depth int, format string, argv ...interface{}) {
-	depth += 1
-	writeLogEntry(logger.Fatalf, prefixLogEntry(depth, format, nil), argv...)
-}
-
-func writeLogEntry(fn func(format string, args ...interface{}), prefixed string, argv ...interface{}) {
-	if len(argv) == 0 {
-		fn("%s", prefixed)
-		return
-	}
-	fn(prefixed, argv...)
+	Config.FatalDF(depth+1, format, argv...)
 }

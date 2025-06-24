@@ -21,3 +21,21 @@ const (
 	FormatJson
 	FormatText
 )
+
+func (f Format) String() string {
+	switch f {
+	case FormatPretty:
+		return "pretty"
+	case FormatJson:
+		return "json"
+	case FormatText:
+		return "text"
+	}
+	return ""
+}
+
+var formatLookup = map[string]Format{
+	"pretty": FormatPretty,
+	"json":   FormatJson,
+	"text":   FormatText,
+}

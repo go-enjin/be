@@ -1,4 +1,4 @@
-// Copyright (c) 2022  The Go-Enjin Authors
+// Copyright (c) 2025  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,25 +15,40 @@
 package log
 
 import (
-	papertrail "github.com/polds/logrus-papertrail-hook"
+	"io"
+	"log"
+
 	"github.com/sirupsen/logrus"
 )
 
-func NewPapertrailHook(appName, host string, port int) (*papertrail.Hook, error) {
-	if hook, err := papertrail.NewPapertrailHook(&papertrail.Hook{
-		Host:    host,
-		Port:    port,
-		Appname: appName,
-	}); err != nil {
-		return nil, err
-	} else {
-		hook.SetLevels([]logrus.Level{
-			logrus.ErrorLevel,
-			logrus.WarnLevel,
-			logrus.InfoLevel,
-			logrus.DebugLevel,
-			logrus.TraceLevel,
-		})
-		return hook, nil
-	}
+func ErrorWriter() *io.PipeWriter {
+	return Config.ErrorWriter()
+}
+
+func WarnWriter() *io.PipeWriter {
+	return Config.WarnWriter()
+}
+
+func InfoWriter() *io.PipeWriter {
+	return Config.InfoWriter()
+}
+
+func DebugWriter() *io.PipeWriter {
+	return Config.DebugWriter()
+}
+
+func TraceWriter() *io.PipeWriter {
+	return Config.TraceWriter()
+}
+
+func Logrus() *logrus.Logger {
+	return Config.Logrus()
+}
+
+func Logger() *log.Logger {
+	return Config.Logger()
+}
+
+func PrefixedLogger(prefix string) *log.Logger {
+	return Config.PrefixedLogger(prefix)
 }

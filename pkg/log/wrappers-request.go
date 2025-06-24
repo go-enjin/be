@@ -17,68 +17,61 @@ package log
 import "net/http"
 
 func ErrorR(r *http.Request, err error) {
-	ErrorRDF(r, 1, "%v", err)
+	Config.ErrorRDF(r, 1, "%v", err)
 }
 
 func ErrorRF(r *http.Request, format string, argv ...interface{}) {
-	ErrorRDF(r, 1, format, argv...)
+	Config.ErrorRDF(r, 1, format, argv...)
 }
 
 func ErrorRDF(r *http.Request, depth int, format string, argv ...interface{}) {
-	depth += 1
-	writeLogEntry(logger.Errorf, prefixLogEntry(depth, format, r), argv...)
+	Config.ErrorRDF(r, depth+1, format, argv...)
 }
 
 func WarnRF(r *http.Request, format string, argv ...interface{}) {
-	WarnRDF(r, 1, format, argv...)
+	Config.WarnRDF(r, 1, format, argv...)
 }
 
 func WarnRDF(r *http.Request, depth int, format string, argv ...interface{}) {
-	depth += 1
-	writeLogEntry(logger.Warnf, prefixLogEntry(depth, format, r), argv...)
+	Config.WarnRDF(r, depth+1, format, argv...)
 }
 
 func InfoRF(r *http.Request, format string, argv ...interface{}) {
-	InfoRDF(r, 1, format, argv...)
+	Config.InfoRDF(r, 1, format, argv...)
 }
 
 func InfoRDF(r *http.Request, depth int, format string, argv ...interface{}) {
-	depth += 1
-	writeLogEntry(logger.Infof, prefixLogEntry(depth, format, r), argv...)
+	Config.InfoRDF(r, depth+1, format, argv...)
 }
 
 func DebugRF(r *http.Request, format string, argv ...interface{}) {
-	DebugRDF(r, 1, format, argv...)
+	Config.DebugRDF(r, 1, format, argv...)
 }
 
 func DebugRDF(r *http.Request, depth int, format string, argv ...interface{}) {
-	depth += 1
-	writeLogEntry(logger.Debugf, prefixLogEntry(depth, format, r), argv...)
+	Config.DebugRDF(r, depth+1, format, argv...)
 }
 
 func TraceRF(r *http.Request, format string, argv ...interface{}) {
-	TraceRDF(r, 1, format, argv...)
+	Config.TraceRDF(r, 1, format, argv...)
 }
 
 func TraceRDF(r *http.Request, depth int, format string, argv ...interface{}) {
-	depth += 1
-	writeLogEntry(logger.Tracef, prefixLogEntry(depth, format, r), argv...)
+	Config.TraceRDF(r, depth+1, format, argv...)
 }
 
 func PanicRF(r *http.Request, format string, argv ...interface{}) {
-	PanicDF(1, format, argv...)
+	Config.PanicDF(1, format, argv...)
 }
 
 func PanicRDF(r *http.Request, depth int, format string, argv ...interface{}) {
-	depth += 1
-	writeLogEntry(logger.Panicf, prefixLogEntry(depth, format, r), argv...)
+	Config.PanicDF(depth+1, format, argv...)
 }
 
 func FatalRF(r *http.Request, format string, argv ...interface{}) {
-	FatalRDF(r, 1, format, argv...)
+	Config.FatalRDF(r, 1, format, argv...)
 }
 
 func FatalRDF(r *http.Request, depth int, format string, argv ...interface{}) {
-	depth += 1
-	writeLogEntry(logger.Fatalf, prefixLogEntry(depth, format, r), argv...)
+	Config.FatalRDF(r, depth+1, format, argv...)
 }

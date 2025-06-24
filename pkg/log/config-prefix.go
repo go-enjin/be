@@ -46,7 +46,7 @@ var (
 	}
 )
 
-func getLogPrefix(depth int, r *http.Request) string {
+func (c *Configuration) getLogPrefix(depth int, r *http.Request) string {
 	depth += 1
 	var file, name string
 	var line int
@@ -67,16 +67,18 @@ func getLogPrefix(depth int, r *http.Request) string {
 			break
 		}
 	}
-	if Config.LoggingFormat == FormatText {
+	if c.LoggingFormat == FormatText {
 		return "[" + name + "]"
 	}
-	if rid := request.GetRequestID(r); rid != "" {
+	rid := request.GetRequestID(r)
+	// if c.LoggingFormat == FormatJson {
+	// 	if rid != "" {
+	// 		return fmt.Sprintf("\"request-id\":%q,\"src-file\":%q,\"src-line\":%d,\"src-func\":%q", rid, file, line, name)
+	// 	}
+	// 	return fmt.Sprintf("\"src-file\":%q,\"src-line\":%d,\"src-func\":%q", file, line, name)
+	// }
+	if rid != "" {
 		return fmt.Sprintf("[%s] %s:%d [%s]", rid, file, line, name)
 	}
 	return fmt.Sprintf("%s:%d [%s]", file, line, name)
-}
-
-func prefixLogEntry(depth int, format string, r *http.Request) string {
-	depth += 1
-	return fmt.Sprintf("%v %v", getLogPrefix(depth, r), format)
 }

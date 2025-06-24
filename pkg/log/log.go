@@ -1,4 +1,4 @@
-// Copyright (c) 2022  The Go-Enjin Authors
+// Copyright (c) 2025  The Go-Enjin Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,48 +15,37 @@
 package log
 
 import (
-	"io"
 	"log"
 
 	"github.com/sirupsen/logrus"
 )
 
-var logLogger *log.Logger
+const (
+	StandardTimestampFormat = "2006-01-02T15:04:05.000"
+	DefaultTimestampFormat  = "20060102-150405.00"
+)
 
-var logger = logrus.New()
+var initialLogger = logrus.New()
 
-func ErrorWriter() *io.PipeWriter {
-	return logger.WriterLevel(logrus.ErrorLevel)
+var Config *config = &config{
+	Configuration: Configuration{
+		DisableTimestamp: false,
+		TimestampFormat:  DefaultTimestampFormat,
+		LoggingFormat:    FormatPretty,
+		LogLevel:         LevelInfo,
+		LogHook:          "stdout",
+		AppName:          "",
+		RemoteHost:       "",
+		RemotePort:       0,
+		LogTag:           "",
+		logger:           initialLogger,
+		writer:           log.New(initialLogger.Writer(), "", 0),
+	},
+	_private: true,
 }
 
-func WarnWriter() *io.PipeWriter {
-	return logger.WriterLevel(logrus.WarnLevel)
-}
+type config struct {
+	Configuration
 
-func InfoWriter() *io.PipeWriter {
-	return logger.WriterLevel(logrus.InfoLevel)
-}
-
-func DebugWriter() *io.PipeWriter {
-	return logger.WriterLevel(logrus.DebugLevel)
-}
-
-func TraceWriter() *io.PipeWriter {
-	return logger.WriterLevel(logrus.TraceLevel)
-}
-
-func Logrus() *logrus.Logger {
-	return logger
-}
-
-func Logger() *log.Logger {
-	if logLogger == nil {
-		logLogger = log.New(logger.Writer(), "", 0)
-	}
-	return logLogger
-}
-
-func PrefixedLogger(prefix string) (logging *log.Logger) {
-	logging = log.New(logger.Writer(), prefix, 0)
-	return
+	_private bool
 }
