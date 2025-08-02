@@ -21,9 +21,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"strings"
 	"sync"
-
-	"github.com/iancoleman/strcase"
 
 	"github.com/go-corelibs/context"
 	clPath "github.com/go-corelibs/path"
@@ -279,10 +278,11 @@ func (re *RenderEnjin) GetBlockIndex() (index int) {
 }
 
 func (re *RenderEnjin) ParseTypeName(data map[string]interface{}) (name string, ok bool) {
-	if name, ok = data["type"].(string); ok {
-		name = strcase.ToKebab(name)
-	} else if name, ok = data["Type"].(string); ok {
-		name = strcase.ToKebab(name)
+	var v string
+	if v, ok = data["type"].(string); ok {
+		name = strings.ToLower(v)
+	} else if v, ok = data["Type"].(string); ok {
+		name = strings.ToLower(v)
 	}
 	return
 }
