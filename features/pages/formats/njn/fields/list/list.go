@@ -125,7 +125,7 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 	var ok bool
 	var list []interface{}
 	if list, ok = field["list"].([]interface{}); !ok {
-		err = fmt.Errorf("ordered list missing list: %+v", field)
+		err = fmt.Errorf("ul/ol missing list: %+v", field)
 		return
 	}
 	var combined []interface{}
