@@ -15,7 +15,6 @@
 package defaults
 
 import (
-	"github.com/go-enjin/be/features/log/papertrail"
 	"github.com/go-enjin/be/features/log/syslogger"
 	"github.com/go-enjin/be/features/outputs/htmlify"
 	"github.com/go-enjin/be/features/pages/formats"
@@ -175,7 +174,6 @@ func (p *CPreset[MakeTypedPreset]) AddFuncmaps(funcmaps ...feature.FuncMapProvid
 func (p *CPreset[MakeTypedPreset]) Make() (feat Preset) {
 	if !p.omitLogs {
 		p.Features = append(p.Features,
-			papertrail.New().Make(),
 			syslogger.New().Make(),
 			beLogHandler.New().Make(),
 			beLogger.New().SetCombined(true).Make(),
