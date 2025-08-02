@@ -104,6 +104,7 @@ func GoEnjinPackageList() (list []string) {
 		"github.com/go-enjin/be/features/pages/formats/njn/blocks/sidebar",
 		"github.com/go-enjin/be/features/pages/formats/njn/blocks/toc",
 		"github.com/go-enjin/be/features/pages/formats/njn/fields/anchor",
+		"github.com/go-enjin/be/features/pages/formats/njn/fields/blockquote",
 		"github.com/go-enjin/be/features/pages/formats/njn/fields/code",
 		"github.com/go-enjin/be/features/pages/formats/njn/fields/container",
 		"github.com/go-enjin/be/features/pages/formats/njn/fields/details",
