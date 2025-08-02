@@ -18,6 +18,7 @@ package blockquote
 
 import (
 	"fmt"
+	"html/template"
 	"strings"
 
 	"github.com/go-enjin/be/pkg/feature"
@@ -88,13 +89,13 @@ func (f *CField) PrepareNjnData(re feature.EnjinRenderer, tagName string, field 
 	}
 
 	if v, ok := field["cite"].(string); ok {
-		data["Cite"] = v
-		data["Caption"] = v
+		data["Cite"] = template.HTML(v)
+		data["Caption"] = template.HTML(v)
 		classes = append(classes, "cited")
 	}
 
 	if v, ok := field["caption"].(string); ok {
-		data["Caption"] = v
+		data["Caption"] = template.HTML(v)
 		classes = append(classes, "captioned")
 	}
 
