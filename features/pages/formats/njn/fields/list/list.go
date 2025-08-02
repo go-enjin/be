@@ -104,7 +104,7 @@ func (f *CField) Make() Field {
 }
 
 func (f *CField) NjnClass() (tagClass feature.NjnClass) {
-	tagClass = feature.ContainerNjnClass
+	tagClass = feature.AnyNjnClass
 	return
 }
 
