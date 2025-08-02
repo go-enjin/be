@@ -195,11 +195,21 @@ func ElementAttributes(value interface{}) (html template.HTMLAttr) {
 	return
 }
 
+func elementNameWork(input string) (name template.HTML) {
+	switch input {
+	case "h-1", "h-2", "h-3", "h-4", "h-5", "h-6":
+		name = template.HTML(string(input[0] + input[2]))
+	default:
+		name = template.HTML(input)
+	}
+	return
+}
+
 func elementOpenWork(data map[string]interface{}, dataType interface{}) (html template.HTML, err error) {
 	switch dt := dataType.(type) {
 	case string:
 		html = "<"
-		html += template.HTML(dt)
+		html += elementNameWork(dt)
 		if attrs := ElementAttributes(data); len(attrs) > 0 {
 			html += " "
 			html += template.HTML(attrs)
@@ -207,7 +217,7 @@ func elementOpenWork(data map[string]interface{}, dataType interface{}) (html te
 		html += ">"
 	case template.HTML:
 		html = "<"
-		html += dt
+		html += elementNameWork(string(dt))
 		if attrs := ElementAttributes(data); len(attrs) > 0 {
 			html += " "
 			html += template.HTML(attrs)
@@ -215,7 +225,7 @@ func elementOpenWork(data map[string]interface{}, dataType interface{}) (html te
 		html += ">"
 	case template.HTMLAttr:
 		html = "<"
-		html += template.HTML(dt)
+		html += elementNameWork(string(dt))
 		if attrs := ElementAttributes(data); len(attrs) > 0 {
 			html += " "
 			html += template.HTML(attrs)
@@ -252,13 +262,15 @@ func elementCloseWork(dataType interface{}) (html template.HTML, err error) {
 	switch dt := dataType.(type) {
 	case string:
 		html = "</"
-		html += template.HTML(dt)
+		html += elementNameWork(dt)
 		html += ">"
 	case template.HTML:
-		html = "</" + dt + ">"
+		html = "</"
+		html += elementNameWork(string(dt))
+		html += ">"
 	case template.HTMLAttr:
 		html = "</"
-		html += template.HTML(dt)
+		html += elementNameWork(string(dt))
 		html += ">"
 	default:
 		err = fmt.Errorf("element close unsupported dataType structure: %T", dt)
