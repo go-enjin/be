@@ -35,6 +35,8 @@ var (
 		"abbr", "b", "cite", "del", "dfn", "em", "i", "ins", "kbd", "mark",
 		"meter", "progress", "q", "s", "small", "strong", "sub", "sup", "u",
 		"var", "span", "button", "code",
+		"h1", "h2", "h3", "h4", "h5", "h6",
+		"h-1", "h-2", "h-3", "h-4", "h-5", "h-6",
 	}
 )
 
