@@ -32,7 +32,7 @@ const (
 
 var (
 	TagNames = []string{
-		"div", "dl", "dt", "dd", "samp", "blockquote",
+		"div", "dl", "dt", "dd", "samp",
 	}
 )
 
