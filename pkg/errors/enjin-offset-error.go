@@ -60,8 +60,12 @@ func makePointError(content string, offset int64) (lines []string, row, column i
 				// empty line
 				escaped += makeEnjinErrorSpan(" ")
 			} else {
-				escaped += makeEnjinErrorSpan(string(line[0]))
-				escaped += template.HTMLEscapeString(line[1:])
+				if ll := len(line); ll > 0 {
+					escaped += makeEnjinErrorSpan(string(line[0]))
+					if ll > 1 {
+						escaped += template.HTMLEscapeString(line[1:])
+					}
+				}
 			}
 
 		case offset >= pos && offset < posEol:
